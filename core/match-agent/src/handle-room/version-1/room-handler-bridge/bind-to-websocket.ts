@@ -75,7 +75,7 @@ export const bindMessageBridgeToWebsocket = async (gameWebSocket: WebSocket)=>{
     });
 
     const roomPromise = bindStepsToBridge({
-      bridge: messageBridge,
+      bridge: roomBridge,
       fileDB: fileDB,
       users: users.map(user=>({ publicKey: user.publicKey })),
       ownSelection: roomRequest.userSelection,
