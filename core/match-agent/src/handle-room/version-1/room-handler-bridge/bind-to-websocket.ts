@@ -66,7 +66,7 @@ export const bindMessageBridgeToWebsocket = async (gameWebSocket: WebSocket)=>{
     const users = await handleFetch<Array<User>>(fetch(httpURL.href));
 
     const wsURL = new URL(roomURL);
-    wsURL.protocol = roomURL.protocol === "https:" ? "wss:" : "ws";
+    wsURL.protocol = roomURL.protocol === "https:" ? "wss:" : "ws:";
     wsURL.pathname = "/" + roomRequest.relay.roomId;
     const roomWebSocket = new WebSocket(roomRequest.relay.url);
     const roomBridge = new MessageBridge((message)=>roomWebSocket.send(JSON.stringify(message)));
