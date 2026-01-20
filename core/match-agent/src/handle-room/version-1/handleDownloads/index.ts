@@ -1,9 +1,9 @@
 import { FinalSelection, RosterLockV1Config } from "@match-lock/shared";
 
-import { PieceDownloadTracker, ResultsMap } from "./DownloadTracker";
+import { PieceDownloadTracker } from "./DownloadTracker";
 import { MATCHLOCK_DOWNLOAD_STATE } from "../constants";
 import { IFolderDB } from "../globals/FolderDB";
-import { ProgressHandlers } from "./types";
+import { ProgressHandlers, ResultsMap } from "./types";
 
 export async function handleDownloads(
   db: IFolderDB,

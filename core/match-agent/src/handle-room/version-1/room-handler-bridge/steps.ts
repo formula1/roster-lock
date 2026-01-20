@@ -9,6 +9,7 @@ import { runUntrustedScript } from "@roster-lock/node-services";
 import { handleDownloads } from "../handleDownloads";
 import { IFolderDB } from "../globals/FolderDB";
 import { DownloadUpdate } from "../handleDownloads/events";
+import { ResultsMap } from "../handleDownloads/types";
 
 type UserPublicKey = string;
 
@@ -35,7 +36,7 @@ type RoomArgs = {
 
 type RoomResult = {
   finalSelection: FinalSelection,
-  downloadResults: Awaited<ReturnType<typeof handleDownloads>>,
+  downloadResults: ResultsMap,
 }
 
 export function bindStepsToBridge(
