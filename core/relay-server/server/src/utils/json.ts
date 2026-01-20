@@ -20,3 +20,7 @@ export function canonicalJSONStringify(value: any): string {
   }).join(',');
   return `{${props}}`;
 }
+
+export function isDeepEqual(a: any, b: any): boolean {
+  return canonicalJSONStringify(a) === canonicalJSONStringify(b);
+}

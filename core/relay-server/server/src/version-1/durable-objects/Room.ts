@@ -1,30 +1,14 @@
 import { Hono } from 'hono';
-import { Env, RoomConfig, RoomUser } from '../types';
-import { RelayMessage } from './types';
+import { Env, RoomConfig } from '../types';
+import { WebSocketAttachment } from './types';
 import { DurableObjectState } from '@cloudflare/workers-types';
 
 import { validateAuthFromSearch } from "./auth";
 
-import { handleHelloMessage } from './methods/hello';
-import { handleFinishMessage } from './methods/finish';
-import { handleGoodbyeMessage } from './methods/goodbye';
-import { failWebhook } from './webhook';
+import { successWebhook, failWebhook } from './webhook';
 
-/**
- * Metadata attached to each WebSocket via state.acceptWebSocket(ws, tags)
- * and retrievable via ws.deserializeAttachment() after hibernation
- */
+import { startRoom as startBridgeRoom, handleMessage as handleBridgeMessage, isRoomFinished as isBridgeRoomFinished } from './bridge';
 
-import {
-  MATCHLOCK_SELECTION_STATE,
-  MATCHLOCK_DOWNLOAD_STATE,
-  USER_EVENT,
-} from './constants';
-
-type WebSocketAttachment = {
-  userId: string;
-  connectedAt: string;
-}
 
 import { z, ZodType } from 'zod';
 const newRoomCaster: ZodType<RoomConfig> = z.object({
@@ -38,16 +22,6 @@ const newRoomCaster: ZodType<RoomConfig> = z.object({
   }).strict()),
 }).strict();
 
-const wsMessageCaster: ZodType<RelayMessage> = z.object({
-  type: z.string().refine((val) => {
-    return (
-      val in MATCHLOCK_SELECTION_STATE ||
-      val in MATCHLOCK_DOWNLOAD_STATE ||
-      val in USER_EVENT
-    );
-  }),
-  payload: z.any(),
-}).strict();
 
 
 export class Room {
@@ -161,6 +135,7 @@ export class Room {
       // Attach user metadata to the socket (survives hibernation)
       const attachment: WebSocketAttachment = {
         userId: user.userId,
+        publicKey: user.publicKey,
         connectedAt: new Date().toISOString(),
       };
       (server as any).serializeAttachment(attachment);
@@ -199,6 +174,20 @@ export class Room {
     return this.app.fetch(wsRequest, this.env);
   }
 
+  async webSocketOpen(ws: WebSocket) {
+    const attachment = (ws as any).deserializeAttachment() as WebSocketAttachment | null;
+    if (!attachment) return;
+
+    const config = await this.state.storage.get<RoomConfig>('config');
+    if (!config) return;
+
+    const sockets = this.state.getWebSockets();
+    
+    // Check if all users are now connected
+    if (sockets.length === config.users.length) {
+      await startBridgeRoom(this.state);
+    }
+  }
   /**
    * Called by Cloudflare when a WebSocket receives a message.
    * This works even after hibernation - the DO wakes up and this is called.
@@ -207,67 +196,11 @@ export class Room {
     const attachment = (ws as any).deserializeAttachment() as WebSocketAttachment | null;
     if (!attachment) return console.error('WebSocket has no attachment');
     try {
-      // Get user info from the WebSocket's attached metadata
-
-      const uncastedData = JSON.parse(message as string);
-      const casted = wsMessageCaster.safeParse(uncastedData);
-      if(!casted.success) throw new Error('Invalid message');
-      const data = casted.data;
-
-      const isReady = await this.state.storage.get<boolean>('isReady');
-      if(!isReady){
-        return await handleHelloMessage(
-          {
-            state: this.state,
-            env: this.env,
-            broadcast: (...args)=>(this.broadcast(...args)),
-            completeRoom: ()=>(this.completeRoom()),
-          },
-          attachment.userId,
-          data
-        );
+      if(message instanceof ArrayBuffer) throw new Error("Invalid message");
+      await handleBridgeMessage(this.state, ws, message);
+      if(await isBridgeRoomFinished(this.state)){
+        await this.completeRoom();
       }
-
-      const isGoodbye = await this.state.storage.get<boolean>('isGoodbye');
-      if(isGoodbye && data.type !== USER_EVENT.goodbye){
-        throw new Error('Room should be closing');
-      }
-      if(data.type === USER_EVENT.goodbye){
-        return await handleGoodbyeMessage(
-          {
-            state: this.state,
-            env: this.env,
-            broadcast: (...args)=>(this.broadcast(...args)),
-            completeRoom: ()=>(this.completeRoom()),
-          },
-          attachment.userId,
-          data
-        );
-      }
-
-      if(data.type === USER_EVENT.finish){
-        return await handleFinishMessage(
-          {
-            state: this.state,
-            env: this.env,
-            broadcast: (...args)=>(this.broadcast(...args)),
-            completeRoom: ()=>(this.completeRoom()),
-          },
-          attachment.userId,
-        );
-      }
-
-      // Increment message count (persisted in storage for hibernation)
-      await this.state.storage.transaction(async (txn) => {
-        const messageCount = (await txn.get<number>('messageCount') || 0) + 1;
-        await txn.put('messageCount', messageCount);
-      });
-
-      this.broadcast({
-        userId: attachment.userId,
-        type: data.type,
-        payload: data.payload,
-      });
 
     } catch (error) {
       console.error('WebSocket message error:', error);
@@ -283,11 +216,8 @@ export class Room {
     const attachment = (ws as any).deserializeAttachment() as WebSocketAttachment | null;
     if (!attachment) return;
     try {
-
-      const isGoodbye = await this.state.storage.get<boolean>('isGoodbye');
-      if(!isGoodbye) throw new Error('User Left Early');
-      const leavingUsers = await this.state.storage.get<string[]>('leavingUsers') || [];
-      if(!leavingUsers.includes(attachment.userId)) throw new Error("User left before goodbye");
+      if(await isBridgeRoomFinished(this.state)) return;
+      throw new Error("User left early");
     }catch(error){
       console.error('WebSocket close error:', error);
       await this.failRoom((error as Error).message, attachment.userId);
@@ -304,26 +234,6 @@ export class Room {
 
     console.error(`Error for user ${attachment.userId}:`, error);
     await this.failRoom((error as Error).message, attachment.userId);
-  }
-
-  /**
-   * Broadcast a message to all connected WebSockets.
-   * Uses state.getWebSockets() which survives hibernation.
-   */
-  private broadcast(message: { userId: string; type: string; payload: any }, excludeUserId?: string) {
-    const json = JSON.stringify(message);
-    const sockets = this.state.getWebSockets();
-
-    for (const ws of sockets) {
-      const attachment = (ws as any).deserializeAttachment() as WebSocketAttachment | null;
-      if (!attachment || attachment.userId === excludeUserId) continue;
-
-      try {
-        ws.send(json);
-      } catch (error) {
-        console.error(`Failed to send to ${attachment.userId}:`, error);
-      }
-    }
   }
 
 
@@ -366,6 +276,7 @@ export class Room {
       messageCount,
       config.roomId
     ).run();
+    await successWebhook(this.env, config);
   }
 
   private async failRoom(failReason: string, failedUser: string){
@@ -389,25 +300,3 @@ export class Room {
     await failWebhook(this.env, config, failReason, failedUser);
   }
 }
-
-/*
-If any user disconnects, the room fails
-If any user sends a bad message, the room fails
-
-async function roomServerFlow(){
-  await allUsersEnterRoom(); // Simple
-  await tellAllUsersToStart(); // Simple
-  await waitForAllUsersToFinish();
-  await closeRoom(); //
-}
-
-async function roomClientFlow(){
-  await getAllUsers();
-  await connectToServer();
-  await waitForStartMessage();
-  await shareAndValidateSelections();
-  await downloadSelections();
-  await sendFinishedMessage();
-  await waitForRoomToClose();
-}
-*/

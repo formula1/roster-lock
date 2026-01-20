@@ -1,5 +1,6 @@
 import { DurableObjectState } from "@cloudflare/workers-types";
-import { RoomType, RelayMessage } from "../types";
+import { RoomType } from "../../types";
+import { RelayMessage } from "../types";
 import { ROOM_EVENT, USER_EVENT } from "../constants";
 
 export async function handleHelloMessage(

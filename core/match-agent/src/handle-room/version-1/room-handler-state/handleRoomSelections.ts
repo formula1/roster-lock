@@ -2,14 +2,14 @@ import { RosterLockV1Config, UserInput } from "@match-lock/shared";
 import { MATCHLOCK_SELECTION_STATE } from "../constants";
 import {
   encryptJSON, decryptJSON,
-} from "./encryption";
-import { createRandomSeed } from "./random";
+} from "../handleRoomSelections/encryption";
+import { createRandomSeed } from "../handleRoomSelections/random";
 import { FinalSelection } from "@match-lock/shared";
-import { Room } from "../../../types/room";
+import { IRoom } from "../globals/Room/room";
 import { RoomState } from "./RoomState";
 
 export async function handleRoomSelections(
-  room: Room,
+  room: IRoom,
   abortSignal: AbortSignal,
   restriction: RosterLockV1Config,
   selection: UserInput["userSelection"],

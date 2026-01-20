@@ -5,11 +5,11 @@ import {
   FinalSelection
 } from "@match-lock/shared";
 import { MATCHLOCK_SELECTION_STATE, UserMessegeError } from "../constants";
-import { Room } from "../../../types/room";
+import { IRoom } from "../globals/Room";
 import { deepEqual } from "node:assert";
 import { validateUnknown } from "../validateUnknown";
 
-import { decryptJSON, encryptJSON, encryptedSchema } from "./encryption";
+import { decryptJSON, encryptJSON, encryptedSchema } from "../handleRoomSelections/encryption";
 import { userInputSchema, finalizeSelection, finalSelectionSchema } from "./user-selection";
 
 const STATE_ORDER = [
@@ -30,7 +30,7 @@ export class RoomState {
   agreedSelection: FinalSelection | null = null;
 
   constructor(
-    public room: Room,
+    public room: IRoom,
     public lockConfig: RosterLockV1Config,
     public ownEncrypted: Awaited<ReturnType<typeof encryptJSON>>,
   ){}

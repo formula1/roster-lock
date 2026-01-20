@@ -23,6 +23,7 @@
     "dev": "npm run build:client && wrangler dev",
     "dev:client": "cd client && npm run dev",
     "dev:client:watch": "cd client && npm run build -- --watch",
+    "build": "npm run build:client",
     "build:client": "cd client && npm run build",
     "deploy": "npm run build:client && wrangler deploy",
     "deploy:production": "npm run build:client && wrangler deploy --env production",

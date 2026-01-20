@@ -1,6 +1,7 @@
 
 
-import { RoomType, RelayMessage } from "../types";
+import { RoomType } from "../../types";
+import { RelayMessage } from "../types";
 import { USER_EVENT } from "../constants";
 
 export async function handleGoodbyeMessage(

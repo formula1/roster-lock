@@ -1,10 +1,10 @@
 
-import { Room } from "../../types/room";
-import { ExternalUserError, ROOM_EVENT, MATCHLOCK_DOWNLOAD_STATE, MATCHLOCK_SELECTION_STATE } from "./constants";
+import { IRoom } from "../globals/Room/room";
+import { ExternalUserError, ROOM_EVENT, MATCHLOCK_DOWNLOAD_STATE, MATCHLOCK_SELECTION_STATE } from "../constants";
 
 import { waitForEvent, waitForEventTimeout } from "@match-lock/shared";
 export async function waitForExternalError<T>(
-  room: Room, abortSignal: AbortSignal
+  room: IRoom, abortSignal: AbortSignal
 ): Promise<T> {
   const [userId, event, message] = await waitForEvent(
     room.listen.filter((userId, event, message)=>{
@@ -19,7 +19,7 @@ export async function waitForExternalError<T>(
 }
 
 export async function waitForStoppedRoomHeartbeat<T>(
-  room: Room, timeout: number, abortSignal: AbortSignal
+  room: IRoom, timeout: number, abortSignal: AbortSignal
 ): Promise<T> {
   await waitForEventTimeout(
     room.listen.filter((userId, event, message)=>{

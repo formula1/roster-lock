@@ -27,7 +27,7 @@ export function searchParamsToUserMessage(searchParams: URLSearchParams): UserMe
     const signature = searchParams.get('sig');
     if(!roomId || !timestampStr || !publicKey || !signature) return null;
     const timestamp = Number.parseInt(timestampStr);
-    if(isNaN(timestamp)) return null;
+    if(Number.isNaN(timestamp)) return null;
     return {
       roomId,
       timestamp,

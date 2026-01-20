@@ -8,8 +8,8 @@ export type RoomType = {
   completeRoom: () => void;
 };
 
-export interface RelayMessage {
-  type: string;
-  payload: unknown;
+export type WebSocketAttachment = {
+  userId: string;
+  publicKey: string;
+  connectedAt: string;
 }
-

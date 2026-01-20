@@ -1,7 +1,7 @@
-import { RoomType } from "../types";
-import { RoomConfig } from "../../types";
+import { RoomType } from "../../types";
+import { RoomConfig } from "../../../types";
 import { ROOM_EVENT } from "../constants";
-import { successWebhook } from "../webhook";
+import { successWebhook } from "../../webhook";
 
 export async function handleFinishMessage(
   { state, env, broadcast  }: RoomType, userId: string

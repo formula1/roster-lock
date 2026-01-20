@@ -12,10 +12,11 @@ export function uint8ToBuffer(arr: Uint8Array): ArrayBuffer {
   return arr.buffer.slice(arr.byteOffset, arr.byteOffset + arr.byteLength) as ArrayBuffer;
 }
 
-export async function verifySignature(publicKeyJwk: string, signatureBase64: string, message: any){
+export async function verifySignature(publicKeyBase64: string, signatureBase64: string, message: any){
+  const publicKeyJwk = JSON.parse(atob(publicKeyBase64));
   const publicKey = await crypto.subtle.importKey(
     'jwk',
-    JSON.parse(publicKeyJwk),
+    publicKeyJwk,
     { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
     false,
     ['verify']
