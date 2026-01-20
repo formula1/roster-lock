@@ -49,13 +49,11 @@ type User = {
 
 
 export const bindMessageBridgeToWebsocket = async (gameWebSocket: WebSocket)=>{
-  const messageBridge = new MessageBridge((message)=>gameWebSocket.send(JSON.stringify(message)));
+  const gameBridge = new MessageBridge((message)=>gameWebSocket.send(JSON.stringify(message)));
   gameWebSocket.on("message", (message)=>{
-    messageBridge.handleMessage(JSON.parse(message.toString()));
+    gameBridge.handleMessage(JSON.parse(message.toString()));
   });
-  try {
-    const roomInfo = await messageBridge.sendRequest("roomInfo", {});
-
+  gameBridge.onRequest("connect-to-relay", async (roomInfo)=>{
     const parsed = RequestCaster.safeParse(roomInfo);
     if(!parsed.success) throw new Error("Invalid request");
     const roomRequest = parsed.data;
@@ -88,15 +86,10 @@ export const bindMessageBridgeToWebsocket = async (gameWebSocket: WebSocket)=>{
 
     await once(roomWebSocket, 'open')
     const results = await roomPromise;
-
-    await messageBridge.sendRequest("roomComplete", results);
     roomWebSocket.close();
-  }catch(e){
-    console.error(e);
-    await messageBridge.sendRequest("roomFailed", (e as Error).message);
-  }finally{
-    gameWebSocket.close();
-  }
+    return results;
+  });
+  gameBridge.sendEvent("ready", {});
 }
 
 function prepareRelayURL({ relay, user }: RoomRequest){
