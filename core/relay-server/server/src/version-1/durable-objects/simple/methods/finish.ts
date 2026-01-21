@@ -1,10 +1,10 @@
-import { RoomType } from "../../types";
+import { RoomActions, RoomType } from "../../types";
 import { RoomConfig } from "../../../types";
 import { ROOM_EVENT } from "../constants";
 import { successWebhook } from "../../webhook";
 
 export async function handleFinishMessage(
-  { state, env, broadcast  }: RoomType, userId: string
+  { state, env  }: RoomType, { broadcast }: RoomActions, userId: string
 ) {
   const config = await state.storage.get<RoomConfig>('config');
   if(!config) throw new Error("Room not found");

@@ -1,10 +1,10 @@
 import { DurableObjectState } from "@cloudflare/workers-types";
-import { RoomType } from "../../types";
+import { RoomActions, RoomType } from "../../types";
 import { RelayMessage } from "../types";
 import { ROOM_EVENT, USER_EVENT } from "../constants";
 
 export async function handleHelloMessage(
-  { state, broadcast }: RoomType, userId: string, data: RelayMessage, 
+  { state }: RoomType, { broadcast }: RoomActions, userId: string, data: RelayMessage, 
 ) {
   if(data.type !== USER_EVENT.hello) throw new Error('Message Should Be Hello');
   await state.storage.transaction(async (txn) => {

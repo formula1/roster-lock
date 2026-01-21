@@ -1,11 +1,11 @@
 
 
-import { RoomType } from "../../types";
+import { RoomActions, RoomType } from "../../types";
 import { RelayMessage } from "../types";
 import { USER_EVENT } from "../constants";
 
 export async function handleGoodbyeMessage(
-  { state, broadcast, completeRoom }: RoomType, userId: string, data: RelayMessage, 
+  { state }: RoomType, { broadcast, completeRoom }: RoomActions, userId: string, data: RelayMessage, 
 ) {
   await state.storage.put('isGoodbye', true);
   broadcast({
