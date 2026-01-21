@@ -245,7 +245,6 @@ export class Room {
       return false;
     });
     if(alreadyClosed) return true;
-    await this.state.storage.put('isClosed', true);
     await this.state.storage.put("closeReason", reason);
     const sockets = this.state.getWebSockets();
     for (const ws of sockets) {
