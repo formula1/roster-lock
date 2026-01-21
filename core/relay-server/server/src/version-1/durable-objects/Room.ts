@@ -75,7 +75,7 @@ export class Room {
       const config = await this.state.storage.get<RoomConfig>('config');
       if(!config) return c.json([], 404);
       const url = new URL(c.req.url);
-      const user = await validateAuthFromSearch(url.searchParams, config, 'room-users');
+      const user = await validateAuthFromSearch(url.searchParams, config, 'room-ws');
       if(!user) return c.json([], 403);
 
       const sockets = this.state.getWebSockets();
