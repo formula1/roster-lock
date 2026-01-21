@@ -28,11 +28,12 @@ app.get('/queue/:hash', (req: Request, res: Response) => {
 });
 
 // Join matchmaking queue
-const joinBodySchema: ZodType<Omit<QueuedUser, "timestamp" | "rosterConfigHash"> & { signature: string }> = z.object({
+const joinBodySchema: ZodType<Omit<QueuedUser, "timestamp" | "rosterConfigHash"> & { timestamp: number, signature: string }> = z.object({
   userId: z.string(),
   displayName: z.string(),
   rosterConfig: z.any(),
   publicKey: z.string(),
+  timestamp: z.number(),
   signature: z.string(),
 }).strict();
 app.post('/join', async (req: Request, res: Response) => {
@@ -41,6 +42,9 @@ app.post('/join', async (req: Request, res: Response) => {
   if(!casted.success){
     return res.status(400).json({ error: 'Invalid body' });
   }
+  if(Date.now() - casted.data.timestamp > 1000){
+    return res.status(400).json({ error: 'Timestamp is too old' });
+  }
   const rosterHash = await createSha(casted.data.rosterConfig);
 
   if(!verifySignature(casted.data.publicKey, casted.data.signature, {
@@ -48,6 +52,7 @@ app.post('/join', async (req: Request, res: Response) => {
     userId: casted.data.userId,
     displayName: casted.data.displayName,
     rosterHash: rosterHash,
+    timestamp: casted.data.timestamp,
     publicKey: casted.data.publicKey,
   })){
     return res.status(401).json({ error: 'Invalid signature' });
@@ -77,13 +82,21 @@ app.get("/status/:roster-hash", async (req: Request, res: Response) => {
   const rosterHash = req.params["roster-hash"];
   const publicKey = req.query.publicKey as string;
   const signature = req.query.signature as string;
+  const timestamp = Number.parseInt(req.query.timestamp as string);
   if(!publicKey || !signature){
     return res.status(400).json({ error: 'publicKey and signature are required' });
+  }
+  if(Number.isNaN(timestamp)){
+    return res.status(400).json({ error: 'Invalid timestamp' });
+  }
+  if(Date.now() - timestamp > 1000){
+    return res.status(400).json({ error: 'Timestamp is too old' });
   }
 
   if(!verifySignature(publicKey, signature, {
     service: 'queue-status',
     rosterConfigHash: rosterHash,
+    timestamp: timestamp,
     publicKey: publicKey,
   })){
     return res.status(401).json({ error: 'Invalid signature' });
