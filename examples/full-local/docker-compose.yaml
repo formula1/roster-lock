@@ -20,6 +20,8 @@ services:
       - ENVIRONMENT=development
     networks:
       - match-lock-network
+    depends_on:
+      - game-server
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:80/api/v1/"]
       interval: 10s
@@ -75,9 +77,6 @@ services:
       - RELAY_SERVER_URL=http://relay-server:80
     networks:
       - match-lock-network
-    depends_on:
-      relay-server:
-        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:80/health"]
       interval: 10s
