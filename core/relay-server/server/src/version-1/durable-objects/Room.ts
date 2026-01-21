@@ -279,7 +279,7 @@ export class Room {
   }
 
   private async failRoom(failReason: string, failedUser: string){
-    const alreadyClosed = await this.cleanupRoom("failed");
+    const alreadyClosed = await this.cleanupRoom(failReason);
     if(alreadyClosed) return;
 
     const config = await this.state.storage.get<RoomConfig>('config');
