@@ -47,7 +47,7 @@ app.post('/join', async (req: Request, res: Response) => {
   }
   const rosterHash = await createSha(casted.data.rosterConfig);
 
-  if(!verifySignature(casted.data.publicKey, casted.data.signature, {
+  if(!await verifySignature(casted.data.publicKey, casted.data.signature, {
     service: 'join-queue',
     userId: casted.data.userId,
     displayName: casted.data.displayName,
@@ -93,7 +93,7 @@ app.get("/status/:roster-hash", async (req: Request, res: Response) => {
     return res.status(400).json({ error: 'Timestamp is too old' });
   }
 
-  if(!verifySignature(publicKey, signature, {
+  if(!await verifySignature(publicKey, signature, {
     service: 'queue-status',
     rosterConfigHash: rosterHash,
     timestamp: timestamp,
