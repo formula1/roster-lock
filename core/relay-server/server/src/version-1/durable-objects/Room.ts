@@ -58,7 +58,7 @@ export class Room {
     this.app.get('/', async (c) => {
       const isClosed = await this.state.storage.get<boolean>('isClosed');
       if(isClosed) return c.json({ error: 'Room is closed' }, 400);
-      const config = await this.state.storage.get('config');
+      const config = await this.state.storage.get<RoomConfig>('config');
       const sockets = this.state.getWebSockets();
       const messageCount = await this.state.storage.get<number>('messageCount') || 0;
       return c.json({
@@ -261,7 +261,8 @@ export class Room {
   private async completeRoom() {
     const alreadyClosed = await this.cleanupRoom("completed");
     if(alreadyClosed) return;
-    const config = await this.state.storage.get<any>('config');
+
+    const config = await this.state.storage.get<RoomConfig>('config');
     if (!config) return;
 
     const messageCount = await this.state.storage.get<number>('messageCount') || 0;
@@ -281,7 +282,8 @@ export class Room {
   private async failRoom(failReason: string, failedUser: string){
     const alreadyClosed = await this.cleanupRoom("failed");
     if(alreadyClosed) return;
-    const config = await this.state.storage.get<any>('config');
+
+    const config = await this.state.storage.get<RoomConfig>('config');
     if (!config) return;
 
     const messageCount = await this.state.storage.get<number>('messageCount') || 0;
