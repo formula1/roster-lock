@@ -109,7 +109,7 @@ app.get("/status/:roster-hash", async (req: Request, res: Response) => {
   if(!match.success){
     return res.status(500).json(match);
   }
-  res.json(match);
+  res.json({ status: 'matched', roomId: match.roomId, url: match.url });
 });
 
 // Leave matchmaking queue
