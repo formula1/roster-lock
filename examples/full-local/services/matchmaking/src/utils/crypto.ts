@@ -6,7 +6,14 @@ function strToBuffer(str: string) {
 }
 
 
-import { verify as ed25519Verify } from "@noble/ed25519";
+import { verify as ed25519Verify, sign as ed25519Sign } from "@noble/ed25519";
+export async function signMessage(message: any, privateKeyBase64: string){
+  const privateKey = Uint8Array.from(atob(privateKeyBase64), c => c.charCodeAt(0));
+  const messageBytes = strToBuffer(canonicalJSONStringify(message));
+  const signature = await ed25519Sign(messageBytes, privateKey);
+  return btoa(String.fromCharCode(...new Uint8Array(signature)));
+}
+
 export async function verifySignature(publicKeyBase64: string, signatureBase64: string, message: any){
   try {
     const publicKey = Uint8Array.from(atob(publicKeyBase64), c => c.charCodeAt(0));
