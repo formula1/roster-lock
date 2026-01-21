@@ -4,14 +4,8 @@ import { IFolderDB } from "../globals/FolderDB";
 import { ProgressHandlers } from "./types";
 import { MATCHLOCK_DOWNLOAD_STATE } from "../constants";
 
-type DownloadResult = {
-  pieceType: PieceType,
-  pieceId: PieceId,
-  pieceVersions: { logic: string, media: string },
-  folder: string,
-}
+import { ResultsMap, DownloadResult } from "./types";
 
-export type ResultsMap = Record<PieceType, Record<PieceId, DownloadResult>>;
 export class PieceDownloadTracker {
   private pieceTypes = new Map<PieceId, Map<PieceType, Promise<DownloadResult>>>();
 
