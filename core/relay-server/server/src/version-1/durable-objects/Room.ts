@@ -5,7 +5,7 @@ import { DurableObjectState } from '@cloudflare/workers-types';
 
 import { validateAuthFromSearch } from "./auth";
 
-import { successWebhook, failWebhook } from './webhook';
+import { failWebhook } from './webhook';
 
 import { startRoom as startBridgeRoom, handleMessage as handleBridgeMessage, isRoomFinished as isBridgeRoomFinished } from './bridge';
 
@@ -185,7 +185,7 @@ export class Room {
     
     // Check if all users are now connected
     if (sockets.length === config.users.length) {
-      await startBridgeRoom(this.state);
+      await startBridgeRoom({ state: this.state, env: this.env });
     }
   }
   /**
@@ -197,7 +197,7 @@ export class Room {
     if (!attachment) return console.error('WebSocket has no attachment');
     try {
       if(message instanceof ArrayBuffer) throw new Error("Invalid message");
-      await handleBridgeMessage(this.state, ws, message);
+      await handleBridgeMessage({ state: this.state, env: this.env }, ws, message);
       if(await isBridgeRoomFinished(this.state)){
         await this.completeRoom();
       }
@@ -276,7 +276,6 @@ export class Room {
       messageCount,
       config.roomId
     ).run();
-    await successWebhook(this.env, config);
   }
 
   private async failRoom(failReason: string, failedUser: string){

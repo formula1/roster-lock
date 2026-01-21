@@ -2,7 +2,7 @@ import { DurableObjectState } from "@cloudflare/workers-types";
 import { WebSocket, CONVO_STATE_KEY } from "./utils";
 
 import { handleSelection, handleReveal, handleFinal, handleDownload } from "./response-handlers";
-const RESPONSE_HANDLERS: Record<string, (doState: DurableObjectState, user: WebSocket, value: any)=>Promise<any>> = {
+const RESPONSE_HANDLERS: Record<string, (room: RoomType, user: WebSocket, value: any)=>Promise<any>> = {
   "user-selection": handleSelection,
   "all-selection-for-user-decryption": handleReveal,
   "all-decryption-for-user-final": handleFinal,
@@ -11,11 +11,12 @@ const RESPONSE_HANDLERS: Record<string, (doState: DurableObjectState, user: WebS
 
 import { handleDownloadProgress } from "./event-handlers";
 import { handleBridgeMessage, makeBridgeRequest } from "./bridge-compatability";
-const EVENT_HANDLERS: Record<string, (doState: DurableObjectState, user: WebSocket, value: any)=>Promise<any>> = {
+import { RoomType } from "../types";
+const EVENT_HANDLERS: Record<string, (room: RoomType, user: WebSocket, value: any)=>Promise<any>> = {
   "download-progress": handleDownloadProgress,
 }
 
-const REQUEST_HANDLERS: Record<string, (doState: DurableObjectState, user: WebSocket, value: any)=>Promise<void>> = {}
+const REQUEST_HANDLERS: Record<string, (room: RoomType, user: WebSocket, value: any)=>Promise<void>> = {}
 
 const handlers = {
   response: RESPONSE_HANDLERS,
@@ -23,18 +24,18 @@ const handlers = {
   request: REQUEST_HANDLERS,
 }
 
-export function handleMessage(doState: DurableObjectState, user: WebSocket, messageRaw: string){
-  return handleBridgeMessage(doState, handlers, user, messageRaw);
+export function handleMessage(room: RoomType, user: WebSocket, messageRaw: string){
+  return handleBridgeMessage(room, handlers, user, messageRaw);
 }
 
-export async function startRoom(doState: DurableObjectState){
-  await doState.storage.transaction(async (txn) => {
+export async function startRoom(room: RoomType){
+  await room.state.storage.transaction(async (txn) => {
     const currentState = await txn.get<string>(CONVO_STATE_KEY);
     if(currentState) throw new Error(`Expected No State but got ${currentState}`);
     await txn.put(CONVO_STATE_KEY, "user-selection");
   });
-  for(const user of doState.getWebSockets()){
-    makeBridgeRequest(doState, user, "user-selection", {});
+  for(const user of room.state.getWebSockets()){
+    makeBridgeRequest(room, user, "user-selection", {});
   }
 }
 

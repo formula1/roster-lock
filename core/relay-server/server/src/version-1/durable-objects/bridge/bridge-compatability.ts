@@ -1,15 +1,16 @@
 import { MessageBridgeMessageCaster } from "./message-schema";
 import { DurableObjectState } from '@cloudflare/workers-types';
 import { getPublicKey, WaitingRequest, WebSocket } from "./utils";
+import { RoomType } from "../types";
 
 type Handlers = {
-  response: Record<string, (doState: DurableObjectState, user: WebSocket, value: any)=>Promise<void>>,
-  event: Record<string, (doState: DurableObjectState, user: WebSocket, value: any)=>Promise<void>>,
-  request: Record<string, (doState: DurableObjectState, user: WebSocket, value: any)=>Promise<any>>,
+  response: Record<string, (room: RoomType, user: WebSocket, value: any)=>Promise<void>>,
+  event: Record<string, (room: RoomType, user: WebSocket, value: any)=>Promise<void>>,
+  request: Record<string, (room: RoomType, user: WebSocket, value: any)=>Promise<any>>,
 }
 
 export async function handleBridgeMessage(
-  doState: DurableObjectState, handlers: Handlers, user: WebSocket, messageRaw: string
+  room: RoomType, handlers: Handlers, user: WebSocket, messageRaw: string
 ){
   const message = JSON.parse(messageRaw);
   const publicKey = getPublicKey(user);
@@ -18,7 +19,7 @@ export async function handleBridgeMessage(
   if(message.messageType === "event"){
     const handler = handlers.event[message.path];
     if(!handler) throw new Error("Invalid event path");
-    await handler(doState, user, message.value);
+    await handler(room, user, message.value);
     return;
   }
 
@@ -26,7 +27,7 @@ export async function handleBridgeMessage(
     const handler = handlers.request[message.path];
     if(!handler) throw new Error("Invalid request path");
     try {
-      const response = await handler(doState, user, message.value);
+      const response = await handler(room, user, message.value);
       user.send(JSON.stringify({
         id: message.id,
         messageType: "response",
@@ -47,7 +48,7 @@ export async function handleBridgeMessage(
   if(message.messageType === "response"){
     const { id, valueType, value } = message;
     if(valueType === "error") throw new Error(value);
-    const request = await doState.storage.transaction(async (txn) => {
+    const request = await room.state.storage.transaction(async (txn) => {
       const request = await txn.get<WaitingRequest>(`ws-request-${id}`);
       if(!request) throw new Error("Invalid request id");
       if(request.publicKey !== publicKey) throw new Error("Invalid user");
@@ -56,17 +57,17 @@ export async function handleBridgeMessage(
     });
     const handler = handlers.response[request.path];
     if(!handler) throw new Error("Invalid request path");
-    await handler(doState, user, value);
+    await handler(room, user, value);
     return;
   }
 
   throw new Error("Invalid message type");
 }
 
-export async function makeBridgeRequest(doState: DurableObjectState, user: WebSocket, path: string, value: any){
+export async function makeBridgeRequest(room: RoomType, user: WebSocket, path: string, value: any){
   const publicKey = getPublicKey(user);
   const id = [Date.now().toString(32), Math.random().toString(32).substring(2)].join("-");
-  await doState.storage.put(`ws-request-${id}`, { path, publicKey } satisfies WaitingRequest);
+  await room.state.storage.put(`ws-request-${id}`, { path, publicKey } satisfies WaitingRequest);
   user.send(JSON.stringify({
     id,
     path,
@@ -75,7 +76,7 @@ export async function makeBridgeRequest(doState: DurableObjectState, user: WebSo
   }));
 }
 
-export async function makeBridgeEvent(doState: DurableObjectState, user: WebSocket, path: string, value: any){
+export async function makeBridgeEvent(room: RoomType, user: WebSocket, path: string, value: any){
   user.send(JSON.stringify({
     messageType: "event",
     path,
