@@ -12,7 +12,6 @@ services:
     build:
       context: ../../core/relay-server
       dockerfile: Dockerfile
-    container_name: match-lock-relay
     ports:
       - "8787:80"  # Main server port
     environment:
@@ -38,7 +37,6 @@ services:
     build:
       context: ./services/matchmaking
       dockerfile: Dockerfile
-    container_name: match-lock-matchmaking
     ports:
       - "3001:80"
     environment:
@@ -69,7 +67,6 @@ services:
     build:
       context: ./services/game-server
       dockerfile: Dockerfile
-    container_name: match-lock-game-server
     ports:
       - "3002:80"
     environment:
