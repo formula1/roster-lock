@@ -4,12 +4,12 @@ export async function handleFetch<T>(result: ReturnType<typeof fetch>){
   const response = await result;
   const json = await response.json();
   if(!response.ok) {
-    throw new HTTPError(response, json);
+    throw new FetchError(response, json);
   }
   return json as T;
 }
 
-export class HTTPError extends Error {
+export class FetchError extends Error {
   public url: URL
   public statusCode: number;
   constructor(

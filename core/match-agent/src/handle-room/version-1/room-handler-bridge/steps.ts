@@ -1,6 +1,6 @@
 
 import { MessageBridge } from "../../../utils/MessageBridge";
-import { FinalSelection, RosterLockV1Config, SelectedPiece, UserInput, runSelection } from "@match-lock/shared";
+import { FinalSelection, RosterLockV1Config, SelectedPiece, UserInput, runSelection, SelectionDownloadResult } from "@match-lock/shared";
 import { encryptJSON, decryptJSON } from "../handleRoomSelections/encryption";
 import { createRandomSeed } from "../handleRoomSelections/random";
 import { z, ZodType } from "zod";
@@ -9,7 +9,6 @@ import { runUntrustedScript } from "@roster-lock/node-services";
 import { handleDownloads } from "../handleDownloads";
 import { IFolderDB } from "../globals/FolderDB";
 import { DownloadUpdate } from "../handleDownloads/events";
-import { ResultsMap } from "../handleDownloads/types";
 
 type UserPublicKey = string;
 
@@ -34,18 +33,27 @@ type RoomArgs = {
   gameControlledSelections: Record<string, Array<SelectedPiece> | Record<UserPublicKey, Array<SelectedPiece>>>,
 }
 
-type RoomResult = {
-  finalSelection: FinalSelection,
-  downloadResults: ResultsMap,
-}
+export type ProgressListeners = Partial<{
+  onState: (state: RoomState)=>void,
+  onDownloadProgress: (update: DownloadUpdate)=>void,
+}>
 
 export function bindStepsToBridge(
-  { bridge, fileDB, users, ownSelection, lockConfig, scriptsByPath, gameControlledSelections }: RoomArgs
-): Promise<RoomResult>{
-  const { resolve, reject, promise } = Promise.withResolvers<RoomResult>();
+  {
+    bridge,
+    fileDB,
+    users,
+    ownSelection,
+    lockConfig,
+    scriptsByPath,
+    gameControlledSelections,
+  }: RoomArgs,
+  progressListeners: ProgressListeners = {}
+): Promise<SelectionDownloadResult>{
+  const { resolve, reject, promise } = Promise.withResolvers<SelectionDownloadResult>();
   const downloadAbort = new AbortController();
   const heartbeat = trackHeartbeat(10_000);
-  let state: RoomState = { state: "user-selection" };
+  const stateTracker = new StateTracker({ state: "user-selection" }, progressListeners);
 
   const rngSeed = createRandomSeed();
   const ownEncrypted = encryptJSON({ selection: ownSelection, rngSeed })
@@ -58,15 +66,17 @@ export function bindStepsToBridge(
   // Return Encrypted Selections
   bridge.onRequest("user-selection", async ()=>{
     heartbeat.heartBeat();
+    const state = stateTracker.get();
     if(state.state !== "user-selection") throw new Error("Invalid State");
     const { encrypted } = await ownEncrypted;
-    state = { state: "all-selection-for-user-decryption" };
+    stateTracker.set({ state: "all-selection-for-user-decryption" });
     return encrypted;
   });
   // Handle All Selections
   // Return Decryption Key
   bridge.onRequest("all-selection-for-user-decryption", async (data)=>{
     heartbeat.heartBeat();
+    const state = stateTracker.get();
     if(state.state !== "all-selection-for-user-decryption") throw new Error("Invalid State");
     const casted = EncryptedSelectionSchema.safeParse(data);
     if(!casted.success) throw new Error("Invalid Selections");
@@ -75,7 +85,7 @@ export function bindStepsToBridge(
       if(!casted.data[user.publicKey]) throw new Error("Missing User Selections");
     }
     const { key } = await ownEncrypted;
-    state = { state: "all-decryption-for-user-final", encrypted: casted.data };
+    stateTracker.set({ state: "all-decryption-for-user-final", encrypted: casted.data });
     console.log("roomInfo", data);
     return key;
   })
@@ -83,6 +93,7 @@ export function bindStepsToBridge(
   // Return Final Selections
   bridge.onRequest("all-decryption-for-user-final", async (data)=>{
     heartbeat.heartBeat();
+    const state = stateTracker.get();
     if(state.state !== "all-decryption-for-user-final") throw new Error("Invalid State");
     const allEncrypted = state.encrypted;
     const casted = DecryptionKeySchema.safeParse(data);
@@ -103,7 +114,7 @@ export function bindStepsToBridge(
     const finalSelection = await runSelection(
       lockConfig, scriptsByPath, gameControlledSelections, decryptedSelections, runUntrustedScript
     );
-    state = { state: "user-download", finalSelection: finalSelection };
+    stateTracker.set({ state: "user-download", finalSelection: finalSelection });
 
     console.log("roomInfo", data);
     return finalSelection;
@@ -111,6 +122,7 @@ export function bindStepsToBridge(
 
   bridge.onRequest("user-download", async ()=>{
     heartbeat.heartBeat();
+    const state = stateTracker.get();
     if(state.state !== "user-download") throw new Error("Invalid State");
     const downloadResults = await handleDownloads(
       fileDB, lockConfig, state.finalSelection, {
@@ -118,16 +130,18 @@ export function bindStepsToBridge(
         abortSignal: downloadAbort.signal,
       }
     );
-    state = { state: "all-download", finalSelection: state.finalSelection, downloadResults };
+    stateTracker.set({ state: "all-download", finalSelection: state.finalSelection, downloadResults });
     return "ok"
   })
 
   bridge.onEvent("download-progress", (data: DownloadUpdate)=>{
     heartbeat.heartBeat();
+    progressListeners.onDownloadProgress?.(data);
   })
 
   bridge.onEvent("all-download", (data)=>{
     heartbeat.heartBeat();
+    const state = stateTracker.get();
     if(state.state !== "all-download") throw new Error("Invalid State");
     resolve({
       finalSelection: state.finalSelection,
@@ -143,7 +157,7 @@ export function bindStepsToBridge(
 
   promise.finally(()=>{
     heartbeat.stop();
-    state = { state: "ended" };
+    stateTracker.set({ state: "ended" });
   });
 
   return Promise.race([
@@ -182,5 +196,19 @@ function trackHeartbeat(maxTimeout: number){
     stop: ()=>{
       clearTimeout(to);
     }
+  }
+}
+
+class StateTracker {
+  constructor(
+    private state: RoomState,
+    private listeners: ProgressListeners,
+  ){}
+  set(newState: RoomState){
+    this.state = newState;
+    this.listeners.onState?.(newState);
+  }
+  get(){
+    return this.state;
   }
 }

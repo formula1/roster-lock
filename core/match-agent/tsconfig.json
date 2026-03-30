@@ -6,6 +6,7 @@
     "types": ["node"],
     "lib": ["es2024"],
     "sourceMap": true,
+    "rootDir": "./src",
     "outDir": "./dist",
     "esModuleInterop": true,
     "strict": true,

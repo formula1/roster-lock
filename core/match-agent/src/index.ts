@@ -5,9 +5,8 @@ import { MatchAgentServer } from "./server";
 
 const server = new MatchAgentServer();
 
-import { bindMessageBridgeToWebsocket, bindRawStateToWebsocket } from "./handle-room/version-1";
-server.use("/v1/websocket", async (ws, params, next)=>{
-  bindMessageBridgeToWebsocket(ws);
-});
+import { wsHandler, httpHandler } from "./handle-room/version-1";
+server.wsRouter.mount("/v1/sync-dl", wsHandler);
+server.httpRouter.post("/v1/sync-dl", httpHandler);
 
 server.listen(8080);
