@@ -1,4 +1,4 @@
-import { RosterLockV1Config } from "../../types";
+import { RosterLockV1Config } from "@roster-lock/types";
 
 export function validatePieceId(id: string){
   if(id.length === 0) throw new Error("ID is empty");

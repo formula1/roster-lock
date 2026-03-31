@@ -1,6 +1,6 @@
 import { JSONShallowObject, SelectionPieceMeta } from "../meta"
 import { GasLimittedScript } from "../script"
-import { PieceId } from "../shared"
+import { PieceId } from "../../../shared"
 
 export type UserSelectionValidation = {
   count: number | "*" | [number, number | "*"],

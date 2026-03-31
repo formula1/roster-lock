@@ -1,7 +1,9 @@
 
+import { PieceId } from "../shared";
+
 type Sha256 = string;
 type URLType = string;
-type PieceId = string;
+type DownloadableSource = string;
 
 export type RosterLockPiece = {
   id: PieceId,
@@ -24,9 +26,3 @@ export type RosterLockPiece = {
   }>,
 }
 
-type DownloadableSource = string;
-
-export type RosterLockV1PieceMetadata = (
-  & { rosterlockVersion: 1 }
-  & Pick<RosterLockPiece, "humanInfo" | "downloadSources" | "pathVariables">
-)

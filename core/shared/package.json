@@ -1,5 +1,5 @@
 {
-  "name": "@match-lock/shared",
+  "name": "@roster-lock/shared",
   "version": "0.0.0",
   "description": "Shared utilities, variables, etc between client and server",
   "keywords": [
@@ -32,6 +32,7 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
+    "@roster-lock/types": "file:../types",
     "ajv": "^8.17.1",
     "cids": "^1.1.9",
     "is-glob": "^4.0.3",

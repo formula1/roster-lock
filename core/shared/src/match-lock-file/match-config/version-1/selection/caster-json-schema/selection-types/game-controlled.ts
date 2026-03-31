@@ -1,5 +1,5 @@
 import { JSONSchemaType } from "ajv";
-import { SelectionGameControlledConfig } from "../../types";
+import { SelectionGameControlledConfig } from "@roster-lock/types";
 import { selectionPieceMetaSchema } from "../meta";
 
 export const gameControlledSelectionSchema: JSONSchemaType<SelectionGameControlledConfig> = {

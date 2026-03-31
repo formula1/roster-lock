@@ -1,15 +1,15 @@
-import { RosterLockV1Config } from "../../types";
+import {
+  RosterLockV1Config, UserId, PieceType, SelectedPiece, FinalSelection
+} from "@roster-lock/types";
 
-export * from "./types/selection";
 export * from "./types/untrusted-script";
+import { UserInput } from "./types/selection";
 
-import { UserId, PieceType, SelectedPiece } from "./types/selection";
 
 import { handleGameControlledSelection } from "./selection-types/game-controlled";
 import { handlePreselectedSelection } from "./selection-types/preselected";
 import { handleNormalSelection } from "./selection-types/normal";
 import { ScriptStarter } from "./types/untrusted-script";
-import { UserInput, FinalSelection } from "./types/selection";
 
 export async function runSelection(
   config: RosterLockV1Config,

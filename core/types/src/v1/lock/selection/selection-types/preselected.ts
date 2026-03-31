@@ -4,7 +4,7 @@
 // Final Destination Fox only
 
 import { JSONShallowObject, SelectionPieceMeta } from "../meta"
-import { PieceId, PieceType } from "../shared"
+import { PieceId, PieceType } from "../../../shared"
 
 // When selecting personal pieces, the array will be applied to all players
 export type SelectionPreselectedConfig = {

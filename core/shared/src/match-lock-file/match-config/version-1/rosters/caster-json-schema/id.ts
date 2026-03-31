@@ -2,7 +2,7 @@ import { JSONSchemaType } from "ajv";
 
 import { defineKeyword } from "../../../../util-types/json-schema";
 import { validatePieceId, validatePieceIdUniqueness } from "../validate";
-import { RosterLockV1Config } from "../../types";
+import { RosterLockV1Config } from "@roster-lock/types";
 
 
 export const idSchemaValidator = defineKeyword({

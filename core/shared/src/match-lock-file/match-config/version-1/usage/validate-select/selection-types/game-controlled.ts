@@ -1,7 +1,7 @@
-import { isJSONObject } from "../../../../../../utils/JSON";
-import { RosterLockV1Config } from "../../../types";
+import {
+  RosterLockV1Config, FinalSelection, PieceType, SelectedPiece, UserId
+} from "@roster-lock/types";
 import { ensurePiecesAreInRoster } from "../ensure-pieces-are-in-roster";
-import { FinalSelection, PieceType, SelectedPiece, UserId } from "../types/selection";
 
 
 export async function handleGameControlledSelection(

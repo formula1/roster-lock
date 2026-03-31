@@ -1,4 +1,4 @@
-import { RosterLockV1Config } from "../../types";
+import { RosterLockV1Config } from "@roster-lock/types";
 
 export function validateAllExpectedRequiredPieceTypesSet(
   requiredPieces: RosterLockV1Config["rosters"][string][0]["requiredPieces"],

@@ -1,8 +1,8 @@
 
 import Ajv, { JSONSchemaType } from "ajv";
-import { RosterLockV1Config } from "../../types";
-import { JSONShallowObject, SelectionPieceMeta } from "../types/meta";
-import { PieceType } from "../types/shared";
+import {
+  RosterLockV1Config, PieceType, JSONShallowObject, SelectionPieceMeta
+} from "@roster-lock/types";
 import { cloneJSON } from "../../../../../utils/JSON";
 
 export function validateSelectionPieceMeta(

@@ -1,7 +1,5 @@
 
-import { RosterLockV1Config } from "../../../types";
-import { SelectionPreselectedConfig } from "../../types";
-import { PieceType } from "../../types/shared";
+import { RosterLockV1Config, SelectionPreselectedConfig, PieceType } from "@roster-lock/types";
 
 const PRESELECTABLE_STRATEGIES = ["shared", "personal"];
 export function validatePreselected(

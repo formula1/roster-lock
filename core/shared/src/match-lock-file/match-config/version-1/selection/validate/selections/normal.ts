@@ -1,6 +1,5 @@
-import { RosterLockV1Config } from "../../../types";
-import { SelectionNormalConfig } from "../../types";
-import { PieceType } from "../../types/shared";
+
+import { RosterLockV1Config, SelectionNormalConfig, PieceType } from "@roster-lock/types";
 
 export function validateNormal(
   selection: SelectionNormalConfig,

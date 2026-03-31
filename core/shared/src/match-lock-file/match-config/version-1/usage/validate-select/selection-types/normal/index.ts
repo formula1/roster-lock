@@ -1,8 +1,7 @@
-import { isJSONObject } from "../../../../../../../utils/JSON";
-import { SelectionNormalConfig } from "../../../../selection/types";
-import { RosterLockV1Config } from "../../../../types";
+import {
+  RosterLockV1Config, SelectionNormalConfig, PieceType, SelectedPiece, UserId, FinalSelection
+} from "@roster-lock/types";
 import { ensurePiecesAreInRoster } from "../../ensure-pieces-are-in-roster";
-import { UserId, PieceType, SelectedPiece, FinalSelection } from "../../types/selection";
 import { ScriptStarter } from "../../types/untrusted-script";
 
 import { validateUserSelection } from "./validate-user-selection";

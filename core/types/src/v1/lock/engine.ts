@@ -1,7 +1,7 @@
 
 import {
   PieceType,
-} from "../../../config-types";
+} from "../shared";
 
 
 export type RosterLockEngineConfig = {

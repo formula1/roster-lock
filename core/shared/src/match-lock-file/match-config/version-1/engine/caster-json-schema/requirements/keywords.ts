@@ -1,5 +1,5 @@
 import { defineKeyword } from "../../../../../util-types/json-schema";
-import { RosterLockV1Config } from "../../../types";
+import { RosterLockV1Config } from "@roster-lock/types";
 
 import { validatePieceRequirementList } from "../../validate/piece/requirements";
 export const requirementListSchemaValidator = defineKeyword({

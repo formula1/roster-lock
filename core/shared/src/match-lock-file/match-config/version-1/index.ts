@@ -1,4 +1,3 @@
-export * from "./types";
 
 import { JSONSchemaType } from "ajv";
 import { JSONSchemaCaster } from "../../util-types/json-schema";
@@ -10,7 +9,7 @@ export * from "./engine";
 export * from "./rosters";
 export * from "./selection";
 
-import { RosterLockV1Config } from "./types";
+import { RosterLockV1Config } from "@roster-lock/types";
 
 export const RosterLockV1Schema: JSONSchemaType<RosterLockV1Config> =   {
   type: "object",

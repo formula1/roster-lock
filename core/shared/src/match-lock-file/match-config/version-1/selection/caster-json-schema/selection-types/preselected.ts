@@ -1,10 +1,9 @@
 
 import { JSONSchemaType } from "ajv";
-import { SelectionPreselectedConfig } from "../../types";
+import { RosterLockV1Config, SelectionPreselectedConfig } from "@roster-lock/types";
 import { selectionPieceMetaSchema } from "../meta";
 import { validatePreselected } from "../../validate/selections/preselected";
 import { defineKeyword } from "../../../../../util-types/json-schema";
-import { RosterLockV1Config } from "../../../types";
 
 export const preselectedSchemaValidator = defineKeyword({
   keyword: "preselected",

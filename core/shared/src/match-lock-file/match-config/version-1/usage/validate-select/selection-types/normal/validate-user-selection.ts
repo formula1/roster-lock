@@ -1,7 +1,5 @@
-import { SelectionNormalConfig } from "../../../../selection/types";
-import { RosterLockV1Config } from "../../../../types";
+import { RosterLockV1Config, SelectionNormalConfig, PieceType, PieceId, SelectedPiece } from "@roster-lock/types";
 import { ensurePiecesAreInRoster } from "../../ensure-pieces-are-in-roster";
-import { PieceType, PieceId, SelectedPiece } from "../../types/selection";
 
 
 export async function validateUserSelection(

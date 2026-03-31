@@ -1,6 +1,5 @@
-import { RosterLockV1Config } from "../../types";
 
-import { PieceType, SelectedPiece } from "./types/selection";
+import { RosterLockV1Config, PieceType, SelectedPiece } from "@roster-lock/types";
 
 export function ensurePiecesAreInRoster(
   config: RosterLockV1Config,

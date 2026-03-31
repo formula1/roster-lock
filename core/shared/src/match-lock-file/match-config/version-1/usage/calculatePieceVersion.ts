@@ -1,7 +1,7 @@
 
 
 import { createHash } from "crypto";
-import { RosterLockV1Config } from "../types";
+import { RosterLockV1Config } from "@roster-lock/types";
 
 type PieceDefinition = RosterLockV1Config["engine"]["pieceDefinitions"][string];
 type EngineAssetDefinition = PieceDefinition["assets"][number];

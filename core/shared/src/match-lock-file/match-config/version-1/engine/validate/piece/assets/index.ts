@@ -1,4 +1,6 @@
-import { EngineAssetDefinition, RosterLockEngineConfig } from "../../../types";
+import { RosterLockV1Config } from "@roster-lock/types";
+type RosterLockEngineConfig = RosterLockV1Config["engine"];
+type EngineAssetDefinition = RosterLockEngineConfig["pieceDefinitions"][string]["assets"][number];
 
 import { validateRange } from "./range";
 

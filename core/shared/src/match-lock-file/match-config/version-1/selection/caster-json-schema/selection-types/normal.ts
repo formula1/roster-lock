@@ -1,15 +1,15 @@
 
 import { JSONSchemaType } from "ajv";
 import {
+  RosterLockV1Config,
   SelectionNormalConfig,
   UserSelectionValidation,
-} from "../../types/selection-types/normal";
+} from "@roster-lock/types";
 
 import { selectionPieceMetaSchema } from "../meta";
 import { gasLimittedScriptSchema } from "../script";
 import { validateSelectionBanList } from "../../validate/selections/normal";
 import { defineKeyword } from "../../../../../util-types/json-schema";
-import { RosterLockV1Config } from "../../../types";
 
 export const banListSchemaValidator = defineKeyword({
   keyword: "banList",

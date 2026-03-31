@@ -1,7 +1,8 @@
 
 import { JSONSchemaType } from "ajv";
 import { requirementListSchemaValidator, requirementItemSchemaValidator, requirementCycleSchemaValidator } from "./keywords";
-import { RosterLockEngineConfig } from "../../types";
+import { RosterLockV1Config } from "@roster-lock/types";
+type RosterLockEngineConfig = RosterLockV1Config["engine"];
 
 export { requirementCycleSchemaValidator };
 
