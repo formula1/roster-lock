@@ -13,7 +13,8 @@ import {
 } from "./pathVariables";
 
 import { JSONSchemaType } from "ajv";
-import { RosterLockV1PieceMetadata } from "../types";
+
+import { RosterLockV1PieceMetadata } from "@roster-lock/types";
 import { defineKeyword } from "../../../../util-types/json-schema";
 
 export const rosterLockPieceMetadataSchema: JSONSchemaType<RosterLockV1PieceMetadata> = {

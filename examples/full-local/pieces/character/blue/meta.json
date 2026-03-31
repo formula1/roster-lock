@@ -1,0 +1,11 @@
+{
+  "rosterlockVersion": 1,
+  "humanInfo": {
+    "name": "Blue",
+    "author": "match-lock",
+    "url": "http://localhost:7342/pieces/character/blue"
+  },
+  "downloadSources": ["http://localhost:7342/pieces/character/blue.tar"],
+  "pathVariables": {}
+}
+

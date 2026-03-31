@@ -1,5 +1,6 @@
 import { findAllCycles, getCyclesUsingKey } from "../../../../../../utils/tree";
-import { RosterLockEngineConfig } from "../../types";
+import { RosterLockV1Config } from "@roster-lock/types";
+type RosterLockEngineConfig = RosterLockV1Config["engine"];
 
 
 export class CycleError extends Error {

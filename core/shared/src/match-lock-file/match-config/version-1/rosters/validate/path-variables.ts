@@ -1,6 +1,6 @@
-import { RosterLockV1Config } from "../../types";
+import { RosterLockV1Config } from "@roster-lock/types";
 import { PATH_VARIABLE_VALUE_VALIDATION } from "../../engine/validate/piece/assets/glob/pathvariables";
-import { RosterLockPiece } from "../types";
+type RosterLockPiece = RosterLockV1Config["rosters"][string][number];
 
 export function validateAllExpectedPathVariableNamesSet(
   pathVariableValues: RosterLockPiece["pathVariables"],

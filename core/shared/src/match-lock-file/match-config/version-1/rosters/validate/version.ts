@@ -1,5 +1,5 @@
 
-import { RosterLockV1Config } from "../../types";
+import { RosterLockV1Config } from "@roster-lock/types";
 
 import { validateSha256 } from "./utils";
 export function validateVersions(

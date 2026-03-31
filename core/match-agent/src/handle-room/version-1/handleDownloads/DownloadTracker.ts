@@ -4,14 +4,8 @@ import { IFolderDB } from "../globals/FolderDB";
 import { ProgressHandlers } from "./types";
 import { MATCHLOCK_DOWNLOAD_STATE } from "../constants";
 
-type DownloadResult = {
-  pieceType: PieceType,
-  pieceId: PieceId,
-  pieceVersions: { logic: string, media: string },
-  folder: string,
-}
+import { DownloadResultsMap, DownloadResult } from "./types";
 
-export type ResultsMap = Record<PieceType, Record<PieceId, DownloadResult>>;
 export class PieceDownloadTracker {
   private pieceTypes = new Map<PieceId, Map<PieceType, Promise<DownloadResult>>>();
 
@@ -51,10 +45,10 @@ export class PieceDownloadTracker {
     return Array.from(this.pieceTypes.values()).flatMap(r=>Array.from(r.values()));
   }
 
-  static resultsToMap(results: DownloadResult[]): ResultsMap{
-    const typeMap: ResultsMap = {};
+  static resultsToMap(results: DownloadResult[]): DownloadResultsMap{
+    const typeMap: DownloadResultsMap = {};
     for(const result of results){
-      const pieceMap: ResultsMap[PieceType] = (()=>{
+      const pieceMap: DownloadResultsMap[PieceType] = (()=>{
         const map = typeMap[result.pieceType];
         if(map) return map;
         const newMap = {};

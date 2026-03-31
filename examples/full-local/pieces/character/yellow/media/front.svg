@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <!-- Body -->
+  <ellipse cx="60" cy="70" rx="32" ry="28" fill="#ffe066"/>
+  <!-- Head -->
+  <circle cx="60" cy="38" r="26" fill="#ffe066"/>
+  <!-- Eyes -->
+  <circle cx="52" cy="34" r="5" fill="#333"/>
+  <circle cx="68" cy="34" r="5" fill="#333"/>
+  <circle cx="53" cy="33" r="2" fill="white"/>
+  <circle cx="69" cy="33" r="2" fill="white"/>
+  <!-- Smile -->
+  <path d="M50 44 Q60 52 70 44" stroke="#333" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <!-- Cheeks -->
+  <circle cx="44" cy="42" r="6" fill="#ffb347" opacity="0.5"/>
+  <circle cx="76" cy="42" r="6" fill="#ffb347" opacity="0.5"/>
+  <!-- Arms -->
+  <ellipse cx="24" cy="68" rx="10" ry="16" fill="#ffe066" transform="rotate(-15 24 68)"/>
+  <ellipse cx="96" cy="68" rx="10" ry="16" fill="#ffe066" transform="rotate(15 96 68)"/>
+  <!-- Legs -->
+  <ellipse cx="48" cy="98" rx="10" ry="14" fill="#f5c800"/>
+  <ellipse cx="72" cy="98" rx="10" ry="14" fill="#f5c800"/>
+  <!-- Outline -->
+  <circle cx="60" cy="38" r="26" fill="none" stroke="#c8a000" stroke-width="2"/>
+  <ellipse cx="60" cy="70" rx="32" ry="28" fill="none" stroke="#c8a000" stroke-width="2"/>
+</svg>
+

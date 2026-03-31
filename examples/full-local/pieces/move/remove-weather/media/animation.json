@@ -1,0 +1,12 @@
+{
+  "id": "remove-weather-animation",
+  "type": "dispel",
+  "color": "#f3f4f6",
+  "duration": 500,
+  "frames": [
+    { "t": 0,   "opacity": 0,   "scale": 1.5 },
+    { "t": 200, "opacity": 1.0, "scale": 1.0 },
+    { "t": 500, "opacity": 0,   "scale": 0.5 }
+  ]
+}
+

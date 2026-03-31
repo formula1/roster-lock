@@ -1,7 +1,8 @@
 
 import { JSONSchemaType } from "ajv";
 import { pathVariableListSchemaValidator, pathVariableNameSchemaValidator } from "./keywords";
-import { RosterLockEngineConfig } from "../../types";
+import { RosterLockV1Config } from "@roster-lock/types";
+type RosterLockEngineConfig = RosterLockV1Config["engine"];
 
 export const pathVariableKeywords = [
   pathVariableListSchemaValidator,

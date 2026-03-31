@@ -1,5 +1,6 @@
 import { JSONSchemaType } from "ajv";
-import { RosterLockEngineConfig } from "../../types";
+import { RosterLockV1Config } from "@roster-lock/types";
+type RosterLockEngineConfig = RosterLockV1Config["engine"];
 
 import { assetCountSchemaValidator } from "./keywords";
 const countSchema: JSONSchemaType<

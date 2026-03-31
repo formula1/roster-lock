@@ -1,0 +1,33 @@
+{
+  "id": "weather-rain",
+  "type": "rain",
+  "label": "🌧️ Rain",
+  "description": "A steady downpour soaks the field.",
+  "overlay": {
+    "color": "#60a5fa",
+    "opacity": 0.08
+  },
+  "particles": [
+    {
+      "shape": "drop",
+      "count": 80,
+      "color": "#93c5fd",
+      "size": [1, 3],
+      "speed": 6.0,
+      "angle": 82,
+      "spawnArea": "top",
+      "opacity": 0.7,
+      "trail": true
+    },
+    {
+      "shape": "splash",
+      "count": 20,
+      "color": "#bfdbfe",
+      "size": [3, 6],
+      "speed": 0.5,
+      "spawnArea": "bottom",
+      "opacity": 0.5
+    }
+  ]
+}
+

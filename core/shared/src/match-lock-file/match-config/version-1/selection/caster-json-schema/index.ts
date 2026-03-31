@@ -1,6 +1,7 @@
 import { JSONSchemaType } from "ajv";
 
-import { RosterLockV1Config } from "../../types";
+
+import { RosterLockV1Config } from "@roster-lock/types";
 
 import { preselectedSelectionSchema } from "./selection-types/preselected";
 import { normalSelectionSchema } from "./selection-types/normal";

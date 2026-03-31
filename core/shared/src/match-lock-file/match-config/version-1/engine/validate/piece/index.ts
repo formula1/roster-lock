@@ -1,4 +1,5 @@
-import { RosterLockEngineConfig } from "../../types";
+import { RosterLockV1Config } from "@roster-lock/types";
+type RosterLockEngineConfig = RosterLockV1Config["engine"];
 
 export * from "./requirements";
 export * from "./path-variables";

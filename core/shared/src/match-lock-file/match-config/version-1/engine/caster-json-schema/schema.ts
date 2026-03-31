@@ -1,5 +1,7 @@
 import { JSONSchemaType } from "ajv";
-import { RosterLockEngineConfig } from "../types";
+import { RosterLockV1Config } from "@roster-lock/types";
+type RosterLockEngineConfig = RosterLockV1Config["engine"];
+
 
 import { assetsSchema, assetKeywords } from "./asset";
 import { requirementsSchema, requirementKeywords } from "./requirements";

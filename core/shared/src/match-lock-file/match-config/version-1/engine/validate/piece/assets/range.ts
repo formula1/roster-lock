@@ -1,4 +1,6 @@
-import { EngineAssetDefinition } from "../../../types";
+import { RosterLockV1Config } from "@roster-lock/types";
+type EngineAssetDefinition = RosterLockV1Config["engine"]["pieceDefinitions"][string]["assets"][number];
+
 
 export function validateRange(count: EngineAssetDefinition["count"]){
   if(!Array.isArray(count)){

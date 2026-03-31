@@ -1,0 +1,32 @@
+{
+  "id": "weather-sun",
+  "type": "sun",
+  "label": "☀️ Sun",
+  "description": "Blazing sunlight fills the arena.",
+  "overlay": {
+    "color": "#ffe066",
+    "opacity": 0.12
+  },
+  "particles": [
+    {
+      "shape": "lens-flare",
+      "count": 3,
+      "color": "#ffdd00",
+      "size": [8, 20],
+      "speed": 0.2,
+      "spawnArea": "top-right",
+      "opacity": 0.55
+    },
+    {
+      "shape": "shimmer",
+      "count": 30,
+      "color": "#fff5b0",
+      "size": [2, 5],
+      "speed": 0.5,
+      "spawnArea": "full",
+      "opacity": 0.3,
+      "pulse": true
+    }
+  ]
+}
+

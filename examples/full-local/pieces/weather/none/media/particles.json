@@ -1,0 +1,12 @@
+{
+  "id": "weather-none",
+  "type": "none",
+  "label": "Clear",
+  "description": "No weather active. The field is calm.",
+  "particles": [],
+  "overlay": {
+    "color": null,
+    "opacity": 0
+  }
+}
+

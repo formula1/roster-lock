@@ -1,0 +1,12 @@
+{
+  "id": "weak-animation",
+  "type": "flash",
+  "color": "#d1d5db",
+  "duration": 300,
+  "frames": [
+    { "t": 0,   "opacity": 0,   "scale": 1.0 },
+    { "t": 100, "opacity": 0.6, "scale": 1.05 },
+    { "t": 300, "opacity": 0,   "scale": 1.0 }
+  ]
+}
+

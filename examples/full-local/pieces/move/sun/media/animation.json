@@ -1,0 +1,16 @@
+{
+  "id": "sun-animation",
+  "type": "burst",
+  "color": "#ffe066",
+  "duration": 600,
+  "frames": [
+    { "t": 0,   "opacity": 0,   "scale": 0.5 },
+    { "t": 150, "opacity": 1.0, "scale": 1.5 },
+    { "t": 350, "opacity": 0.8, "scale": 1.8 },
+    { "t": 600, "opacity": 0,   "scale": 2.2 }
+  ],
+  "particles": [
+    { "shape": "ray", "count": 8, "color": "#ffb700", "speed": 2.0 }
+  ]
+}
+

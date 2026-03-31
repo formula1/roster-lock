@@ -1,30 +1,29 @@
+
 import {
   UserId,
-  UserSelection,
-  AllUsersSelection,
-  FinalSelection,
-} from "./selection";
-
-import { RosterLockV1Config } from "../../../types";
+  RosterLockV1Config,
+  FinalSelection,  
+  SelectedPiece
+} from "@roster-lock/types";
 
 export type PieceUserValidationInput = {
   type: "piece-user-validation",
   pieceType: string,
   userId: string,
-  input: UserSelection,
+  input: Array<SelectedPiece>,
 };
 
 export type PieceMergeInput = {
   type: "piece-merge",
   pieceType: string,
   users: Array<UserId>,
-  input: AllUsersSelection,
+  input: Record<UserId, Array<SelectedPiece>>,
 };
 
 export type GlobalValidationInput = {
   type: "global-validation",
-  users: Array<UserId>,
   pieceTypes: Array<string>,
+  users: Array<UserId>,
   input: FinalSelection,
 };
 

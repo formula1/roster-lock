@@ -1,5 +1,5 @@
 {
-  "name": "@match-lock/client",
+  "name": "@roster-lock/client",
   "version": "0.0.0",
   "description": "To be used in game to ensure all peices are ready",
   "keywords": [
@@ -23,21 +23,27 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
+    "@types/async": "^3.2.25",
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^22.14.1",
     "@types/webtorrent": "^0.110.0",
+    "@types/ws": "^8.18.1",
     "typescript": "^5.8.3"
   },
   "dependencies": {
     "@match-lock/shared": "file:../shared",
     "@roster-lock/node-services": "file:../node-services",
     "ajv": "^8.17.1",
+    "async": "^3.2.6",
     "better-sqlite3": "^12.5.0",
     "fengari": "^0.1.4",
     "node-fetch-commonjs": "^3.3.2",
+    "path-to-regexp": "^8.3.0",
     "runtypes": "^7.0.4",
     "tar": "^7.4.3",
     "ulid": "^3.0.2",
-    "webtorrent": "^2.6.3"
+    "webtorrent": "^2.6.3",
+    "ws": "^8.19.0",
+    "zod": "^4.3.5"
   }
 }

@@ -1,10 +1,9 @@
 
 import { JSONSchemaType } from "ajv";
 import { defineKeyword } from "../../../../util-types/json-schema";
-import { JSONShallowObject, SelectionPieceMeta } from "../types/meta";
+import { RosterLockV1Config, SelectionPieceMeta, JSONShallowObject } from "@roster-lock/types";
 
 import { validateMetaDefaultValue, validateMetaForPiece } from "../validate/meta";
-import { RosterLockV1Config } from "../../types";
 
 export const metaDefaultValueSchemaValidator = defineKeyword({
   keyword: "metaDefaultValue",

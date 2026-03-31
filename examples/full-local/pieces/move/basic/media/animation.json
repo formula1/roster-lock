@@ -1,0 +1,12 @@
+{
+  "id": "basic-animation",
+  "type": "flash",
+  "color": "#6b7280",
+  "duration": 400,
+  "frames": [
+    { "t": 0,   "opacity": 0,   "scale": 1.0 },
+    { "t": 120, "opacity": 0.8, "scale": 1.1 },
+    { "t": 400, "opacity": 0,   "scale": 1.0 }
+  ]
+}
+

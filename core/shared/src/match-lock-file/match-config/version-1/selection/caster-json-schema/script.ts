@@ -1,6 +1,6 @@
 
 import { JSONSchemaType } from "ajv";
-import { GasLimittedScript } from "../types";
+import { GasLimittedScript } from "@roster-lock/types";
 
 export const gasLimittedScriptSchema: JSONSchemaType<GasLimittedScript> = {
   type: "object",

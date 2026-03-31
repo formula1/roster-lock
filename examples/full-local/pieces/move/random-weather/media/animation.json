@@ -1,0 +1,13 @@
+{
+  "id": "random-weather-animation",
+  "type": "swirl",
+  "color": "#a78bfa",
+  "duration": 700,
+  "frames": [
+    { "t": 0,   "opacity": 0,   "rotation": 0,   "scale": 0.8 },
+    { "t": 200, "opacity": 0.8, "rotation": 120,  "scale": 1.2 },
+    { "t": 400, "opacity": 1.0, "rotation": 240,  "scale": 1.4 },
+    { "t": 700, "opacity": 0,   "rotation": 360,  "scale": 1.0 }
+  ]
+}
+

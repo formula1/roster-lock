@@ -1,4 +1,4 @@
-import { RosterLockV1Config } from "../../types";
+import { RosterLockV1Config } from "@roster-lock/types";
 import { validateURL } from "./utils";
 
 
