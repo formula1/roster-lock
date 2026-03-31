@@ -1,0 +1,238 @@
+{
+  "version": 1,
+  "engine": {
+    "name": "simple-battle-engine",
+    "version": "1.0.0",
+    "pieceDefinitions": {
+      "lifebar": {
+        "selectionStrategy": "mandatory",
+        "requires": [],
+        "pathVariables": ["style"],
+        "assets": [
+          {
+            "name": "ui-sprite",
+            "classification": "media",
+            "count": 1,
+            "glob": ["*.png"]
+          },
+          {
+            "name": "logic",
+            "classification": "logic",
+            "count": 1,
+            "glob": ["index.js"]
+          }
+        ]
+      },
+      "stage": {
+        "selectionStrategy": "shared",
+        "requires": [],
+        "pathVariables": ["theme"],
+        "assets": [
+          {
+            "name": "background",
+            "classification": "media",
+            "count": 1,
+            "glob": ["background.png"]
+          },
+          {
+            "name": "music",
+            "classification": "media",
+            "count": 1,
+            "glob": ["music.mp3"]
+          }
+        ]
+      },
+      "character": {
+        "selectionStrategy": "personal",
+        "requires": ["move"],
+        "pathVariables": ["element"],
+        "assets": [
+          {
+            "name": "sprite",
+            "classification": "media",
+            "count": [1, "*"],
+            "glob": ["sprites/*.png"]
+          },
+          {
+            "name": "stats",
+            "classification": "logic",
+            "count": 1,
+            "glob": ["stats.json"]
+          },
+          {
+            "name": "logic",
+            "classification": "logic",
+            "count": 1,
+            "glob": ["index.js"]
+          }
+        ]
+      },
+      "move": {
+        "selectionStrategy": "on demand",
+        "requires": ["effect"],
+        "pathVariables": ["type"],
+        "assets": [
+          {
+            "name": "animation",
+            "classification": "media",
+            "count": [0, "*"],
+            "glob": ["*.png"]
+          },
+          {
+            "name": "logic",
+            "classification": "logic",
+            "count": 1,
+            "glob": ["index.js"]
+          }
+        ]
+      },
+      "effect": {
+        "selectionStrategy": "on demand",
+        "requires": [],
+        "pathVariables": [],
+        "assets": [
+          {
+            "name": "particles",
+            "classification": "media",
+            "count": [0, "*"],
+            "glob": ["*.png"]
+          },
+          {
+            "name": "logic",
+            "classification": "logic",
+            "count": 1,
+            "glob": ["index.js"]
+          }
+        ]
+      }
+    }
+  },
+  "rosters": {
+    "lifebar": [
+      {
+        "id": "standard-lifebar",
+        "version": {
+          "logic": "v1.0.0",
+          "media": "v1.0.0",
+          "docs": "v1.0.0"
+        },
+        "humanInfo": {
+          "name": "Standard Life Bar",
+          "author": "Game Engine",
+          "url": "https://example.com/lifebar"
+        },
+        "downloadSources": ["https://example.com/pieces/lifebar/standard"],
+        "pathVariables": {
+          "style": "standard"
+        },
+        "requiredPieces": {}
+      }
+    ],
+    "stage": [
+      {
+        "id": "forest-stage",
+        "version": {
+          "logic": "v1.0.0",
+          "media": "v1.0.0",
+          "docs": "v1.0.0"
+        },
+        "humanInfo": {
+          "name": "Forest Arena",
+          "author": "Stage Designer",
+          "url": "https://example.com/stages/forest",
+          "image": "https://example.com/stages/forest/preview.png"
+        },
+        "downloadSources": ["https://example.com/pieces/stage/forest"],
+        "pathVariables": {
+          "theme": "nature"
+        },
+        "requiredPieces": {}
+      },
+      {
+        "id": "volcano-stage",
+        "version": {
+          "logic": "v1.0.0",
+          "media": "v1.0.0",
+          "docs": "v1.0.0"
+        },
+        "humanInfo": {
+          "name": "Volcano Arena",
+          "author": "Stage Designer",
+          "url": "https://example.com/stages/volcano",
+          "image": "https://example.com/stages/volcano/preview.png"
+        },
+        "downloadSources": ["https://example.com/pieces/stage/volcano"],
+        "pathVariables": {
+          "theme": "fire"
+        },
+        "requiredPieces": {}
+      }
+    ],
+    "character": [
+      {
+        "id": "fire-character",
+        "version": {
+          "logic": "v1.0.0",
+          "media": "v1.0.0",
+          "docs": "v1.0.0"
+        },
+        "humanInfo": {
+          "name": "Blaze",
+          "author": "Character Designer",
+          "url": "https://example.com/characters/blaze",
+          "image": "https://example.com/characters/blaze/icon.png"
+        },
+        "downloadSources": ["https://example.com/pieces/character/fire"],
+        "pathVariables": {
+          "element": "fire"
+        },
+        "requiredPieces": {
+          "move": {
+            "expected": ["fireball", "flame-burst"],
+            "selectable": false
+          }
+        }
+      }
+    ]
+  },
+  "selection": {
+    "piece": {
+      "lifebar": {
+        "type": "preselected",
+        "pieces": [
+          {
+            "id": "standard-lifebar",
+            "required": {}
+          }
+        ]
+      },
+      "stage": {
+        "type": "normal",
+        "validation": {
+          "count": 1,
+          "unique": true,
+          "customValidation": []
+        },
+        "mergeAlgorithm": {
+          "gas": 1000,
+          "script": "return EACH_PLAYER_SELECTION[Object.keys(EACH_PLAYER_SELECTION)[0]];"
+        }
+      },
+      "character": {
+        "type": "normal",
+        "validation": {
+          "count": 1,
+          "unique": false,
+          "customValidation": []
+        }
+      },
+      "move": {
+        "type": "game-controlled"
+      },
+      "effect": {
+        "type": "game-controlled"
+      }
+    }
+  }
+}
+
