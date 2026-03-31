@@ -129,7 +129,7 @@ DOWNLOADABLE_SOURCE_PROTOCOLS['git'] ={
 };
 
 // IPFS Validator
-import { CID } from 'multiformats/cid'
+import { isCID } from 'cids'
 DOWNLOADABLE_SOURCE_PROTOCOLS['ipfs'] = {
   protocol: 'ipfs',
   validate: (url: string) => {
@@ -146,10 +146,8 @@ DOWNLOADABLE_SOURCE_PROTOCOLS['ipfs'] = {
       throw new Error('IPFS URL must include a CID');
     }
     
-    try {
-      CID.parse(cid);
-    } catch (e) {
-      throw new Error(`Invalid IPFS CID: ${(e as Error).message}`);
+    if(!isCID(cid)){
+      throw new Error(`Invalid IPFS CID`);
     }
   }
 };

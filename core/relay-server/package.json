@@ -20,19 +20,27 @@
   "main": "dist/index.js",
   "types": "src/index.ts",
   "scripts": {
-    "build": "tsc",
-    "cli": "node dist/cli.js",
-    "test": "npm run build && npm run cli test",
-    "simple-test": "tsc --build && node dist/simple-test.js",
-    "standalone-test": "tsc src/standalone-test.ts --outDir dist --target es2020 --module commonjs --moduleResolution node && node dist/standalone-test.js"
+    "dev": "npm run build:client && wrangler dev",
+    "dev:client": "cd client && npm run dev",
+    "dev:client:watch": "cd client && npm run build -- --watch",
+    "build": "npm run build:client",
+    "build:client": "cd client && npm run build",
+    "deploy": "npm run build:client && wrangler deploy",
+    "deploy:production": "npm run build:client && wrangler deploy --env production",
+    "tail": "wrangler tail",
+    "types": "wrangler types"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260103.0",
+    "@types/express": "^5.0.6",
     "@types/node": "^22.14.1",
     "rimraf": "^6.0.1",
-    "typescript": "^5.8.3"
+    "typescript": "^5.9.3",
+    "wrangler": "^4.54.0"
   },
   "dependencies": {
-    "@match-lock/shared": "file:../shared",
-    "runtypes": "^7.0.4"
+    "@noble/ed25519": "^3.0.0",
+    "hono": "^4.11.3",
+    "zod": "^4.3.5"
   }
 }

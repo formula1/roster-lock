@@ -1,0 +1,88 @@
+name: full-local-example
+
+networks:
+  match-lock-network:
+    driver: bridge
+
+services:
+  # ========================================================================
+  # RELAY SERVER - Cloudflare Workers-compatible relay using Hono
+  # ========================================================================
+  relay-server:
+    build:
+      context: ../../core/relay-server
+      dockerfile: Dockerfile
+    ports:
+      - "8787:80"  # Main server port
+    environment:
+      - NODE_ENV=development
+      - PORT=80
+      - ENVIRONMENT=development
+    networks:
+      - match-lock-network
+    depends_on:
+      - game-server
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/api/v1/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    volumes:
+      - ../../core/relay-server:/app
+      - /app/node_modules
+      - /app/client/node_modules
+
+  # ========================================================================
+  # MATCHMAKING SERVER - Simple queue-based matchmaking
+  # ========================================================================
+  matchmaking-server:
+    build:
+      context: ./services/matchmaking
+      dockerfile: Dockerfile
+    ports:
+      - "3001:80"
+    environment:
+      - NODE_ENV=development
+      - PORT=80
+      - RELAY_SERVER_URL=http://relay-server:80
+      - GAME_SERVER_URL=http://game-server:80
+    networks:
+      - match-lock-network
+    depends_on:
+      relay-server:
+        condition: service_healthy
+      game-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    volumes:
+      - ./services/matchmaking:/app
+      - /app/node_modules
+
+  # ========================================================================
+  # GAME SERVER - WebRTC signaling and game coordination
+  # ========================================================================
+  game-server:
+    build:
+      context: ./services/game-server
+      dockerfile: Dockerfile
+    ports:
+      - "3002:80"
+    environment:
+      - NODE_ENV=development
+      - PORT=80
+      - RELAY_SERVER_URL=http://relay-server:80
+    networks:
+      - match-lock-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    volumes:
+      - ./services/game-server:/app
+      - /app/node_modules
+

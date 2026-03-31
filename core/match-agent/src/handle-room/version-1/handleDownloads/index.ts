@@ -1,16 +1,16 @@
 import { FinalSelection, RosterLockV1Config } from "@match-lock/shared";
 
-import { PieceDownloadTracker, ResultsMap } from "./DownloadTracker";
+import { PieceDownloadTracker } from "./DownloadTracker";
 import { MATCHLOCK_DOWNLOAD_STATE } from "../constants";
 import { IFolderDB } from "../globals/FolderDB";
-import { ProgressHandlers } from "./types";
+import { ProgressHandlers, DownloadResultsMap } from "./types";
 
 export async function handleDownloads(
   db: IFolderDB,
   lockConfig: RosterLockV1Config,
   finalSelection: FinalSelection,
   progressHandlers: ProgressHandlers,
-): Promise<ResultsMap> {
+): Promise<DownloadResultsMap> {
   try {
     const downloadTracker = new PieceDownloadTracker(db, lockConfig, progressHandlers);
     for(const [pieceType, selection] of Object.entries(finalSelection)){

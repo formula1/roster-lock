@@ -1,4 +1,3 @@
-import { JSONSchemaType } from "ajv";
 import { PieceId } from "./shared";
 
 export type JSONShallowObject = Record<string, (

@@ -34,3 +34,7 @@ export function canonicalJSONStringify(value: any): string {
   }).join(',');
   return `{${props}}`;
 }
+
+export function isJSONObject(value: any): value is JSON_Object {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
