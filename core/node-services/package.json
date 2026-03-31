@@ -14,6 +14,7 @@
   "devDependencies": {
     "@types/mime-types": "^3.0.1",
     "@types/node": "^25.0.3",
+    "@types/seedrandom": "^3.0.8",
     "@types/unzipper": "^0.10.11",
     "@types/webtorrent": "^0.110.1",
     "rimraf": "^6.0.1",
@@ -21,12 +22,16 @@
   },
   "dependencies": {
     "@match-lock/shared": "file:../shared",
+    "ajv": "^8.17.1",
     "basic-ftp": "^5.0.5",
     "ipfs-http-client": "^60.0.1",
     "isomorphic-git": "^1.36.1",
     "mime-types": "^3.0.2",
+    "node-unrar-js": "^2.0.2",
+    "seedrandom": "^3.0.5",
     "tar": "^7.5.2",
     "unzipper": "^0.12.3",
+    "wasmoon": "^1.16.0",
     "webtorrent": "^2.8.5"
   }
 }

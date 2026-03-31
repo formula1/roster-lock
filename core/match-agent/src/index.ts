@@ -1,2 +1,2 @@
 
-export * from "./piece-selection";
+export * from "./handle-room/version-1";

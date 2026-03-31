@@ -3,9 +3,6 @@ import { JSONSchemaType } from "ajv";
 import {
   SelectionNormalConfig,
   UserSelectionValidation,
-  PersonalSelectionConfig,
-  SharedSelectionConfig,
-  OnDemandSelectionConfig,
 } from "../../types/selection-types/normal";
 
 import { selectionPieceMetaSchema } from "../meta";
@@ -61,7 +58,7 @@ const userSelectionValidationSchema: JSONSchemaType<UserSelectionValidation> = {
   },
 }
 
-const personalSelectionSchema: JSONSchemaType<PersonalSelectionConfig> = {
+export const normalSelectionSchema: JSONSchemaType<SelectionNormalConfig> = {
   type: "object",
   required: ["type"],
   additionalProperties: false,
@@ -74,32 +71,3 @@ const personalSelectionSchema: JSONSchemaType<PersonalSelectionConfig> = {
 }
 
 
-const sharedSelectionSchema: JSONSchemaType<SharedSelectionConfig> = {
-  type: "object",
-  required: ["type", "mergeAlgorithm"],
-  additionalProperties: false,
-  properties: {
-    type: { type: "string", const: "normal" },
-    pieceMeta: { ...selectionPieceMetaSchema, nullable: true },
-    validation: { ...userSelectionValidationSchema, nullable: true },
-    mergeAlgorithm: gasLimittedScriptSchema,
-  },
-}
-
-const onDemandSelectionSchema: JSONSchemaType<OnDemandSelectionConfig> = {
-  type: "object",
-  required: ["type"],
-  additionalProperties: false,
-  properties: {
-    type: { type: "string", const: "normal" },
-    pieceMeta: { ...selectionPieceMetaSchema, nullable: true },
-  },
-}
-
-export const normalSelectionSchema: JSONSchemaType<SelectionNormalConfig> = {
-  anyOf: [
-    personalSelectionSchema,
-    sharedSelectionSchema,
-    onDemandSelectionSchema,
-  ],
-}

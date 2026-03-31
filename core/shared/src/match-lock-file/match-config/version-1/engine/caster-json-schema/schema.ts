@@ -5,6 +5,20 @@ import { assetsSchema, assetKeywords } from "./asset";
 import { requirementsSchema, requirementKeywords } from "./requirements";
 import { pathVariablesSchema, pathVariableKeywords } from "./variables";
 
+const pieceDefinitionSchema: JSONSchemaType<
+  RosterLockEngineConfig["pieceDefinitions"][string]
+> = {
+  type: "object",
+  required: ["selectionStrategy", "requires", "pathVariables", "assets"],
+  additionalProperties: false,
+  properties: {
+    selectionStrategy: { type: "string", enum: ["mandatory", "personal", "shared", "on demand"] },
+    pathVariables: pathVariablesSchema,
+    requires: requirementsSchema,
+    assets: assetsSchema,
+  },
+}
+
 export const engineSchema: JSONSchemaType<RosterLockEngineConfig> = {
   type: "object",
   required: ["name", "version", "pieceDefinitions"],
@@ -15,17 +29,7 @@ export const engineSchema: JSONSchemaType<RosterLockEngineConfig> = {
     pieceDefinitions: {
       type: "object",
       required: [],
-      additionalProperties: {
-        type: "object",
-        required: ["pathVariables", "requires", "assets", "selectionStrategy"],
-        additionalProperties: false,
-        properties: {
-          selectionStrategy: { type: "string", enum: ["mandatory", "personal", "shared", "on demand"] },
-          pathVariables: pathVariablesSchema,
-          requires: requirementsSchema,
-          assets: assetsSchema,
-        },
-      }
+      additionalProperties: pieceDefinitionSchema
     }
   }
 }

@@ -14,8 +14,7 @@
     "noImplicitAny": true
   },
   "files": [
-    "src/index.ts",
-    "src/tools/script-vm/lua/fork.ts"
+    "src/index.ts"
   ],
   "include": ["./typings", "./types", "./@types", "**/*.test.ts"],
   "exclude": ["node_modules", "**/*.spec.ts"]

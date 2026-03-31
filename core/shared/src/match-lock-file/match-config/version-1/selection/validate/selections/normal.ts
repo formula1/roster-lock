@@ -1,6 +1,5 @@
 import { RosterLockV1Config } from "../../../types";
 import { SelectionNormalConfig } from "../../types";
-import { PersonalSelectionConfig } from "../../types/selection-types/normal";
 import { PieceType } from "../../types/shared";
 
 export function validateNormal(
@@ -39,7 +38,7 @@ function validateRequiredProperties(
   }
 }
 
-type SelectionValidation = NonNullable<PersonalSelectionConfig["validation"]>;
+type SelectionValidation = NonNullable<SelectionNormalConfig["validation"]>;
 
 export function validateSelection(
   validation: SelectionValidation,

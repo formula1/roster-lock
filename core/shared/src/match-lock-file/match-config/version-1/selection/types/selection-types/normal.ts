@@ -10,7 +10,7 @@ export type UserSelectionValidation = {
 }
 
 
-export type PersonalSelectionConfig = {
+export type SelectionNormalConfig = {
   type: "normal",
   /*
   Shared meta exists so there doesn't have to be duplication of metadata between validation and merging
@@ -35,28 +35,4 @@ export type PersonalSelectionConfig = {
   */
   mergeAlgorithm?: GasLimittedScript
 }
-
-export type SharedSelectionConfig = {
-  type: "normal",
-  pieceMeta?: SelectionPieceMeta<JSONShallowObject>,
-  validation?: UserSelectionValidation,
-  // 
-  mergeAlgorithm: GasLimittedScript
-}
-
-export type OnDemandSelectionConfig = {
-  type: "normal",
-  /*
-    On demand pieces don't have a selection or merge config
-    However, they can include pieceMeta
-    The pieceMeta can be accessed from the pieces that require it
-  */
-  pieceMeta?: SelectionPieceMeta<JSONShallowObject>,
-}
-
-export type SelectionNormalConfig = (
-  | PersonalSelectionConfig
-  | SharedSelectionConfig
-  | OnDemandSelectionConfig
-)
 
