@@ -1,0 +1,11 @@
+{
+  "rosterlockVersion": 1,
+  "humanInfo": {
+    "name": "Remove Weather",
+    "author": "match-lock",
+    "url": "http://localhost:7342/pieces/move/remove-weather"
+  },
+  "downloadSources": ["http://localhost:7342/pieces/move/remove-weather.tar"],
+  "pathVariables": {}
+}
+

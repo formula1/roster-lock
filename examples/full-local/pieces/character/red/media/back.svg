@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <!-- Body -->
+  <ellipse cx="60" cy="72" rx="24" ry="26" fill="#ef4444"/>
+  <!-- Head -->
+  <circle cx="60" cy="38" r="24" fill="#ef4444"/>
+  <!-- Back head detail -->
+  <path d="M42 28 Q60 16 78 28" stroke="#9b2335" stroke-width="2" fill="none"/>
+  <!-- Arms -->
+  <ellipse cx="22" cy="62" rx="9" ry="14" fill="#ef4444" transform="rotate(-25 22 62)"/>
+  <ellipse cx="98" cy="62" rx="9" ry="14" fill="#ef4444" transform="rotate(25 98 62)"/>
+  <!-- Legs -->
+  <ellipse cx="50" cy="98" rx="9" ry="13" fill="#c0392b"/>
+  <ellipse cx="70" cy="98" rx="9" ry="13" fill="#c0392b"/>
+  <!-- Outline -->
+  <circle cx="60" cy="38" r="24" fill="none" stroke="#9b2335" stroke-width="2"/>
+  <ellipse cx="60" cy="72" rx="24" ry="26" fill="none" stroke="#9b2335" stroke-width="2"/>
+</svg>
+

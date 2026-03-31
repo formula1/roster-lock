@@ -1,0 +1,11 @@
+{
+  "rosterlockVersion": 1,
+  "humanInfo": {
+    "name": "Strong",
+    "author": "match-lock",
+    "url": "http://localhost:7342/pieces/move/strong"
+  },
+  "downloadSources": ["http://localhost:7342/pieces/move/strong.tar"],
+  "pathVariables": {}
+}
+

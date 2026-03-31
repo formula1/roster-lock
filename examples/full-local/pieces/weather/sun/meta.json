@@ -1,0 +1,11 @@
+{
+  "rosterlockVersion": 1,
+  "humanInfo": {
+    "name": "Sunny Weather",
+    "author": "match-lock",
+    "url": "http://localhost:7342/pieces/weather/sun"
+  },
+  "downloadSources": ["http://localhost:7342/pieces/weather/sun.tar"],
+  "pathVariables": {}
+}
+

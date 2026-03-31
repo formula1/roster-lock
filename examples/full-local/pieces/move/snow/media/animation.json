@@ -1,0 +1,15 @@
+{
+  "id": "snow-animation",
+  "type": "crystallize",
+  "color": "#e0f2fe",
+  "duration": 700,
+  "frames": [
+    { "t": 0,   "opacity": 0,   "scale": 1.0 },
+    { "t": 250, "opacity": 1.0, "scale": 1.2 },
+    { "t": 700, "opacity": 0,   "scale": 1.0 }
+  ],
+  "particles": [
+    { "shape": "snowflake", "count": 15, "color": "#bae6fd", "speed": 1.5, "drift": 0.5 }
+  ]
+}
+

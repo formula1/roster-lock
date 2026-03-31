@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <!-- Body (tall / lean - speedster) -->
+  <ellipse cx="60" cy="73" rx="20" ry="28" fill="#3b82f6"/>
+  <!-- Head -->
+  <circle cx="60" cy="38" r="23" fill="#3b82f6"/>
+  <!-- Eyes (alert) -->
+  <circle cx="52" cy="35" r="5" fill="#0f1f40"/>
+  <circle cx="68" cy="35" r="5" fill="#0f1f40"/>
+  <circle cx="53" cy="34" r="2" fill="white"/>
+  <circle cx="69" cy="34" r="2" fill="white"/>
+  <!-- Smile (confident) -->
+  <path d="M51 44 Q60 51 69 44" stroke="#0f1f40" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <!-- Cheeks -->
+  <circle cx="44" cy="41" r="5" fill="#60a5fa" opacity="0.5"/>
+  <circle cx="76" cy="41" r="5" fill="#60a5fa" opacity="0.5"/>
+  <!-- Arms (streamlined) -->
+  <ellipse cx="26" cy="65" rx="8" ry="15" fill="#3b82f6" transform="rotate(-10 26 65)"/>
+  <ellipse cx="94" cy="65" rx="8" ry="15" fill="#3b82f6" transform="rotate(10 94 65)"/>
+  <!-- Legs -->
+  <ellipse cx="51" cy="100" rx="9" ry="13" fill="#1d4ed8"/>
+  <ellipse cx="69" cy="100" rx="9" ry="13" fill="#1d4ed8"/>
+  <!-- Speed lines -->
+  <g stroke="#93c5fd" stroke-width="1.5" opacity="0.6">
+    <line x1="5"  y1="60" x2="18" y2="60"/>
+    <line x1="8"  y1="72" x2="20" y2="70"/>
+    <line x1="5"  y1="48" x2="16" y2="50"/>
+  </g>
+  <!-- Outline -->
+  <circle cx="60" cy="38" r="23" fill="none" stroke="#1d4ed8" stroke-width="2"/>
+  <ellipse cx="60" cy="73" rx="20" ry="28" fill="none" stroke="#1d4ed8" stroke-width="2"/>
+</svg>
+

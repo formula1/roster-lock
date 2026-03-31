@@ -1,0 +1,11 @@
+{
+  "rosterlockVersion": 1,
+  "humanInfo": {
+    "name": "Rain",
+    "author": "match-lock",
+    "url": "http://localhost:7342/pieces/move/rain"
+  },
+  "downloadSources": ["http://localhost:7342/pieces/move/rain.tar"],
+  "pathVariables": {}
+}
+

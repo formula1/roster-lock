@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="800" height="450">
+  <!-- Sky (overcast) -->
+  <rect width="800" height="450" fill="#b0bec5"/>
+  <rect width="800" height="180" fill="#cfd8dc"/>
+  <!-- Clouds -->
+  <ellipse cx="200" cy="60"  rx="120" ry="40" fill="#eceff1" opacity="0.9"/>
+  <ellipse cx="550" cy="40"  rx="150" ry="45" fill="#eceff1" opacity="0.85"/>
+  <ellipse cx="750" cy="80"  rx="90"  ry="30" fill="#eceff1" opacity="0.8"/>
+  <!-- Far mountain (dark) -->
+  <polygon points="0,300 200,80 400,300" fill="#607d8b"/>
+  <polygon points="300,300 550,60 800,300" fill="#546e7a"/>
+  <!-- Near mountain (snow-capped) -->
+  <polygon points="100,450 350,100 600,450" fill="#78909c"/>
+  <!-- Snow cap -->
+  <polygon points="270,160 350,100 430,160 400,180 300,175" fill="#eceff1"/>
+  <!-- Ground snow -->
+  <rect y="390" width="800" height="60" fill="#eceff1"/>
+  <ellipse cx="150" cy="395" rx="100" ry="15" fill="#e0e0e0"/>
+  <ellipse cx="600" cy="400" rx="130" ry="12" fill="#e0e0e0"/>
+  <!-- Snow flurry dots -->
+  <g fill="white" opacity="0.7">
+    <circle cx="80"  cy="120" r="3"/>
+    <circle cx="200" cy="90"  r="2"/>
+    <circle cx="450" cy="150" r="3"/>
+    <circle cx="620" cy="110" r="2"/>
+    <circle cx="720" cy="200" r="3"/>
+    <circle cx="330" cy="250" r="2"/>
+    <circle cx="500" cy="300" r="3"/>
+  </g>
+</svg>
+

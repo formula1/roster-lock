@@ -1,0 +1,23 @@
+{
+  "name": "@roster-lock/headless-game-example",
+  "version": "1.0.0",
+  "description": "Game without a UI to run quick tests",
+  "license": "JSON",
+  "author": "",
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@noble/ed25519": "^3.0.0",
+    "@roster-lock/ts-client": "file:../../../../client/typescript",
+    "@roster-lock/types": "file:../../../../core/types",
+    "node-datachannel": "^0.32.1",
+    "ws": "^8.19.0",
+    "zod": "^4.3.5"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.18.1"
+  }
+}
