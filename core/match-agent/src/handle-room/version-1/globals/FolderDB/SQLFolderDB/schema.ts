@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS download_errors (
 );
 `;
 
-import { RosterLockV1Config } from "@match-lock/shared";
+import { RosterLockV1Config } from "@roster-lock/types";
 import { PieceInfo } from "./types";
 import Database from "better-sqlite3";
 export function prepareDatabase(dbLocation: string){

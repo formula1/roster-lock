@@ -14,6 +14,7 @@
     "isolatedModules": true,
     "noEmit": true,
     "sourceMap": true,
+    "rootDir": "./src",
     "outDir": "./dist",
     "removeComments": true,
     "noImplicitAny": true

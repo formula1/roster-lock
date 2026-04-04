@@ -1,5 +1,6 @@
 
-import { calculatePieceVersion, getAssetsOfFiles, RosterLockV1Config } from "@match-lock/shared";
+import { RosterLockV1Config } from "@roster-lock/types";
+import { calculatePieceVersion, getAssetsOfFiles } from "@roster-lock/shared";
 
 type PieceDefinition = RosterLockV1Config["engine"]["pieceDefinitions"][string];
 

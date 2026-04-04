@@ -1,4 +1,4 @@
-import { createSimpleEmitter, JSON_Unknown, ROSTERLOCK_V1_CASTER_JSONSCHEMA, RosterLockV1Config, UserInput } from "@match-lock/shared";
+import { createSimpleEmitter, JSON_Unknown } from "@roster-lock/shared";
 import { IRoom } from "./room";
 import { WebSocket } from "ws";
 import { handleFetch } from "../../../../utils/fetch";

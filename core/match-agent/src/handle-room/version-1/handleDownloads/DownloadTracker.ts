@@ -1,10 +1,9 @@
-import { PieceType, PieceId, RosterLockPiece } from "@match-lock/shared";
-import { RosterLockV1Config, SelectedPiece } from "@match-lock/shared";
+import { RosterLockV1Config, SelectedPiece, PieceType, PieceId } from "@roster-lock/types";
 import { IFolderDB } from "../globals/FolderDB";
 import { ProgressHandlers } from "./types";
-import { MATCHLOCK_DOWNLOAD_STATE } from "../constants";
 
 import { DownloadResultsMap, DownloadResult } from "./types";
+import { ROSTERLOCK_DOWNLOAD_STATE } from "@roster-lock/types";
 
 export class PieceDownloadTracker {
   private pieceTypes = new Map<PieceId, Map<PieceType, Promise<DownloadResult>>>();
@@ -80,7 +79,7 @@ async function tryToDownloadAnySource(
 
   const pieceVersions = { logic: piece.version.logic, media: piece.version.media };
   progressHandlers.onProgress({
-    type: MATCHLOCK_DOWNLOAD_STATE.downloadStart,
+    type: ROSTERLOCK_DOWNLOAD_STATE.downloadStart,
     pieceType,
     pieceVersions,
   });
@@ -88,7 +87,7 @@ async function tryToDownloadAnySource(
     lockconfig, pieceType, piece, progressHandlers
   );
   progressHandlers.onProgress({
-    type: MATCHLOCK_DOWNLOAD_STATE.downloadFinished,
+    type: ROSTERLOCK_DOWNLOAD_STATE.downloadFinished,
     pieceType,
     pieceVersions,
   });

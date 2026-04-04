@@ -1,34 +1,36 @@
-# TODO
+# Matchmaking Room
 
-Part of match-lock is matchmaking users together.
+Cloudflare Workers-based matchmaking room service with admin dashboard.
 
-# Plan
-- User creates a room
-  - Post Body
-    - Advertisement Title
-    - Matchlock Config
-    - Public User Encryption Key
-  - Validates the Matchlock Config
-  - Stores
-    - Room Id
-    - Title
-    - Matchlock Config
-  - Returns the room id
-- Creator can cancel a room
-- User Lists all Available Room
-  - Filter By Engine
-  - For Each Room
-    - View how many pieces are already locally downloaded
-- User joins a room
-  - Post Body
-    - Room Id
-    - Public User Encryption Key
-  - Check If User Limit has been Reached
-    - If so, return error
-  - Check If User has already joined
-    - If so, return error
-  - Add User to Room
-  - Check If User is Last to Join
-    - If so, create relay room
-    - pass relay room info, encrypted user keys and relay url to each user
-    - delete room from database
+## Quick Start
+
+```bash
+docker-compose up
+```
+
+- **Admin Client**: http://localhost:5173
+- **API**: http://localhost:8787
+
+Check server logs for initial admin password.
+
+## Stack
+
+- **API**: Cloudflare Workers + D1 + Durable Objects
+- **Client**: Vite + React + React Router
+
+## API Endpoints
+
+### Public
+- `POST /api/session` - Create anonymous session
+- `GET /api/rooms` - List rooms (filter: engineName, engineVersion)
+- `POST /api/rooms` - Create room
+- `POST /api/rooms/join` - Join room
+- `POST /api/rooms/cancel` - Cancel room (creator only)
+- `POST /api/rooms/start` - Start game (creator only)
+- `WS /ws/room/:roomId` - Room WebSocket
+
+### Admin
+- `POST /api/admin/login` - Admin login
+- `GET /api/admin/signature` - View server public key
+- `GET/PUT /api/admin/relay-server` - Relay server URL
+- `GET /api/admin/rooms` - List active rooms

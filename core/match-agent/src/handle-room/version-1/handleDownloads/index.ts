@@ -1,7 +1,7 @@
-import { FinalSelection, RosterLockV1Config } from "@match-lock/shared";
+import { FinalSelection, RosterLockV1Config } from "@roster-lock/types";
 
 import { PieceDownloadTracker } from "./DownloadTracker";
-import { MATCHLOCK_DOWNLOAD_STATE } from "../constants";
+import { ROSTERLOCK_DOWNLOAD_STATE } from "@roster-lock/types";
 import { IFolderDB } from "../globals/FolderDB";
 import { ProgressHandlers, DownloadResultsMap } from "./types";
 
@@ -28,11 +28,11 @@ export async function handleDownloads(
       }
     }
     const results = await Promise.all(downloadTracker.getDownloadPromises());
-    progressHandlers.onProgress({ type: MATCHLOCK_DOWNLOAD_STATE.downloadAllComplete });
+    progressHandlers.onProgress({ type: ROSTERLOCK_DOWNLOAD_STATE.downloadAllComplete });
     return PieceDownloadTracker.resultsToMap(results);
   }catch(e){
     progressHandlers.onProgress({
-      type: MATCHLOCK_DOWNLOAD_STATE.downloadFullFailure,
+      type: ROSTERLOCK_DOWNLOAD_STATE.downloadFullFailure,
       error: (e as Error).message,
     });
     throw e;
