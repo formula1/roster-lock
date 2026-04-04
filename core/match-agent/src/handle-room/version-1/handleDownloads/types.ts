@@ -1,9 +1,9 @@
 
-import { DownloadUpdate } from "./events";
+import { RosterLockDownloadUpdate } from "@roster-lock/types";
 
 export type ProgressHandlers = {
-  onProgress: (update: DownloadUpdate) => void;
+  onProgress: (update: RosterLockDownloadUpdate) => void;
   abortSignal: AbortSignal;
 }
 
-export { DownloadResult, DownloadResultsMap } from "@match-lock/shared";
+export { DownloadResult, DownloadResultsMap } from "@roster-lock/types";

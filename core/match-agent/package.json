@@ -31,12 +31,12 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@match-lock/shared": "file:../shared",
     "@roster-lock/node-services": "file:../node-services",
+    "@roster-lock/shared": "file:../shared",
+    "@roster-lock/types": "file:../types",
     "ajv": "^8.17.1",
     "async": "^3.2.6",
     "better-sqlite3": "^12.5.0",
-    "fengari": "^0.1.4",
     "node-fetch-commonjs": "^3.3.2",
     "path-to-regexp": "^8.3.0",
     "runtypes": "^7.0.4",
