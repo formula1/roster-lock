@@ -1,11 +1,10 @@
 import { IFolderDB } from "../types";
-import { RosterLockV1Config } from "@match-lock/shared";
+import { RosterLockV1Config, ROSTERLOCK_DOWNLOAD_STATE } from "@roster-lock/types";
 
 import { existsSync as fsExists } from "node:fs";
 import { rm as fsRm, mkdir } from "node:fs/promises";
 import { join as pathJoin, isAbsolute as isAbsolutePath } from "node:path";
 import { ProgressHandlers } from "../../../handleDownloads/types";
-import { MATCHLOCK_DOWNLOAD_STATE } from "../../../constants";
 
 import { downloadToFolder } from "@roster-lock/node-services";
 import { getDownloadSourceVersion } from "./getVersions";
@@ -140,7 +139,7 @@ export class SQLite3FolderDB implements IFolderDB {
           downloadLocation, fullPath, {
             onProgress: (progress) => {
               this.emitProgress(lockConfig, pieceInfo, {
-                type: MATCHLOCK_DOWNLOAD_STATE.downloadProgress,
+                type: ROSTERLOCK_DOWNLOAD_STATE.downloadProgress,
                 pieceType: pieceType,
                 pieceVersions: { logic: pieceInfo.logic, media: pieceInfo.media },
                 progress,
@@ -150,7 +149,7 @@ export class SQLite3FolderDB implements IFolderDB {
           }
         );
         this.emitProgress(lockConfig, pieceInfo, {
-          type: MATCHLOCK_DOWNLOAD_STATE.downloadValidation,
+          type: ROSTERLOCK_DOWNLOAD_STATE.downloadValidation,
           pieceType: pieceInfo.pieceType,
           pieceVersions: { logic: pieceInfo.logic, media: pieceInfo.media },
         });
@@ -166,7 +165,7 @@ export class SQLite3FolderDB implements IFolderDB {
         this.db.pieceFailedToDownload(lockConfig, pieceInfo, downloadLocation, (e as Error).message);
         await fsRm(fullPath, { recursive: true, force: true });
         this.emitProgress(lockConfig, pieceInfo, {
-          type: MATCHLOCK_DOWNLOAD_STATE.downloadFailure,
+          type: ROSTERLOCK_DOWNLOAD_STATE.downloadFailure,
           pieceType,
           pieceVersions: { logic: pieceInfo.logic, media: pieceInfo.media },
           error: (e as Error).message,
