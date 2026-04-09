@@ -1,4 +1,4 @@
-import { RosterLockV1Config } from "@match-lock/shared";
+import { RosterLockV1Config } from "@roster-lock/types";
 
 export const RosterLockConfigPaths = {
   newRoot: "/config/new",

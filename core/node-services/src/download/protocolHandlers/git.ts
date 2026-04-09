@@ -1,6 +1,6 @@
 // services/src/download/git.ts
 import { ProtocolHandler } from "./types";
-import { DOWNLOADABLE_SOURCE_PROTOCOLS } from "@match-lock/shared";
+import { DOWNLOADABLE_SOURCE_PROTOCOLS } from "@roster-lock/shared";
 import git from 'isomorphic-git';
 import http from 'isomorphic-git/http/node';
 import { promises as fs } from 'node:fs';

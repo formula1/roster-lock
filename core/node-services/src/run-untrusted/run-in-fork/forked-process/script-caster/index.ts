@@ -1,8 +1,8 @@
 import {
   RosterLockV1Schema, RosterLockV1SchemaKeywords, JSONSchemaCaster,
-} from "@match-lock/shared";
+} from "@roster-lock/shared";
 
-import { ScriptStarter } from "@match-lock/shared";
+import { ScriptStarter } from "@roster-lock/shared";
 import { ScriptPurposeInputSchema } from "./purpose-input";
 
 

@@ -1,6 +1,6 @@
 import { usePromisedMemo } from "../../../../../../../utils/react";
 import { PieceDefinition, PieceValue } from "../../types";
-import { getAssetsOfFiles, collectAssetFileErrors } from "@match-lock/shared";
+import { getAssetsOfFiles, collectAssetFileErrors } from "@roster-lock/shared";
 
 import { PageArrayTabs } from "../../../../../../../components/Tabs";
 import { DisplayByFile } from "./DisplayByFile";

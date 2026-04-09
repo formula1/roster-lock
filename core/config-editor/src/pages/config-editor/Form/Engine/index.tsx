@@ -1,5 +1,5 @@
 
-import type { RosterLockV1Config } from "@match-lock/shared";
+import type { RosterLockV1Config } from "@roster-lock/types";
 import type { InputProps } from "../../../../utils/react/input";
 import { PieceDefinitions } from "./PieceDefinitions";
 export { EngineLegend } from "./Legend";

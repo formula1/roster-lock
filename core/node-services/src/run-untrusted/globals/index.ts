@@ -1,4 +1,5 @@
-import { RosterLockV1Config, PieceType, ScriptPurposeInput } from "@match-lock/shared";
+import { RosterLockV1Config, PieceType } from "@roster-lock/types";
+import { ScriptPurposeInput } from "@roster-lock/shared"
 import { MultiSeedPRNG } from "./random";
 import { AvailablePieces } from "./available-pieces";
 import { createPieceMetaGetter } from "./get-piece-meta";

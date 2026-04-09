@@ -1,4 +1,4 @@
-import { ScriptStarter } from "@match-lock/shared";
+import { ScriptStarter } from "@roster-lock/shared";
 import { getLanguageRunnerFromMimeType } from "./languages";
 import { getScriptGlobals } from "./globals";
 import mime from 'mime-types';

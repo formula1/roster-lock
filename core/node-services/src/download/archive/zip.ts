@@ -17,7 +17,7 @@ export const zip: ArchiveHandler = {
 
 import { Parse, Entry } from "unzipper";
 import { PassThrough, Readable, Writable } from 'node:stream';
-import { createSimpleEmitter } from '@match-lock/shared';
+import { createSimpleEmitter } from '@roster-lock/shared';
 
 class ZipArchiveWritable extends Writable implements ArchiveWritable {
   public onFile = createSimpleEmitter<[path: string, contents: Readable]>();

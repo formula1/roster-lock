@@ -1,6 +1,5 @@
 // services/src/download/ipfs.ts
 import { DownloadResult } from "../types";
-import { createSimpleEmitter } from "@match-lock/shared";
 import { PassThrough, Readable } from 'node:stream';
 import { storeFile } from "../../utils";
 import { IPFSError } from "./utils";

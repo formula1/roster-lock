@@ -6,7 +6,7 @@ import { ToolTipSpan } from "../../../../../../../components/ToolTip";
 
 import humanInfoTT from "./humanInfoTT.md";
 import { ValidatingTextInput } from "../../../../../../../components/inputs/ValidatingTextInput";
-import { validateFriendlyString, validateURL } from "@match-lock/shared";
+import { validateFriendlyString, validateURL } from "@roster-lock/shared";
 
 export function HumanInfo({ value, onChange }: (
   & InputProps<PieceValue["humanInfo"]>

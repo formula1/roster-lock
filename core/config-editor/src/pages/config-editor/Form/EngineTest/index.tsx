@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { cloneJSON, RosterLockV1Config, type EngineAssetDefinition } from "@match-lock/shared";
+import { RosterLockV1Config, type EngineAssetDefinition } from "@roster-lock/types";
+import { cloneJSON } from "@roster-lock/shared";
 import {
   DEFAULT_SCAN_UPDATE,
   scanFolder,

@@ -1,7 +1,8 @@
-import { RosterLockEngineConfig } from "@match-lock/shared";
+import { RosterLockV1Config } from "@roster-lock/types";
 import { InputProps } from "../../../../../utils/react";
 import { useEffect } from "react";
 
+type RosterLockEngineConfig = RosterLockV1Config["engine"];
 
 export function PieceSelect(
   { value, onChange, engineConfig }: (

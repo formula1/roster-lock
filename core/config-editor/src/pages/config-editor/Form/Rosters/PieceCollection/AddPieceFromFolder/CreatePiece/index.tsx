@@ -1,9 +1,8 @@
 
 
-import { validatePathVariableValue } from "@match-lock/shared";
+import { validatePathVariableValue, collectAssetFileErrors, getAssetsOfFiles } from "@roster-lock/shared";
 import { useState } from "react";
 import { useRunnable, RunnableState } from "../../../../../../../utils/react";
-import { collectAssetFileErrors, getAssetsOfFiles } from "@match-lock/shared";
 import { PieceDefinition, PieceValue } from "../../types";
 
 import "./styles.css";

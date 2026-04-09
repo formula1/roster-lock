@@ -2,7 +2,6 @@
 import { IPFSHTTPClient } from 'ipfs-http-client';
 import { DownloadResult } from "../types";
 import { getProcessorsFromPathnameMimetypes, storeFile } from "../../utils";
-import { createSimpleEmitter } from "@match-lock/shared";
 import { PassThrough, Readable } from 'node:stream';
 import { saveStreamToFilesystem } from "../../utils";
 

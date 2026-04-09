@@ -13,7 +13,7 @@ export default defineConfig({
       'path': require.resolve('path-browserify'),
       'process': require.resolve('process/browser'),
       // magnet-uri only has "import" in exports, no "require" - point directly to the file
-      'magnet-uri': require.resolve('@match-lock/shared/node_modules/magnet-uri/index.js'),
+      'magnet-uri': require.resolve('@roster-lock/shared/node_modules/magnet-uri/index.js'),
     },
   },
   plugins: [

@@ -1,5 +1,5 @@
 
-import { validatePathVariableName } from "@match-lock/shared";
+import { validatePathVariableName } from "@roster-lock/shared";
 
 export type TokenType =
   | "text"

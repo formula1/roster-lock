@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { type InputProps } from "../../../../../utils/react/input";
-import type { RosterLockV1Config } from "@match-lock/shared";
+import type { RosterLockV1Config } from "@roster-lock/types";
 import { ToolTipSpan } from "../../../../../components/ToolTip";
 import tooltip from "./piecett.md";
 

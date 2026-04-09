@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import type { InputProps } from "../../../../../../../utils/react";
 
-import { EngineAssetDefinition, validateRange } from "@match-lock/shared";
+import { EngineAssetDefinition } from "@roster-lock/types";
+import { validateRange } from "@roster-lock/shared";
 
 import { ToolTipSpan } from "../../../../../../../components/ToolTip";
 import { InputError } from "../../../../../../../components/InputError";

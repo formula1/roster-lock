@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react"
 import { PieceDefinition } from "../../../types"
-import { getAssetsOfFiles } from "@match-lock/shared";
+import { getAssetsOfFiles } from "@roster-lock/shared";
 
 import { ToolTipSpan } from "../../../../../../../../components/ToolTip";
 import missingFilesTT from "./missingFilesTT.md";

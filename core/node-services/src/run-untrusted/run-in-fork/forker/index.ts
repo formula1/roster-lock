@@ -2,7 +2,7 @@
 import { fork } from "child_process";
 
 import { castMessage } from "./script-message";
-import { ScriptStarter } from "@match-lock/shared";
+import { ScriptStarter } from "@roster-lock/shared";
 
 type StdioHandlers = (
   out: NodeJS.ReadableStream | null,

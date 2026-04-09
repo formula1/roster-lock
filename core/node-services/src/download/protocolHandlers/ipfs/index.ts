@@ -1,6 +1,6 @@
 // services/src/download/ipfs.ts
 import { ProtocolHandler, DownloadResult } from "../types";
-import { DOWNLOADABLE_SOURCE_PROTOCOLS } from "@match-lock/shared";
+import { DOWNLOADABLE_SOURCE_PROTOCOLS } from "@roster-lock/shared";
 import { create as createIpfsClient } from 'ipfs-http-client';
 import { IPFSError } from "./utils";
 import { handleSingleFile } from "./handleSingleFile";

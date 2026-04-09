@@ -1,4 +1,4 @@
-import { RosterLockV1Config } from "@match-lock/shared";
+import { RosterLockV1Config } from "@roster-lock/types";
 
 export function resetPieces(engine: RosterLockV1Config["engine"], rosters: RosterLockV1Config["rosters"]){
   const newRosters: RosterLockV1Config["rosters"] = {}

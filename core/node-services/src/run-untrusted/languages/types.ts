@@ -1,4 +1,4 @@
-import { ScriptPurposeInput } from "@match-lock/shared";
+import { ScriptPurposeInput } from "@roster-lock/shared";
 import { ScriptGlobals } from "../globals";
 
 export type ScriptRunner<ScriptModule> = (

@@ -1,6 +1,6 @@
 import type {
   RosterLockV1Config,
-} from '@match-lock/shared';
+} from '@roster-lock/types';
 
 export type EnginePieceDefinition = RosterLockV1Config['engine']['pieceDefinitions'][string];
 export type EngineAssetDefinition = EnginePieceDefinition['assets'][number];

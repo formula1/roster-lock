@@ -2,7 +2,7 @@
 import { ProtocolHandler } from "./types";
 import { getProcessorsFromPathnameMimetypes } from "../utils";
 
-import { createSimpleEmitter, DOWNLOADABLE_SOURCE_PROTOCOLS } from "@match-lock/shared";
+import { DOWNLOADABLE_SOURCE_PROTOCOLS } from "@roster-lock/shared";
 import { request as httpRequest, IncomingMessage, ClientRequest } from 'node:http';
 import { request as httpsRequest } from 'node:https';
 import { once } from "node:events";

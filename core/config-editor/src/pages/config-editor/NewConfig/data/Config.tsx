@@ -1,6 +1,6 @@
 
 import { createContext, useContext, useState } from "react";
-import { RosterLockV1Config } from "@match-lock/shared";
+import { RosterLockV1Config } from "@roster-lock/types";
 import { InputProps } from "../../../../utils/react";
 
 const NewConfigContext = createContext<InputProps<RosterLockV1Config>>({

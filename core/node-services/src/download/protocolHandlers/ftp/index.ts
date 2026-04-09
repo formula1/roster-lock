@@ -1,7 +1,7 @@
 
 // services/src/download/ftp.ts
 import { ProtocolHandler, DownloadResult } from "../types";
-import { DOWNLOADABLE_SOURCE_PROTOCOLS } from "@match-lock/shared";
+import { DOWNLOADABLE_SOURCE_PROTOCOLS } from "@roster-lock/shared";
 import { Client as FTPClient} from 'basic-ftp';
 import { checkIfDirectory, FTPError } from "./util";
 import { handleSingleFile } from "./handleSingleFile";
