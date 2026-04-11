@@ -1,10 +1,13 @@
-import { useEffect, useState } from "react";
-import { RosterLockEngineConfig, validateGlobItem, validatePathVariablesInGlob } from "@match-lock/shared";
+import { useState } from "react";
+import { RosterLockV1Config } from "@roster-lock/types";
+import { validateGlobItem, validatePathVariablesInGlob } from "@roster-lock/shared";
 import { ToolTipSpan } from "../../../../../../../components/ToolTip";
 import { InputError } from "../../../../../../../components/InputError";
 import type { InputProps, ListItemProps } from "../../../../../../../utils/react";
 import GlobTT from "./GlobTT.md";
 import { GlobHighlightInput } from "./GlobHighlightInput";
+
+type RosterLockEngineConfig = RosterLockV1Config["engine"];
 
 export function GlobListInput(
   { value, onChange, pathVariables }: (

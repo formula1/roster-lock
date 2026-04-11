@@ -5,7 +5,7 @@ import { tempDir } from '@tauri-apps/api/path';
 import { mkdir, remove as FSRemove } from '@tauri-apps/plugin-fs';
 
 
-import { getAssetsOfFiles, calculatePieceVersion } from "@match-lock/shared";
+import { getAssetsOfFiles, calculatePieceVersion } from "@roster-lock/shared";
 import { PieceDefinition } from "../../types";
 
 export async function getDownloadSourceVersion(

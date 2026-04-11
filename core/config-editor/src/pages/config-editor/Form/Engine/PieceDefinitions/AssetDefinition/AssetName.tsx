@@ -1,4 +1,4 @@
-import type { RosterLockEngineConfig } from "@match-lock/shared";
+import type { RosterLockEngineConfig } from "@roster-lock/types";
 import { ListItemProps, type InputProps } from "../../../../../../utils/react";
 
 type AssetDefinition = RosterLockEngineConfig["pieceDefinitions"][string]["assets"][number];

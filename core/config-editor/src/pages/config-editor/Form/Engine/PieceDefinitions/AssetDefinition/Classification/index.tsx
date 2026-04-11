@@ -1,6 +1,6 @@
 import type { InputProps } from "../../../../../../../utils/react/input";
 import { ToolTipSpan } from "../../../../../../../components/ToolTip";
-import type { RosterLockEngineConfig } from "@match-lock/shared";
+import type { RosterLockEngineConfig } from "@roster-lock/types";
 
 import ClassificationTT from "./ClassificationTT.md";
 

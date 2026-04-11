@@ -1,4 +1,4 @@
-import { JSON_Unknown } from "@match-lock/shared";
+import { JSON_Unknown } from "@roster-lock/shared";
 
 type ScriptReadyMessage = { type: "ready" };
 type ScriptErrorMessage = { type: "error", data: { message: string, uncaught?: boolean } };

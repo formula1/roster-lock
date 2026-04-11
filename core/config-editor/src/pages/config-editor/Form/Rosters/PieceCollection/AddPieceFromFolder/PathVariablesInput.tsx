@@ -1,6 +1,7 @@
-import { RosterLockEngineConfig } from "@match-lock/shared";
+import { RosterLockEngineConfig } from "@roster-lock/types";
 import { InputProps } from "../../../../../../utils/react";
 import { useEffect, useState } from "react";
+import { validatePathVariableValue } from "@roster-lock/shared";
 
 
 export function PathVariableValuesInput(
@@ -31,7 +32,6 @@ return <>
   </>
 }
 
-import { validatePathVariableValue } from "@match-lock/shared";
 function PathVariableValue(
   { value, onChange, variableName }: (
     & InputProps<string>

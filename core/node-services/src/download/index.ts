@@ -4,7 +4,7 @@ export * from "./utils";
 export * from "./archive";
 export * from "./compression";
 
-import { getDownloadableSourceProtocol } from "@match-lock/shared";
+import { getDownloadableSourceProtocol } from "@roster-lock/shared";
 import { getSourceHandlerFromProtocol } from "./protocolHandlers";
 import { ProcessHandlers } from "./types";
 

@@ -1,4 +1,4 @@
-import { RosterLockV1Config } from "@match-lock/shared";
+import { RosterLockV1Config } from "@roster-lock/types";
 import { CONFIG_ID_PATHS } from "../../paths";
 
 export function PieceRosterLegend(

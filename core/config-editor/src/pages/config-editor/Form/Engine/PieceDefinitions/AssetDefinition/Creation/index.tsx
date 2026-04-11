@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { RosterLockEngineConfig } from "@match-lock/shared";
+import type { RosterLockEngineConfig } from "@roster-lock/types";
 
 export function AssetDefinitionCreator(
   { validate, onSubmit }: {

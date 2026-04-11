@@ -3,7 +3,7 @@ import { PieceDefinition, PieceValue } from "../types";
 
 import { CONFIG_ID_PATHS } from "../../../../paths";
 import { useState } from "react";
-import { RosterLockV1Config } from "@match-lock/shared";
+import { RosterLockV1Config } from "@roster-lock/types";
 
 
 export function PieceValueList(

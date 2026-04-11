@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { InputProps, ListItemProps } from "../../../../../../utils/react/input";
-import { validatePathVariableName } from "@match-lock/shared";
+import { validatePathVariableName } from "@roster-lock/shared";
 import { ToolTipSpan } from "../../../../../../components/ToolTip";
 
 import PathVariablesTT from "./explain.md";

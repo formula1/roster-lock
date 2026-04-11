@@ -1,4 +1,4 @@
-import { RosterLockEngineConfig } from "@match-lock/shared";
+import { RosterLockEngineConfig } from "@roster-lock/types";
 import { InputProps } from "../../../../../../utils/react";
 import { ToolTipSpan } from "../../../../../../components/ToolTip";
 

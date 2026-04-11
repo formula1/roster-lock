@@ -1,6 +1,3 @@
-
-
-import { createHash } from "crypto";
 import { RosterLockV1Config } from "@roster-lock/types";
 
 type PieceDefinition = RosterLockV1Config["engine"]["pieceDefinitions"][string];
@@ -31,9 +28,9 @@ export async function calculatePieceVersion(
   }));
 
   return {
-    logic: calculateComnbinedHash(logicFiles.sort(shaSort)),
-    media: calculateComnbinedHash(mediaFiles.sort(shaSort)),
-    docs: calculateComnbinedHash(docFiles.sort(shaSort)),
+    logic: await calculateComnbinedHash(logicFiles.sort(shaSort)),
+    media: await calculateComnbinedHash(mediaFiles.sort(shaSort)),
+    docs: await calculateComnbinedHash(docFiles.sort(shaSort)),
   }
 }
 
@@ -46,24 +43,23 @@ async function getHashFromFile(
 ){
   try {
     const { stream, byteSize } = await getFile(file);
-    const hash = createHash("sha256");
+    const buffer = new Uint8Array(byteSize);
     let consumed = 0;
     for await (const chunk of stream){
-      hash.update(chunk);
+      buffer.set(chunk, consumed);
       consumed += chunk.byteLength;
       onProgress && onProgress({ file, current: consumed, total: byteSize });
     }
-    return hash.digest("hex");
+    return toHex(await crypto.subtle.digest("SHA-256", buffer));
   }catch(e){
     throw new Error("Failed to calculate Hash from file")
   }
 }
 
 
-function calculateComnbinedHash(files: Array<FileWithSha>){
+async function calculateComnbinedHash(files: Array<FileWithSha>){
   if (files.length === 0) {
-    // Return consistent hash for empty category
-    return createHash("sha256").update(new Uint8Array(0)).digest("hex");
+    return toHex(await crypto.subtle.digest("SHA-256", new Uint8Array(0)));
   }
 
   // Create our array with expected length ahead of time
@@ -80,6 +76,10 @@ function calculateComnbinedHash(files: Array<FileWithSha>){
       buffer[offset++] = byte;
     }
   }
-  return createHash("sha256").update(buffer).digest("hex")
+  return toHex(await crypto.subtle.digest("SHA-256", buffer));
+}
+
+function toHex(buffer: ArrayBuffer): string {
+  return Array.from(new Uint8Array(buffer)).map(b => b.toString(16).padStart(2, "0")).join("");
 }
 

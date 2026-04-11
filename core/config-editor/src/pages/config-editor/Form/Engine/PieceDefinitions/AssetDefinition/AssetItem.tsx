@@ -1,6 +1,6 @@
 import type { ValidInputProps, ListItemProps } from "../../../../../../utils/react/input";
 import { MoveButtons } from "../../../../../../components/MoveButtons";
-import type { RosterLockEngineConfig } from "@match-lock/shared";
+import type { RosterLockEngineConfig } from "@roster-lock/types";
 import { AssetNameInput } from "./AssetName";
 import { AssetClassificationInput } from "./Classification";
 import { CountUnknownInput } from "./CountUnknown/Input";

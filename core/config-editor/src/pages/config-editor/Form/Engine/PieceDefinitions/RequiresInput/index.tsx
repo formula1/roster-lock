@@ -1,4 +1,5 @@
-import { CycleError, RosterLockEngineConfig, validatePieceInCycles } from "@match-lock/shared";
+import { RosterLockV1Config } from "@roster-lock/types";
+import { CycleError, validatePieceInCycles } from "@roster-lock/shared";
 import { InputProps } from "../../../../../../utils/react";
 import { useEffect, useMemo } from "react";
 import { ToolTipSpan } from "../../../../../../components/ToolTip";
@@ -6,6 +7,8 @@ import { ToolTipSpan } from "../../../../../../components/ToolTip";
 import tooltip from "./tootip.md";
 
 import { CONFIG_ID_PATHS } from "../../../../paths";
+
+type RosterLockEngineConfig = RosterLockV1Config["engine"];
 
 export function RequiresInput(
   { value, onChange, pieceName, engineConfig }: (

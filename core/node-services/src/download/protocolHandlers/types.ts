@@ -1,5 +1,4 @@
 
-import { ISimpleEventEmitter } from "@match-lock/shared";
 import { ProcessHandlers } from "../types";
 
 export type DownloadResult = {

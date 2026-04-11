@@ -4,7 +4,7 @@ import { PieceDefinition, PieceValue } from "../../types";
 import { CONFIG_ID_PATHS } from "../../../../../paths";
 import { useState } from "react";
 import { ToolTipSpan } from "../../../../../../../components/ToolTip";
-import { RosterLockV1Config } from "@match-lock/shared";
+import { RosterLockV1Config } from "@roster-lock/types";
 
 
 import requiredPiecesTT from "./requiredPiecesTT.md";

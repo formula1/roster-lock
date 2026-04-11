@@ -1,15 +1,15 @@
-import type { RosterLockEngineConfig } from "@match-lock/shared";
+import type { RosterLockEngineConfig } from "@roster-lock/types";
 import { FS } from "../../../../../globals/fs";
 import { type FileTestResult } from "./types";
 
-import { getMatchingAssetsForFile } from "@match-lock/shared";
+import { getMatchingAssetsForFile } from "@roster-lock/shared";
 
 import { DEFAULT_TEST_STATISTICS, updateStatistics, type TestStatistics } from "./statistics";
 import { updateViolations, updateEmptyViolations, type CountViolation } from "./validateAssetCounts";
 
 import { TestFormValue } from "../Form";
 
-import { cloneJSON } from "@match-lock/shared";
+import { cloneJSON } from "@roster-lock/shared";
 
 export const DEFAULT_SCAN_UPDATE: ScanUpdateType = {
   results: [],

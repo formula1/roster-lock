@@ -1,7 +1,7 @@
 
 import { PageArrayTabs } from "../../../../components/Tabs";
 
-import type { RosterLockV1Config } from "@match-lock/shared";
+import type { RosterLockV1Config } from "@roster-lock/types";
 import type { InputProps } from "../../../../utils/react/input";
 import { PieceCollection } from "./PieceCollection";
 export { PieceRosterLegend } from "./Legend";

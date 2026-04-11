@@ -1,5 +1,4 @@
 import { storeFile } from "../../utils";
-import { createSimpleEmitter } from "@match-lock/shared";
 import { Torrent } from 'webtorrent';
 import { PassThrough } from 'node:stream';
 import { ProcessHandlers } from "../../types";

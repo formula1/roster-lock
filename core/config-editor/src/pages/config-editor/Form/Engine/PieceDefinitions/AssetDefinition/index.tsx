@@ -3,7 +3,10 @@ import { InputProps } from "../../../../../../utils/react";
 import { ToolTipSpan } from "../../../../../../components/ToolTip";
 import { AssetDefinitionCreator } from "./Creation";
 import { AssetDefinitionForm } from "./AssetItem";
-import { RosterLockEngineConfig } from "@match-lock/shared";
+import { RosterLockV1Config } from "@roster-lock/types";
+
+
+type RosterLockEngineConfig = RosterLockV1Config["engine"];
 
 import tooltip from "./tooltip.md";
 import { useEffect, useState } from "react";

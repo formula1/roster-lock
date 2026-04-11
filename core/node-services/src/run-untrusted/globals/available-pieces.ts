@@ -1,4 +1,4 @@
-import { RosterLockV1Config, PieceId, PieceType } from "@match-lock/shared";
+import { RosterLockV1Config, PieceId, PieceType } from "@roster-lock/types"
 
 export class AvailablePieces {
   cachedIds = new Map<PieceType, Array<PieceId>>();

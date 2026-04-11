@@ -1,8 +1,11 @@
-import { RosterLockEngineConfig, validatePathVariableValue } from "@match-lock/shared";
+import { RosterLockV1Config } from "@roster-lock/types";
+import { validatePathVariableValue } from "@roster-lock/shared";
 import { InputProps } from "../../../../../utils/react";
 import { FolderInput } from "./FolderInput";
 import { PieceSelect } from "./PieceSelect";
 import { PathVariableValuesInput } from "../../Rosters/PieceCollection/AddPieceFromFolder/PathVariablesInput";
+
+type RosterLockEngineConfig = RosterLockV1Config["engine"];
 
 export type TestFormValue = {
   folderPath: string;

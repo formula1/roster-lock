@@ -9,7 +9,7 @@ import { getDownloadSourceVersion } from "./getDownloadVersion";
 import {
   DOWNLOADABLE_SOURCE_PROTOCOLS,
   validateDownloadableSource
-} from "@match-lock/shared";
+} from "@roster-lock/shared";
 import downloadSourcesTTRAW from "./downloadSourcesTT.md";
 let downloadSourcesTT = downloadSourcesTTRAW;
 

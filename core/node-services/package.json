@@ -21,7 +21,7 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@match-lock/shared": "file:../shared",
+    "@roster-lock/shared": "file:../shared",
     "ajv": "^8.17.1",
     "basic-ftp": "^5.0.5",
     "ipfs-http-client": "^60.0.1",

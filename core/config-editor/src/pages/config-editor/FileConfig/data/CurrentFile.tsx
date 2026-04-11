@@ -1,4 +1,5 @@
-import { ROSTERLOCK_V1_CASTER_JSONSCHEMA, RosterLockV1Config } from "@match-lock/shared";
+import { ROSTERLOCK_V1_CASTER_JSONSCHEMA } from "@roster-lock/shared";
+import { RosterLockV1Config } from "@roster-lock/types";
 
 import { createCurrentFileContext } from "../../../../components/data/CurrentFileContext";
 

@@ -6,7 +6,7 @@ import {
 import { useParams } from "react-router";
 import { FS } from "../../globals/fs";
 import { usePromisedMemo } from "../../utils/react/promised-memo";
-import { cloneJSON, JSON_Unknown } from "@match-lock/shared";
+import { cloneJSON, JSON_Unknown } from "@roster-lock/shared";
 
 import { diff } from 'json-diff-ts';
 

@@ -3,8 +3,8 @@ import { ToolTipSpan } from "../../../../../../../components/ToolTip";
 import usableIdTT from "./usableIdTT.md";
 import { InputProps } from "../../../../../../../utils/react";
 import { PieceValue } from "../../types";
-import { RosterLockV1Config } from "@match-lock/shared";
-import { validatePieceId, validatePieceIdUniqueness } from "@match-lock/shared";
+import { RosterLockV1Config } from "@roster-lock/types";
+import { validatePieceId, validatePieceIdUniqueness } from "@roster-lock/shared";
 import { useMemo } from "react";
 
 export function ChangeableId({ value, onChange, index, roster }: (
