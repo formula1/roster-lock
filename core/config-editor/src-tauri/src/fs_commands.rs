@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 use tauri::{AppHandle, Emitter, Manager};
 use walkdir::WalkDir;
 
-use tokio::fs;
+use tokio;
 use tokio::io::{AsyncReadExt, AsyncSeekExt};
 
 
