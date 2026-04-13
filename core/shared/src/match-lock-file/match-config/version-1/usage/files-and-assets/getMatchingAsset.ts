@@ -2,7 +2,7 @@ import micromatch from "micromatch";
 import { RosterLockV1Config } from "@roster-lock/types";
 type RosterLockEngineConfig = RosterLockV1Config["engine"];
 
-import { validatePathVariableValue } from "../../rosters/validate";
+import { validatePathVariableValue } from "../../lock/rosters/validate";
 /**
  * Test a single file against piece definition assets
  */

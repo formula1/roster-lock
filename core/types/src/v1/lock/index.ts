@@ -8,7 +8,10 @@ export * from "./selection";
 
 
 export type RosterLockV1Config = {
-  version: 1,
+  configPurpose: "lock",
+  configVersion: 1,
+
+  version: string,
   engine: RosterLockEngineConfig,
   rosters: Record<string, Array<RosterLockPiece>>,
   selection: RosterLockSelectionConfig,
