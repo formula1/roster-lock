@@ -38,7 +38,7 @@ const pieceTypeInEngineSchemaValidator = defineKeyword({
 export const rosterLockPiece: JSONSchemaType<RosterLockPiece> = {
   type: "object",
   [pieceTypeInEngineSchemaValidator.keyword]: true,
-  required: ["version", "humanInfo", "downloadSources", "pathVariables", "requiredPieces"],
+  required: ["id", "version", "humanInfo", "downloadSources", "pathVariables", "requiredPieces"],
   additionalProperties: false,
   properties: {
     id: idSchema,
