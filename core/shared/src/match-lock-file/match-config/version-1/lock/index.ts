@@ -2,8 +2,11 @@
 import { JSONSchemaType } from "ajv";
 import { JSONSchemaCaster } from "../../../util-types/json-schema";
 import { engineKeywords, engineSchema } from "./engine";
+export * from "./engine"
 import { rosterKeywords, rostersSchema } from "./rosters";
+export * from "./rosters"
 import { selectionKeywords, selectionConfigSchema,  } from "./selection";
+export * from "./selection";
 
 import { RosterLockV1Config } from "@roster-lock/types";
 
