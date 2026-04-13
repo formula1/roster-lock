@@ -1,12 +1,10 @@
 
 import { RosterLockPiece } from "../lock/roster";
-import { RosterLockEngineConfig } from "../lock/engine";
-import { RosterLockSelectionConfig } from "../lock/selection";
 import { RosterLockV1Config } from "../lock";
 
 type DownloadableSource = string;
 
-export type RosterLockDraftPieceInfo = {
+type RosterLockDraftPieceInfo = {
   referenceFolder?: string,
   testedDownloadSources: Array<{
     source: DownloadableSource,
@@ -15,20 +13,20 @@ export type RosterLockDraftPieceInfo = {
   }>,
 }
 
-export type RosterLockDraftPiece = RosterLockPiece & {
-  draftInfo: RosterLockDraftPieceInfo,
-}
+type RosterLockDraftPiece = (
+  & RosterLockPiece
+  & { draftInfo: RosterLockDraftPieceInfo }
+)
 
-export type RosterLockDraftConfig = {
-  engine: RosterLockEngineConfig,
-  rosters: Record<string, Array<RosterLockDraftPiece>>,
-  selection: RosterLockSelectionConfig,
-}
+type RosterLockDraftConfig = (
+  & Omit<RosterLockV1Config, "rosers">
+  & { rosters: Record<string, Array<RosterLockDraftPiece>> }
+)
 
 export type RosterLockV1Draft = {
   configPurpose: "draft",
   configVersion: 1,
   previousVersion: string,
   previousLock?: RosterLockV1Config,
-  pendingLock: RosterLockDraftConfig,
+  stagedLock: RosterLockDraftConfig,
 }

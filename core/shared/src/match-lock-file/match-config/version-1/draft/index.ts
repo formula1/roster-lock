@@ -1,12 +1,14 @@
 
 import { JSONSchemaType } from "ajv";
-import { RosterLockV1Draft, RosterLockDraftPiece, RosterLockDraftPieceInfo } from "@roster-lock/types";
+import { RosterLockV1Draft } from "@roster-lock/types";
 import { JSONSchemaCaster, defineKeyword } from "../../../util-types/json-schema";
 
 import { rosterLockPiece } from "../lock/rosters";
 
 import { RosterLockV1Schema, RosterLockV1SchemaKeywords } from "../lock";
 
+type RosterLockDraftPiece = RosterLockV1Draft["stagedLock"]["rosters"][string][number]
+type RosterLockDraftPieceInfo = RosterLockDraftPiece["draftInfo"];
 const draftInfoSchema: JSONSchemaType<RosterLockDraftPieceInfo> = {
   type: "object", additionalProperties: false,
   required: ["testedDownloadSources"],
@@ -57,17 +59,16 @@ export const RosterLockV1DraftSchema: JSONSchemaType<RosterLockV1Draft> = {
     previousLock: {
       ...RosterLockV1Schema, nullable: true
     },
-    pendingLock: {
+    stagedLock: {
       type: "object",
-      required: ["engine", "rosters", "selection"],
+      required: RosterLockV1Schema.properties.required,
       additionalProperties: false,
       properties: {
-        engine: RosterLockV1Schema.properties.engine,
+        ...RosterLockV1Schema.properties,
         rosters: {
           type: "object", required: [],
           additionalProperties: { type: "array", items: draftPieceSchema },
         },
-        selection: RosterLockV1Schema.properties.selection,
       },
     },
   },

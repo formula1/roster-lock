@@ -17,6 +17,8 @@ export const RosterLockV1Schema: JSONSchemaType<RosterLockV1Config> =   {
   properties: {
     configPurpose: { type: "string", const: "lock" },
     configVersion: { type: "number", const: 1 },
+    author: { type: "string" },
+    title: { type: "string" },
     version: { type: "string" },
     engine: engineSchema,
     rosters: rostersSchema,

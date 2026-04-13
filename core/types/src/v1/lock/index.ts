@@ -11,6 +11,8 @@ export type RosterLockV1Config = {
   configPurpose: "lock",
   configVersion: 1,
 
+  author: string,
+  title: string,
   version: string,
   engine: RosterLockEngineConfig,
   rosters: Record<string, Array<RosterLockPiece>>,
