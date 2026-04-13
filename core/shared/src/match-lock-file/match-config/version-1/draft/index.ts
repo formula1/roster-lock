@@ -3,12 +3,9 @@ import { JSONSchemaType } from "ajv";
 import { RosterLockV1Draft } from "@roster-lock/types";
 import { JSONSchemaCaster, defineKeyword } from "../../../util-types/json-schema";
 
-import { rosterLockPiece } from "../lock/rosters";
-
 import { RosterLockV1Schema, RosterLockV1SchemaKeywords } from "../lock";
 
-type RosterLockDraftPiece = RosterLockV1Draft["stagedLock"]["rosters"][string][number]
-type RosterLockDraftPieceInfo = RosterLockDraftPiece["draftInfo"];
+type RosterLockDraftPieceInfo = RosterLockV1Draft["draftPieceInfo"]["string"]["string"]
 const draftInfoSchema: JSONSchemaType<RosterLockDraftPieceInfo> = {
   type: "object", additionalProperties: false,
   required: ["testedDownloadSources"],
@@ -38,16 +35,6 @@ const draftInfoSchema: JSONSchemaType<RosterLockDraftPieceInfo> = {
   },
 };
 
-const draftPieceSchema: JSONSchemaType<RosterLockDraftPiece> = {
-  type: "object",
-  required: rosterLockPiece.required.concat(["draftInfo"]),
-  additionalProperties: false,
-  properties: {
-    ...rosterLockPiece.properties,
-    draftInfo: draftInfoSchema,
-  },
-} as JSONSchemaType<RosterLockDraftPiece>;
-
 export const RosterLockV1DraftSchema: JSONSchemaType<RosterLockV1Draft> = {
   type: "object",
   required: ["configPurpose", "configVersion", "previousVersion", "pendingLock"],
@@ -60,17 +47,15 @@ export const RosterLockV1DraftSchema: JSONSchemaType<RosterLockV1Draft> = {
       ...RosterLockV1Schema, nullable: true
     },
     stagedLock: {
-      type: "object",
-      required: RosterLockV1Schema.properties.required,
-      additionalProperties: false,
-      properties: {
-        ...RosterLockV1Schema.properties,
-        rosters: {
-          type: "object", required: [],
-          additionalProperties: { type: "array", items: draftPieceSchema },
-        },
-      },
+      ...RosterLockV1Schema
     },
+    draftPieceInfo: {
+      type: "object", required: [],
+      additionalProperties: {
+        type: "object", required: [],
+        additionalProperties: draftInfoSchema
+      }
+    }
   },
 } as JSONSchemaType<RosterLockV1Draft>;
 

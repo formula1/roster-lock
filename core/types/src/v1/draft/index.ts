@@ -1,6 +1,6 @@
 
-import { RosterLockPiece } from "../lock/roster";
 import { RosterLockV1Config } from "../lock";
+import { PieceId, PieceType } from "../shared";
 
 type DownloadableSource = string;
 
@@ -13,20 +13,11 @@ type RosterLockDraftPieceInfo = {
   }>,
 }
 
-type RosterLockDraftPiece = (
-  & RosterLockPiece
-  & { draftInfo: RosterLockDraftPieceInfo }
-)
-
-type RosterLockDraftConfig = (
-  & Omit<RosterLockV1Config, "rosters">
-  & { rosters: Record<string, Array<RosterLockDraftPiece>> }
-)
-
 export type RosterLockV1Draft = {
   configPurpose: "draft",
   configVersion: 1,
   previousVersion: string,
   previousLock?: RosterLockV1Config,
-  stagedLock: RosterLockDraftConfig,
+  stagedLock: RosterLockV1Config,
+  draftPieceInfo: Record<PieceType, Record<PieceId, RosterLockDraftPieceInfo>>
 }
