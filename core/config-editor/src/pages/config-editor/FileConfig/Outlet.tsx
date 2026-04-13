@@ -6,6 +6,7 @@ import { useCurrentRosterLockFile, CurrentRosterLockFileProvider } from "./data/
 import { useEffect, useMemo } from "react";
 import { useRecentFiles } from "../../../globals/recent-files";
 import { RECENT_ROSTERLOCK_CONFIG_FILES_KEY } from "../constants";
+import { DraftInfoProvider } from "../Contexts/DraftInfo";
 
 export function FileConfigOutlet(){
   const params = useParams();
@@ -65,11 +66,15 @@ function FileErrorOrOutlet(){
   const currentFile = useCurrentRosterLockFile();
 
   if(!currentFile.activeFile) return <Outlet />;
-  if(currentFile.state !== "failed") return <Outlet />;
-
-  console.log("Failed to load file", currentFile);
-  return <div>
-    <h1>Failed to load file</h1>
-    <pre>{JSON.stringify(currentFile.error, null, 2)}</pre>
-  </div>
+  if(currentFile.state === "loading") return <Outlet />;
+  if(currentFile.state === "failed"){
+    console.log("Failed to load file", currentFile);
+    return <div>
+      <h1>Failed to load file</h1>
+      <pre>{JSON.stringify(currentFile.error, null, 2)}</pre>
+    </div>
+  }
+  return <DraftInfoProvider draft={currentFile.value}>
+    <Outlet />
+  </DraftInfoProvider>;
 }

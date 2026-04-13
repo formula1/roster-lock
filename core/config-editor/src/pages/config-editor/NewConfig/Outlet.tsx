@@ -7,11 +7,12 @@ import { useNewConfig } from "./data/Config";
 import { RosterLockConfigPaths as ConfigPaths } from "../paths";
 import { replaceParams } from "../../../utils/router";
 import { useSaveFile } from "./data/saveFile";
+import { DraftInfoProvider } from "../Contexts/DraftInfo";
 
 export function NewConfigOutlet(){
   return <NewConfigProvider>
     <ConfigTabs />
-    <Outlet />
+    <OutletWithContext />
   </NewConfigProvider>
 }
 
@@ -43,4 +44,11 @@ function ConfigTabs(){
       ]}
     />
   )
+}
+
+function OutletWithContext(){
+  const config = useNewConfig();
+  return <DraftInfoProvider draft={config.value} >
+    <Outlet />
+  </DraftInfoProvider>
 }

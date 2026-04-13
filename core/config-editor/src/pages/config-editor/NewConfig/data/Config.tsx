@@ -17,7 +17,8 @@ const NewConfigContext = createContext<StateInputProps<RosterLockV1Draft>>({
       engine: { name: "", version: "", pieceDefinitions: {} },
       rosters: {},
       selection: { piece: {} },
-    }
+    },
+    draftPieceInfo: {}
   },
   onChange: () => {},
 });
@@ -38,7 +39,8 @@ export function NewConfigProvider({ children }: { children: React.ReactNode }){
       engine: { name: "", version: "", pieceDefinitions: {} },
       rosters: {},
       selection: { piece: {} },
-    }
+    },
+    draftPieceInfo: {}
   });
 
   return (
