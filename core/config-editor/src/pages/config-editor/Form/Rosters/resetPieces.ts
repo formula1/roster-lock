@@ -1,4 +1,6 @@
-import { RosterLockV1Config } from "@roster-lock/types";
+import { RosterLockV1Draft } from "@roster-lock/types";
+
+type RosterLockV1Config = RosterLockV1Draft["stagedLock"];
 
 export function resetPieces(engine: RosterLockV1Config["engine"], rosters: RosterLockV1Config["rosters"]){
   const newRosters: RosterLockV1Config["rosters"] = {}

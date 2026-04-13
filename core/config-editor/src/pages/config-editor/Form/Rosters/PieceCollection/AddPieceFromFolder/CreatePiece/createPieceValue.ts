@@ -37,6 +37,10 @@ export async function createPieceValue(
     downloadSources: [],
     pathVariables,
     requiredPieces: {},
+    draftInfo: {
+      referenceFolder: folderPath,
+      testedDownloadSources: []
+    }
   };
 
   const [version, humanInfo] = await Promise.all([

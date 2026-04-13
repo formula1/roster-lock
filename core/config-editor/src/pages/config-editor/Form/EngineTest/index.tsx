@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { RosterLockV1Config, type EngineAssetDefinition } from "@roster-lock/types";
+import { RosterLockV1Draft, type EngineAssetDefinition } from "@roster-lock/types";
 import { cloneJSON } from "@roster-lock/shared";
 import {
   DEFAULT_SCAN_UPDATE,
@@ -9,6 +9,8 @@ import {
 import { ToolTipSpan } from "../../../../components/ToolTip";
 
 import { TestForm, TestFormValue, valueIsReady as testFormValueIsReady } from "./Form";
+
+type RosterLockV1Config = RosterLockV1Draft["stagedLock"];
 
 export function EngineTest(
   { config }: { config: RosterLockV1Config }

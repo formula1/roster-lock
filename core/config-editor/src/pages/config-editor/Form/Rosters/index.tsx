@@ -1,7 +1,7 @@
 
 import { PageArrayTabs } from "../../../../components/Tabs";
 
-import type { RosterLockV1Config } from "@roster-lock/types";
+import type { RosterLockV1Draft } from "@roster-lock/types";
 import type { InputProps } from "../../../../utils/react/input";
 import { PieceCollection } from "./PieceCollection";
 export { PieceRosterLegend } from "./Legend";
@@ -10,6 +10,8 @@ export * from "./resetPieces"
 
 import { useEffect } from "react";
 import { resetPieces } from "./resetPieces";
+
+type RosterLockV1Config = RosterLockV1Draft["stagedLock"];
 
 export function RosterConfigForm({ value, onChange }: InputProps<RosterLockV1Config>){
 

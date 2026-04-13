@@ -16,7 +16,7 @@ export function FileConfigRoot(){
     return <div>Failed</div>
   }
 
-  const config = currentFile.value;
+  const config = currentFile.value.stagedLock;
 
   return (
     <>

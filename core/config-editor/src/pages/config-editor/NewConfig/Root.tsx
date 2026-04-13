@@ -3,9 +3,10 @@ import { useNewConfig } from "./data/Config";
 import { useSaveFile } from "./data/saveFile";
 
 export function NewConfigRoot(){
-  const { value: config, onChange } = useNewConfig();
+  const { value, onChange } = useNewConfig();
   const saveFile = useSaveFile();
 
+  const config = value.stagedLock;
   return (
     <>
       <h1><button onClick={saveFile}>Save File</button></h1>

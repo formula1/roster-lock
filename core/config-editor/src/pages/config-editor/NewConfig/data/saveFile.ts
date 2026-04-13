@@ -16,7 +16,7 @@ export function useSaveFile(){
 
 
   return useCallback(async () => {
-    const filename = keyToFilename(config.engine.name);
+    const filename = keyToFilename(config.stagedLock.engine.name);
     const matchlockDir = await FS.getMatchLockDir();
     const { canceled, filePath } = await WINDOW.showSaveDialog({
       title: 'Save Engine Config',

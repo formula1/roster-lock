@@ -32,7 +32,7 @@ export function FileEngineConfig(){
         note: (
           <>
             {!currentFile.isDirty ? null : <div className="error">You have unsaved changes</div>}
-            <EngineLegend config={currentFile.value} />
+            <EngineLegend config={currentFile.value.stagedLock} />
           </>
         ),
       }}
@@ -58,8 +58,10 @@ export function FileEngineConfig(){
       ]}
     >
       <EngineConfigForm
-        value={currentFile.value}
-        onChange={currentFile.update}
+        value={currentFile.value.stagedLock}
+        onChange={(stagedLock)=>{
+          currentFile.update((oldValue)=>({ ...oldValue, stagedLock }))
+        }}
       />
     </FollowButtonForm>
   </div>

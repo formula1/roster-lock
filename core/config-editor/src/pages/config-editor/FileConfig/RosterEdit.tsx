@@ -34,7 +34,7 @@ export function FileRosterConfig(){
         note: (
           <>
             {!currentFile.isDirty ? null : <div className="error">You have unsaved changes</div>}
-            <PieceRosterLegend rosters={currentFile.value.rosters} />
+            <PieceRosterLegend rosters={currentFile.value.stagedLock.rosters} />
           </>
         ),
       }}
@@ -60,8 +60,8 @@ export function FileRosterConfig(){
       ]}
     >
       <RosterConfigForm
-        value={currentFile.value}
-        onChange={currentFile.update}
+        value={currentFile.value.stagedLock}
+        onChange={(stagedLock)=>(currentFile.update((oldValue)=>({ ...oldValue, stagedLock })))}
       />
     </FollowButtonForm>
   </div>

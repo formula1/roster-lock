@@ -1,10 +1,10 @@
 
-import type { RosterLockV1Config } from "@roster-lock/types";
+import type { RosterLockV1Draft } from "@roster-lock/types";
 import type { InputProps } from "../../../../utils/react/input";
 import { PieceDefinitions } from "./PieceDefinitions";
 export { EngineLegend } from "./Legend";
 
-export function EngineConfigForm({ value, onChange }: InputProps<RosterLockV1Config>){
+export function EngineConfigForm({ value, onChange }: InputProps<RosterLockV1Draft["stagedLock"]>){
   const engine = value.engine;
   return <>
     <div className="section">

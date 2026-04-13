@@ -1,7 +1,10 @@
-import { RosterLockV1Config } from "@roster-lock/types";
+import { RosterLockV1Draft } from "@roster-lock/types";
 import { InputProps } from "../../../../../utils/react";
 
 import { PieceValueList } from "./PieceList";
+
+type RosterLockV1Config = RosterLockV1Draft["stagedLock"];
+
 export function PieceCollection(
   { value, onChange, config }: (
     & InputProps<RosterLockV1Config["rosters"]>

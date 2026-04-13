@@ -14,7 +14,7 @@ export function NewEngineConfig(){
     <FollowButtonForm
       info={{
         title: "New Engine Config",
-        note: <EngineLegend config={value} />,
+        note: <EngineLegend config={value.stagedLock} />,
       }}
       buttons={[
         {
@@ -23,7 +23,10 @@ export function NewEngineConfig(){
         }
       ]}
     >
-      <EngineConfigForm value={value} onChange={onChange} />
+      <EngineConfigForm
+        value={value.stagedLock}
+        onChange={(stagedLock)=>(onChange((oldValue)=>({ ...oldValue, stagedLock })))}
+      />
     </FollowButtonForm>
   </div>
 }

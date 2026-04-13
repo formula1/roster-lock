@@ -14,7 +14,7 @@ export function NewRosterConfig(){
     <FollowButtonForm
       info={{
         title: "New Roster Config",
-        note: <PieceRosterLegend rosters={value.rosters} />,
+        note: <PieceRosterLegend rosters={value.stagedLock.rosters} />,
       }}
       buttons={[
         {
@@ -23,7 +23,10 @@ export function NewRosterConfig(){
         }
       ]}
     >
-      <RosterConfigForm value={value} onChange={onChange} />
+      <RosterConfigForm
+        value={value.stagedLock}
+        onChange={(stagedLock)=>(onChange((oldValue)=>({ ...oldValue, stagedLock })))}
+      />
     </FollowButtonForm>
   </div>
 }

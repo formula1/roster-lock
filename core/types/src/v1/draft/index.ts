@@ -19,7 +19,7 @@ type RosterLockDraftPiece = (
 )
 
 type RosterLockDraftConfig = (
-  & Omit<RosterLockV1Config, "rosers">
+  & Omit<RosterLockV1Config, "rosters">
   & { rosters: Record<string, Array<RosterLockDraftPiece>> }
 )
 

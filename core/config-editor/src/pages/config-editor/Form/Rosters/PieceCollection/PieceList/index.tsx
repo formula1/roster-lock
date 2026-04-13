@@ -3,7 +3,9 @@ import { PieceDefinition, PieceValue } from "../types";
 
 import { CONFIG_ID_PATHS } from "../../../../paths";
 import { useState } from "react";
-import { RosterLockV1Config } from "@roster-lock/types";
+import { RosterLockV1Draft } from "@roster-lock/types";
+
+type RosterLockV1Config = RosterLockV1Draft["stagedLock"];
 
 
 export function PieceValueList(

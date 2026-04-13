@@ -17,5 +17,5 @@ export function FileEngineTest(){
     return <div>Failed</div>
   }
 
-  return <EngineTest config={currentFile.value} />;
+  return <EngineTest config={currentFile.value.stagedLock} />;
 }
