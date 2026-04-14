@@ -8,7 +8,7 @@ export * from "./required-pieces";
 export * from "./utils";
 export * from "./version";
 
-import { validateVersions } from "./version";
+import { validateVersions, validateVersionUniqueness } from "./version";
 import { validateHumanInfo } from "./human";
 import {
   validateDownloadableSourceList,
@@ -40,6 +40,8 @@ export function validateRosterLockPieces(
       validatePieceIdUniqueness(piece.id, i, pieceList);
 
       validateVersions(piece.version);
+      validateVersionUniqueness(piece.version, i, pieceList)
+
       validateHumanInfo(piece.humanInfo);
       // Download Sources
       validateDownloadableSourceList(piece.downloadSources);
