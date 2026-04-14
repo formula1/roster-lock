@@ -22,7 +22,7 @@ Promise.resolve().then(async ()=>{
   for(const packageDirs of sortedPackages){
     console.log("Running in Parrallel:", packageDirs)
     await Promise.all(packageDirs.map(async (packageDir)=>{
-      await exec("npm run install", { cwd: packageDir });
+      await exec("npm install", { cwd: packageDir });
       await exec("npm run prepare", { cwd: packageDir })
     }))
   }
