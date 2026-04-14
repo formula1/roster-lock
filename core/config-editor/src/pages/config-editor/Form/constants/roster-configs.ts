@@ -1,0 +1,21 @@
+import { RosterLockV1Config, RosterLockV1Draft } from "@roster-lock/types";
+import { cloneJSON } from "@roster-lock/shared";
+
+export const EMPTY_ROSTER_LOCK: RosterLockV1Config = {
+  configPurpose: "lock",
+  configVersion: 1,
+  author: "",
+  title: "",
+  version: "0.0.0",
+  engine: { name: "", version: "", pieceDefinitions: {} },
+  rosters: {},
+  selection: { piece: {} },
+}
+
+export const EMPTY_ROSTER_DRAFT: RosterLockV1Draft = {
+  configPurpose: "draft",
+  configVersion: 1,
+  previousLock: cloneJSON(EMPTY_ROSTER_LOCK),
+  stagedLock: cloneJSON(EMPTY_ROSTER_LOCK),
+  draftPieceInfo: {}
+};

@@ -2,26 +2,13 @@ import { ROSTERLOCK_V1_CASTER_JSONSCHEMA, ROSTERLOCK_V1_DRAFT_CASTER_JSONSCHEMA 
 import { RosterLockV1Draft } from "@roster-lock/types";
 
 import { createCurrentFileContext } from "../../../../components/data/CurrentFileContext";
+import { EMPTY_ROSTER_DRAFT } from "../../Form/constants/roster-configs";
 
 const {
   useCurrentFile: useCurrentRosterLockFile,
   CurrentFileProvider: CurrentRosterLockFileProvider,
 } = createCurrentFileContext<RosterLockV1Draft>(
-  {
-    configPurpose: "draft",
-    configVersion: 1,
-    stagedLock: {
-      configPurpose: "lock",
-      configVersion: 1,
-      author: "",
-      title: "",
-      version: "draft",
-      engine: { name: "", version: "", pieceDefinitions: {} },
-      rosters: {},
-      selection: { piece: {} },
-    },
-    draftPieceInfo: {}
-  },
+  EMPTY_ROSTER_DRAFT,
   (json)=>{
     if(typeof json !== "object" || Array.isArray(json) || json === null){
       throw new Error("File is not a valid draft or lock file")

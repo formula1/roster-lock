@@ -16,7 +16,7 @@ type RosterLockDraftPieceInfo = {
 export type RosterLockV1Draft = {
   configPurpose: "draft",
   configVersion: 1,
-  previousLock?: RosterLockV1Config,
+  previousLock: RosterLockV1Config,
   stagedLock: RosterLockV1Config,
   draftPieceInfo: Record<PieceType, Record<PieceId, RosterLockDraftPieceInfo>>
 }
