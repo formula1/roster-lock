@@ -4,7 +4,7 @@ import {
   SetStateAction
 } from "react";
 import { useParams } from "react-router";
-import { FS } from "../../globals/fs";
+import { fs } from "../../tauri/fs";
 import { usePromisedMemo } from "../../utils/react/promised-memo";
 import { cloneJSON, JSON_Unknown } from "@roster-lock/shared";
 
@@ -66,7 +66,7 @@ export function CurrentFileProvider<T extends JSON_Unknown>(
   const params = useParams();
 
   const loadFile = useCallback(async (filePath: string) => {
-    const json = await FS.readJSON(filePath);
+    const json = await fs.readJSON(filePath);
     const value = caster(json);
     return value;
   }, [])
@@ -100,11 +100,11 @@ export function CurrentFileProvider<T extends JSON_Unknown>(
       reset: () => setActiveValue(cloneJSON(originalValue)),
       save: async () => {
         if(!activeFile) return;
-        await FS.writeJSON(activeFile, activeValue);
+        await fs.writeJSON(activeFile, activeValue);
         setOriginalValue(cloneJSON(activeValue));
       },
       saveAs: async (newPath: string) => {
-        await FS.writeJSON(newPath, activeValue);
+        await fs.writeJSON(newPath, activeValue);
         setOriginalValue(cloneJSON(activeValue));
       }
     };
