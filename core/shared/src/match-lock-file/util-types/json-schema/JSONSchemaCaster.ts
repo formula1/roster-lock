@@ -7,7 +7,7 @@ function returnTrue(){ return true; }
 function createAJVInstance<T>(
   engineSchema: JSONSchemaType<T>,
   engineKeywords: Array<AJVKeywordDefinition>,
-  validate: boolean = false
+  validate: boolean = true
 ){
   const ajv = new Ajv({ allErrors: true, strict: true, allowUnionTypes: true });
   for(const keyword of engineKeywords){
@@ -33,7 +33,7 @@ export class JSONSchemaCaster<T> {
     private keywords: Array<AJVKeywordDefinition>,
   ){}
 
-  safeCast(input: unknown, validate: boolean = false): SafeValue<T> {
+  safeCast(input: unknown, validate: boolean = true): SafeValue<T> {
     try {
       return { valid: true, value: this.cast(input, validate) };
     }catch(e){
@@ -41,7 +41,7 @@ export class JSONSchemaCaster<T> {
     }
   }
 
-  cast(input: unknown, validate: boolean = false) {
+  cast(input: unknown, validate: boolean = true) {
     const schemaValidator = createAJVInstance(this.schema, this.keywords, validate);
     if(!schemaValidator(input)){
       if(!schemaValidator.errors) throw new Error("Validation failed with no information");
