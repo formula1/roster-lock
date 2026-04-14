@@ -1,5 +1,5 @@
 import { nativeWindow } from "../../../../../../tauri/window";
-import { PieceDefinition, PieceValue } from "../types";
+import { PieceDefinition, PieceValue, PieceDraftInfo } from "../types";
 import { useState } from "react";
 
 import { PathVariableValuesInput } from "./PathVariablesInput";
@@ -8,7 +8,7 @@ import { CreatePiece } from "./CreatePiece";
 
 export function AddPieceFromFolder(
   { onSubmit, pieceDefinition }: {
-    onSubmit: (v: PieceValue)=>unknown,
+    onSubmit: (v: { piece: PieceValue, draftInfo: PieceDraftInfo })=>unknown,
     pieceDefinition: PieceDefinition
   }
 ){
@@ -66,7 +66,9 @@ export function AddPieceFromFolder(
           filesWithAssets={assetsAndFiles.filesWithAssets}
           pathVariables={pathVariables}
           pieceDefinition={pieceDefinition}
-          onSubmit={onSubmit}
+          onSubmit={(piece)=>{
+            onSubmit({ piece, draftInfo: { referenceFolder: currentFolder, testedDownloadSources: [] } })
+          }}
         />
       )}
     </>
