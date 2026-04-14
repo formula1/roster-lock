@@ -32,17 +32,7 @@ const {
     if(json.configPurpose === "draft"){
       return ROSTERLOCK_V1_DRAFT_CASTER_JSONSCHEMA.cast(json)
     }
-    if(json.configPurpose === "lock"){
-      const lockFile = ROSTERLOCK_V1_CASTER_JSONSCHEMA.cast(json);
-      return {
-        configPurpose: "draft",
-        configVersion: 1,
-        previousLock: lockFile,
-        stagedLock: lockFile,
-        draftPieceInfo: {}
-      } satisfies RosterLockV1Draft
-    }
-    throw new Error("File is not a valid draft or lock file")
+    throw new Error("File is not a valid draft file")
   }
 );
 
