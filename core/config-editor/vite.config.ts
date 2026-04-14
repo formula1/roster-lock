@@ -10,7 +10,6 @@ export default defineConfig({
   resolve: {
     alias: {
       'path': require.resolve('path-browserify'),
-      'process': require.resolve('process/browser'),
       // magnet-uri only has "import" in exports, no "require" - point directly to the file
       'magnet-uri': require.resolve('@roster-lock/shared/node_modules/magnet-uri/index.js'),
     },
@@ -50,7 +49,7 @@ export default defineConfig({
   },
   optimizeDeps: {
     // Force Vite to pre-bundle the shared module and polyfills
-    include: ['@roster-lock/shared', 'process', 'path-browserify'],
+    include: ['@roster-lock/shared', 'path-browserify'],
     exclude: ['magnet-uri'],
   },
   server: {
