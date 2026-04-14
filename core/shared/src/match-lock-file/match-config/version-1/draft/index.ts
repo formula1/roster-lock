@@ -42,7 +42,6 @@ export const RosterLockV1DraftSchema: JSONSchemaType<RosterLockV1Draft> = {
   properties: {
     configPurpose: { type: "string", const: "draft" },
     configVersion: { type: "number", const: 1 },
-    previousVersion: { type: "string" },
     previousLock: {
       ...RosterLockV1Schema, nullable: true
     },

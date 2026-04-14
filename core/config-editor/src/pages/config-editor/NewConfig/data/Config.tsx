@@ -7,7 +7,6 @@ const NewConfigContext = createContext<StateInputProps<RosterLockV1Draft>>({
   value:   {
     configPurpose: "draft",
     configVersion: 1,
-    previousVersion: "0.0.0",
     stagedLock: {
       configPurpose: "lock",
       configVersion: 1,
@@ -29,7 +28,6 @@ export function NewConfigProvider({ children }: { children: React.ReactNode }){
   const [value, setValue] = useState<RosterLockV1Draft>(  {
     configPurpose: "draft",
     configVersion: 1,
-    previousVersion: "0.0.0",
     stagedLock: {
       configPurpose: "lock",
       configVersion: 1,

@@ -10,7 +10,6 @@ const {
   {
     configPurpose: "draft",
     configVersion: 1,
-    previousVersion: "0.0.0",
     stagedLock: {
       configPurpose: "lock",
       configVersion: 1,
@@ -38,7 +37,6 @@ const {
       return {
         configPurpose: "draft",
         configVersion: 1,
-        previousVersion: lockFile.version,
         previousLock: lockFile,
         stagedLock: lockFile,
         draftPieceInfo: {}
