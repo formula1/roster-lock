@@ -5,6 +5,7 @@ cd "$SCRIPT_PATH/.."
 echo "Compiling Match Lock..."
 
 packages=(
+  "types"
   "shared"
   "node-services"
   "config-editor"
