@@ -16,11 +16,11 @@ export function useSaveFile(){
 
 
   return useCallback(async () => {
-    const filename = keyToFilename(config.stagedLock.engine.name);
+    const filename = keyToFilename(config.stagedLock.title);
     const matchlockDir = await fs.getMatchLockDir();
     const { canceled, filePath } = await nativeWindow.showSaveDialog({
-      title: 'Save Engine Config',
-      defaultPath: pathJoin(matchlockDir,`${filename}.rosterlock.json`),
+      title: 'Save New Draft',
+      defaultPath: pathJoin(matchlockDir,`${filename}.rosterlock.draft.json`),
       filters: [
         { name: 'JSON Files', extensions: ['json'] }
       ]
