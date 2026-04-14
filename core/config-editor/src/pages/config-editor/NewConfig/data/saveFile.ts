@@ -2,8 +2,8 @@
 import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { keyToFilename } from "../../../../utils/filename";
-import { FS } from "../../../../globals/fs";
-import { WINDOW } from "../../../../globals/window";
+import { fs } from "../../../../tauri/fs";
+import { nativeWindow } from "../../../../tauri/window";
 import { join as pathJoin } from "path";
 import { replaceParams } from "../../../../utils/router";
 import { useNewConfig } from "./Config";
@@ -17,8 +17,8 @@ export function useSaveFile(){
 
   return useCallback(async () => {
     const filename = keyToFilename(config.stagedLock.engine.name);
-    const matchlockDir = await FS.getMatchLockDir();
-    const { canceled, filePath } = await WINDOW.showSaveDialog({
+    const matchlockDir = await fs.getMatchLockDir();
+    const { canceled, filePath } = await nativeWindow.showSaveDialog({
       title: 'Save Engine Config',
       defaultPath: pathJoin(matchlockDir,`${filename}.rosterlock.json`),
       filters: [
@@ -27,7 +27,7 @@ export function useSaveFile(){
     })
     if(canceled || !filePath) return;
 
-    await FS.writeJSON(filePath, config);
+    await fs.writeJSON(filePath, config);
     navigate(replaceParams(RosterLockConfigPaths.fileRoot, { filePath: encodeURIComponent(filePath) }))
   }, [config, navigate])
 }

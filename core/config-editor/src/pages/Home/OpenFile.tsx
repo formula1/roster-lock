@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router";
 import { RosterLockConfigPaths } from "../config-editor/paths";
 import { replaceParams } from "../../utils/router";
-import { WINDOW } from "../../globals/window";
+import { nativeWindow } from "../../tauri/window";
 
 export function OpenFile(){
   const navigate = useNavigate();
@@ -9,7 +9,7 @@ export function OpenFile(){
   return <button
     onClick={async () => {
     try {
-      const result = await WINDOW.showOpenDialog({
+      const result = await nativeWindow.showOpenDialog({
         title: 'Open Config',
         properties: ['openFile'],
         filters: [

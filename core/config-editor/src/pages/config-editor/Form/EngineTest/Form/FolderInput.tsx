@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useRecentFiles } from "../../../../../globals/recent-files";
-import { WINDOW } from "../../../../../globals/window";
+import { nativeWindow } from "../../../../../tauri/window";
 import { InputProps } from "../../../../../utils/react";
 
 import { dirname } from "path";
@@ -24,7 +24,7 @@ export function FolderInput(
             if(!path) return;
             return dirname(path);
           })();
-          const { canceled, filePaths } = await WINDOW.showOpenDialog({
+          const { canceled, filePaths } = await nativeWindow.showOpenDialog({
             title: 'Select Folder to Test',
             properties: ['openDirectory'],
             filters: [],

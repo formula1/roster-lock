@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCurrentRosterLockFile } from "./CurrentFile";
 import { RosterLockConfigPaths } from "../../paths";
-import { WINDOW } from "../../../../globals/window";
+import { nativeWindow } from "../../../../tauri/window";
 import { replaceParams } from "../../../../utils/router";
 
 
@@ -20,8 +20,8 @@ export function useSaveAs(){
     }
     const filePath = currentFile.activeFile;
     if(!filePath) return;
-    const { canceled, filePath: newFilePath } = await WINDOW.showSaveDialog({
-      title: 'Save Engine Config',
+    const { canceled, filePath: newFilePath } = await nativeWindow.showSaveDialog({
+      title: 'Save Draft',
       defaultPath: filePath,
       filters: [
         { name: 'JSON Files', extensions: ['json'] }

@@ -1,6 +1,6 @@
 
 import { ROSTERLOCK_SIDECAR } from "../../../../../../../globals/side-car";
-import { FS } from "../../../../../../../globals/fs";
+import { fs } from "../../../../../../../tauri/fs";
 import { tempDir } from '@tauri-apps/api/path';
 import { mkdir, remove as FSRemove } from '@tauri-apps/plugin-fs';
 
@@ -21,7 +21,7 @@ export async function getDownloadSourceVersion(
     await ROSTERLOCK_SIDECAR.downloadSource(source, uniqueDir);
 
     const files: Map<string, { size: number, relativePath: string }> = new Map();
-    for await (const fileResult of FS.walkDirStream(uniqueDir)){
+    for await (const fileResult of fs.walkDirStream(uniqueDir)){
       if(!fileResult.is_file) continue;
       files.set(fileResult.path, { size: fileResult.size, relativePath: fileResult.relative_path });
     }
@@ -31,8 +31,8 @@ export async function getDownloadSourceVersion(
     return await calculatePieceVersion(
       assetsOfFiles.filesWithAssets,
       async (path)=>{
-        const stat = await FS.stat(path);
-        return { byteSize: stat.size, stream: FS.getFileStream(path) };
+        const stat = await fs.stat(path);
+        return { byteSize: stat.size, stream: fs.getFileStream(path) };
       }
     );
 

@@ -1,4 +1,4 @@
-import { WINDOW } from "../../../../../../globals/window";
+import { nativeWindow } from "../../../../../../tauri/window";
 import { PieceDefinition, PieceValue } from "../types";
 import { useState } from "react";
 
@@ -23,7 +23,7 @@ export function AddPieceFromFolder(
           <button
             onClick={async () => {
             try {
-              const result = await WINDOW.showOpenDialog({
+              const result = await nativeWindow.showOpenDialog({
                 title: 'Select Piece Folder',
                 properties: ['openDirectory'],
                 filters: [],

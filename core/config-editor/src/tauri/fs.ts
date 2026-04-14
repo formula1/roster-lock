@@ -31,64 +31,72 @@ export interface WalkStreamCallbacks {
 
 // File system operations
 export const fs = {
-  homeDir: async (): Promise<string> => {
+  async homeDir(): Promise<string> {
     return await invoke('fs_home_dir');
   },
 
-  readFile: async (path: string): Promise<Uint8Array> => {
+  async readFile(path: string): Promise<Uint8Array> {
     const data: number[] = await invoke('fs_read_file', { path });
     return new Uint8Array(data);
   },
 
-  writeFile: async (path: string, data: Uint8Array): Promise<void> => {
+  async writeFile(path: string, data: Uint8Array): Promise<void> {
     await invoke('fs_write_file', { path, data: Array.from(data) });
   },
 
-  removeFile: async (path: string): Promise<void> => {
+  async removeFile(path: string): Promise<void> {
     await invoke('fs_remove_file', { path });
   },
 
-  mkdir: async (path: string): Promise<void> => {
+  async mkdir(path: string): Promise<void> {
     await invoke('fs_mkdir', { path });
   },
 
-  mkdirAll: async (path: string): Promise<void> => {
+  async mkdirAll(path: string): Promise<void> {
     await invoke('fs_mkdir_all', { path });
   },
 
-  exists: async (path: string): Promise<boolean> => {
+  async exists(path: string): Promise<boolean> {
     return await invoke('fs_exists', { path });
   },
 
-  getHomeDir: async (): Promise<string> => {
+  async getHomeDir(): Promise<string> {
     return await invoke('fs_get_home_dir');
   },
 
-  getAppDataDir: async (): Promise<string> => {
+  async getAppDataDir(): Promise<string> {
     return await invoke('fs_get_app_data_dir');
   },
 
-  getDocumentsDir: async (): Promise<string> => {
+  async getDocumentsDir(): Promise<string> {
     return await invoke('fs_get_documents_dir');
   },
 
-  getDownloadsDir: async (): Promise<string> => {
+  async getDownloadsDir(): Promise<string> {
     return await invoke('fs_get_downloads_dir');
   },
 
-  getMatchLockDir: async (): Promise<string> => {
+  async getMatchLockDir(): Promise<string> {
     return await invoke('fs_get_match_lock_dir');
   },
 
-  readDir: async (path: string): Promise<DirEntry[]> => {
+  async readDir(path: string): Promise<DirEntry[]> {
     return await invoke('fs_read_dir', { dirPath: path });
   },
 
-  stat: async (path: string): Promise<FileStat> => {
+  async stat(path: string): Promise<FileStat> {
     return await invoke('fs_stat', { filePath: path });
   },
 
-  walkDir: async (path: string): Promise<WalkResult[]> => {
+  readJSON(path: string){
+    return this.readFile(path).then(data => JSON.parse(new TextDecoder().decode(data)))
+  },
+  writeJSON(path: string, data: any){
+    return this.writeFile(path, new TextEncoder().encode(JSON.stringify(data, null, 2)))
+  },
+  
+
+  async walkDir(path: string): Promise<WalkResult[]> {
     // For compatibility, we'll collect all results from the stream
     return new Promise((resolve, reject) => {
       const results: WalkResult[] = [];
@@ -100,7 +108,7 @@ export const fs = {
     });
   },
 
-  startWalkStream: async (path: string, callbacks: WalkStreamCallbacks): Promise<void> => {
+  async startWalkStream(path: string, callbacks: WalkStreamCallbacks): Promise<void>{
     const streamId = `walk-${Date.now().toString(32)}-${Math.random().toString(32).substring(2)}`;
     
     // Set up event listeners
