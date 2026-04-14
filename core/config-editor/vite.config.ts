@@ -1,9 +1,9 @@
-import { defineConfig } from 'vite'
+import { defineConfig, UserConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { visualizer } from 'rollup-plugin-visualizer';
+
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(async (): Promise<UserConfig>=>({
   define: {
     global: 'globalThis',
     'process.env': {},
@@ -26,9 +26,12 @@ export default defineConfig({
         }
       },
     },
-    ...(!process.env.ANALYZE ? [] : [
-      visualizer({ open: true, filename: 'dist/stats.html', gzipSize: true, brotliSize: true })
-    ])
+    ...(!process.env.ANALYZE ? [] : await Promise.resolve().then(async ()=>{
+      const { visualizer } = await import("rollup-plugin-visualizer")
+      return [
+        visualizer({ open: true, filename: 'dist/stats.html', gzipSize: true, brotliSize: true })
+      ]
+    }))
   ],
   // Remove base for Tauri - it handles this automatically
   build: {
@@ -60,4 +63,4 @@ export default defineConfig({
     port: 5173,
     strictPort: true, // Don't try other ports if 5173 is busy
   },
-})
+}))
