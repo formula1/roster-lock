@@ -15,13 +15,16 @@ Promise.resolve().then(async ()=>{
     return fillDependencyMap(dependencyMap, initialDirectory)
   }))
 
-  const sortedPackages = sortDependencyTree(dependencyMap)
+  const sortedPackages = sortDependencyTree(
+    new Map(dependencyMap)
+  )
 
   for(const packageDirs of sortedPackages){
     console.log("Running in Parrallel:", packageDirs)
-    await Promise.all(packageDirs.map((packageDir)=>(
-      exec("npm run prepare", { cwd: packageDir })
-    )))
+    await Promise.all(packageDirs.map(async (packageDir)=>{
+      await exec("npm run install", { cwd: packageDir });
+      await exec("npm run prepare", { cwd: packageDir })
+    }))
   }
 });
 
