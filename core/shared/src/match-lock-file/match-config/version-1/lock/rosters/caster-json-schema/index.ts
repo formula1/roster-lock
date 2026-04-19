@@ -5,7 +5,7 @@ type RosterLockPiece = RosterLockV1Config["rosters"][string][number];
 
 import { idSchema, idUniquenessSchemaValidator, idSchemaValidator } from "./id";
 import { versionSchema, sha256SchemaValidator } from "./version";
-import { humanInfoSchema, urlSchemaValidator } from "./human";
+import { humanInfoSchema, urlSchemaValidator, friendlyStringSchemaValidator } from "./human";
 import {
   downloadableSourcesSchema,
   downloadableSourceSchemaValidator,
@@ -19,6 +19,7 @@ import {
 } from "./pathVariables";
 import {
   requiredPiecesSchema,
+  allRequiredPieceTypesSetSchemaValidator,
   requiredPieceValueSchemaValidator,
   requiredPieceTypeSchemaValidator,
 } from "./requiresPieces";
@@ -72,17 +73,33 @@ export const rostersSchema: JSONSchemaType<RosterLockV1Config["rosters"]> = {
 
 
 export const rosterKeywords = [
+  // Download Related
+  downloadableSourceListSchemaValidator,
+  downloadableSourceSchemaValidator,
+
+  // Human Related
+  urlSchemaValidator,
+  friendlyStringSchemaValidator,
+
+  // Id Related
   idSchemaValidator,
   idUniquenessSchemaValidator,
-  sha256SchemaValidator,
-  urlSchemaValidator,
-  downloadableSourceSchemaValidator,
-  downloadableSourceListSchemaValidator,
+
+  // Path Variable Related
   pathVariableNameSchemaValidator,
   pathVariableValueSchemaValidator,
   allPathVariableNameSetSchemaValidator,
+
+  // Required Piece Related
+  allRequiredPieceTypesSetSchemaValidator,
   requiredPieceValueSchemaValidator,
   requiredPieceTypeSchemaValidator,
+
+  // Version Related
+  sha256SchemaValidator,
+
+
+  // Defined Here
   allPieceTypesInEngineSchemaValidator,
   pieceTypeInEngineSchemaValidator,
 ]
