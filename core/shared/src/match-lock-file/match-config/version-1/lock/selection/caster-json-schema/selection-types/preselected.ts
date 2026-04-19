@@ -21,6 +21,7 @@ export const preselectedSchemaValidator = defineKeyword({
 });
 
 export const preselectedSelectionSchema = {
+  $id: "preselectedSelectionSchema",
   type: "object",
   required: ["type", "pieces"],
   additionalProperties: false,
