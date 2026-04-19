@@ -37,13 +37,16 @@ const draftInfoSchema: JSONSchemaType<RosterLockDraftPieceInfo> = {
 
 export const RosterLockV1DraftSchema: JSONSchemaType<RosterLockV1Draft> = {
   type: "object",
-  required: ["configPurpose", "configVersion", "previousVersion", "pendingLock"],
+  required: ["configPurpose", "configVersion", "previousLock", "stagedLock", "draftPieceInfo"],
   additionalProperties: false,
+  $defs: {
+    RosterLockV1Config: RosterLockV1Schema,
+  },
   properties: {
     configPurpose: { type: "string", const: "draft" },
     configVersion: { type: "number", const: 1 },
-    previousLock: RosterLockV1Schema,
-    stagedLock: RosterLockV1Schema,
+    previousLock: { $ref: "#/$defs/RosterLockV1Config" },
+    stagedLock: { $ref: "#/$defs/RosterLockV1Config" },
     draftPieceInfo: {
       type: "object", required: [],
       additionalProperties: {
