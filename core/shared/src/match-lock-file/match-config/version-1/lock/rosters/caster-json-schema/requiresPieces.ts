@@ -9,7 +9,7 @@ import {
 } from "../validate";
 
 export const allRequiredPieceTypesSetSchemaValidator = defineKeyword({
-  keyword: "allRequiredPieceTypesSet",
+  keyword: "rosterAllRequiredPieceTypesSet",
   type: "object",
   // config/pieces/pieceType/pieceIndex/requiredPieces
   validate: function (requiredPieces, { engine }: RosterLockV1Config, path){
@@ -21,7 +21,7 @@ export const allRequiredPieceTypesSetSchemaValidator = defineKeyword({
 });
 
 export const requiredPieceValueSchemaValidator = defineKeyword({
-  keyword: "requiredPieceValue",
+  keyword: "rosterRequiredPieceValue",
   type: "string",
   // config/pieces/pieceType/pieceIndex/requiredPieces/pieceType/index
   validate: function (requiredPiece: string, { rosters }: RosterLockV1Config, path){
@@ -34,7 +34,7 @@ export const requiredPieceValueSchemaValidator = defineKeyword({
 });
 
 export const requiredPieceTypeSchemaValidator = defineKeyword({
-  keyword: "requiredPieceType",
+  keyword: "rosterRequiredPieceType",
   type: "array",
   // config/pieces/pieceType/pieceIndex/requiredPieces/pieceType
   validate: function (requiredPiece: string, config: RosterLockV1Config, path){

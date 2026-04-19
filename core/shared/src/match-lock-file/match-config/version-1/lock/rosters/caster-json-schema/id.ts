@@ -6,13 +6,13 @@ import { RosterLockV1Config } from "@roster-lock/types";
 
 
 export const idSchemaValidator = defineKeyword({
-  keyword: "pieceId",
+  keyword: "rosterPieceId",
   type: "string",
   validate: validatePieceId
 });
 
 export const idUniquenessSchemaValidator = defineKeyword({
-  keyword: "pieceIdUniqueness",
+  keyword: "rosterPieceIdUniqueness",
   type: "string",
   validate: function (id: string, { rosters }: RosterLockV1Config, path){
     // config/rosters/pieceType/pieceIndex/id

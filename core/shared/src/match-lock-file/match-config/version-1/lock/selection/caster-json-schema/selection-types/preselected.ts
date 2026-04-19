@@ -6,7 +6,7 @@ import { validatePreselected } from "../../validate/selections/preselected";
 import { defineKeyword } from "../../../../../../util-types/json-schema";
 
 export const preselectedSchemaValidator = defineKeyword({
-  keyword: "preselected",
+  keyword: "selectionPreselected",
   type: "object",
   validate: function (
     selection: SelectionPreselectedConfig["pieces"],

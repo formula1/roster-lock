@@ -12,7 +12,7 @@ import { validateSelectionBanList } from "../../validate/selections/normal";
 import { defineKeyword } from "../../../../../../util-types/json-schema";
 
 export const banListSchemaValidator = defineKeyword({
-  keyword: "banList",
+  keyword: "selectionBanList",
   type: "array",
   validate: function (banList: Array<string>, { rosters }: RosterLockV1Config, path){
     if(!banList) return;

@@ -8,13 +8,13 @@ import {
 } from "../validate";
 
 export const downloadableSourceListSchemaValidator = defineKeyword({
-  keyword: "downloadableSourceList",
+  keyword: "rosterDownloadableSourceList",
   type: "array",
   validate: validateDownloadableSourceList
 });
 
 export const downloadableSourceSchemaValidator = defineKeyword({
-  keyword: "downloadableSource",
+  keyword: "rosterDownloadableSource",
   type: "string",
   validate: validateDownloadableSource
 });
