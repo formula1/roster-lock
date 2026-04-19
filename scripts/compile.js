@@ -4,7 +4,7 @@ const { promisify } = require("util")
 const { join: pathJoin, resolve: pathResolve } = require("path");
 const { existsSync } = require("fs");
 const { readFile } = require("fs").promises;
-const { exec: execCallback } = require("child_process");
+const { exec: execCallback, spawn } = require("child_process");
 
 const exec = promisify(execCallback);
 
@@ -22,8 +22,8 @@ Promise.resolve().then(async ()=>{
   for(const packageDirs of sortedPackages){
     console.log("Running in Parrallel:", packageDirs)
     await Promise.all(packageDirs.map(async (packageDir)=>{
-      await exec("npm install", { cwd: packageDir });
-      await exec("npm run prepare", { cwd: packageDir })
+      await execWithStdIo("npm install", { cwd: packageDir })
+      await execWithStdIo("npm run prepare", { cwd: packageDir })
     }))
   }
 });
@@ -126,4 +126,31 @@ function isFileSystemPath(version){
 
 function debug(...args){
   if(process.env.DEBUG) console.log(...args);
+}
+
+
+function execWithStdIo(command, { cwd }){
+  return new Promise((resolve, reject)=>{
+    const io = [];
+    const [cmd, ...args] = command.split(" ");
+    const newProcess = spawn(cmd, args, { cwd })
+
+    newProcess.stdout.on("data", (data)=>{
+      io.push(data.toString())
+    })
+
+    newProcess.stderr.on("data", (data)=>{
+      io.push(data.toString())
+    })
+
+    newProcess.on('exit', (code) => {
+      if(code === 0) return resolve()
+
+      console.log(`\x1b[1;31m${"=".repeat(10)}\x1b[0m`)
+      console.log(`\x1b[1;31m${cwd}: ${command}\x1b[0m`)
+      console.log(`\x1b[1;31m${"=".repeat(10)}\x1b[0m`)
+      console.log(io.join(""))
+      reject(code);
+    });
+  })
 }
