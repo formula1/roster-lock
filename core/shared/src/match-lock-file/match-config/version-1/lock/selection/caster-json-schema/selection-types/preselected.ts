@@ -7,7 +7,7 @@ import { defineKeyword } from "../../../../../../util-types/json-schema";
 
 export const preselectedSchemaValidator = defineKeyword({
   keyword: "selectionPreselected",
-  type: "object",
+  type: "array",
   validate: function (
     selection: SelectionPreselectedConfig["pieces"],
     config: RosterLockV1Config,

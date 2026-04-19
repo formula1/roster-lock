@@ -10,7 +10,7 @@ import {
 
 export const pathVariableNameSchemaValidator = defineKeyword({
   keyword: "rosterPathVariableName",
-  type: "object",
+  type: "string",
   validate: function (pathVariableValue, { engine }: RosterLockV1Config, path){
     const pathParts = path.split("/");
     // config/pieces/pieceType/pieceIndex/pathVariables/variableName/index
@@ -28,7 +28,7 @@ export const pathVariableNameSchemaValidator = defineKeyword({
 
 export const pathVariableValueSchemaValidator = defineKeyword({
   keyword: "rosterPathVariableValue",
-  type: "object",
+  type: "string",
   validate: function (pathVariableValue, { engine }: RosterLockV1Config, path){
     validatePathVariableValue(pathVariableValue);
   }

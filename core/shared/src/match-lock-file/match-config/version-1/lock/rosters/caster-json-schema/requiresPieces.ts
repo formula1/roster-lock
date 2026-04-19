@@ -35,7 +35,7 @@ export const requiredPieceValueSchemaValidator = defineKeyword({
 
 export const requiredPieceTypeSchemaValidator = defineKeyword({
   keyword: "rosterRequiredPieceType",
-  type: "array",
+  type: "object",
   // config/pieces/pieceType/pieceIndex/requiredPieces/pieceType
   validate: function (requiredPiece: string, config: RosterLockV1Config, path){
     const pathParts = path.split("/");
