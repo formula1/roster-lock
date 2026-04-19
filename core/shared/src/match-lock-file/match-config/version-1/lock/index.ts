@@ -12,14 +12,20 @@ import { RosterLockV1Config } from "@roster-lock/types";
 
 export const RosterLockV1Schema: JSONSchemaType<RosterLockV1Config> =   {
   type: "object",
-  required: ["configPurpose", "configVersion", "version", "engine", "rosters", "selection"],
+  required: [
+    "configPurpose", "configVersion",
+    "author", "title", "version",
+    "engine", "rosters", "selection"
+  ],
   additionalProperties: false,
   properties: {
     configPurpose: { type: "string", const: "lock" },
     configVersion: { type: "number", const: 1 },
+
     author: { type: "string" },
     title: { type: "string" },
     version: { type: "string" },
+
     engine: engineSchema,
     rosters: rostersSchema,
     selection: selectionConfigSchema,
