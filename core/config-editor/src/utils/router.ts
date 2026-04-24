@@ -20,6 +20,12 @@ export function matchesPath(urlPath: string, path: string){
   return urlPath === path;
 }
 
+export function startsWith(testPath: string, prefix: string){
+  testPath = testPath + (testPath.slice(-1) === "/" ? "" : "/")
+  prefix = prefix + (testPath.slice(-1) === "/" ? "" : "/")
+  return testPath.startsWith(prefix);
+}
+
 export function replaceParams(pathname: string, params: Record<string, undefined | string>){
   if(!pathname) throw new Error("Path is required");
   if(!params || Object.keys(params).length === 0){
