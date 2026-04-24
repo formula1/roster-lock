@@ -3,7 +3,6 @@ import {
   useEffect, useState, useCallback,
   SetStateAction
 } from "react";
-import { useParams } from "react-router";
 import { fs } from "../../tauri/fs";
 import { usePromisedMemo } from "../../utils/react/promised-memo";
 import { cloneJSON, JSON_Unknown } from "@roster-lock/shared";
@@ -22,6 +21,7 @@ type CurrentFileContextType<T> = (
     activeFile: string;
     state: "failed",
     error: any,
+    value?: JSON_Unknown
   }
   | {
     activeFile: string;
@@ -63,27 +63,25 @@ export function CurrentFileProvider<T extends JSON_Unknown>(
     context: Context<CurrentFileContextType<T>>,
   }>
 ) {
-  const params = useParams();
-
-  const loadFile = useCallback(async (filePath: string) => {
-    const json = await fs.readJSON(filePath);
-    const value = caster(json);
-    return value;
-  }, [])
 
   const memoResult = usePromisedMemo(async ()=>{
     if(!activeFile) throw new Error("No active file");
-    return await loadFile(activeFile);
+    return await fs.readJSON(activeFile);
   }, [activeFile])
 
   const [originalValue, setOriginalValue] = useState<T>(cloneJSON(defaultValue));
-
   const [activeValue, setActiveValue] = useState<T>(cloneJSON(defaultValue));
+  const [castError, setCastError] = useState<{ failed: boolean, e: any }>({ failed: false, e: null });
 
   useEffect(()=>{
-    if(memoResult.status === "success"){
+    try {
+      if(memoResult.status !== "success") return;
+      caster(memoResult.value)
+      setCastError({ failed: false, e: null })
       setOriginalValue(cloneJSON(memoResult.value));
       setActiveValue(cloneJSON(memoResult.value));
+    }catch(e){
+      setCastError({ failed: true, e })
     }
   }, [memoResult])
 
@@ -91,6 +89,7 @@ export function CurrentFileProvider<T extends JSON_Unknown>(
     if(!activeValue || !activeFile) return { activeFile: null };
     if(memoResult.status === "pending") return { activeFile, state: "loading" };
     if(memoResult.status === "failed") return { activeFile, state: "failed", error: memoResult.error };
+    if(castError.failed) return { activeFile, state: "failed", error: castError.e, value: memoResult.value  }
     return {
       activeFile,
       state: "ready",
