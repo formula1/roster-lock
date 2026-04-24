@@ -9,6 +9,7 @@ export * from "./resetPieces"
 import { useEffect } from "react";
 import { resetPieces } from "./resetPieces";
 import { useRosterLock } from "../Contexts/RosterLock";
+import { useDraftInfo } from "../Contexts/DraftInfo";
 
 type RosterLockV1Config = RosterLockV1Draft["stagedLock"];
 
@@ -32,9 +33,11 @@ import { useFollowButtons } from "../Contexts/Buttons";
 import { PieceRosterLegend } from "./Legend";
 
 import { FollowButtonForm } from "../../../../components/FollowButtonForm";
+import { AddPieceFromFolder } from "./PieceCollection/AddPieceFromFolder";
 
 export function RosterConfigEditPage(){
   const { value, onChange } = useRosterLock();
+  const { value: draft, onChange: onDraftChange } = useDraftInfo()
   const buttons = useFollowButtons();
   
 
@@ -47,6 +50,28 @@ export function RosterConfigEditPage(){
       }}
       buttons={buttons}
     >
+      <AddPieceFromFolder
+        rosterLock={value}
+        onSubmit={({ pieceDefinitionKey, piece, draftInfo })=>{
+          onChange((old)=>({
+            ...old,
+            rosters: {
+              ...old.rosters,
+              [pieceDefinitionKey]: [
+                ...old.rosters[pieceDefinitionKey],
+                piece
+              ]
+            }
+          }))
+          onDraftChange((old)=>({
+            ...old,
+            [pieceDefinitionKey]: {
+              ...old[pieceDefinitionKey],
+              [piece.id]: draftInfo
+            }
+          }))
+        }}
+      />
       <RosterConfigForm
         value={value}
         onChange={onChange}

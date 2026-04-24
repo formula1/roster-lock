@@ -1,23 +1,49 @@
 import { nativeWindow } from "../../../../../../tauri/window";
 import { PieceDefinition, PieceValue, PieceDraftInfo } from "../types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
+import { PieceDefinitionInput } from "./PieceDefinitionInput";
 import { PathVariableValuesInput } from "./PathVariablesInput";
 import { AssetsAndFiles, AssetsAndFilesValue } from "./AssetsAndFiles";
 import { CreatePiece } from "./CreatePiece";
+import { RosterLockV1Config } from "@roster-lock/types";
 
 export function AddPieceFromFolder(
-  { onSubmit, pieceDefinition }: {
-    onSubmit: (v: { piece: PieceValue, draftInfo: PieceDraftInfo })=>unknown,
-    pieceDefinition: PieceDefinition
+  { onSubmit, rosterLock }: {
+    onSubmit: (v: {
+      pieceDefinitionKey: string
+      piece: PieceValue,
+      draftInfo: PieceDraftInfo,
+    })=>unknown,
+    rosterLock: RosterLockV1Config
   }
 ){
+  const [pieceDefinitionKey, setPieceDefintionKey] = useState<string>("");
   const [currentFolder, setCurrentFolder] = useState<null | string>(null);
-  const [pathVariables, setPathVariables] = useState(resetPathVariables(pieceDefinition));
+  const [pathVariables, setPathVariables] = useState<null | Record<string, string>>(null);
   const [assetsAndFiles, setAssetsAndFiles] = useState<null | AssetsAndFilesValue>(null);
+
+
+  const pieceDefinition = rosterLock.engine.pieceDefinitions[pieceDefinitionKey]
+
+  useEffect(()=>{
+    if(!pieceDefinition) return;
+    setPathVariables(resetPathVariables(pieceDefinition))
+  }, [pieceDefinition])
+
+  if(Object.values(rosterLock.engine.pieceDefinitions).length === 0){
+    return <>
+      <h1 className="error" >No Ddefinitions set in engine</h1>
+    </>
+  }
 
   return (
     <>
+      <PieceDefinitionInput
+        value={pieceDefinitionKey}
+        onChange={setPieceDefintionKey}
+        rosterLock={rosterLock}
+      />
       <div className="section">
         <div>
           <button
@@ -42,7 +68,7 @@ export function AddPieceFromFolder(
         </div>
         {currentFolder && <div>Selected: {currentFolder}</div>}
       </div>
-      {pieceDefinition.pathVariables.length > 0 && (
+      {pieceDefinition && pathVariables && pieceDefinition.pathVariables.length > 0 && (
         <div className="section">
           <PathVariableValuesInput
             value={pathVariables}
@@ -51,7 +77,7 @@ export function AddPieceFromFolder(
           />
         </div>
       )}
-      {currentFolder && (
+      {pieceDefinition && pathVariables && currentFolder && (
         <AssetsAndFiles
           folderPath={currentFolder}
           pathVariables={pathVariables}
@@ -59,7 +85,7 @@ export function AddPieceFromFolder(
           onChange={setAssetsAndFiles}
         />
       )}
-      {currentFolder && assetsAndFiles && (
+      {pieceDefinition && pathVariables && currentFolder && assetsAndFiles && (
         <CreatePiece
           folderPath={currentFolder}
           fileErrors={assetsAndFiles.errors}
@@ -67,7 +93,11 @@ export function AddPieceFromFolder(
           pathVariables={pathVariables}
           pieceDefinition={pieceDefinition}
           onSubmit={(piece)=>{
-            onSubmit({ piece, draftInfo: { referenceFolder: currentFolder, testedDownloadSources: [] } })
+            onSubmit({
+              pieceDefinitionKey,
+              piece,
+              draftInfo: { referenceFolder: currentFolder, testedDownloadSources: [] }
+            })
           }}
         />
       )}
