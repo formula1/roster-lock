@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useRecentFiles } from "../../globals/recent-files";
 import { replaceParams } from "../../utils/router";
-import { RosterLockConfigPaths } from "../config-editor/paths";
+import { FileRosterConfigPaths } from "../config-editor";
 import { ToolTipSpan } from "../../components/ToolTip";
 
 import { RECENT_ROSTERLOCK_CONFIG_FILES_KEY } from "../config-editor/constants";
@@ -61,7 +61,7 @@ export function RecentFiles(
           >
             <div className="file-info">
               <Link to={
-                replaceParams(RosterLockConfigPaths.fileRoot, { filePath: encodeURIComponent(file.path) })
+                replaceParams(FileRosterConfigPaths.Root, { filePath: encodeURIComponent(file.path) })
               } >
                 <ToolTipSpan className="file-name" tip={file.path}>{file.name}</ToolTipSpan>
               </Link>

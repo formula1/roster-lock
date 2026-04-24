@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router";
-import { RosterLockConfigPaths } from "../config-editor/paths";
+import { FileRosterConfigPaths, NewRosterConfigPaths  } from "../config-editor";
 import { replaceParams } from "../../utils/router";
 import { nativeWindow } from "../../tauri/window";
 import { fs } from "../../tauri/fs";
@@ -36,13 +36,13 @@ export function OpenFile(){
         const draftSuccess = ROSTERLOCK_V1_DRAFT_CASTER_JSONSCHEMA.safeCast(json, true);
         if(draftSuccess.valid){
           return navigate(
-            replaceParams(RosterLockConfigPaths.fileRoot, { filePath: encodeURIComponent(filePath) })
+            replaceParams(FileRosterConfigPaths.Root, { filePath: encodeURIComponent(filePath) })
           )
         }
         const lockSuccess = ROSTERLOCK_V1_CASTER_JSONSCHEMA.safeCast(json, true);
         if(lockSuccess.valid){
           return navigate(
-            RosterLockConfigPaths.newRoot,
+            NewRosterConfigPaths.Root,
             { state: { lockContents: lockSuccess.value } }
           )
         }

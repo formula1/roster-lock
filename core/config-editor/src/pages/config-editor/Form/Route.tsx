@@ -7,7 +7,7 @@ import { EngineTest } from "./EngineTest";
 import { RosterConfigEditPage } from "./Rosters";
 import { relative } from "../../../utils/router";
 
-import { UnderConstruction } from "../../Util/UnderConstructuon";
+import { UnderConstruction } from "../../Util/UnderConstruction";
 
 
 export const ConfigEditorRoute = (

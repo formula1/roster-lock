@@ -1,6 +1,6 @@
 
 import { Link } from "react-router-dom";
-import { RosterLockConfigPaths } from "../config-editor/paths";
+import { NewRosterConfigPaths  } from "../config-editor";
 import { RecentFiles } from "./RecentFiles";
 import { OpenFile } from "./OpenFile";
 
@@ -12,7 +12,7 @@ export function HomePage(){
 
       <div style={{ marginBottom: '30px' }}>
         <h2>Create New Config</h2>
-        <Link to={RosterLockConfigPaths.newRoot}>
+        <Link to={NewRosterConfigPaths.Root}>
           <button>Create New</button>
         </Link>
       </div>
