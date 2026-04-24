@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 
-type ProcessResult<T> = (
-  | { status: "pending", previous: T | null, update: ()=>void }
-  | { status: "failed", error: unknown, previous: T | null, update: ()=>void }
-  | { status: "success", value: T, update: ()=>void }
+export type ProcessResult<T> = (
+  | { status: "pending", previous: T | null, refresh: ()=>void }
+  | { status: "failed", error: unknown, previous: T | null, refresh: ()=>void }
+  | { status: "success", value: T, refresh: ()=>void }
 );
 
 export function usePromisedMemo<Deps extends readonly unknown[], T>(
@@ -11,9 +11,9 @@ export function usePromisedMemo<Deps extends readonly unknown[], T>(
 ){
   const activeProcess = useRef(-1);
   const [shouldRun, setShouldRun] = useState(Date.now());
-  const update = useCallback(()=>(setShouldRun(Date.now())), []);
+  const refresh = useCallback(()=>(setShouldRun(Date.now())), []);
   const [result, setResult] = useState<ProcessResult<T>>({
-    status: "pending", previous: null, update
+    status: "pending", previous: null, refresh
   });
   useEffect(()=>{
     const active = Date.now();
@@ -21,20 +21,20 @@ export function usePromisedMemo<Deps extends readonly unknown[], T>(
     setResult({
       status: "pending",
       previous: extractValue(result),
-      update
+      refresh
     });
     Promise.resolve().then(async function(){
       try {
         const value = await getValue();
         if(activeProcess.current !== active) return;
-        setResult({ status: "success", value, update });
+        setResult({ status: "success", value, refresh });
       }catch(e){
         if(activeProcess.current !== active) return;
         setResult({
           status: "failed",
           error: e,
           previous: extractValue(result),
-          update
+          refresh
         });
       }
     });
