@@ -57,7 +57,7 @@ export function RecentFiles(
         {displayFiles.map((file, index) => (
           <div
             key={`${file.path}-${index}`}
-            title={file.path}
+            style={{ padding: "5px", border: "solid 1px #000", borderRadius: "5px" }}
           >
             <div className="file-info">
               <Link to={
@@ -80,7 +80,7 @@ export function RecentFiles(
               }}
               title="Remove from recent files"
             >
-              ×
+              Remove From Recent Files
             </button>
           </div>
         ))}
