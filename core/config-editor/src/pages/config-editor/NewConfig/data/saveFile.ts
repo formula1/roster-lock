@@ -8,7 +8,7 @@ import { join as pathJoin } from "path";
 import { replaceParams } from "../../../../utils/router";
 import { useNewConfig } from "./Config";
 
-import { RosterLockConfigPaths } from "../../paths";
+import { FileRosterConfigPaths } from "../../FileConfig";
 
 export function useSaveFile(){
   const navigate = useNavigate();
@@ -28,6 +28,6 @@ export function useSaveFile(){
     if(canceled || !filePath) return;
 
     await fs.writeJSON(filePath, config);
-    navigate(replaceParams(RosterLockConfigPaths.fileRoot, { filePath: encodeURIComponent(filePath) }))
+    navigate(replaceParams(FileRosterConfigPaths.Root, { filePath: encodeURIComponent(filePath) }))
   }, [config, navigate])
 }

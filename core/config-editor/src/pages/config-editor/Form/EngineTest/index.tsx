@@ -10,11 +10,10 @@ import { ToolTipSpan } from "../../../../components/ToolTip";
 
 import { TestForm, TestFormValue, valueIsReady as testFormValueIsReady } from "./Form";
 
-type RosterLockV1Config = RosterLockV1Draft["stagedLock"];
+import { useRosterLock } from "../Contexts/RosterLock";
 
-export function EngineTest(
-  { config }: { config: RosterLockV1Config }
-){
+export function EngineTest(){
+  const { value: config } = useRosterLock()
   const [formValue, setFormValue] = useState<TestFormValue>({
     folderPath: "",
     pieceName: "",

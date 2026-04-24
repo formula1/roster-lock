@@ -34,3 +34,31 @@ export function EngineConfigForm({ value, onChange }: InputProps<RosterLockV1Dra
     />
   </>
 }
+
+import { useFollowButtons } from "../Contexts/Buttons";
+import { useRosterLock } from "../Contexts/RosterLock";
+import { EngineLegend } from "./Legend";
+
+import { FollowButtonForm } from "../../../../components/FollowButtonForm";
+
+export function EngineEditPage(){
+  const { value, onChange } = useRosterLock();
+  const buttons = useFollowButtons();
+  
+
+  return <div style={{ overflow: "hidden", flexGrow: 1 }}>
+    <h1>New Engine Config</h1>
+    <FollowButtonForm
+      info={{
+        title: "Engine Config",
+        note: <EngineLegend config={value} />,
+      }}
+      buttons={buttons}
+    >
+      <EngineConfigForm
+        value={value}
+        onChange={onChange}
+      />
+    </FollowButtonForm>
+  </div>
+}

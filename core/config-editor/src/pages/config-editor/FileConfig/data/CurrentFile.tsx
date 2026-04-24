@@ -17,7 +17,7 @@ const {
       throw new Error("File is not a valid draft or lock file")
     }
     if(json.configPurpose === "draft"){
-      return ROSTERLOCK_V1_DRAFT_CASTER_JSONSCHEMA.cast(json)
+      return ROSTERLOCK_V1_DRAFT_CASTER_JSONSCHEMA.cast(json, false)
     }
     throw new Error("File is not a valid draft file")
   }

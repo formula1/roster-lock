@@ -1,26 +1,11 @@
 
-import { useCurrentRosterLockFile } from "./data/CurrentFile";
+import { useRosterLock } from "./Contexts/RosterLock";
 
-export function FileConfigRoot(){
-  const currentFile = useCurrentRosterLockFile();
-
-  if(!currentFile.activeFile){
-    return <div>No active file</div>
-  }
-
-  if(currentFile.state === "loading"){
-    return <div>Loading...</div>
-  }
-
-  if(currentFile.state === "failed"){
-    return <div>Failed</div>
-  }
-
-  const config = currentFile.value.stagedLock;
+export function ConfigRoot(){
+  const { value: config } = useRosterLock();
 
   return (
     <>
-      <h1><button onClick={()=>(currentFile.save())}>Save File</button></h1>
       <div>
         <div>Engine: {config.engine.name} - {config.engine.version}</div>
         <table>

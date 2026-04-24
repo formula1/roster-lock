@@ -1,7 +1,6 @@
 import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCurrentRosterLockFile } from "./CurrentFile";
-import { RosterLockConfigPaths } from "../../paths";
 import { nativeWindow } from "../../../../tauri/window";
 import { replaceParams } from "../../../../utils/router";
 
