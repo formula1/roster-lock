@@ -3,10 +3,16 @@ import { PropsWithChildren, ReactNode, useEffect, useRef } from "react";
 import "./style.css";
 import { ClickableButton } from "./ClickableButton";
 
+export type FollowButtonConfig = {
+  label: string,
+  onClick: ()=>any,
+  disabled?: boolean,
+};
+
 type Props = PropsWithChildren<{
   side?: "left" | "right",
   info: { title: string, description?: string, note?: ReactNode },
-  buttons: Array<{ label: string, onClick: ()=>any, disabled?: boolean }>,
+  buttons: Array<FollowButtonConfig>,
 }>;
 
 export function FollowButtonForm({ side, info, buttons, children }: Props){
