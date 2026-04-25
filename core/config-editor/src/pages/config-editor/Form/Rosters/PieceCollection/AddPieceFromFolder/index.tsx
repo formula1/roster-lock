@@ -39,12 +39,12 @@ export function AddPieceFromFolder(
 
   return (
     <>
-      <PieceDefinitionInput
-        value={pieceDefinitionKey}
-        onChange={setPieceDefintionKey}
-        rosterLock={rosterLock}
-      />
       <div className="section">
+        <PieceDefinitionInput
+          value={pieceDefinitionKey}
+          onChange={setPieceDefintionKey}
+          rosterLock={rosterLock}
+        />
         <div>
           <button
             onClick={async () => {
