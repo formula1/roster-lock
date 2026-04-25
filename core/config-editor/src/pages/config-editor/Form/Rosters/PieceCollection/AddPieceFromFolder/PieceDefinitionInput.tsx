@@ -21,11 +21,13 @@ export function PieceDefinitionInput(
       <h3>Choose Piece Definition</h3>
       <ul>
       {Object.entries(rosterLock.engine.pieceDefinitions).map(([k, v])=>(
-        <li>
+        <li key={k} >
           <input
-            type="checkbox"
+            type="radio"
+            name="piece-definition-key"
             checked={k === value}
-            onChange={(e)=>(onChange(k))}
+            value={k}
+            onChange={(e)=>(onChange(e.target.value))}
           />
           <span>{k}</span>
         </li>
