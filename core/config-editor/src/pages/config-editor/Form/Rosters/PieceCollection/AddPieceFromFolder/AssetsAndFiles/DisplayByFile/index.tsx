@@ -26,7 +26,7 @@ export function DisplayByFile(
       if(filters.missing && assets.length === 0) filesArray.push([assetName, { assets }]);
     }
     return filesArray;
-  }, [assets])
+  }, [assets, filters])
 
   return (
     <div>

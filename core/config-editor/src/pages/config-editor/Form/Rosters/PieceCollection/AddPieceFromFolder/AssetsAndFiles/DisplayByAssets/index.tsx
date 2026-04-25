@@ -29,7 +29,7 @@ export function DisplayByAssets(
       }
     }
     return assetsArray;
-  }, [assets])
+  }, [assets, filters])
 
   return (
     <div>
