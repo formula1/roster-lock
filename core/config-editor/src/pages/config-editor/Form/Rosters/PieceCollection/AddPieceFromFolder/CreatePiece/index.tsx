@@ -79,35 +79,29 @@ export function CreatePiece(
     );
   }
 
-  if(status.state === RunnableState.INACTIVE) return (
+  return <>
     <div className="create-piece">
-      <h3><button>Create Piece</button></h3>
+      <h3><button onClick={()=>(status.run())}>Prepare Piece</button></h3>
     </div>
-  );
-
-  if(status.state === RunnableState.PENDING) return (
-    <div className="create-piece">
-      <h3>Creating Piece...</h3>
-      <ProgressTable progressMap={progressMap} />
-    </div>
-  );
-
-  if(status.state === RunnableState.FAILED) return (
-    <div className="create-piece">
-      <h3>Failed</h3>
-      <ProgressTable progressMap={progressMap} />
-      <pre>{JSON.stringify(status.error, null, 2)}</pre>
-    </div>
-  );
-
-  if(status.state === RunnableState.SUCCESS) return (
-    <div className="create-piece">
-      <h3>{"Success => "}<button onClick={() => onSubmit(status.value)}>Create Piece</button></h3>
-      <ProgressTable progressMap={progressMap} />
-      <pre>{JSON.stringify(status.value, null, 2)}</pre>
-    </div>
-  );
-
+    {status.state === RunnableState.PENDING ? (
+      <div className="create-piece">
+        <h3>Creating Piece...</h3>
+        <ProgressTable progressMap={progressMap} />
+      </div>
+    ) : status.state === RunnableState.FAILED ? (
+      <div className="create-piece">
+        <h3>Failed</h3>
+        <ProgressTable progressMap={progressMap} />
+        <pre>{JSON.stringify(status.error, null, 2)}</pre>
+      </div>
+    ) : status.state === RunnableState.SUCCESS ? (
+      <div className="create-piece">
+        <h3>{"Success => "}<button onClick={() => onSubmit(status.value)}>Create Piece</button></h3>
+        <ProgressTable progressMap={progressMap} />
+        <pre>{JSON.stringify(status.value, null, 2)}</pre>
+      </div>
+    ) : null}
+  </>
 }
 
 function ProgressTable(
