@@ -1,5 +1,8 @@
 
-import { urlSchemaValidator } from "../lock/rosters/caster-json-schema/human";
+import {
+  urlSchemaValidator,
+  friendlyStringSchemaValidator,
+} from "../lock/rosters/caster-json-schema/human";
 import {
   downloadableSourceSchemaValidator,
   downloadableSourceListSchemaValidator,
@@ -16,6 +19,8 @@ function ignore(){ return true; }
 
 export const rosterLockPieceMetadataKeywords = [
   urlSchemaValidator,
+  friendlyStringSchemaValidator,
+
   downloadableSourceSchemaValidator,
   downloadableSourceListSchemaValidator,
   defineKeyword({
