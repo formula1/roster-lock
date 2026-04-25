@@ -83,10 +83,10 @@ function FileItem(
     </>
   }
   return (
-    <li>
+    <>
       <div>File path: {filePath}</div>
       <div>Asset: {assets[0].name}</div>
-    </li>
+    </>
   )
 }
 
