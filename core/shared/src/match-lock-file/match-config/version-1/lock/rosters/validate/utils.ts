@@ -8,6 +8,6 @@ export function validateSha256(value: string){
 export function validateURL(value: string){
   if(!URL.canParse(value)) throw new Error(`${value} is not a valid URL`);
   const url = new URL(value);
-  if(url.protocol === "http" && url.hostname === "localhost") return;
+  if(url.protocol === "http:" && url.hostname === "localhost") return;
   if(!["https:"].includes(url.protocol)) throw new Error(`${value} is not a valid https`);
 }
