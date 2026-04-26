@@ -96,9 +96,10 @@ export function CreatePiece(
       </div>
     ) : status.state === RunnableState.SUCCESS ? (
       <div className="create-piece">
-        <h3>{"Success => "}<button onClick={() => onSubmit(status.value)}>Create Piece</button></h3>
+        <h3>Success</h3>
         <ProgressTable progressMap={progressMap} />
         <pre>{JSON.stringify(status.value, null, 2)}</pre>
+        <button onClick={() => onSubmit(status.value)}>Add Piece to Roster</button>
       </div>
     ) : null}
   </>
