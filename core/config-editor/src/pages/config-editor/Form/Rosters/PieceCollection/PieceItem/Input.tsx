@@ -37,7 +37,7 @@ export function PieceValueItemInput({
         >Remove</button>
       </h4>
       <button onClick={() => setDisplayRaw(!displayRaw)}>
-        {displayRaw ? 'Display Clean' : 'Display Raw'} Raw
+        {displayRaw ? 'Display Clean' : 'Display Raw'}
       </button>
       {displayRaw ? (
         <pre>{JSON.stringify(value, null, 2)}</pre>
