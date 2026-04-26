@@ -1,4 +1,9 @@
+import { CSSProperties } from "react";
 import toolttipIcon from "./icons8-info.svg";
+
+export const SPAN_STYLE: CSSProperties = {
+  display: "inline-flex", alignItems: "center", gap: "0.25em"
+};
 
 export function ToolTipSpan(
   { children, tip, clickable = false, className, style }: {
@@ -12,7 +17,7 @@ export function ToolTipSpan(
   return <span
     data-tooltip-id={clickable ? "global-tooltip-clickable" : "global-tooltip-non-clickable"}
     data-tooltip-content={tip}
-    style={{ display: "inline-flex", alignItems: "center", gap: "0.25em", ...style }}
+    style={{ ...SPAN_STYLE, ...style }}
     className={className}
   >
     <img
