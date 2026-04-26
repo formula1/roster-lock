@@ -60,6 +60,7 @@ export function AddPieceFromFolder(
 
               const folderPath = result.filePaths[0];
               setCurrentFolder(folderPath);
+              setAssetsAndFiles(null);
             } catch (error) {
               console.error('Error opening file:', error);
             }
@@ -92,12 +93,16 @@ export function AddPieceFromFolder(
           filesWithAssets={assetsAndFiles.filesWithAssets}
           pathVariables={pathVariables}
           pieceDefinition={pieceDefinition}
-          onSubmit={(piece)=>{
-            onSubmit({
+          onSubmit={async (piece)=>{
+            await onSubmit({
               pieceDefinitionKey,
               piece,
               draftInfo: { referenceFolder: currentFolder, testedDownloadSources: [] }
             })
+            setPieceDefintionKey("");
+            setCurrentFolder(null);
+            setPathVariables(null)
+            setAssetsAndFiles(null);
           }}
         />
       )}
