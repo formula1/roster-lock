@@ -29,8 +29,7 @@ export function DownloadSources({ value, onChange, piece, pieceDefinition }: (
   return (
     <div className="section">
       <div><ToolTipSpan tip={downloadSourcesTT}>Download Sources</ToolTipSpan></div>
-      {value.length === 0 && <div className="error">At least one source is required</div>}
-      {value.length > 1 && (
+      {value.length === 0 ? <div className="error">At least one source is required</div> : (
         <div>
           {value.map((source, index) => (
             <>
