@@ -33,7 +33,7 @@ export function DownloadSources({ value, onChange, piece, pieceDefinition }: (
         <div>
           {value.map((source, index) => (
             <>
-            <div key={index}>
+            <div key={index} style={{ display: "flex" }}>
               <button
                 onClick={() => onChange(value.filter((_, i) => i !== index))}
               >Remove</button>
@@ -54,6 +54,7 @@ export function DownloadSources({ value, onChange, piece, pieceDefinition }: (
                 }}
               >Test</button>
               <ValidatingTextInput
+                style={{ flexGrow: 1 }}
                 value={source}
                 onChange={v => onChange(value.map((oldSource, i) => i !== index ? oldSource : v))}
                 validate={validateDownloadableSource}
