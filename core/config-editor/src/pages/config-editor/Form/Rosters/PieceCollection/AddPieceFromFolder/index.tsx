@@ -38,7 +38,7 @@ export function AddPieceFromFolder(
   }
 
   return (
-    <>
+    <div className="section" >
       <div className="section">
         <PieceDefinitionInput
           value={pieceDefinitionKey}
@@ -101,7 +101,7 @@ export function AddPieceFromFolder(
           }}
         />
       )}
-    </>
+    </div>
   )
 }
 
