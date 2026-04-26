@@ -1,4 +1,4 @@
-import { ErrorObject, SchemaValidateFunction } from "ajv";
+import { SchemaValidateFunction } from "ajv";
 import { SafeKeyword } from "./safe-keyword";
 import { JSONSchemaType } from "./schema-types";
 
@@ -24,11 +24,10 @@ function wrapValidator<T>(
   keyword: string,
   validator: (v: any, engine: T, path: string)=>unknown
 ): SchemaValidateFunction {
-  return function(
-    this: { errors: Array<ErrorObject> },
-    schema,
+  const wrapped: SchemaValidateFunction = function(
+    _schema,
     value: any,
-    parentSchema,
+    _parentSchema,
     dataCxt,
   ){
     if(!dataCxt) return true;
@@ -36,7 +35,7 @@ function wrapValidator<T>(
       validator(value, dataCxt.rootData as T, dataCxt.instancePath);
       return true;
     }catch(e: any){
-      this.errors = [{
+      wrapped.errors = [{
         instancePath: dataCxt.instancePath,
         schemaPath: "",
         keyword: keyword,
@@ -46,5 +45,6 @@ function wrapValidator<T>(
       return false;
     }
   }
+  return wrapped;
 }
 
