@@ -1,5 +1,5 @@
 import { RosterLockV1Config, RosterLockV1Draft } from "@roster-lock/types";
-import { cloneJSON } from "@roster-lock/shared";
+import { cloneJSON } from "@roster-lock/utils";
 
 export const EMPTY_ROSTER_LOCK: RosterLockV1Config = {
   configPurpose: "lock",

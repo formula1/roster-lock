@@ -3,7 +3,8 @@ import { createContext, useCallback, useContext, useMemo, useState } from "react
 import { RosterLockV1Config, RosterLockV1Draft } from "@roster-lock/types";
 import { StateInputProps } from "../../../../utils/react";
 import { useLocation } from "react-router";
-import { cloneJSON, ROSTERLOCK_V1_CASTER_JSONSCHEMA } from "@roster-lock/shared";
+import { ROSTERLOCK_V1_CASTER_JSONSCHEMA } from "@roster-lock/shared";
+import { cloneJSON } from "@roster-lock/utils";
 
 import { EMPTY_ROSTER_DRAFT } from "../../Form/constants/roster-configs";
 

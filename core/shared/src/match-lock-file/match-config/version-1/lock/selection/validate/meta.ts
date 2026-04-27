@@ -3,7 +3,7 @@ import Ajv, { JSONSchemaType } from "ajv";
 import {
   RosterLockV1Config, PieceType, JSONShallowObject, SelectionPieceMeta
 } from "@roster-lock/types";
-import { cloneJSON } from "../../../../../../utils/JSON";
+import { cloneJSON } from "@roster-lock/utils";
 
 export function validateSelectionPieceMeta(
   meta: SelectionPieceMeta<any>,

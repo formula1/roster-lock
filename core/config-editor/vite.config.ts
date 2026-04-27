@@ -49,14 +49,14 @@ export default defineConfig(async (): Promise<UserConfig>=>({
     },
     commonjsOptions: {
       // Include the shared module for CommonJS transformation
-      include: [/node_modules/, /shared/],
+      include: [/node_modules/, /shared/, /utils/],
     },
     sourcemap: 'inline', // or just true for separate .map files
     minify: false, // optional: easier to read the compiled output
   },
   optimizeDeps: {
     // Force Vite to pre-bundle the shared module and polyfills
-    include: ['@roster-lock/shared', 'path-browserify'],
+    include: ['@roster-lock/shared', '@roster-lock/utils', 'path-browserify'],
     exclude: ['magnet-uri'],
   },
   server: {

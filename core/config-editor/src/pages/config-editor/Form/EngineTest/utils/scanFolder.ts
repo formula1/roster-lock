@@ -9,7 +9,7 @@ import { updateViolations, updateEmptyViolations, type CountViolation } from "./
 
 import { TestFormValue } from "../Form";
 
-import { cloneJSON } from "@roster-lock/shared";
+import { cloneJSON } from "@roster-lock/utils";
 
 export const DEFAULT_SCAN_UPDATE: ScanUpdateType = {
   results: [],

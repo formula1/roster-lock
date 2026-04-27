@@ -5,7 +5,7 @@ import {
 } from "react";
 import { fs } from "../../tauri/fs";
 import { usePromisedMemo } from "../../utils/react/promised-memo";
-import { cloneJSON, JSON_Unknown } from "@roster-lock/shared";
+import { cloneJSON, JSON_Unknown } from "@roster-lock/utils";
 
 import { diff } from 'json-diff-ts';
 

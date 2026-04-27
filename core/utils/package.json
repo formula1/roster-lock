@@ -1,0 +1,19 @@
+{
+  "name": "@roster-lock/utils",
+  "version": "1.0.0",
+  "description": "Utilities used in multiple roster lock parts",
+  "license": "JSON",
+  "author": "Sam Tobia",
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "types": "src/index.ts",
+  "scripts": {
+    "build": "rimraf ./dist && tsc",
+    "prepare": "npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "rimraf": "^6.1.3",
+    "typescript": "^6.0.3"
+  }
+}

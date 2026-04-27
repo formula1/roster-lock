@@ -3,27 +3,28 @@ import { uniqueId } from "../string";
 
 import { SimpleMessenger } from "./types"
 
-import {
-  Object as CastObject,
-  String as CastString,
-  Unknown as CastUnknown,
-  Union as CastUnion,
-  Literal,
-} from "runtypes";
+type RequestMessage = {
+  type: "request",
+  path: string,
+  id: string,
+  data: unknown
+}
 
-
-const RequestMessageCaster = CastObject({
-  type: Literal("request"),
-  path: CastString,
-  id: CastString,
-  data: CastUnknown,
-})
+function castRequest(message: unknown): message is RequestMessage {
+  if(typeof message !== "object") return false
+  if(Array.isArray(message) || message === null) return false;
+  if(!("type" in message) || message.type !== "request") return false;
+  if(!("path" in message) || typeof message.path !== "string") return false;
+  if(!("id" in message) || typeof message.id !== "string") return false;
+  if(!("data" in message)) return false;
+  return true;
+}
 
 export function handleRequest(
   messager: SimpleMessenger, path: string, handler: (data: undefined | JSON_Unknown)=>Promise<JSON_Unknown>
 ){
   messager.onMessage(async (message)=>{
-    if(!RequestMessageCaster.guard(message)){
+    if(!castRequest(message)){
       return console.log("Ignoring Message, Invalid Request Message", message);
     }
     const { path: messagePath, id: messageId, data } = message;
@@ -51,13 +52,28 @@ export function handleRequest(
   })
 }
 
-const ResponseMessageCaster = CastObject({
-  type: Literal("response"),
-  path: CastString,
-  id: CastString,
-  responseType: CastUnion(Literal("result"), Literal("error")),
-  data: CastUnknown,
-})
+type ResponseMessage = {
+  type: "response",
+  path: string,
+  id: string,
+  responseType: "result" | "error",
+  data: unknown
+}
+
+function castResponse(message: unknown): message is ResponseMessage {
+  if(typeof message !== "object") return false
+  if(Array.isArray(message) || message === null) return false;
+  if(!("type" in message) || message.type !== "response") return false;
+  if(!("path" in message) || typeof message.path !== "string") return false;
+  if(!("id" in message) || typeof message.id !== "string") return false;
+  if(
+    !("responseType" in message) ||
+    typeof message.responseType !== "string" ||
+    ["result", "error"].includes(message.responseType)
+  ) return false;
+  if(!("data" in message)) return false;
+  return true;
+}
 
 export function makeRequest(
   messager: SimpleMessenger, path: string, data: undefined | JSON_Unknown
@@ -66,7 +82,7 @@ export function makeRequest(
   const { resolve, reject, promise } = Promise.withResolvers<JSON_Unknown>();
   const off = messager.onMessage(async (message)=>{
     try {
-      if(!ResponseMessageCaster.guard(message)){
+      if(!castResponse(message)){
         return console.log("Ignoring Message, Invalid Response Message", message);
       }
       const { path: messagePath, id: messageId, responseType, data: dataUncasted } = message;

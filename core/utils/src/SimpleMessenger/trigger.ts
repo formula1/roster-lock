@@ -2,26 +2,27 @@ import { JSON_Unknown } from "../JSON";
 
 import { SimpleMessenger } from "./types"
 
-import {
-  Object as CastObject,
-  String as CastString,
-  Unknown as CastUnknown,
-  Union as CastUnion,
-  Literal,
-} from "runtypes";
 
+type TriggerMessage = {
+  type: "trigger",
+  path: string,
+  data: unknown
+}
 
-const TriggerMessageCaster = CastObject({
-  type: Literal("trigger"),
-  path: CastString,
-  data: CastUnknown,
-})
+function castTrigger(message: unknown): message is TriggerMessage {
+  if(typeof message !== "object") return false
+  if(Array.isArray(message) || message === null) return false;
+  if(!("type" in message) || message.type !== "trigger") return false;
+  if(!("path" in message) || typeof message.path !== "string") return false;
+  if(!("data" in message)) return false;
+  return true;
+}
 
 export function handleTrigger(
   messager: SimpleMessenger, path: string, handler: (data: undefined | JSON_Unknown)=>any
 ){
   messager.onMessage(async (message)=>{
-    if(!TriggerMessageCaster.guard(message)){
+    if(!castTrigger(message)){
       return console.log("Ignoring Message, Invalid Trigger Message", message);
     }
     const { path: messagePath, data } = message;

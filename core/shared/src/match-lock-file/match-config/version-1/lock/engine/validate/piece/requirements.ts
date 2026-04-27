@@ -1,4 +1,4 @@
-import { findAllCycles, getCyclesUsingKey } from "../../../../../../../utils/tree";
+import { findAllCycles, getCyclesUsingKey } from "@roster-lock/utils";
 import { RosterLockV1Config } from "@roster-lock/types";
 type RosterLockEngineConfig = RosterLockV1Config["engine"];
 
