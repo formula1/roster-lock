@@ -20,9 +20,9 @@ export async function downloadToFolder(
     
     await result.finishPromise
     
-    process.exit(0);
+    process.exitCode = 0;
   } catch (error) {
     console.error('❌ Download test failed:', error);
-    process.exit(1);
+    process.exitCode = 1;
   }
 }
