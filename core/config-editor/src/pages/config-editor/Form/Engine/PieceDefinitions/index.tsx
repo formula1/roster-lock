@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { type InputProps } from "../../../../../utils/react/input";
-import type { RosterLockV1Config } from "@roster-lock/types";
+import type { RosterLockV1Draft } from "@roster-lock/types";
 import { ToolTipSpan } from "../../../../../components/ToolTip";
 import tooltip from "./piecett.md";
 
 import { CONFIG_ID_PATHS } from "../../../paths";
+
+type RosterLockV1Config = RosterLockV1Draft["stagedLock"]
 
 export function PieceDefinitions(
   { value, onChange, config, setConfig }: (

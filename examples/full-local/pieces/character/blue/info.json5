@@ -1,0 +1,13 @@
+/**
+ * Blue Character Logic
+ *
+ * A speedster with medium HP and low attack.
+ * Stats: { hp: 2, attack: 1, speed: 3 }
+ */
+
+{
+  id: 'blue',
+  name: 'Blue',
+  color: '#3b82f6',
+  stats: { hp: 2, attack: 1, speed: 3 },
+}

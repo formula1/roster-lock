@@ -1,0 +1,11 @@
+{
+  "configPurpose": "piece-meta",
+  "configVersion": 1,
+  "humanInfo": {
+    "name": "Mountain",
+    "author": "match-lock",
+    "url": "http://localhost:7342/pieces/stage/mountain"
+  },
+  "downloadSources": ["http://localhost:7342/pieces/stage/mountain.tar"],
+  "pathVariables": {}
+}

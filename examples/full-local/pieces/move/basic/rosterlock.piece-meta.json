@@ -1,0 +1,11 @@
+{
+  "configPurpose": "piece-meta",
+  "configVersion": 1,
+  "humanInfo": {
+    "name": "Basic",
+    "author": "match-lock",
+    "url": "http://localhost:7342/pieces/move/basic"
+  },
+  "downloadSources": ["http://localhost:7342/pieces/move/basic.tar"],
+  "pathVariables": {}
+}

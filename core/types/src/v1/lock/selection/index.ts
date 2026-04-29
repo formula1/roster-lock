@@ -22,7 +22,10 @@ export type RosterLockSelectionConfig = {
     | SelectionNormalConfig
     | SelectionPreselectedConfig
   )>,
+
   globalValidation?: Array<GasLimittedScript>
+
+  scripts: Record<string, string>
 }
 
 

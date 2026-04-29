@@ -1,7 +1,8 @@
 
 import { Outlet } from "react-router";
 import { LinkTabs } from "../components/Tabs";
-import { RosterLockConfigPaths } from "../pages/config-editor/paths";
+import { NewRosterConfigPaths  } from "../pages/config-editor";
+import { startsWith as pathStartsWith } from "../utils/router";
 
 export function GlobalOutlet(){
   return (
@@ -13,8 +14,8 @@ export function GlobalOutlet(){
         { title: 'About', href: '/about' },
         {
           title: "New Config",
-          href: RosterLockConfigPaths.newRoot,
-          isActive: (location) => location.pathname.startsWith(RosterLockConfigPaths.newRoot),
+          href: NewRosterConfigPaths.Root,
+          isActive: (location) => pathStartsWith(location.pathname, NewRosterConfigPaths.Root),
         }
       ]}
     />

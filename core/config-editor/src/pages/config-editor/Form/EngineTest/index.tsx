@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { RosterLockV1Config, type EngineAssetDefinition } from "@roster-lock/types";
-import { cloneJSON } from "@roster-lock/shared";
+import { RosterLockV1Draft, type EngineAssetDefinition } from "@roster-lock/types";
+import { cloneJSON } from "@roster-lock/utils";
 import {
   DEFAULT_SCAN_UPDATE,
   scanFolder,
@@ -10,9 +10,10 @@ import { ToolTipSpan } from "../../../../components/ToolTip";
 
 import { TestForm, TestFormValue, valueIsReady as testFormValueIsReady } from "./Form";
 
-export function EngineTest(
-  { config }: { config: RosterLockV1Config }
-){
+import { useRosterLock } from "../Contexts/RosterLock";
+
+export function EngineTest(){
+  const { value: config } = useRosterLock()
   const [formValue, setFormValue] = useState<TestFormValue>({
     folderPath: "",
     pieceName: "",

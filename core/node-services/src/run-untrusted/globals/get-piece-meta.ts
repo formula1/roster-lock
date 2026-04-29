@@ -1,5 +1,5 @@
 import { RosterLockV1Config, PieceType } from "@roster-lock/types";
-import { cloneJSON } from "@roster-lock/shared";
+import { cloneJSON } from "@roster-lock/utils";
 
 export function createPieceMetaGetter(
   config: RosterLockV1Config, lockedTypes: Set<PieceType>

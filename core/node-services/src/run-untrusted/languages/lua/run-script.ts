@@ -3,23 +3,26 @@ import { LuaFactory, LuaEngine } from 'wasmoon';
 
 const factory = new LuaFactory()
 
-export const runLuaScript: ScriptRunner<any> = async function(globals, input, script){
+export const runLuaScript: ScriptRunner<any> = async function(
+  globals, input, script, initialMethod
+){
   const lua = await factory.createEngine()
 
   try {
 
-    addGasLimit(lua, 5_000_000);
+    await addGasLimit(lua, 5_000_000);
 
     // Prevent filesystem calls
     lua.global.set('dofile', undefined);
     lua.global.set('loadfile', undefined);
     lua.global.set('io', undefined);
     lua.global.set('os', undefined); // Also block os module
-    lua.global.set('debug', undefined); // Block debug hooks
 
     // Add RNG Globals
     lua.global.set('randomFloat', () =>(globals.randomFloat()));
-    lua.global.set('randomInt', (min: number, max: number) =>(globals.randomInt(min, max)));
+    lua.global.set('randomInt', (min: number, max: number) =>(
+      globals.randomInt(min, max)
+    ));
     lua.global.set('shuffleIndexes', (length: number) =>(
       globals.shuffleIndexes(length, 1)
     ));
@@ -61,9 +64,9 @@ export const runLuaScript: ScriptRunner<any> = async function(globals, input, sc
 
     await lua.doString(script);
 
-    const main = lua.global.get("main")
+    const main = lua.global.get(initialMethod)
     if(typeof main !== "function"){
-      throw new Error("No main function defined in script");
+      throw new Error(`No ${initialMethod} function defined in script`);
     }
     return await main(input.input);
   }finally{
@@ -85,6 +88,7 @@ async function addGasLimit(lua: LuaEngine, maxGas: number){
       end, "", 1)
     end
   `);
+  await lua.doString(`debug = nil`);
 }
 
 async function overrideDefaultRNG(lua: LuaEngine){

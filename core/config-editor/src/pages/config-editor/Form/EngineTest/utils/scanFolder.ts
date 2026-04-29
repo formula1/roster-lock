@@ -1,5 +1,5 @@
 import type { RosterLockEngineConfig } from "@roster-lock/types";
-import { FS } from "../../../../../globals/fs";
+import { fs } from "../../../../../tauri/fs";
 import { type FileTestResult } from "./types";
 
 import { getMatchingAssetsForFile } from "@roster-lock/shared";
@@ -9,7 +9,7 @@ import { updateViolations, updateEmptyViolations, type CountViolation } from "./
 
 import { TestFormValue } from "../Form";
 
-import { cloneJSON } from "@roster-lock/shared";
+import { cloneJSON } from "@roster-lock/utils";
 
 export const DEFAULT_SCAN_UPDATE: ScanUpdateType = {
   results: [],
@@ -34,7 +34,7 @@ export async function scanFolder(
 
   const readState = cloneJSON(DEFAULT_SCAN_UPDATE);
 
-  for await (const walkResult of FS.walkDirStream(folderPath)){
+  for await (const walkResult of fs.walkDirStream(folderPath)){
     // Only process files, skip directories
     if (!walkResult.is_file) return;
 

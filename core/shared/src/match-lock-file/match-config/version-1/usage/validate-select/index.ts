@@ -11,9 +11,11 @@ import { handlePreselectedSelection } from "./selection-types/preselected";
 import { handleNormalSelection } from "./selection-types/normal";
 import { ScriptStarter } from "./types/untrusted-script";
 
+import { RunUntrustedError } from "./constants";
+import { handleValidationResult } from "./handle-validation"
+
 export async function runSelection(
   config: RosterLockV1Config,
-  scriptsByPath: Record<string, string>,
   gameControlledSelections: Record<PieceType, Array<SelectedPiece> | Record<UserId, Array<SelectedPiece>>>,
   userInputs: Record<UserId, UserInput>,
   runScript: (input: ScriptStarter)=>Promise<any>
@@ -58,7 +60,7 @@ export async function runSelection(
     }
     if(selectionConfig.type === "normal"){
       finalSelection[pieceType] = await handleNormalSelection(
-        config, seeds, users, pieceType, selectionConfig, allSelections, scriptsByPath, runScript
+        config, seeds, users, pieceType, selectionConfig, allSelections, runScript
       );
       return;
     }
@@ -68,7 +70,7 @@ export async function runSelection(
   if(!config.selection.globalValidation) return finalSelection;
 
   await Promise.all(config.selection.globalValidation.map(async (script)=>{
-    await runScript({
+    return handleValidationResult(script, runScript({
       config,
       randomSeeds: seeds,
       purpose: {
@@ -77,9 +79,8 @@ export async function runSelection(
         pieceTypes: Object.keys(config.engine.pieceDefinitions),
         input: finalSelection,
       },
-      scripts: scriptsByPath,
-      entryScriptPath: script.src,
-    })
+      entryScript: script,
+    }))
   }));
 
   return finalSelection;

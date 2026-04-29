@@ -1,5 +1,5 @@
 import { getProcessorsFromPathnameMimetypes } from "../../utils";
-import { createSimpleEmitter } from "@roster-lock/shared";
+import { createSimpleEmitter } from "@roster-lock/utils";
 import { Torrent, TorrentFile } from 'webtorrent';
 import { saveStreamToFilesystem } from "../../utils";
 import { PassThrough } from "stream";

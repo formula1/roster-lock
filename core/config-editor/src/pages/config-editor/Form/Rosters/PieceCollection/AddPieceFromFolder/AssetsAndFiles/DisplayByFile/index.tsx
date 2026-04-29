@@ -3,7 +3,7 @@ import { PieceDefinition } from "../../../types"
 import { getAssetsOfFiles } from "@roster-lock/shared";
 
 import { ToolTipSpan } from "../../../../../../../../components/ToolTip";
-import missingFilesTT from "./missingFilesTT.md";
+import missingAssetsTT from "./missingAssetsTT.md";
 import multipleAssetsTT from "./multipleAssetsTT.md";
 
 export function DisplayByFile(
@@ -26,7 +26,7 @@ export function DisplayByFile(
       if(filters.missing && assets.length === 0) filesArray.push([assetName, { assets }]);
     }
     return filesArray;
-  }, [assets])
+  }, [assets, filters])
 
   return (
     <div>
@@ -39,7 +39,7 @@ export function DisplayByFile(
           <ToolTipSpan tip={multipleAssetsTT}>{filters.multiple ? 'Hide ' : 'Show'}Multiple Matches</ToolTipSpan>
         </button>
         <button onClick={() => setFilters({ ...filters, missing: !filters.missing })}>
-          <ToolTipSpan tip={missingFilesTT}>{filters.missing ? 'Hide ' : 'Show'}Missing</ToolTipSpan>
+          <ToolTipSpan tip={missingAssetsTT}>{filters.missing ? 'Hide ' : 'Show'}Missing</ToolTipSpan>
         </button>
       </div>
       <ul>
@@ -83,10 +83,10 @@ function FileItem(
     </>
   }
   return (
-    <li>
+    <>
       <div>File path: {filePath}</div>
       <div>Asset: {assets[0].name}</div>
-    </li>
+    </>
   )
 }
 

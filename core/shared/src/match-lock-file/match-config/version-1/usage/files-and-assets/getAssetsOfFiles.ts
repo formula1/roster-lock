@@ -1,3 +1,5 @@
+import { FILES_TO_IGNORE } from "./constants";
+
 import { getMatchingAssetsForFile } from "./getMatchingAsset";
 
 import { PieceDefinition, EngineAssetDefinition } from "./types";
@@ -15,6 +17,8 @@ export async function getAssetsOfFiles(
   const assetCounts = new Map<string, { files: Array<string>, asset: EngineAssetDefinition }>();
   const fileCounts = new Map<string, { assets: Array<EngineAssetDefinition> }>();
   for await (const filePath of files){
+    if(FILES_TO_IGNORE.includes(filePath)) continue;
+
     const assetMatching = getMatchingAssetsForFile(pieceDefinition, pathVariables, filePath);
     const asset = assetMatching[0];
     if(!asset){

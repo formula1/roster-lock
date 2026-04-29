@@ -1,0 +1,11 @@
+{
+  "configPurpose": "piece-meta",
+  "configVersion": 1,
+  "humanInfo": {
+    "name": "Weak",
+    "author": "match-lock",
+    "url": "http://localhost:7342/pieces/move/weak"
+  },
+  "downloadSources": ["http://localhost:7342/pieces/move/weak.tar"],
+  "pathVariables": {}
+}

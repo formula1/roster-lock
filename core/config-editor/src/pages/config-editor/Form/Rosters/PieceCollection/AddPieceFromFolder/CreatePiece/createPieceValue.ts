@@ -7,7 +7,7 @@ import {
   calculatePieceVersion,
   getAssetsOfFiles
 } from "@roster-lock/shared";
-import { FS } from "../../../../../../../globals/fs";
+import { fs } from "../../../../../../../tauri/fs";
 import { PieceDefinition, PieceValue } from "../../types";
 
 export type ProgressListener = (progress: { file: string, total: number, current: number })=>any
@@ -44,8 +44,8 @@ export async function createPieceValue(
       piece.version = await calculatePieceVersion(
         filesWithAssets, async (path)=>{
           path = pathJoin(folderPath, path);
-          const byteSize = await FS.stat(path).then(r=>r.size);
-          return { byteSize, stream: FS.getFileStream(path) };
+          const byteSize = await fs.stat(path).then(r=>r.size);
+          return { byteSize, stream: fs.getFileStream(path) };
         },
         progressListener
       )
@@ -54,8 +54,8 @@ export async function createPieceValue(
     Promise.resolve().then(async ()=>{
       try {
         const path = pathJoin(folderPath, PATH_ROSTERLOCK_PIECE_META);
-        if(!await FS.exists(path)) return;
-        const json = await FS.readJSON(path);
+        if(!await fs.exists(path)) return;
+        const json = await fs.readJSON(path);
         const metaData = ROSTERLOCK_V1_PIECEMETADATA_CASTER_JSONSCHEMA.cast(json, true);
         piece.downloadSources = metaData.downloadSources;
         piece.humanInfo = metaData.humanInfo;

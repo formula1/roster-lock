@@ -1,0 +1,11 @@
+{
+  "configPurpose": "piece-meta",
+  "configVersion": 1,
+  "humanInfo": {
+    "name": "Clear Weather",
+    "author": "match-lock",
+    "url": "http://localhost:7342/pieces/weather/none"
+  },
+  "downloadSources": ["http://localhost:7342/pieces/weather/none.tar"],
+  "pathVariables": {}
+}

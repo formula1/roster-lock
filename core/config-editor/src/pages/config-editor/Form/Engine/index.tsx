@@ -1,10 +1,10 @@
 
-import type { RosterLockV1Config } from "@roster-lock/types";
+import type { RosterLockV1Draft } from "@roster-lock/types";
 import type { InputProps } from "../../../../utils/react/input";
 import { PieceDefinitions } from "./PieceDefinitions";
 export { EngineLegend } from "./Legend";
 
-export function EngineConfigForm({ value, onChange }: InputProps<RosterLockV1Config>){
+export function EngineConfigForm({ value, onChange }: InputProps<RosterLockV1Draft["stagedLock"]>){
   const engine = value.engine;
   return <>
     <div className="section">
@@ -33,4 +33,32 @@ export function EngineConfigForm({ value, onChange }: InputProps<RosterLockV1Con
       setConfig={onChange}
     />
   </>
+}
+
+import { useFollowButtons } from "../Contexts/Buttons";
+import { useRosterLock } from "../Contexts/RosterLock";
+import { EngineLegend } from "./Legend";
+
+import { FollowButtonForm } from "../../../../components/FollowButtonForm";
+
+export function EngineEditPage(){
+  const { value, onChange } = useRosterLock();
+  const buttons = useFollowButtons();
+  
+
+  return <div style={{ overflow: "hidden", flexGrow: 1 }}>
+    <h1>New Engine Config</h1>
+    <FollowButtonForm
+      info={{
+        title: "Engine Config",
+        note: <EngineLegend config={value} />,
+      }}
+      buttons={buttons}
+    >
+      <EngineConfigForm
+        value={value}
+        onChange={onChange}
+      />
+    </FollowButtonForm>
+  </div>
 }

@@ -121,7 +121,7 @@ export function bindStepsToBridge(
       decryptedSelections[user.publicKey] = casted.data;
     }))
     const finalSelection = await runSelection(
-      lockConfig, scriptsByPath, gameControlledSelections, decryptedSelections, runUntrustedScript
+      lockConfig, gameControlledSelections, decryptedSelections, runUntrustedScript
     );
     stateTracker.set({ state: "user-download", finalSelection: finalSelection });
 

@@ -5,13 +5,14 @@ import mime from 'mime-types';
 
 
 export async function runUntrustedScript(
-  { config, randomSeeds, purpose, scripts, entryScriptPath }: ScriptStarter,
+  { config, randomSeeds, purpose, entryScript }: ScriptStarter,
 ) {
-  const script = scripts[entryScriptPath];
+  const entryScriptPath = entryScript.src
+  const script = config.selection.scripts[entryScriptPath];
   if(!script){
     throw new Error("Missing entry script " + entryScriptPath);
   }
-  const mimetype = mime.lookup(entryScriptPath);
+  const mimetype = entryScript.type || mime.lookup(entryScriptPath);
   if(!mimetype){
     throw new Error("Cannot determine mime type of " + entryScriptPath);
   }
@@ -20,7 +21,9 @@ export async function runUntrustedScript(
     throw new Error("Cannot run script of type " + mimetype);
   }
   const globals = getScriptGlobals(
-    config, entryScriptPath, randomSeeds, scripts, purpose
+    config, entryScriptPath, randomSeeds, purpose
   );
-  return await runner.runScript(globals, purpose, script);
+  return await runner.runScript(
+    globals, purpose, script, entryScript.method || "main"
+  );
 }

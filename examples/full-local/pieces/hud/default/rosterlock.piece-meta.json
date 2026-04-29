@@ -1,0 +1,11 @@
+{
+  "configPurpose": "piece-meta",
+  "configVersion": 1,
+  "humanInfo": {
+    "name": "Default HUD",
+    "author": "match-lock",
+    "url": "http://localhost:7342/pieces/hud/default"
+  },
+  "downloadSources": ["http://localhost:7342/pieces/hud/default.tar"],
+  "pathVariables": {}
+}

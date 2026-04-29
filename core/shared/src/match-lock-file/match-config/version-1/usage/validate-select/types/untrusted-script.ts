@@ -3,7 +3,8 @@ import {
   UserId,
   RosterLockV1Config,
   FinalSelection,  
-  SelectedPiece
+  SelectedPiece,
+  GasLimittedScript
 } from "@roster-lock/types";
 
 export type PieceUserValidationInput = {
@@ -38,9 +39,8 @@ export type ScriptPurposeInput = (
 export type ScriptStarter = {
   config: RosterLockV1Config,
   randomSeeds: string[],
-  scripts: Record<string, string>,
 
   purpose: ScriptPurposeInput,
 
-  entryScriptPath: string
+  entryScript: GasLimittedScript
 }

@@ -1,0 +1,11 @@
+{
+  "configPurpose": "piece-meta",
+  "configVersion": 1,
+  "humanInfo": {
+    "name": "Snow",
+    "author": "match-lock",
+    "url": "http://localhost:7342/pieces/move/snow"
+  },
+  "downloadSources": ["http://localhost:7342/pieces/move/snow.tar"],
+  "pathVariables": {}
+}

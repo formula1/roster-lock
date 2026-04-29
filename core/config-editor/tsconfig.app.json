@@ -7,6 +7,7 @@
     "module": "ESNext",
     "skipLibCheck": true,
     "typeRoots": ["./node_modules/@types"],
+    "types": ["node"],
 
     /* Bundler mode */
     "moduleResolution": "bundler",
@@ -21,7 +22,7 @@
     "noUncheckedSideEffectImports": true
   },
   "include": [
-    "src",
+    "src/main.tsx",
     "@types"
   ]
 }

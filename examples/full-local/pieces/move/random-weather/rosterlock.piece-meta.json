@@ -1,0 +1,11 @@
+{
+  "configPurpose": "piece-meta",
+  "configVersion": 1,
+  "humanInfo": {
+    "name": "Random Weather",
+    "author": "match-lock",
+    "url": "http://localhost:7342/pieces/move/random-weather"
+  },
+  "downloadSources": ["http://localhost:7342/pieces/move/random-weather.tar"],
+  "pathVariables": {}
+}

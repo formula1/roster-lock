@@ -3,19 +3,22 @@
   "version": "1.0.0",
   "main": "dist/index.js",
   "scripts": {
+    "prepare": "npm run build",
     "build": "npm run build:ts && npm run build:pkg",
-    "build:ts": "tsc",
+    "build:ts": "rimraf ./dist && tsc",
     "build:pkg": "node scripts/build-sidecar.js",
     "dev": "tsx src/index.ts",
     "start": "node dist/index.js"
   },
   "dependencies": {
     "@roster-lock/node-services": "file:../../node-services",
-    "commander": "^11.1.0"
+    "commander": "^11.1.0",
+    "zod": "^4.3.5"
   },
   "devDependencies": {
     "@types/node": "^20.19.27",
     "@yao-pkg/pkg": "^5.12.0",
+    "rimraf": "^6.1.3",
     "tsx": "^4.0.0",
     "typescript": "^5.0.0"
   }

@@ -13,7 +13,7 @@ export const rar: ArchiveHandler = {
 }
 
 import { PassThrough, Readable, Writable } from 'node:stream';
-import { createSimpleEmitter } from '@roster-lock/shared';
+import { createSimpleEmitter } from '@roster-lock/utils';
 
 class RarArchiveWritable extends Writable implements ArchiveWritable {
   public onFile = createSimpleEmitter<[path: string, contents: Readable]>();

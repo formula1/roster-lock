@@ -2,14 +2,14 @@ import {
   RosterLockV1Schema, RosterLockV1SchemaKeywords, JSONSchemaCaster,
 } from "@roster-lock/shared";
 
-import { ScriptStarter } from "@roster-lock/shared";
+import { ScriptStarter, gasLimittedScriptSchema } from "@roster-lock/shared";
 import { ScriptPurposeInputSchema } from "./purpose-input";
 
 
 import { JSONSchemaType } from "ajv";
 const ScriptStarterSchema: JSONSchemaType<ScriptStarter> = {
   type: "object",
-  required: ["config", "randomSeeds", "scripts", "purpose", "entryScriptPath"],
+  required: ["config", "randomSeeds", "purpose", "entryScript"],
   additionalProperties: false,
   properties: {
     config: RosterLockV1Schema,
@@ -17,13 +17,8 @@ const ScriptStarterSchema: JSONSchemaType<ScriptStarter> = {
       type: "array",
       items: { type: "string" },
     },
-    scripts: {
-      type: "object",
-      required: [],
-      additionalProperties: { type: "string" },
-    },
     purpose: ScriptPurposeInputSchema,
-    entryScriptPath: { type: "string" },
+    entryScript: gasLimittedScriptSchema,
   },
 }
 

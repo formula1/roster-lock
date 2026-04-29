@@ -1,0 +1,12 @@
+{
+  "configPurpose": "piece-meta",
+  "configVersion": 1,
+  "humanInfo": {
+    "name": "Yellow",
+    "author": "match-lock",
+    "url": "http://localhost:7342/pieces/character/yellow"
+  },
+  "downloadSources": ["http://localhost:7342/pieces/character/yellow.tar"],
+  "pathVariables": {}
+}
+

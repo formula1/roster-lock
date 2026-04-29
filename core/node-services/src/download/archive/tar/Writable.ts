@@ -1,6 +1,6 @@
 import { Parser } from 'tar';
 import { ArchiveWritable } from "../types";
-import { createSimpleEmitter } from '@roster-lock/shared';
+import { createSimpleEmitter } from '@roster-lock/utils';
 import { Writable, PassThrough, Readable } from 'stream';
 
 export class TarArchiveWritable extends Writable implements ArchiveWritable {

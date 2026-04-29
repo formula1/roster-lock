@@ -5,6 +5,7 @@ import { ensurePiecesAreInRoster } from "../../ensure-pieces-are-in-roster";
 import { ScriptStarter } from "../../types/untrusted-script";
 
 import { validateUserSelection } from "./validate-user-selection";
+import { handleValidationResult } from "../../handle-validation";
 
 export async function handleNormalSelection(
   config: RosterLockV1Config,
@@ -13,7 +14,6 @@ export async function handleNormalSelection(
   pieceType: PieceType,
   selectionConfig: SelectionNormalConfig,
   allSelections: Record<UserId, Record<PieceType, Array<SelectedPiece>>>,
-  scriptsByPath: Record<string, string>,
   runScript: (input: ScriptStarter)=>Promise<any>
 ): Promise<FinalSelection[PieceType]>{
   const pieceConfig = config.engine.pieceDefinitions[pieceType];
@@ -39,7 +39,7 @@ export async function handleNormalSelection(
     }
 
     await Promise.all(selectionConfig.validation.customValidation.map(async (script)=>(
-      runScript({
+      handleValidationResult(script, runScript({
         config,
         randomSeeds,
         purpose: {
@@ -48,9 +48,8 @@ export async function handleNormalSelection(
           userId,
           input: userSelections,
         },
-        scripts: scriptsByPath,
-        entryScriptPath: script.src,
-      })
+        entryScript: script
+      }))
     )))
   }));
 
@@ -76,8 +75,7 @@ export async function handleNormalSelection(
       users,
       input: usersSelections,
     },
-    scripts: scriptsByPath,
-    entryScriptPath: selectionConfig.mergeAlgorithm.src,
+    entryScript: selectionConfig.mergeAlgorithm
   });
 
   if(pieceConfig.selectionStrategy === "shared"){

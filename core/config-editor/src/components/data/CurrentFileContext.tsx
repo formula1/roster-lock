@@ -3,10 +3,9 @@ import {
   useEffect, useState, useCallback,
   SetStateAction
 } from "react";
-import { useParams } from "react-router";
-import { FS } from "../../globals/fs";
+import { fs } from "../../tauri/fs";
 import { usePromisedMemo } from "../../utils/react/promised-memo";
-import { cloneJSON, JSON_Unknown } from "@roster-lock/shared";
+import { cloneJSON, JSON_Unknown } from "@roster-lock/utils";
 
 import { diff } from 'json-diff-ts';
 
@@ -21,11 +20,14 @@ type CurrentFileContextType<T> = (
   | {
     activeFile: string;
     state: "failed",
+    reload: ()=>void
     error: any,
+    value?: JSON_Unknown
   }
   | {
     activeFile: string;
     state: "ready",
+    reload: ()=>void
     isDirty: boolean,
     value: T;
     update: (config: SetStateAction<T>) => void;
@@ -63,48 +65,59 @@ export function CurrentFileProvider<T extends JSON_Unknown>(
     context: Context<CurrentFileContextType<T>>,
   }>
 ) {
-  const params = useParams();
-
-  const loadFile = useCallback(async (filePath: string) => {
-    const json = await FS.readJSON(filePath);
-    const value = caster(json);
-    return value;
-  }, [])
 
   const memoResult = usePromisedMemo(async ()=>{
     if(!activeFile) throw new Error("No active file");
-    return await loadFile(activeFile);
+    return await fs.readJSON(activeFile);
   }, [activeFile])
 
   const [originalValue, setOriginalValue] = useState<T>(cloneJSON(defaultValue));
-
   const [activeValue, setActiveValue] = useState<T>(cloneJSON(defaultValue));
+  const [castError, setCastError] = useState<{ failed: boolean, e: any }>({ failed: false, e: null });
 
   useEffect(()=>{
-    if(memoResult.status === "success"){
+    try {
+      if(memoResult.status !== "success") return;
+      caster(memoResult.value)
+      setCastError({ failed: false, e: null })
       setOriginalValue(cloneJSON(memoResult.value));
       setActiveValue(cloneJSON(memoResult.value));
+    }catch(e){
+      setCastError({ failed: true, e })
     }
   }, [memoResult])
 
   const props: CurrentFileContextType<T> = (() => {
     if(!activeValue || !activeFile) return { activeFile: null };
     if(memoResult.status === "pending") return { activeFile, state: "loading" };
-    if(memoResult.status === "failed") return { activeFile, state: "failed", error: memoResult.error };
+    if(memoResult.status === "failed") return {
+      activeFile,
+      state: "failed",
+      reload: memoResult.refresh,
+      error: memoResult.error
+    };
+    if(castError.failed) return {
+      activeFile,
+      state: "failed",
+      reload: memoResult.refresh,
+      error: castError.e,
+      value: memoResult.value
+    }
     return {
       activeFile,
       state: "ready",
+      reload: memoResult.refresh,
       value: activeValue,
       update: setActiveValue,
       isDirty: diff(originalValue, activeValue).length > 0,
       reset: () => setActiveValue(cloneJSON(originalValue)),
       save: async () => {
         if(!activeFile) return;
-        await FS.writeJSON(activeFile, activeValue);
+        await fs.writeJSON(activeFile, activeValue);
         setOriginalValue(cloneJSON(activeValue));
       },
       saveAs: async (newPath: string) => {
-        await FS.writeJSON(newPath, activeValue);
+        await fs.writeJSON(newPath, activeValue);
         setOriginalValue(cloneJSON(activeValue));
       }
     };

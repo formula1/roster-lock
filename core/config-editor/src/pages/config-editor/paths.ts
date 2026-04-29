@@ -1,18 +1,7 @@
 import { RosterLockV1Config } from "@roster-lock/types";
 
-export const RosterLockConfigPaths = {
-  newRoot: "/config/new",
-  newEngine: "/config/new/engine",
-  newEngineTest: "/config/new/engine/test",
-  newRoster: "/config/new/roster",
-  newSelection: "/config/new/selection",
 
-  fileRoot: "/config/:filePath",
-  fileEngine: "/config/:filePath/engine",
-  fileEngineTest: "/config/:filePath/engine/test",
-  fileRoster: "/config/:filePath/roster",
-  fileSelection: "/config/:filePath/selection",
-}
+
 
 type AssetItem = RosterLockV1Config["engine"]["pieceDefinitions"][string]["assets"][number];
 type RosterItem = RosterLockV1Config["rosters"][string][number];

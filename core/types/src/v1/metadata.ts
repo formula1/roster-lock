@@ -1,7 +1,10 @@
 
 import { RosterLockPiece } from "./lock/roster";
+import { RosterLockIdentity } from "./shared";
 
 export type RosterLockV1PieceMetadata = (
-  & { rosterlockVersion: 1 }
+  & {
+    configIdentity: RosterLockIdentity<"piece-meta", 1>
+  }
   & Pick<RosterLockPiece, "humanInfo" | "downloadSources" | "pathVariables">
 )

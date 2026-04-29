@@ -7,7 +7,7 @@ import { DisplayByFile } from "./DisplayByFile";
 import { DisplayByAssets } from "./DisplayByAssets";
 
 import { useEffect } from "react";
-import { FS } from "../../../../../../../globals/fs";
+import { fs } from "../../../../../../../tauri/fs";
 
 export type AssetsAndFilesValue = (
   & Awaited<ReturnType<typeof getAssetsOfFiles>>
@@ -76,7 +76,7 @@ export function AssetsAndFiles(
 }
 
 async function* getFilesFromFolder(folderPath: string): AsyncIterable<string> {
-  for await (const file of FS.walkDirStream(folderPath)){
+  for await (const file of fs.walkDirStream(folderPath)){
     if(file.is_directory) continue;
     yield file.relative_path;
   }

@@ -29,7 +29,7 @@ export function DisplayByAssets(
       }
     }
     return assetsArray;
-  }, [assets])
+  }, [assets, filters])
 
   return (
     <div>
@@ -87,7 +87,7 @@ function AssetItem(
     </>
   }
   return (
-    <li>
+    <>
       <DisplayAssetInfo asset={asset} />
       <div className="success">Valid File Count</div>
       <div>
@@ -96,7 +96,7 @@ function AssetItem(
           <li key={file}>{file}</li>
         ))}</ul>}
       </div>
-    </li>
+    </>
   )
 }
 

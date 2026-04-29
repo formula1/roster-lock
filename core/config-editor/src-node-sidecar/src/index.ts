@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
 import { SUPPORTED_PROTOCOLS, downloadToFolder } from './commands/download-to-folder';
-import { runScript } from './commands/run-script';
+import { runUntrustedScriptCommand } from './commands/run-script';
 import { stat as fsStat } from 'fs/promises';
 import { resolve as pathResolve } from 'path';
-
+import { splitStdInByNull, getItemAtOffset } from "./utils";
 
 
 const program = new Command();
@@ -36,15 +36,18 @@ program
 
 program
   .command('run-script')
-  .description('Validate a script configuration')
-  .argument('<path>', 'Script path')
-  .action(async (path)=>{
-    path = pathResolve(process.cwd(), path);
-    const stat = await fsStat(path)
-    if(stat.isDirectory()){
-      throw new Error("Path is a directory");
+  .description('Run a script — reads a JSON ScriptConfig from stdin')
+  .action(async ()=>{
+    let json: unknown;
+    try {
+      json = JSON.parse(await getItemAtOffset(splitStdInByNull()));
+    } catch (err) {
+      console.error('INVALID_CONFIG', (err as Error).message);
+      process.exitCode = 1;
+      return;
     }
-    runScript();
+    await runUntrustedScriptCommand(json);
   });
 
 program.parse();
+
