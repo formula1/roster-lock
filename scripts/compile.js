@@ -72,7 +72,6 @@ function sortDependencyTree(dependencyMap){
       if(canAdd){
         activeList.push(filePath);
         dependencyMap.delete(filePath)
-        handled.add(filePath);
       }
     }
     if(activeList.length === 0){
@@ -80,6 +79,9 @@ function sortDependencyTree(dependencyMap){
       throw new Error("Dependency tree not resolvable")
     }
     sorted.push(activeList)
+    for(const filePath of activeList){
+      handled.add(filePath);
+    }
   }
   return sorted;
 }
