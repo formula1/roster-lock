@@ -76,7 +76,7 @@ export async function runSelection(
         pieceTypes: Object.keys(config.engine.pieceDefinitions),
         input: finalSelection,
       },
-      entryScriptPath: script.src,
+      entryScript: script,
     })
   }));
 

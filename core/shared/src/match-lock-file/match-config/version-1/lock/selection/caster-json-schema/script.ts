@@ -9,6 +9,7 @@ export const gasLimittedScriptSchema: JSONSchemaType<GasLimittedScript> = {
   properties: {
     type: { type: "string", nullable: true },
     src: { type: "string" },
+    method: { type: "string", nullable: true }
   },
 }
 

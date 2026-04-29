@@ -3,7 +3,9 @@ import { LuaFactory, LuaEngine } from 'wasmoon';
 
 const factory = new LuaFactory()
 
-export const runLuaScript: ScriptRunner<any> = async function(globals, input, script){
+export const runLuaScript: ScriptRunner<any> = async function(
+  globals, input, script, initialMethod
+){
   const lua = await factory.createEngine()
 
   try {
@@ -61,9 +63,9 @@ export const runLuaScript: ScriptRunner<any> = async function(globals, input, sc
 
     await lua.doString(script);
 
-    const main = lua.global.get("main")
+    const main = lua.global.get(initialMethod)
     if(typeof main !== "function"){
-      throw new Error("No main function defined in script");
+      throw new Error(`No ${initialMethod} function defined in script`);
     }
     return await main(input.input);
   }finally{

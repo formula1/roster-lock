@@ -47,7 +47,7 @@ export async function handleNormalSelection(
           userId,
           input: userSelections,
         },
-        entryScriptPath: script.src,
+        entryScript: script
       })
     )))
   }));
@@ -74,7 +74,7 @@ export async function handleNormalSelection(
       users,
       input: usersSelections,
     },
-    entryScriptPath: selectionConfig.mergeAlgorithm.src,
+    entryScript: selectionConfig.mergeAlgorithm
   });
 
   if(pieceConfig.selectionStrategy === "shared"){

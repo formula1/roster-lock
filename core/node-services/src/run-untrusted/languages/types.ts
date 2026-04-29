@@ -4,7 +4,8 @@ import { ScriptGlobals } from "../globals";
 export type ScriptRunner<ScriptModule> = (
   globals: ScriptGlobals<ScriptModule>,
   input: ScriptPurposeInput,
-  script: string
+  script: string,
+  initialMethod: string
 )=>Promise<unknown>;
 
 export type LanguageRunner<ScriptModule> = {

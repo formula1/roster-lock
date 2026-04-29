@@ -3,7 +3,8 @@ import {
   UserId,
   RosterLockV1Config,
   FinalSelection,  
-  SelectedPiece
+  SelectedPiece,
+  GasLimittedScript
 } from "@roster-lock/types";
 
 export type PieceUserValidationInput = {
@@ -41,5 +42,5 @@ export type ScriptStarter = {
 
   purpose: ScriptPurposeInput,
 
-  entryScriptPath: string
+  entryScript: GasLimittedScript
 }
