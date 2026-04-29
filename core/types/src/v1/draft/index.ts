@@ -13,9 +13,20 @@ type RosterLockDraftPieceInfo = {
   }>,
 }
 
+type RelativePath = string;
+
+type RosterLockDraftScriptInfo = {
+  lastLoad: string,
+  sha: string,
+  referencePath: string
+}
+
 export type RosterLockV1Draft = {
   configIdentity: RosterLockIdentity<"draft", 1>,
   previousLock: RosterLockV1Config,
   stagedLock: RosterLockV1Config,
-  draftPieceInfo: Record<PieceType, Record<PieceId, RosterLockDraftPieceInfo>>
+  draft: {
+    rosterPieceInfo: Record<PieceType, Record<PieceId, RosterLockDraftPieceInfo>>,
+    selectionScriptInfo: Record<RelativePath, RosterLockDraftScriptInfo>
+  }
 }

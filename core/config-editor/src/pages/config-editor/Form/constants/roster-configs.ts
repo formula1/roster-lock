@@ -15,5 +15,8 @@ export const EMPTY_ROSTER_DRAFT: RosterLockV1Draft = {
   configIdentity: { namespace: "roster-lock", purpose: "draft", version: 1 },
   previousLock: cloneJSON(EMPTY_ROSTER_LOCK),
   stagedLock: cloneJSON(EMPTY_ROSTER_LOCK),
-  draftPieceInfo: {}
+  draft: {
+    rosterPieceInfo: {},
+    selectionScriptInfo: {},
+  }
 };

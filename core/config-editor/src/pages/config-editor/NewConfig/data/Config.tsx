@@ -47,6 +47,9 @@ function initialDraftFromState(state: unknown): RosterLockV1Draft {
     configIdentity: { namespace: "roster-lock", purpose: "draft", version: 1 },
     previousLock: cloneJSON(castResult.value),
     stagedLock: cloneJSON(castResult.value),
-    draftPieceInfo: {},
+    draft: {
+      rosterPieceInfo: {},
+      selectionScriptInfo: {},
+    },
   };
 }

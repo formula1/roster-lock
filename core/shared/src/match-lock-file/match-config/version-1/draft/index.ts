@@ -5,37 +5,10 @@ import { JSONSchemaCaster, defineKeyword } from "../../../util-types/json-schema
 
 import { RosterLockV1Schema, RosterLockV1SchemaKeywords } from "../lock";
 
-type RosterLockDraftPieceInfo = RosterLockV1Draft["draftPieceInfo"]["string"]["string"]
-const draftInfoSchema: JSONSchemaType<RosterLockDraftPieceInfo> = {
-  type: "object", additionalProperties: false,
-  required: ["testedDownloadSources"],
-  properties: {
-    referenceFolder: { type: "string", nullable: true },
-    testedDownloadSources: {
-      type: "array",
-      items: {
-        type: "object",
-        required: ["source", "testedAt", "version"],
-        additionalProperties: false,
-        properties: {
-          source: { type: "string" },
-          testedAt: { type: "string" },
-          version: {
-            type: "object", additionalProperties: false,
-            required: ["logic", "media", "docs"],
-            properties: {
-              logic: { type: "string" },
-              media: { type: "string" },
-              docs: { type: "string" },
-            }
-          }
-        },
-      },
-    },
-  },
-};
 import { buildIdentity } from "../shared";
 
+import { rosterPieceInfoSchema } from "./roster-piece-info";
+import { selectionScriptInfoSchema } from "./selection-script-info";
 
 export const RosterLockV1DraftSchema: JSONSchemaType<RosterLockV1Draft> = {
   type: "object",
@@ -48,11 +21,21 @@ export const RosterLockV1DraftSchema: JSONSchemaType<RosterLockV1Draft> = {
     configIdentity: buildIdentity("draft", 1),
     previousLock: { $ref: "#/$defs/RosterLockV1Config" },
     stagedLock: { $ref: "#/$defs/RosterLockV1Config" },
-    draftPieceInfo: {
-      type: "object", required: [],
-      additionalProperties: {
-        type: "object", required: [],
-        additionalProperties: draftInfoSchema
+    draft: {
+      type: "object", required: ["rosterPieceInfo", "selectionScriptInfo"],
+      additionalProperties: false,
+      properties: {
+        rosterPieceInfo: {
+          type: "object", required: [],
+          additionalProperties: {
+            type: "object", required: [],
+            additionalProperties: rosterPieceInfoSchema
+          }
+        },
+        selectionScriptInfo: {
+          type: "object", required: [],
+          additionalProperties: selectionScriptInfoSchema
+        }
       }
     }
   },

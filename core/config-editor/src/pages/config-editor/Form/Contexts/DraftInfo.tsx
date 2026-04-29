@@ -5,7 +5,7 @@ import { StateInputProps } from "../../../../utils/react/input";
 
 import { RosterLockV1Draft } from "@roster-lock/types";
 
-type DraftInfo = RosterLockV1Draft["draftPieceInfo"];
+type DraftInfo = RosterLockV1Draft["draft"]["rosterPieceInfo"];
 
 const DraftInfoContext = createContext<StateInputProps<DraftInfo>>({
   value: {},
