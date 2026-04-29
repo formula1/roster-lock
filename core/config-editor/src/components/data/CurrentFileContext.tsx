@@ -20,12 +20,14 @@ type CurrentFileContextType<T> = (
   | {
     activeFile: string;
     state: "failed",
+    reload: ()=>void
     error: any,
     value?: JSON_Unknown
   }
   | {
     activeFile: string;
     state: "ready",
+    reload: ()=>void
     isDirty: boolean,
     value: T;
     update: (config: SetStateAction<T>) => void;
@@ -88,11 +90,23 @@ export function CurrentFileProvider<T extends JSON_Unknown>(
   const props: CurrentFileContextType<T> = (() => {
     if(!activeValue || !activeFile) return { activeFile: null };
     if(memoResult.status === "pending") return { activeFile, state: "loading" };
-    if(memoResult.status === "failed") return { activeFile, state: "failed", error: memoResult.error };
-    if(castError.failed) return { activeFile, state: "failed", error: castError.e, value: memoResult.value  }
+    if(memoResult.status === "failed") return {
+      activeFile,
+      state: "failed",
+      reload: memoResult.refresh,
+      error: memoResult.error
+    };
+    if(castError.failed) return {
+      activeFile,
+      state: "failed",
+      reload: memoResult.refresh,
+      error: castError.e,
+      value: memoResult.value
+    }
     return {
       activeFile,
       state: "ready",
+      reload: memoResult.refresh,
       value: activeValue,
       update: setActiveValue,
       isDirty: diff(originalValue, activeValue).length > 0,

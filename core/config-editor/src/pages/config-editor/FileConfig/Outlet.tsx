@@ -80,6 +80,7 @@ function FileErrorOrOutlet(){
     console.log("Failed to load file", currentFile);
     return <div>
       <h1>Failed to load file</h1>
+      <h3><button onClick={()=>(currentFile.reload())}>Reload</button></h3>
       <pre>{currentFile.error.message || JSON.stringify(currentFile.error, null, 2)}</pre>
       {currentFile.value && <pre>{JSON.stringify(currentFile.value, null, 2)}</pre>}
     </div>
