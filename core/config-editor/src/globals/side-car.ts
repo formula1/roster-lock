@@ -4,8 +4,8 @@ import type { ScriptStarter } from '@roster-lock/shared';
 type OutputLine = { source: "out" | "err", content: string };
 
 export const ROSTERLOCK_SIDECAR = {
-  downloadSource: async function(url: string, destinationFolder: string): Promise<void> {
-    const instance = Date.now().toString(32);
+  downloadSource: async function(url: string, destinationFolder: string) {
+    const log: Array<OutputLine> = [];
     const command = Command.sidecar(
       'binaries/node-sidecar', [
         'download-to-folder',
@@ -13,14 +13,15 @@ export const ROSTERLOCK_SIDECAR = {
         '--output-folder', destinationFolder
       ]
     );
-    command.stdout.on('data', line => console.log("sidecar stdout", instance +":", line));
-    command.stderr.on('data', line => console.log("sidecar stderr", instance +":", line));
+    command.stdout.on('data', line => log.push({ source: "out", content: line }));
+    command.stderr.on('data', line => log.push({ source: "err", content: line }));
 
     const output = await command.execute();
 
-    if (output.code !== 0) {
-      throw new Error(output.stderr);
+    if (output.code !== 0 && output.code !== null) {
+      throw new ProcessError(output.code, log);
     }
+    return { log }
   },
 
   runScript: async function(scriptConfig: ScriptStarter): Promise<unknown> {
