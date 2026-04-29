@@ -8,7 +8,7 @@ export const EMPTY_ROSTER_LOCK: RosterLockV1Config = {
   version: "0.0.0",
   engine: { name: "", version: "", pieceDefinitions: {} },
   rosters: {},
-  selection: { piece: {} },
+  selection: { piece: {}, scripts: {} },
 }
 
 export const EMPTY_ROSTER_DRAFT: RosterLockV1Draft = {

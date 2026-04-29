@@ -19,9 +19,9 @@ export function getScriptGlobals<ScriptModule>(
   config: RosterLockV1Config,
   currentScriptPath: string,
   randomSeeds: string[],
-  scripts: Record<string, string>,
   purpose: ScriptPurposeInput,
 ): ScriptGlobals<ScriptModule> {
+  const scripts = config.selection.scripts;
   const availablePieces = new AvailablePieces(config);
   const { pieceType, seeds } = (()=>{
     if(purpose.type === "piece-user-validation"){

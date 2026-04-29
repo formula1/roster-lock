@@ -9,18 +9,13 @@ import { ScriptPurposeInputSchema } from "./purpose-input";
 import { JSONSchemaType } from "ajv";
 const ScriptStarterSchema: JSONSchemaType<ScriptStarter> = {
   type: "object",
-  required: ["config", "randomSeeds", "scripts", "purpose", "entryScriptPath"],
+  required: ["config", "randomSeeds", "purpose", "entryScriptPath"],
   additionalProperties: false,
   properties: {
     config: RosterLockV1Schema,
     randomSeeds: {
       type: "array",
       items: { type: "string" },
-    },
-    scripts: {
-      type: "object",
-      required: [],
-      additionalProperties: { type: "string" },
     },
     purpose: ScriptPurposeInputSchema,
     entryScriptPath: { type: "string" },

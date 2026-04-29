@@ -5,9 +5,9 @@ import mime from 'mime-types';
 
 
 export async function runUntrustedScript(
-  { config, randomSeeds, purpose, scripts, entryScriptPath }: ScriptStarter,
+  { config, randomSeeds, purpose, entryScriptPath }: ScriptStarter,
 ) {
-  const script = scripts[entryScriptPath];
+  const script = config.selection.scripts[entryScriptPath];
   if(!script){
     throw new Error("Missing entry script " + entryScriptPath);
   }
@@ -20,7 +20,7 @@ export async function runUntrustedScript(
     throw new Error("Cannot run script of type " + mimetype);
   }
   const globals = getScriptGlobals(
-    config, entryScriptPath, randomSeeds, scripts, purpose
+    config, entryScriptPath, randomSeeds, purpose
   );
   return await runner.runScript(globals, purpose, script);
 }

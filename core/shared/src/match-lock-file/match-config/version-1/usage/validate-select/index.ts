@@ -13,7 +13,6 @@ import { ScriptStarter } from "./types/untrusted-script";
 
 export async function runSelection(
   config: RosterLockV1Config,
-  scriptsByPath: Record<string, string>,
   gameControlledSelections: Record<PieceType, Array<SelectedPiece> | Record<UserId, Array<SelectedPiece>>>,
   userInputs: Record<UserId, UserInput>,
   runScript: (input: ScriptStarter)=>Promise<any>
@@ -58,7 +57,7 @@ export async function runSelection(
     }
     if(selectionConfig.type === "normal"){
       finalSelection[pieceType] = await handleNormalSelection(
-        config, seeds, users, pieceType, selectionConfig, allSelections, scriptsByPath, runScript
+        config, seeds, users, pieceType, selectionConfig, allSelections, runScript
       );
       return;
     }
@@ -77,7 +76,6 @@ export async function runSelection(
         pieceTypes: Object.keys(config.engine.pieceDefinitions),
         input: finalSelection,
       },
-      scripts: scriptsByPath,
       entryScriptPath: script.src,
     })
   }));

@@ -38,7 +38,6 @@ export type ScriptPurposeInput = (
 export type ScriptStarter = {
   config: RosterLockV1Config,
   randomSeeds: string[],
-  scripts: Record<string, string>,
 
   purpose: ScriptPurposeInput,
 

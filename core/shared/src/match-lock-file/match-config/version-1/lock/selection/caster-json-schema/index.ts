@@ -8,10 +8,11 @@ import { normalSelectionSchema } from "./selection-types/normal";
 import { gameControlledSelectionSchema } from "./selection-types/game-controlled";
 
 import { gasLimittedScriptSchema } from "./script";
+export { gasLimittedScriptSchema };
 
 export const selectionConfigSchema: JSONSchemaType<RosterLockV1Config["selection"]> = {
   type: "object",
-  required: ["piece"],
+  required: ["piece", "scripts"],
   additionalProperties: false,
   properties: {
     piece: {
@@ -29,6 +30,11 @@ export const selectionConfigSchema: JSONSchemaType<RosterLockV1Config["selection
       type: "array",
       items: gasLimittedScriptSchema,
       nullable: true,
+    },
+    scripts: {
+      type: "object",
+      required: [],
+      additionalProperties: { type: "string" }
     }
   },
 }

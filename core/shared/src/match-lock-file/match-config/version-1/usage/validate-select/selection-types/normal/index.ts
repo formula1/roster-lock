@@ -13,7 +13,6 @@ export async function handleNormalSelection(
   pieceType: PieceType,
   selectionConfig: SelectionNormalConfig,
   allSelections: Record<UserId, Record<PieceType, Array<SelectedPiece>>>,
-  scriptsByPath: Record<string, string>,
   runScript: (input: ScriptStarter)=>Promise<any>
 ): Promise<FinalSelection[PieceType]>{
   const pieceConfig = config.engine.pieceDefinitions[pieceType];
@@ -48,7 +47,6 @@ export async function handleNormalSelection(
           userId,
           input: userSelections,
         },
-        scripts: scriptsByPath,
         entryScriptPath: script.src,
       })
     )))
@@ -76,7 +74,6 @@ export async function handleNormalSelection(
       users,
       input: usersSelections,
     },
-    scripts: scriptsByPath,
     entryScriptPath: selectionConfig.mergeAlgorithm.src,
   });
 
