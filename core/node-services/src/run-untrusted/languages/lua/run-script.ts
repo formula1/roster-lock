@@ -20,7 +20,9 @@ export const runLuaScript: ScriptRunner<any> = async function(
 
     // Add RNG Globals
     lua.global.set('randomFloat', () =>(globals.randomFloat()));
-    lua.global.set('randomInt', (min: number, max: number) =>(globals.randomInt(min, max)));
+    lua.global.set('randomInt', (min: number, max: number) =>(
+      globals.randomInt(min, max)
+    ));
     lua.global.set('shuffleIndexes', (length: number) =>(
       globals.shuffleIndexes(length, 1)
     ));
