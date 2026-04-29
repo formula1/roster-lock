@@ -4,6 +4,7 @@ import {
 
 export * from "./types/untrusted-script";
 import { UserInput } from "./types/selection";
+export { UserInput };
 
 
 import { handleGameControlledSelection } from "./selection-types/game-controlled";
