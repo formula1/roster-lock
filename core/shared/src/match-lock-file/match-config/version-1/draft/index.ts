@@ -34,17 +34,18 @@ const draftInfoSchema: JSONSchemaType<RosterLockDraftPieceInfo> = {
     },
   },
 };
+import { buildIdentity } from "../shared";
+
 
 export const RosterLockV1DraftSchema: JSONSchemaType<RosterLockV1Draft> = {
   type: "object",
-  required: ["configPurpose", "configVersion", "previousLock", "stagedLock", "draftPieceInfo"],
+  required: ["configIdentity", "previousLock", "stagedLock", "draft"],
   additionalProperties: false,
   $defs: {
     RosterLockV1Config: RosterLockV1Schema,
   },
   properties: {
-    configPurpose: { type: "string", const: "draft" },
-    configVersion: { type: "number", const: 1 },
+    configIdentity: buildIdentity("draft", 1),
     previousLock: { $ref: "#/$defs/RosterLockV1Config" },
     stagedLock: { $ref: "#/$defs/RosterLockV1Config" },
     draftPieceInfo: {

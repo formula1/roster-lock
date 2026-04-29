@@ -1,3 +1,4 @@
+import { RosterLockIdentity } from "../shared";
 import { RosterLockEngineConfig } from "./engine";
 import { RosterLockPiece } from "./roster";
 import { RosterLockSelectionConfig } from "./selection";
@@ -8,8 +9,7 @@ export * from "./selection";
 
 
 export type RosterLockV1Config = {
-  configPurpose: "lock",
-  configVersion: 1,
+  configIdentity: RosterLockIdentity<"lock", 1>,
 
   author: string,
   title: string,

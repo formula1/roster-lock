@@ -44,8 +44,7 @@ function initialDraftFromState(state: unknown): RosterLockV1Draft {
   const castResult = ROSTERLOCK_V1_CASTER_JSONSCHEMA.safeCast(lock, true);
   if (!castResult.valid) return cloneJSON(EMPTY_ROSTER_DRAFT);
   return {
-    configPurpose: "draft",
-    configVersion: 1,
+    configIdentity: { namespace: "roster-lock", purpose: "draft", version: 1 },
     previousLock: cloneJSON(castResult.value),
     stagedLock: cloneJSON(castResult.value),
     draftPieceInfo: {},

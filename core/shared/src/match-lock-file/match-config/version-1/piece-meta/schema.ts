@@ -11,14 +11,16 @@ import { JSONSchemaType } from "ajv";
 
 import { RosterLockV1PieceMetadata } from "@roster-lock/types";
 
+import { buildIdentity } from "../shared";
+
 
 export const rosterLockPieceMetadataSchema: JSONSchemaType<RosterLockV1PieceMetadata> = {
   type: "object",
-  required: ["configPurpose", "configVersion", "humanInfo", "downloadSources", "pathVariables"],
+  required: ["configIdentity", "humanInfo", "downloadSources", "pathVariables"],
   additionalProperties: false,
   properties: {
-    configPurpose: { type: "string", const: "piece-meta" },
-    configVersion: { type: "number", const: 1 },
+    configIdentity: buildIdentity("piece-meta", 1),
+
     humanInfo: humanInfoSchema,
     downloadSources: downloadableSourcesSchema,
     pathVariables: pathVariablesSchema,
