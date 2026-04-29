@@ -1,0 +1,162 @@
+{
+  "configIdentity": {
+    "namespace": "roster-lock", "purpose": "draft", "version": 1
+  },
+  "previousLock": {
+    "configPurpose": "lock",
+    "configVersion": 1,
+    "author": "",
+    "title": "",
+    "version": "0.0.0",
+    "engine": {
+      "name": "",
+      "version": "",
+      "pieceDefinitions": {}
+    },
+    "rosters": {},
+    "selection": {
+      "piece": {},
+      "scripts": {}
+    }
+  },
+  "stagedLock": {
+    "configPurpose": "lock",
+    "configVersion": 1,
+    "author": "",
+    "title": "",
+    "version": "0.0.0",
+    "engine": {
+      "name": "Hello World Game",
+      "version": "0.0.0",
+      "pieceDefinitions": {
+        "Character": {
+          "selectionStrategy": "personal",
+          "requires": [],
+          "pathVariables": [],
+          "assets": [
+            {
+              "name": "Stat Info",
+              "classification": "logic",
+              "count": 1,
+              "glob": [
+                "info.json",
+                "info.json5"
+              ]
+            },
+            {
+              "name": "Character Images",
+              "classification": "media",
+              "count": 2,
+              "glob": [
+                "media/front.svg",
+                "media/back.svg"
+              ]
+            }
+          ]
+        },
+        "Stage": {
+          "selectionStrategy": "shared",
+          "requires": [],
+          "pathVariables": [],
+          "assets": []
+        },
+        "Move": {
+          "selectionStrategy": "on demand",
+          "requires": [],
+          "pathVariables": [],
+          "assets": []
+        },
+        "Weather": {
+          "selectionStrategy": "on demand",
+          "requires": [],
+          "pathVariables": [],
+          "assets": []
+        }
+      }
+    },
+    "rosters": {
+      "Character": [
+        {
+          "id": "@match-lock/blue",
+          "version": {
+            "logic": "90d272f7f77eabf3344f46b2381d71d7cae88eb2af15695e46ec7c11d8499dfd",
+            "media": "05f61d8ba9bcb86622b764b29940b8b52c0528f46a6b51f22db403cc70118a85",
+            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "humanInfo": {
+            "name": "Blue",
+            "author": "match-lock",
+            "url": "http://localhost:7342/pieces/character/blue"
+          },
+          "downloadSources": [
+            "http://localhost:7342/pieces/character/blue.tar"
+          ],
+          "pathVariables": {},
+          "requiredPieces": {}
+        },
+        {
+          "id": "@match-lock/red",
+          "version": {
+            "logic": "a6c91b8c0bae3ac2a9fb174c23484f778dbfbd430c26b18eb5be65e2a4512f8f",
+            "media": "764f30fa82ac67350b63c0ff4591abac16d1376ffd15e565a6b3ff82b6255330",
+            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "humanInfo": {
+            "name": "Red",
+            "author": "match-lock",
+            "url": "http://localhost:7342/pieces/character/red"
+          },
+          "downloadSources": [
+            "http://localhost:7342/pieces/character/red.tar"
+          ],
+          "pathVariables": {},
+          "requiredPieces": {}
+        },
+        {
+          "id": "@match-lock/yellow",
+          "version": {
+            "logic": "4b7b95080e64466eb56cefa4b76759318a652bb40e87ec4a4fdd48c593d1be79",
+            "media": "369b4d0da62e0e864f4d9e402ae4f45adac83a0e8d808b1ac02ba1ea8f9ddae4",
+            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "humanInfo": {
+            "name": "Yellow",
+            "author": "match-lock",
+            "url": "http://localhost:7342/pieces/character/yellow"
+          },
+          "downloadSources": [
+            "http://localhost:7342/pieces/character/yellow.tar"
+          ],
+          "pathVariables": {},
+          "requiredPieces": {}
+        }
+      ],
+      "Stage": [],
+      "Move": [],
+      "Weather": []
+    },
+    "selection": {
+      "piece": {},
+      "scripts": {}
+    }
+  },
+  "draft": {
+    "rosterPieceInfo": {
+      "Character": {
+        "@match-lock/blue": {
+          "referenceFolder": "/home/sam/Programming/games/match-lock/examples/full-local/pieces/character/blue",
+          "testedDownloadSources": []
+        },
+        "@match-lock/red": {
+          "referenceFolder": "/home/sam/Programming/games/match-lock/examples/full-local/pieces/character/red",
+          "testedDownloadSources": []
+        },
+        "@match-lock/yellow": {
+          "referenceFolder": "/home/sam/Programming/games/match-lock/examples/full-local/pieces/character/yellow",
+          "testedDownloadSources": []
+        }
+      }
+    },
+    "selectionScriptInfo": {}
+  }
+}
