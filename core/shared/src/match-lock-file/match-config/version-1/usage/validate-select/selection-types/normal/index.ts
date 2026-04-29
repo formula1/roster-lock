@@ -5,6 +5,7 @@ import { ensurePiecesAreInRoster } from "../../ensure-pieces-are-in-roster";
 import { ScriptStarter } from "../../types/untrusted-script";
 
 import { validateUserSelection } from "./validate-user-selection";
+import { handleValidationResult } from "../../handle-validation";
 
 export async function handleNormalSelection(
   config: RosterLockV1Config,
@@ -38,7 +39,7 @@ export async function handleNormalSelection(
     }
 
     await Promise.all(selectionConfig.validation.customValidation.map(async (script)=>(
-      runScript({
+      handleValidationResult(script, runScript({
         config,
         randomSeeds,
         purpose: {
@@ -48,7 +49,7 @@ export async function handleNormalSelection(
           input: userSelections,
         },
         entryScript: script
-      })
+      }))
     )))
   }));
 
