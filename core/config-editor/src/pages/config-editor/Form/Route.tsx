@@ -7,7 +7,7 @@ import { EngineTest } from "./EngineTest";
 import { RosterConfigEditPage } from "./Rosters";
 import { relative } from "../../../utils/router";
 
-import { UnderConstruction } from "../../Util/UnderConstruction";
+import { SelectionEditPage } from "./Selection";
 
 
 export const ConfigEditorRoute = (
@@ -16,6 +16,6 @@ export const ConfigEditorRoute = (
     <Route path={relative("/", RosterLockPaths.Engine)} element={<EngineEditPage />} />
     <Route path={relative("/", RosterLockPaths.EngineTest)} element={<EngineTest />} />
     <Route path={relative("/", RosterLockPaths.Roster)} element={<RosterConfigEditPage />} />
-    <Route path={relative("/", RosterLockPaths.Selection)} element={<UnderConstruction />} />
+    <Route path={relative("/", RosterLockPaths.Selection)} element={<SelectionEditPage />} />
   </>
 )

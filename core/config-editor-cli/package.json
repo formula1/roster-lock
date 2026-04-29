@@ -1,0 +1,18 @@
+{
+  "name": "@roster-lock/config-editor-cli",
+  "version": "0.0.1",
+  "description": "A cli tool to build roster lock configs",
+  "license": "JSON",
+  "author": "Sam Tobia",
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "commander": "^14.0.3"
+  }
+}

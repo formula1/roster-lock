@@ -1,11 +1,16 @@
 {
-  "configPurpose": "piece-meta",
-  "configVersion": 1,
+  "configIdentity": {
+    "namespace": "roster-lock",
+    "purpose": "piece-meta",
+    "version": 1
+  },
   "humanInfo": {
     "name": "Random Weather",
     "author": "match-lock",
     "url": "http://localhost:7342/pieces/move/random-weather"
   },
-  "downloadSources": ["http://localhost:7342/pieces/move/random-weather.tar"],
+  "downloadSources": [
+    "http://localhost:7342/pieces/move/random-weather.tar"
+  ],
   "pathVariables": {}
 }

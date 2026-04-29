@@ -52,5 +52,6 @@ export type GasLimittedScript = (
   | {
     type?: string  // "text/lua",
     src: RelativePath,
+    method?: string,
   }
 )
