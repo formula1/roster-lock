@@ -10,14 +10,13 @@ export const runLuaScript: ScriptRunner<any> = async function(
 
   try {
 
-    addGasLimit(lua, 5_000_000);
+    await addGasLimit(lua, 5_000_000);
 
     // Prevent filesystem calls
     lua.global.set('dofile', undefined);
     lua.global.set('loadfile', undefined);
     lua.global.set('io', undefined);
     lua.global.set('os', undefined); // Also block os module
-    lua.global.set('debug', undefined); // Block debug hooks
 
     // Add RNG Globals
     lua.global.set('randomFloat', () =>(globals.randomFloat()));
@@ -87,6 +86,7 @@ async function addGasLimit(lua: LuaEngine, maxGas: number){
       end, "", 1)
     end
   `);
+  await lua.doString(`debug = nil`);
 }
 
 async function overrideDefaultRNG(lua: LuaEngine){
