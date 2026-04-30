@@ -6,12 +6,12 @@ import { strToBuffer, uint8ArrayToHex, hexToUint8Array } from "../string";
 export type SymmetricSignatureKey = string & { readonly __brand: "SignatureKey" };
 
 export const SYMMETRIC_SIGNATURE = {
-  generateKey: generateSymmetricKey,
+  generateKey: generateSymmetricSignatureKey,
   createSignature: createSymmetricMessageSignature,
   verifySignature:   verifySymmetricMessageSignature,
 }
 
-export function generateSymmetricKey(): SymmetricSignatureKey {
+export function generateSymmetricSignatureKey(): SymmetricSignatureKey {
   const bytes = crypto.getRandomValues(new Uint8Array(32));
   return uint8ArrayToHex(bytes) as SymmetricSignatureKey;
 }
