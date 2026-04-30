@@ -1,5 +1,5 @@
 
-import { JSON_Unknown } from "@match-lock/shared";
+import { JSON_Unknown } from "@roster-lock/utils";
 
 import { webcrypto as crypto } from "crypto";
 // Generate a random AES-GCM key (256-bit)

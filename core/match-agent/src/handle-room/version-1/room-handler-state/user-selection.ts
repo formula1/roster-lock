@@ -1,9 +1,11 @@
 import {
-  RosterLockV1Config, SelectedPiece, UserInput,
   PieceType, UserId,
-  FinalSelection,
   runSelection,
-} from "@match-lock/shared";
+} from "@roster-lock/shared";
+import {
+  RosterLockV1Config, SelectedPiece,
+  UserInput, FinalSelection,
+} from "@roster-lock/types";
 import { JSONSchemaType } from "ajv";
 
 // Using 'as unknown as' because AJV's JSONSchemaType doesn't handle recursive $ref well

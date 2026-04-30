@@ -1,5 +1,5 @@
 
-import { MessageBridge } from "../../../utils/MessageBridge";
+import { MessageBridge } from "@roster-lock/utils";
 import {
   FinalSelection, RosterLockV1Config, SelectedPiece, UserSelection,
   RosterLockV1SyncDLResult

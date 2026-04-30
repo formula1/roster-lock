@@ -1,4 +1,4 @@
-import { JSON_Unknown } from "@match-lock/shared";
+import { JSON_Unknown } from "@roster-lock/utils";
 import { Ajv, JSONSchemaType } from "ajv";
 
 export function validateUnknown<T>(schema: JSONSchemaType<T>, data: JSON_Unknown): T {

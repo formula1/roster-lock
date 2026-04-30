@@ -1,10 +1,9 @@
-import { RosterLockV1Config, UserInput } from "@match-lock/shared";
 import { MATCHLOCK_SELECTION_STATE } from "../constants";
 import {
   encryptJSON, decryptJSON,
 } from "../handleRoomSelections/encryption";
 import { createRandomSeed } from "../handleRoomSelections/random";
-import { FinalSelection } from "@match-lock/shared";
+import { RosterLockV1Config, UserInput, FinalSelection } from "@roster-lock/types";
 import { IRoom } from "../globals/Room/room";
 import { RoomState } from "./RoomState";
 

@@ -1,9 +1,11 @@
 import {
   JSON_Unknown,
+} from "@roster-lock/utils";
+import {
   RosterLockV1Config,
+  FinalSelection,
   UserInput,
-  FinalSelection
-} from "@match-lock/shared";
+} from "@roster-lock/types";
 import { MATCHLOCK_SELECTION_STATE, UserMessegeError } from "../constants";
 import { IRoom } from "../globals/Room";
 import { deepEqual } from "node:assert";

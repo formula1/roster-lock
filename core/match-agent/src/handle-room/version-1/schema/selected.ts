@@ -1,4 +1,4 @@
-import { SelectedPiece, UserInput } from "@match-lock/shared";
+import { UserInput, SelectedPiece } from "@roster-lock/types";
 import { z, ZodType } from "zod";
 
 const SelectedPieceSchema: z.ZodType<SelectedPiece> = z.lazy(() =>

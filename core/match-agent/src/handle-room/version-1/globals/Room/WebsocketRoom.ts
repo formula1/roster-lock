@@ -1,8 +1,6 @@
-import { createSimpleEmitter, JSON_Unknown } from "@roster-lock/shared";
+import { createSimpleEmitter, JSON_Unknown, handleFetch, delay } from "@roster-lock/utils";
 import { IRoom } from "./room";
 import { WebSocket } from "ws";
-import { handleFetch } from "../../../../utils/fetch";
-import { delay } from "../../../../utils/promise";
 import { once } from "events";
 
 type RelayConfig = {

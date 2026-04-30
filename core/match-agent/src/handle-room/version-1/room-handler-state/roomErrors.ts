@@ -2,7 +2,7 @@
 import { IRoom } from "../globals/Room/room";
 import { ExternalUserError, ROOM_EVENT, MATCHLOCK_DOWNLOAD_STATE, MATCHLOCK_SELECTION_STATE } from "../constants";
 
-import { waitForEvent, waitForEventTimeout } from "@match-lock/shared";
+import { waitForEvent, waitForEventTimeout } from "@roster-lock/utils";
 export async function waitForExternalError<T>(
   room: IRoom, abortSignal: AbortSignal
 ): Promise<T> {
