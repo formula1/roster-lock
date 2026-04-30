@@ -1,10 +1,8 @@
 import {
-  RosterLockV1Config, UserId, PieceType, SelectedPiece, FinalSelection
+  RosterLockV1Config, UserId, PieceType, SelectedPiece, FinalSelection, UserInput
 } from "@roster-lock/types";
 
 export * from "./types/untrusted-script";
-import { UserInput } from "./types/selection";
-export { UserInput };
 
 
 import { handleGameControlledSelection } from "./selection-types/game-controlled";
