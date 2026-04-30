@@ -47,14 +47,12 @@ export const userInputSchema: JSONSchemaType<UserInput> = {
 import { runUntrustedScript } from "@roster-lock/node-services";
 export function finalizeSelection(
   config: RosterLockV1Config,
-  scriptsByPath: Record<string, string>,
   gameControlledSelections: Record<PieceType, Array<SelectedPiece> | Record<UserId, Array<SelectedPiece>>>,
   userInputs: Record<UserId, UserInput>,
 ): Promise<FinalSelection> {
 
   return runSelection(
     config,
-    scriptsByPath,
     gameControlledSelections,
     userInputs,
     runUntrustedScript

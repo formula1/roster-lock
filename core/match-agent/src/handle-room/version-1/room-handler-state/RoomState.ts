@@ -107,7 +107,7 @@ export class RoomState {
       },
       finished: async ()=>{
         const ownFinalSelection = await finalizeSelection(
-          this.lockConfig, {}, {}, Object.fromEntries(this.userSelections)
+          this.lockConfig, {}, Object.fromEntries(this.userSelections)
         );
         this.agreedSelection = ownFinalSelection;
         this.room.broadcast(MATCHLOCK_SELECTION_STATE.selectionFinal, ownFinalSelection)
