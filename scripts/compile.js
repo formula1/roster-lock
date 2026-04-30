@@ -9,6 +9,7 @@ const { exec: execCallback, spawn } = require("child_process");
 const exec = promisify(execCallback);
 
 Promise.resolve().then(async ()=>{
+  try {
   const dependencyMap = new Map()
   await Promise.all(process.argv.slice(2).map((arg)=>{
     const initialDirectory = pathResolve(process.cwd(), arg);
@@ -25,6 +26,9 @@ Promise.resolve().then(async ()=>{
       await execWithStdIo("npm install", { cwd: packageDir })
       await execWithStdIo("npm run prepare", { cwd: packageDir })
     }))
+  }
+  }catch(e){
+    console.error("Failure:", e)
   }
 });
 
