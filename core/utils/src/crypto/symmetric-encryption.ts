@@ -44,7 +44,7 @@ export async function encryptValue(
 export async function decryptValue(
   masterKey: SymmetricEncryptionKey,
   encryptedData:  string,
-): Promise<any> {
+): Promise<unknown> {
   const [ivHex, encryptedHex] = encryptedData.split(':');
   const keyData = hexToUint8Array(masterKey);
   const iv = hexToUint8Array(ivHex);
