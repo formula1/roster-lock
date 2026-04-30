@@ -4,8 +4,8 @@ import { strToBuffer, uint8ArrayToHex, hexToUint8Array } from "../string";
 
 // Uses ed25519
 
-type PublicKey = string & { readonly __brand: "PublicKey" };
-type PrivateKey = string & { readonly __brand: "PrivateKey" };
+type PublicKey = string & { readonly __brand: "SignaturePublicKey" };
+type PrivateKey = string & { readonly __brand: "SignaturePrivateKey" };
 
 export interface AsymmetricSignatureKeyPair {
   privateSigningKey: PrivateKey;

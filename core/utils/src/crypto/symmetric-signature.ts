@@ -3,20 +3,22 @@ import { strToBuffer, uint8ArrayToHex, hexToUint8Array } from "../string";
 
 // Use HMAC
 
+export type SymmetricSignatureKey = string & { readonly __brand: "SignatureKey" };
+
 export const SYMMETRIC_SIGNATURE = {
   generateKey: generateSymmetricKey,
   createSignature: createSymmetricMessageSignature,
   verifySignature:   verifySymmetricMessageSignature,
 }
 
-export function generateSymmetricKey(): string {
+export function generateSymmetricKey(): SymmetricSignatureKey {
   const bytes = crypto.getRandomValues(new Uint8Array(32));
-  return uint8ArrayToHex(bytes);
+  return uint8ArrayToHex(bytes) as SymmetricSignatureKey;
 }
 
 
 export async function createSymmetricMessageSignature(
-  key: string,
+  key: SymmetricSignatureKey,
   message: string
 ): Promise<string> {
   const keyData = hexToUint8Array(key);
@@ -41,7 +43,7 @@ export async function createSymmetricMessageSignature(
 
 
 export async function verifySymmetricMessageSignature(
-  key: string,
+  key: SymmetricSignatureKey,
   message: string,
   signature: string
 ): Promise<boolean> {
