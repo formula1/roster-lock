@@ -81,7 +81,7 @@ export class MessageBridge {
     }
   }
 
-  request(path: string, body: any): Promise<any>{
+  sendRequest(path: string, body: any): Promise<any>{
     return new Promise((resolve, reject)=>{
       const id = uniqueId();
       this.requestHandler.pending[id] = { resolve, reject };
@@ -94,14 +94,14 @@ export class MessageBridge {
     });
   }
 
-  respond(path: string, handler: (data: any) => any): void{
+  onRequest(path: string, handler: (data: any) => any){
     if(path in this.requestHandler.listeners){
       throw new Error(`Duplicate Path: ${path}`);
     }
     this.requestHandler.listeners[path] = handler;
   }
 
-  emit(path: string, body: any): void{
+  sendEvent(path: string, body: any){
     this.sendMessage({
       path,
       messageType: "event",
@@ -109,7 +109,7 @@ export class MessageBridge {
     });
   }
 
-  listen(path: string, handler: (data: any) => void | Promise<void>): void{
+  onEvent(path: string, handler: (data: any) => any){
     const listeners = this.eventHandler.listeners[path] || [];
     listeners.push(handler);
     this.eventHandler.listeners[path] = listeners;
