@@ -37,6 +37,7 @@
     "@roster-lock/node-services": "file:../node-services",
     "@roster-lock/shared": "file:../shared",
     "@roster-lock/types": "file:../types",
+    "@roster-lock/utils": "file:../utils",
     "ajv": "^8.17.1",
     "async": "^3.2.6",
     "better-sqlite3": "^12.5.0",
