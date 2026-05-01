@@ -2,12 +2,18 @@ import { strToBuffer, uint8ArrayToHex } from "../string";
 import { canonicalJSONStringify } from "../JSON";
 import { sha256 } from "@noble/hashes/sha2.js";
 
-export async function createShaFromValue(value: any){
-  const content = strToBuffer(canonicalJSONStringify(value));
+export function createShaFromJSON(value: any){
+  return createShaFromString(canonicalJSONStringify(value));
+}
 
+export async function createShaFromString(value: string){
+  return createShaFromBuffer(strToBuffer(value));
+}
+
+export async function createShaFromBuffer(value: Uint8Array<ArrayBuffer>){
   const hashBuffer = await crypto.subtle.digest(
     'SHA-256',
-    content
+    value
   );
 
   return uint8ArrayToHex(new Uint8Array(hashBuffer));
@@ -22,7 +28,7 @@ export async function createShaFromTextStream(value: AsyncIterable<string> | Ite
   return uint8ArrayToHex(hasher.digest());
 }
 
-export async function createShaFromUintStream(value: AsyncIterable<Uint8Array> | Iterable<Uint8Array>){
+export async function createShaFromUintStream(value: AsyncIterable<Uint8Array<ArrayBuffer>> | Iterable<Uint8Array<ArrayBuffer>>){
   const hasher = sha256.create();
   for await (const chunk of value) {
     hasher.update(chunk);
