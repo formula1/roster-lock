@@ -7,6 +7,8 @@ import { ScriptStarter } from "../../types/untrusted-script";
 import { validateUserSelection } from "./validate-user-selection";
 import { handleValidationResult } from "../../handle-validation";
 
+import { castSharedResult, castPersonalResult } from "./cast-result";
+
 export async function handleNormalSelection(
   config: RosterLockV1Config,
   randomSeeds: string[],
@@ -33,7 +35,7 @@ export async function handleNormalSelection(
     }
     await validateUserSelection(
       config, pieceType, userSelections, selectionConfig, 
-    )
+    );
     if(!selectionConfig.validation?.customValidation.length){
       return;
     }
@@ -50,7 +52,7 @@ export async function handleNormalSelection(
         },
         entryScript: script
       }))
-    )))
+    )));
   }));
 
   if(pieceConfig.selectionStrategy === "shared" && !selectionConfig.mergeAlgorithm){
@@ -66,7 +68,7 @@ export async function handleNormalSelection(
     return { type: "personal", value: usersSelections };
   }
 
-  const mergedSelection = await runScript({
+  const rawResult = await runScript({
     config,
     randomSeeds,
     purpose: {
@@ -79,22 +81,21 @@ export async function handleNormalSelection(
   });
 
   if(pieceConfig.selectionStrategy === "shared"){
-    if(!Array.isArray(mergedSelection)){
-      throw new Error(`Expected Array for Shared Selection`);
-    }
+    const mergedSelection = castSharedResult(rawResult);
     ensurePiecesAreInRoster(config, pieceType, mergedSelection);
     return { type: "shared", value: mergedSelection };
   }
 
-  if(typeof mergedSelection !== "object" || Array.isArray(mergedSelection) || mergedSelection === null){
-    throw new Error(`Expected Record for Personal Selection`);
+  if(pieceConfig.selectionStrategy === "personal"){
+    const mergedSelection = castPersonalResult(rawResult);
+    for(const userId of users){
+      if(!mergedSelection[userId]){
+        throw new Error(`Missing selection for ${userId}`);
+      }
+      ensurePiecesAreInRoster(config, pieceType, mergedSelection[userId]);
+    }
+    return { type: "personal", value: mergedSelection };
   }
 
-  for(const userId of users){
-    if(!mergedSelection[userId]){
-      throw new Error(`Missing selection for ${userId}`);
-    }
-    ensurePiecesAreInRoster(config, pieceType, mergedSelection[userId]);
-  }
-  return { type: "personal", value: mergedSelection };
+  throw new Error("Invalid Selection Strategy: " + pieceConfig.selectionStrategy);
 }
