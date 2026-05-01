@@ -22,10 +22,10 @@ export async function createShaFromTextStream(value: AsyncIterable<string> | Ite
   return uint8ArrayToHex(hasher.digest());
 }
 
-export async function createShaFromUintStream(value: AsyncIterable<string> | Iterable<string>){
+export async function createShaFromUintStream(value: AsyncIterable<Uint8Array> | Iterable<Uint8Array>){
   const hasher = sha256.create();
   for await (const chunk of value) {
-    hasher.update(strToBuffer(chunk));
+    hasher.update(chunk);
   }
 
   return uint8ArrayToHex(hasher.digest());

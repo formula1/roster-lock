@@ -1,11 +1,11 @@
 
-import { strToBuffer, uint8ArrayToHex, hexToUint8Array } from "../string";
+import { strToBuffer, uint8ArrayToHex, hexToUint8Array } from "../../string";
 
 // Use HMAC
 
 export type SymmetricSignatureKey = string & { readonly __brand: "SignatureKey" };
 
-export const SYMMETRIC_SIGNATURE = {
+export const SIGNATURE_SYMMETRIC = {
   generateKey: generateSymmetricSignatureKey,
   createSignature: createSymmetricMessageSignature,
   verifySignature:   verifySymmetricMessageSignature,

@@ -1,10 +1,10 @@
-import { uint8ArrayToHex, hexToUint8Array, strToBuffer } from "../string";
-import { canonicalJSONStringify } from "../JSON";
+import { uint8ArrayToHex, hexToUint8Array, strToBuffer } from "../../string";
+import { canonicalJSONStringify } from "../../JSON";
 
 export type SymmetricEncryptionKey = string & { readonly __brand: "EncryptionKey" };
 
 
-export const SYMMETRIC_ENCRYPT = {
+export const ENCRYPT_SYMMETRIC = {
   generateKey: generateSymmetricEncryptionKey,
   encryptValue: encryptValue,
   decryptValue: decryptValue,

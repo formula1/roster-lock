@@ -1,6 +1,6 @@
 import { keygen, verify as ed25519Verify, sign as ed25519Sign } from "@noble/ed25519";
-import { canonicalJSONStringify } from "../JSON";
-import { strToBuffer, uint8ArrayToHex, hexToUint8Array } from "../string";
+import { canonicalJSONStringify } from "../../JSON";
+import { strToBuffer, uint8ArrayToHex, hexToUint8Array } from "../../string";
 
 // Uses ed25519
 
@@ -12,7 +12,7 @@ export interface AsymmetricSignatureKeyPair {
   publicVerificationKey: PublicKey;
 }
 
-export const ASYMMETRIC_SIGNATURE = {
+export const SIGNATURE_ASYMMETRIC = {
   generateKeyPair: generateAsymmetricSignatureKeyPair,
   createSignature: createAsymmetricMessageSignature,
   verifySignature: verifyAsymmetricMessageSignature
