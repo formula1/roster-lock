@@ -1,0 +1,10 @@
+{
+  "name": "match-lock",
+  "private": true,
+  "devDependencies": {
+    "@stylistic/eslint-plugin": "^4.4.1",
+    "@typescript-eslint/eslint-plugin": "^8.59.1",
+    "@typescript-eslint/parser": "^8.59.1",
+    "globals": "^16.0.0"
+  }
+}
