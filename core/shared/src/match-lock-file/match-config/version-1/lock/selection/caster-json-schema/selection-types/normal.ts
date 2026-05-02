@@ -7,8 +7,8 @@ import {
 } from "@roster-lock/types";
 
 import { selectionPieceMetaSchema } from "../meta";
-import { gasLimittedScriptSchema } from "../script";
-import { validateSelectionBanList } from "../../validate/selections/normal";
+import { untrustedScriptRefSchema } from "../script";
+import { validateSelectionBanList, validateRange } from "../../validate/selections/normal";
 import { defineKeyword } from "../../../../../../util-types/json-schema";
 
 export const banListSchemaValidator = defineKeyword({
@@ -21,6 +21,14 @@ export const banListSchemaValidator = defineKeyword({
     if(!pieceType) throw new Error("Invalid path");
     const roster = rosters[pieceType];
     validateSelectionBanList(banList, roster);
+  }
+});
+
+export const rangeSchemaValidator = defineKeyword({
+  keyword: "selectionRange",
+  type: ["number", "array"],
+  validate: function (value, config: RosterLockV1Config, path){
+    validateRange(value);
   }
 });
 
@@ -43,6 +51,7 @@ const userSelectionValidationSchema: JSONSchemaType<UserSelectionValidation> = {
           maxItems: 2,
         },
       ],
+      [rangeSchemaValidator.keyword]: true,
     },
     unique: { type: "boolean" },
     banList: {
@@ -53,10 +62,10 @@ const userSelectionValidationSchema: JSONSchemaType<UserSelectionValidation> = {
     },
     customValidation: {
       type: "array",
-      items: gasLimittedScriptSchema,
+      items: untrustedScriptRefSchema,
     },
   },
-}
+};
 
 export const normalSelectionSchema: JSONSchemaType<SelectionNormalConfig> = {
   type: "object",
@@ -66,8 +75,8 @@ export const normalSelectionSchema: JSONSchemaType<SelectionNormalConfig> = {
     type: { type: "string", const: "normal" },
     pieceMeta: { ...selectionPieceMetaSchema, nullable: true },
     validation: { ...userSelectionValidationSchema, nullable: true },
-    mergeAlgorithm: { ...gasLimittedScriptSchema, nullable: true },
+    mergeAlgorithm: { ...untrustedScriptRefSchema, nullable: true },
   },
-}
+};
 
 

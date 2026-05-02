@@ -46,12 +46,11 @@ FINAL_SELECTION: {
 
 */
 type RelativePath = string;
-export type GasLimittedScript = (
+export type UntrustedScriptRef = (
   // I'm thinking a "published" config will be a tarball of all necessary files
   // This allows users to write scripts in their preferred editor then add them as necessary
   | {
-    type?: string  // "text/lua",
     src: RelativePath,
     method?: string,
   }
-)
+);

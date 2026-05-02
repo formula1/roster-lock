@@ -1,5 +1,6 @@
 
 import { RosterLockV1Config, SelectionNormalConfig, PieceType } from "@roster-lock/types";
+import { validateGasLimittedScript } from "../script";
 
 export function validateNormal(
   selection: SelectionNormalConfig,
@@ -10,6 +11,9 @@ export function validateNormal(
 
   if("validation" in selection && selection.validation){
     validateSelection(selection.validation, pieceType, config);
+  }
+  if(selection.mergeAlgorithm){
+    validateGasLimittedScript(selection.mergeAlgorithm, config);
   }
 }
 
@@ -44,26 +48,28 @@ export function validateSelection(
   pieceType: PieceType,
   config: RosterLockV1Config
 ){
-
   validateRange(validation.count);
   validateSelectionBanList(validation.banList || [], config.rosters[pieceType]);
+  for(const script of validation.customValidation){
+    validateGasLimittedScript(script, config);
+  }
 }
 
 export function validateRange(count: SelectionValidation["count"]){
   if(!Array.isArray(count)){
     if(count === "*") return;
-    if(count < 0) throw new Error(`count should be greater than or equal to 0`);
+    if(count < 0) throw new Error("count should be greater than or equal to 0");
     return;
   }
   if(count.length !== 2){
-    throw new Error(`range should be a single value or a range of two values`);
+    throw new Error("range should be a single value or a range of two values");
   }
   if(count[0] < 0){
-    throw new Error(`range should not have a negative minimum`);
+    throw new Error("range should not have a negative minimum");
   }
   if(count[1] === "*") return;
   if(count[0] >= count[1]){
-    throw new Error(`maximum should be greater than the minimum`);
+    throw new Error("maximum should be greater than the minimum");
   }
 }
 

@@ -1,13 +1,13 @@
-import { JSONShallowObject, SelectionPieceMeta } from "../meta"
-import { GasLimittedScript } from "../script"
-import { PieceId } from "../../../shared"
+import { JSONShallowObject, SelectionPieceMeta } from "../meta";
+import { UntrustedScriptRef } from "../script";
+import { PieceId } from "../../../shared";
 
 export type UserSelectionValidation = {
   count: number | "*" | [number, number | "*"],
   unique: boolean,
   banList?: Array<PieceId>,
-  customValidation: Array<GasLimittedScript>
-}
+  customValidation: Array<UntrustedScriptRef>
+};
 
 
 export type SelectionNormalConfig = {
@@ -33,6 +33,6 @@ export type SelectionNormalConfig = {
     
     We validate the return type of the algorithm to ensure it matches the pieceType
   */
-  mergeAlgorithm?: GasLimittedScript
-}
+  mergeAlgorithm?: UntrustedScriptRef
+};
 

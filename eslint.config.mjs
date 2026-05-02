@@ -41,4 +41,8 @@ export default [
     files: ["core/config-editor-cli/**/*.{ts,tsx}"],
     languageOptions: { globals: globals.node, parser: tsParser },
   },
+  {
+    files: ["core/config-editor/**/*.{ts,tsx}"],
+    languageOptions: { globals: globals.browser, parser: tsParser },
+  },
 ];
