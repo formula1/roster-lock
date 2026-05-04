@@ -1,11 +1,11 @@
-import seedrandom from 'seedrandom';
+import seedrandom from "seedrandom";
 
 export class MultiSeedPRNG {
   private rng: seedrandom.PRNG;
 
   constructor(seeds: string[]) {
     // Combine seeds deterministically
-    const combinedSeed = seeds.join('|');
+    const combinedSeed = seeds.join("|");
     this.rng = seedrandom(combinedSeed);
   }
 

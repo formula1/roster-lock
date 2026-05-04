@@ -19,7 +19,7 @@ export class RequiredModule<T> {
     if(typeof module !== "undefined") return module;
 
     if(this.loadingStack.includes(resolvedPath)){
-      const cycle = [...this.loadingStack, resolvedPath].join(' -> ');
+      const cycle = [...this.loadingStack, resolvedPath].join(" -> ");
       throw new Error(`Circular dependency detected: ${cycle}`);
     }
 

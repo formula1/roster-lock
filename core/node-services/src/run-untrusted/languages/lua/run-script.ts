@@ -1,44 +1,44 @@
 import { ScriptRunner } from "../types";
-import { LuaFactory, LuaEngine } from 'wasmoon';
+import { LuaFactory, LuaEngine } from "wasmoon";
 
-const factory = new LuaFactory()
+const factory = new LuaFactory();
 
 export const runLuaScript: ScriptRunner<any> = async function(
   globals, input, script, initialMethod
 ){
-  const lua = await factory.createEngine()
+  const lua = await factory.createEngine();
 
   try {
 
     await addGasLimit(lua, 5_000_000);
 
     // Prevent filesystem calls
-    lua.global.set('dofile', undefined);
-    lua.global.set('loadfile', undefined);
-    lua.global.set('io', undefined);
-    lua.global.set('os', undefined); // Also block os module
+    lua.global.set("dofile", undefined);
+    lua.global.set("loadfile", undefined);
+    lua.global.set("io", undefined);
+    lua.global.set("os", undefined); // Also block os module
 
     // Add RNG Globals
-    lua.global.set('randomFloat', () =>(globals.randomFloat()));
-    lua.global.set('randomInt', (min: number, max: number) =>(
+    lua.global.set("randomFloat", () =>(globals.randomFloat()));
+    lua.global.set("randomInt", (min: number, max: number) =>(
       globals.randomInt(min, max)
     ));
-    lua.global.set('shuffleIndexes', (length: number) =>(
+    lua.global.set("shuffleIndexes", (length: number) =>(
       globals.shuffleIndexes(length, 1)
     ));
     await overrideDefaultRNG(lua);
 
     // Add Piece Related Globals
-    lua.global.set('getPieceMeta', (pieceType: string, pieceId: string) =>(
+    lua.global.set("getPieceMeta", (pieceType: string, pieceId: string) =>(
       globals.getPieceMeta(pieceType, pieceId)
     ));
-    lua.global.set('getAvailablePieces', (pieceType: string) =>(
+    lua.global.set("getAvailablePieces", (pieceType: string) =>(
       globals.getAvailablePieces(pieceType)
     ));
 
 
     // Add requireScript
-    lua.global.set('require', (relativePath: string) =>(
+    lua.global.set("require", (relativePath: string) =>(
       globals.requireScript(relativePath, (fullPath, newContent)=>(
         lua.doString(`
           return (function()
@@ -50,21 +50,21 @@ export const runLuaScript: ScriptRunner<any> = async function(
 
     // Add Input
     if(input.type === "piece-user-validation"){
-      lua.global.set('selection', input.input);
+      lua.global.set("selection", input.input);
     } else if(input.type === "piece-merge"){
-      lua.global.set('users', input.users);
-      lua.global.set('selection', input.input);
+      lua.global.set("users", input.users);
+      lua.global.set("selection", input.input);
     } else if(input.type === "global-validation"){
-      lua.global.set('users', input.users);
-      lua.global.set('pieceTypes', input.pieceTypes);
-      lua.global.set('selection', input.input);
+      lua.global.set("users", input.users);
+      lua.global.set("pieceTypes", input.pieceTypes);
+      lua.global.set("selection", input.input);
     } else {
       throw new Error("Unknown Input Type");
     }
 
     await lua.doString(script);
 
-    const main = lua.global.get(initialMethod)
+    const main = lua.global.get(initialMethod);
     if(typeof main !== "function"){
       throw new Error(`No ${initialMethod} function defined in script`);
     }
@@ -72,7 +72,7 @@ export const runLuaScript: ScriptRunner<any> = async function(
   }finally{
     lua.global.close();
   }
-}
+};
 
 async function addGasLimit(lua: LuaEngine, maxGas: number){
   await lua.doString(`
@@ -88,7 +88,7 @@ async function addGasLimit(lua: LuaEngine, maxGas: number){
       end, "", 1)
     end
   `);
-  await lua.doString(`debug = nil`);
+  await lua.doString("debug = nil");
 }
 
 async function overrideDefaultRNG(lua: LuaEngine){

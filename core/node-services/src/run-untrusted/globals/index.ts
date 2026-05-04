@@ -1,5 +1,5 @@
 import { RosterLockV1Config, PieceType } from "@roster-lock/types";
-import { ScriptPurposeInput } from "@roster-lock/shared"
+import { ScriptPurposeInput } from "@roster-lock/shared";
 import { MultiSeedPRNG } from "./random";
 import { AvailablePieces } from "./available-pieces";
 import { createPieceMetaGetter } from "./get-piece-meta";
@@ -12,7 +12,7 @@ export type ScriptGlobals<ScriptModule> = {
   getPieceMeta: (pieceType: string, pieceId: string)=>any,
   getAvailablePieces: (pieceType: string)=>Array<string>,
   requireScript: (path: string, runCode: (newPath: string, content: string)=>Promise<ScriptModule>)=>Promise<ScriptModule>,
-}
+};
 
 
 export function getScriptGlobals<ScriptModule>(
@@ -28,25 +28,25 @@ export function getScriptGlobals<ScriptModule>(
       return {
         pieceType: purpose.pieceType,
         seeds: ["validation", purpose.pieceType, purpose.userId],
-      }
+      };
     }
     if(purpose.type === "piece-merge"){
       return {
         pieceType: purpose.pieceType,
         seeds: ["merge", purpose.pieceType],
-      }
+      };
     }
     if(purpose.type === "global-validation"){
       return {
         pieceType: undefined,
         seeds: ["global-validation"],
-      }
+      };
     }
     throw new Error("Unknown Purpose");
   })();
   const allowedPieces = getAllowedPieces(config, pieceType);
   randomSeeds.sort();
-  const rng = new MultiSeedPRNG(seeds.concat(randomSeeds))
+  const rng = new MultiSeedPRNG(seeds.concat(randomSeeds));
   const requiredModule = new RequiredModule<ScriptModule>(scripts, currentScriptPath);
   return {
     randomFloat: ()=>rng.nextFloat(),
@@ -60,7 +60,7 @@ export function getScriptGlobals<ScriptModule>(
     requireScript: (path: string, runCode: (newPath: string, content: string)=>Promise<ScriptModule>)=>{
       return requiredModule.require(path, runCode);
     }
-  }
+  };
 }
 
 /*
@@ -75,7 +75,7 @@ function getAllowedPieces(
   config: RosterLockV1Config,
   pieceType?: PieceType,
 ){
-  if(pieceType) return getAllowedPiecesAndRequired(config, pieceType)
+  if(pieceType) return getAllowedPiecesAndRequired(config, pieceType);
   const allowedPieces = new Set<PieceType>();
   for(const pieceType of Object.keys(config.engine.pieceDefinitions)){
     allowedPieces.add(pieceType);

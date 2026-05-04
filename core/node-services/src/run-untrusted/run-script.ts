@@ -1,13 +1,13 @@
 import { ScriptStarter } from "@roster-lock/shared";
 import { getLanguageRunnerFromMimeType } from "./languages";
 import { getScriptGlobals } from "./globals";
-import mime from 'mime-types';
+import mime from "mime-types";
 
 
 export async function runUntrustedScript(
   { config, randomSeeds, purpose, entryScript }: ScriptStarter,
 ) {
-  const entryScriptPath = entryScript.src
+  const entryScriptPath = entryScript.src;
   const script = config.selection.scripts[entryScriptPath];
   if(!script){
     throw new Error("Missing entry script " + entryScriptPath);
