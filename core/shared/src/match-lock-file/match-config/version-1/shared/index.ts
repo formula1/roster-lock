@@ -10,5 +10,5 @@ export function buildIdentity<P extends string, V extends number>(
       purpose: { type: "string" as const, const: purpose },
       version: { type: "number" as const, const: version },
     }
-  }
+  };
 }

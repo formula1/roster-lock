@@ -18,82 +18,82 @@ export function getDownloadableSourceProtocol(url: string): string | undefined {
 
 
 // HTTPS Validator
-DOWNLOADABLE_SOURCE_PROTOCOLS['https'] = {
-  protocol: 'https',
+DOWNLOADABLE_SOURCE_PROTOCOLS["https"] = {
+  protocol: "https",
   validate: (url: string) => {
     const parsed = new URL(url); // Will throw if invalid URL
-    if (parsed.protocol !== 'https:') {
-      throw new Error('Protocol must be https:');
+    if (parsed.protocol !== "https:") {
+      throw new Error("Protocol must be https:");
     }
     if (!parsed.hostname) {
-      throw new Error('Missing hostname');
+      throw new Error("Missing hostname");
     }
   }
 };
 
 // HTTP Validator
-DOWNLOADABLE_SOURCE_PROTOCOLS['http'] ={
-  protocol: 'http',
+DOWNLOADABLE_SOURCE_PROTOCOLS["http"] ={
+  protocol: "http",
   validate: (url: string) => {
     const parsed = new URL(url);
-    if (parsed.protocol !== 'http:') {
-      throw new Error('Protocol must be http:');
+    if (parsed.protocol !== "http:") {
+      throw new Error("Protocol must be http:");
     }
     if (!parsed.hostname) {
-      throw new Error('Missing hostname');
+      throw new Error("Missing hostname");
     }
   }
 };
 
 // FTPS Validator
-DOWNLOADABLE_SOURCE_PROTOCOLS['ftps'] = {
-  protocol: 'ftps',
+DOWNLOADABLE_SOURCE_PROTOCOLS["ftps"] = {
+  protocol: "ftps",
   validate: (url: string) => {
     const parsed = new URL(url);
-    if (parsed.protocol !== 'ftps:') {
-      throw new Error('Protocol must be ftps:');
+    if (parsed.protocol !== "ftps:") {
+      throw new Error("Protocol must be ftps:");
     }
     if (!parsed.hostname) {
-      throw new Error('Missing hostname');
+      throw new Error("Missing hostname");
     }
     // FTPS URLs should have a path
-    if (!parsed.pathname || parsed.pathname === '/') {
-      throw new Error('FTPS URL must include a file path');
+    if (!parsed.pathname || parsed.pathname === "/") {
+      throw new Error("FTPS URL must include a file path");
     }
   }
 };
 
 // Magnet Validator
-DOWNLOADABLE_SOURCE_PROTOCOLS['magnet'] = {
-  protocol: 'magnet',
+DOWNLOADABLE_SOURCE_PROTOCOLS["magnet"] = {
+  protocol: "magnet",
   validate: (url: string) => {
     const parsed = new URL(url);
-    if (parsed.protocol !== 'magnet:') {
-      throw new Error('Protocol must be magnet:');
+    if (parsed.protocol !== "magnet:") {
+      throw new Error("Protocol must be magnet:");
     }
     
     // Magnet links must have an xt (exact topic) parameter
-    const xt = parsed.searchParams.get('xt');
+    const xt = parsed.searchParams.get("xt");
     if (!xt) {
-      throw new Error('Magnet link must include xt (exact topic) parameter');
+      throw new Error("Magnet link must include xt (exact topic) parameter");
     }
     
     // xt should be in format urn:btih:<hash>
-    if (!xt.startsWith('urn:btih:')) {
-      throw new Error('xt parameter must be in format urn:btih:<hash>');
+    if (!xt.startsWith("urn:btih:")) {
+      throw new Error("xt parameter must be in format urn:btih:<hash>");
     }
     
-    const hash = xt.substring('urn:btih:'.length);
+    const hash = xt.substring("urn:btih:".length);
     // BitTorrent info hash should be 40 hex chars (SHA-1) or 64 hex chars (SHA-256)
     if (!/^[a-fA-F0-9]{40}$/.test(hash) && !/^[a-fA-F0-9]{64}$/.test(hash)) {
-      throw new Error('Invalid BitTorrent info hash format');
+      throw new Error("Invalid BitTorrent info hash format");
     }
   }
 };
 
 // Git Validator
-DOWNLOADABLE_SOURCE_PROTOCOLS['git'] ={
-  protocol: 'git',
+DOWNLOADABLE_SOURCE_PROTOCOLS["git"] ={
+  protocol: "git",
   validate: (url: string) => {
     // Git supports multiple URL formats:
     // - git://host.xz/path/to/repo.git
@@ -116,38 +116,38 @@ DOWNLOADABLE_SOURCE_PROTOCOLS['git'] ={
     })();
     
     // Check for git:// protocol
-    if (parsed.protocol !== 'git:') {
-      throw new Error('Git URL must use git:// protocol');
+    if (parsed.protocol !== "git:") {
+      throw new Error("Git URL must use git:// protocol");
     }
     if (!parsed.hostname) {
-      throw new Error('Missing hostname');
+      throw new Error("Missing hostname");
     }
-    if (!parsed.pathname || parsed.pathname === '/') {
-      throw new Error('Git URL must include repository path');
+    if (!parsed.pathname || parsed.pathname === "/") {
+      throw new Error("Git URL must include repository path");
     }
   }
 };
 
 // IPFS Validator
-import { isCID } from 'cids'
-DOWNLOADABLE_SOURCE_PROTOCOLS['ipfs'] = {
-  protocol: 'ipfs',
+import { isCID } from "cids";
+DOWNLOADABLE_SOURCE_PROTOCOLS["ipfs"] = {
+  protocol: "ipfs",
   validate: (url: string) => {
     const parsed = new URL(url);
-    if (parsed.protocol !== 'ipfs:') {
-      throw new Error('Protocol must be ipfs:');
+    if (parsed.protocol !== "ipfs:") {
+      throw new Error("Protocol must be ipfs:");
     }
     
     // IPFS URLs are in format: ipfs://CID or ipfs://CID/path
     // The hostname is the CID (Content Identifier)
-    const cid = parsed.hostname || parsed.pathname.split('/')[0];
+    const cid = parsed.hostname || parsed.pathname.split("/")[0];
     
     if (!cid) {
-      throw new Error('IPFS URL must include a CID');
+      throw new Error("IPFS URL must include a CID");
     }
     
     if(!isCID(cid)){
-      throw new Error(`Invalid IPFS CID`);
+      throw new Error("Invalid IPFS CID");
     }
   }
 };
