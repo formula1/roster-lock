@@ -34,11 +34,18 @@ export const preselectedSelectionSchema = {
         id: { type: "string" },
         required: {
           type: "object",
-          required: [],
-          additionalProperties: {
-            type: "array",
-            items: { $ref: "#/$defs/PreselectedPiece" },
-          },
+          required: ["mandatory", "selectable"],
+          additionalProperties: false,
+          properties: {
+            mandatory: {
+              type: "array",
+              items: { $ref: "#/$defs/PreselectedPiece" },
+            },
+            selectable: {
+              type: "array",
+              items: { $ref: "#/$defs/PreselectedPiece" },
+            }
+          }
         },
       },
     },
