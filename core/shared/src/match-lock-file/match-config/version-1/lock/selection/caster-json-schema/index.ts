@@ -34,7 +34,6 @@ export const selectionConfigSchema: JSONSchemaType<RosterLockV1Config["selection
     globalValidation: {
       type: "array",
       items: untrustedScriptRefSchema,
-      nullable: true,
     },
     scriptDictionary: untrustedScriptDictionarySchema
   },

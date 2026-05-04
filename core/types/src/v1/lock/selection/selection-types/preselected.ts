@@ -9,7 +9,7 @@ import { PieceId, PieceType } from "../../../shared"
 // When selecting personal pieces, the array will be applied to all players
 export type SelectionPreselectedConfig = {
   type: "preselected",
-  pieceMeta?: SelectionPieceMeta<JSONShallowObject>,
+  pieceMeta: SelectionPieceMeta<JSONShallowObject>,
   pieces: Array<PreselectedPiece>
 }
 type PreselectedPiece = {

@@ -8,6 +8,6 @@ export const gameControlledSelectionSchema: JSONSchemaType<SelectionGameControll
   additionalProperties: false,
   properties: {
     type: { type: "string", const: "game-controlled" },
-    pieceMeta: { ...selectionPieceMetaSchema, nullable: true },
+    pieceMeta: selectionPieceMetaSchema,
   },
-}
+};

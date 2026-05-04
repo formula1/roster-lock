@@ -26,7 +26,7 @@ export type RosterLockSelectionConfig = {
     | SelectionUnselectableConfig
   )>,
 
-  globalValidation?: Array<UntrustedScriptRef>
+  globalValidation: Array<UntrustedScriptRef>
 
   scriptDictionary: Record<string, { mimeType: string, content: string, }>
 };

@@ -57,7 +57,6 @@ const userSelectionValidationSchema: JSONSchemaType<UserSelectionValidation> = {
     banList: {
       type: "array",
       items: { type: "string" },
-      nullable: true,
       [banListSchemaValidator.keyword]: true,
     },
     customValidation: {
@@ -73,8 +72,8 @@ export const normalSelectionSchema: JSONSchemaType<SelectionNormalConfig> = {
   additionalProperties: false,
   properties: {
     type: { type: "string", const: "normal" },
-    pieceMeta: { ...selectionPieceMetaSchema, nullable: true },
-    validation: { ...userSelectionValidationSchema, nullable: true },
+    pieceMeta: selectionPieceMetaSchema,
+    validation: userSelectionValidationSchema,
     mergeAlgorithm: { ...untrustedScriptRefSchema, nullable: true },
   },
 };
