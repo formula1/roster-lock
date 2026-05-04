@@ -17,6 +17,10 @@ export function strToBuffer(str: string) {
   return new TextEncoder().encode(str);
 }
 
+export function bufferToStr(buffer: Uint8Array){
+  return new TextDecoder().decode(buffer);
+}
+
 export function uint8ArrayToHex(array: Uint8Array){
   return Array.from(array)
     .map(byte => byte.toString(16).padStart(2, '0'))
