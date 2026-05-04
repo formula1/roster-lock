@@ -8,11 +8,11 @@ export async function runUntrustedScript(
   { config, randomSeeds, purpose, entryScript }: ScriptStarter,
 ) {
   const entryScriptPath = entryScript.src;
-  const script = config.selection.scripts[entryScriptPath];
+  const script = config.selection.scriptDictionary[entryScriptPath];
   if(!script){
     throw new Error("Missing entry script " + entryScriptPath);
   }
-  const mimetype = entryScript.type || mime.lookup(entryScriptPath);
+  const mimetype = script.mimeType || mime.lookup(entryScriptPath);
   if(!mimetype){
     throw new Error("Cannot determine mime type of " + entryScriptPath);
   }
@@ -24,6 +24,6 @@ export async function runUntrustedScript(
     config, entryScriptPath, randomSeeds, purpose
   );
   return await runner.runScript(
-    globals, purpose, script, entryScript.method || "main"
+    globals, purpose, script.content, entryScript.method || "main"
   );
 }

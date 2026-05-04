@@ -21,7 +21,7 @@ export function getScriptGlobals<ScriptModule>(
   randomSeeds: string[],
   purpose: ScriptPurposeInput,
 ): ScriptGlobals<ScriptModule> {
-  const scripts = config.selection.scripts;
+  const scripts = config.selection.scriptDictionary;
   const availablePieces = new AvailablePieces(config);
   const { pieceType, seeds } = (()=>{
     if(purpose.type === "piece-user-validation"){

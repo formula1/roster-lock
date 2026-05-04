@@ -1,19 +1,32 @@
 
-import { dirname, resolve as pathResolve, normalize, extname } from "path";
+import { dirname, resolve as pathResolve, join as pathJoin, extname } from "path";
+
+import { RosterLockV1Config } from "@roster-lock/types";
+import { getUntrustedScript, UntrustedScriptType } from "@roster-lock/shared";
+import mimetypes from "mime-types";
+
+type ScriptDictionary = RosterLockV1Config["selection"]["scriptDictionary"];
 
 export class RequiredModule<T> {
+  public scriptType: UntrustedScriptType;
   public loadedModules: Map<string, T> = new Map();
   public loadingStack: Array<string> = [];
   constructor(
-    public availableScripts: Record<string, string>,
+    public availableScripts: ScriptDictionary,
     public currentScriptPath: string,
-  ){}
+  ){
+    const mimeType = mimetypes.lookup(currentScriptPath);
+    if(!mimeType) throw new Error(`Invalid initial script ${currentScriptPath}`);
+    const scriptType = getUntrustedScript(mimeType);
+    if(!scriptType) throw new Error(`Cannot support ${mimeType}`);
+    this.scriptType = scriptType;
+  }
   async require(
     targetScriptpath: string,
     runCode: (newPath: string, content: string)=>Promise<T>,
   ){
     const resolvedPath = resolveScriptPath(
-      this.availableScripts, this.currentScriptPath, targetScriptpath
+      this.availableScripts, this.scriptType, this.currentScriptPath, targetScriptpath
     );
     const module = this.loadedModules.get(resolvedPath);
     if(typeof module !== "undefined") return module;
@@ -27,7 +40,16 @@ export class RequiredModule<T> {
     this.loadingStack.push(resolvedPath);
     this.currentScriptPath = resolvedPath;
 
-    const content = this.availableScripts[resolvedPath];
+    const { mimeType, content } = this.availableScripts[resolvedPath];
+    if(!this.scriptType.mimeTypes.includes(mimeType)){
+      throw new Error(
+        [
+          "We don't currently support inter language communication",
+          "Supports: " + JSON.stringify(this.scriptType.mimeTypes),
+          "Requesting: " + mimeType
+        ].join("\n")
+      );
+    }
 
     try {
       const newModule = await runCode(resolvedPath, content);
@@ -41,7 +63,8 @@ export class RequiredModule<T> {
 }
 
 export function resolveScriptPath(
-  availableScripts: Record<string, string>,
+  availableScripts: ScriptDictionary,
+  scriptType: UntrustedScriptType,
   currentScriptPath: string,
   targetScriptpath: string,
 ){
@@ -54,7 +77,7 @@ export function resolveScriptPath(
   const currentDir = dirname(currentScriptPath);
   
   // Resolve relative to scripts directory
-  let resolvedPath = pathResolve(currentDir, targetScriptpath);
+  const resolvedPath = pathResolve(currentDir, targetScriptpath);
   if(availableScripts[resolvedPath]) return resolvedPath;
 
   // Add .lua extension if not present
@@ -62,9 +85,12 @@ export function resolveScriptPath(
   if(targetExt){
     throw new Error("Script Not Found");
   }
-  resolvedPath += extname(currentScriptPath);
-  if(!availableScripts[resolvedPath]){
-    throw new Error("Script Not Found");
+  const resolvedPathWithExt = resolvedPath + extname(currentScriptPath);
+  if(availableScripts[resolvedPathWithExt]) return resolvedPathWithExt;
+
+  if(scriptType.directoryFile){
+    const resolvedPathIndex = pathJoin(resolvedPath, scriptType.directoryFile);
+    if(availableScripts[resolvedPathIndex]) return resolvedPathIndex;
   }
-  return resolvedPath;
+  throw new Error("Script Not Found");
 }

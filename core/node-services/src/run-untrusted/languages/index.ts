@@ -1,7 +1,7 @@
 import { LanguageRunner } from "./types";
 export const LANGUAGE_RUNNERS: Array<LanguageRunner<any>> = [];
 export function getLanguageRunnerFromMimeType(mimeType: string): LanguageRunner<any> | undefined {
-  return LANGUAGE_RUNNERS.find(runner => runner.mimetypes.includes(mimeType));
+  return LANGUAGE_RUNNERS.find(runner => runner.config.mimeTypes.includes(mimeType));
 }
 
 import { LUA } from "./lua";

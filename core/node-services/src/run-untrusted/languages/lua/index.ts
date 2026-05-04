@@ -1,9 +1,11 @@
+import { UNTRUSTED_SCRIPT_TYPES } from "@roster-lock/shared";
 import { LanguageRunner } from "../types";
 
-import { LUA_MIMETYPES } from "./mimetype";
 import { runLuaScript } from "./run-script";
 
+const config = UNTRUSTED_SCRIPT_TYPES["lua"];
+if(!config) throw new Error("Missing lua config");
 export const LUA: LanguageRunner<any> = {
-  mimetypes: LUA_MIMETYPES,
+  config: config,
   runScript: runLuaScript,
 };

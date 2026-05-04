@@ -2,7 +2,7 @@ import {
   RosterLockV1Schema, RosterLockV1SchemaKeywords, JSONSchemaCaster,
 } from "@roster-lock/shared";
 
-import { ScriptStarter, gasLimittedScriptSchema } from "@roster-lock/shared";
+import { ScriptStarter, untrustedScriptRefSchema } from "@roster-lock/shared";
 import { ScriptPurposeInputSchema } from "./purpose-input";
 
 
@@ -18,9 +18,9 @@ const ScriptStarterSchema: JSONSchemaType<ScriptStarter> = {
       items: { type: "string" },
     },
     purpose: ScriptPurposeInputSchema,
-    entryScript: gasLimittedScriptSchema,
+    entryScript: untrustedScriptRefSchema,
   },
-}
+};
 
 export const ScriptStarterCaster = new JSONSchemaCaster<ScriptStarter>(
   ScriptStarterSchema,

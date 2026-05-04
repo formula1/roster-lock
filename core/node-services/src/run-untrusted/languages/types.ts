@@ -1,4 +1,4 @@
-import { ScriptPurposeInput } from "@roster-lock/shared";
+import { ScriptPurposeInput, UntrustedScriptType } from "@roster-lock/shared";
 import { ScriptGlobals } from "../globals";
 
 export type ScriptRunner<ScriptModule> = (
@@ -9,6 +9,6 @@ export type ScriptRunner<ScriptModule> = (
 )=>Promise<unknown>;
 
 export type LanguageRunner<ScriptModule> = {
-  mimetypes: Array<string>,
+  config: UntrustedScriptType,
   runScript: ScriptRunner<ScriptModule>,
 };
