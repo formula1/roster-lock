@@ -4,7 +4,7 @@ import {
   RosterLockV1Config,
   FinalSelection,  
   SelectedPiece,
-  GasLimittedScript
+  UntrustedScriptRef
 } from "@roster-lock/types";
 
 export type PieceUserValidationInput = {
@@ -33,7 +33,7 @@ export type ScriptPurposeInput = (
   | PieceUserValidationInput
   | PieceMergeInput
   | GlobalValidationInput
-)
+);
 
 
 export type ScriptStarter = {
@@ -42,5 +42,5 @@ export type ScriptStarter = {
 
   purpose: ScriptPurposeInput,
 
-  entryScript: GasLimittedScript
-}
+  entryScript: UntrustedScriptRef
+};

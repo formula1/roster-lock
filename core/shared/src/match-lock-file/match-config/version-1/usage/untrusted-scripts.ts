@@ -1,8 +1,9 @@
-type UntrustedScript = {
+export type UntrustedScriptType = {
   name: string,
   mimeTypes: Array<string>,
+  directoryFile?: string,
 };
-export const UNTRUSTED_SCRIPT_TYPES: Record<string, UntrustedScript> = {};
+export const UNTRUSTED_SCRIPT_TYPES: Record<string, UntrustedScriptType> = {};
 
 export function getUntrustedScript(mimetype: string){
   for(const script of Object.values(UNTRUSTED_SCRIPT_TYPES)){
@@ -14,5 +15,6 @@ export function getUntrustedScript(mimetype: string){
 
 UNTRUSTED_SCRIPT_TYPES["lua"] = {
   name: "lua",
-  mimeTypes: [ "text/lua", "text/x-lua" ]
+  mimeTypes: [ "text/lua", "text/x-lua" ],
+  directoryFile: "init.lua"
 };
