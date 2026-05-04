@@ -27,6 +27,8 @@ export function validateSelectionConfig(
         break;
       case "game-controlled":
         break;
+      case "unselectable":
+        break;
     }
   }
 }

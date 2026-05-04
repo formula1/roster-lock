@@ -24,5 +24,5 @@ export type RosterLockPiece = {
     expected: Array<PieceId>,
     selectable: boolean,
   }>,
-}
+};
 

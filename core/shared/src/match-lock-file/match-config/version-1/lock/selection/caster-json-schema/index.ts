@@ -6,6 +6,7 @@ import { RosterLockV1Config } from "@roster-lock/types";
 import { preselectedSelectionSchema } from "./selection-types/preselected";
 import { normalSelectionSchema } from "./selection-types/normal";
 import { gameControlledSelectionSchema } from "./selection-types/game-controlled";
+import { unselectableSelectionSchema } from "./selection-types/unselectable";
 
 import {
   untrustedScriptRefSchema, scriptRefSrcSchemaValidator, scriptRefMethodSchemaValidator,
@@ -26,6 +27,7 @@ export const selectionConfigSchema: JSONSchemaType<RosterLockV1Config["selection
           preselectedSelectionSchema,
           normalSelectionSchema,
           gameControlledSelectionSchema,
+          unselectableSelectionSchema
         ],
       },
     },

@@ -1,9 +1,10 @@
 
 import { PieceType } from "../../shared";
 import { UntrustedScriptRef } from "./script";
-import { SelectionPreselectedConfig } from "./selection-types/preselected";
 import { SelectionGameControlledConfig } from "./selection-types/game-controlled";
 import { SelectionNormalConfig, UserSelectionValidation } from "./selection-types/normal";
+import { SelectionPreselectedConfig } from "./selection-types/preselected";
+import { SelectionUnselectableConfig } from "./selection-types/unselectable";
 
 export * from "./meta";
 
@@ -11,6 +12,7 @@ export {
   SelectionPreselectedConfig,
   SelectionGameControlledConfig,
   SelectionNormalConfig,
+  SelectionUnselectableConfig,
   UserSelectionValidation,
 };
 
@@ -21,6 +23,7 @@ export type RosterLockSelectionConfig = {
     | SelectionGameControlledConfig
     | SelectionNormalConfig
     | SelectionPreselectedConfig
+    | SelectionUnselectableConfig
   )>,
 
   globalValidation?: Array<UntrustedScriptRef>
