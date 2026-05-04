@@ -10,10 +10,10 @@ export async function createShaFromString(value: string){
   return createShaFromBuffer(strToBuffer(value));
 }
 
-export async function createShaFromBuffer(value: Uint8Array<ArrayBuffer>){
+export async function createShaFromBuffer(value: Uint8Array){
   const hashBuffer = await crypto.subtle.digest(
     'SHA-256',
-    value
+    value as Uint8Array<ArrayBuffer>
   );
 
   return uint8ArrayToHex(new Uint8Array(hashBuffer));
@@ -28,7 +28,7 @@ export async function createShaFromTextStream(value: AsyncIterable<string> | Ite
   return uint8ArrayToHex(hasher.digest());
 }
 
-export async function createShaFromUintStream(value: AsyncIterable<Uint8Array<ArrayBuffer>> | Iterable<Uint8Array<ArrayBuffer>>){
+export async function createShaFromUintStream(value: AsyncIterable<Uint8Array> | Iterable<Uint8Array>){
   const hasher = sha256.create();
   for await (const chunk of value) {
     hasher.update(chunk);
