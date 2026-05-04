@@ -9,8 +9,8 @@ export const selectionScriptInfoSchema: JSONSchemaType<RosterLockDraftScriptInfo
   type: "object", required: ["lastLoad", "sha", "referencePath"],
   additionalProperties: false,
   properties: {
-    lastLoad: { type: "string" },
+    lastLoad: { type: "number" },
     sha: { type: "string" },
     referencePath: { type: "string" },
   }
-}
+};

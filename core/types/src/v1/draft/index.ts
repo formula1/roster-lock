@@ -11,15 +11,15 @@ type RosterLockDraftPieceInfo = {
     testedAt: string,
     version: { logic: string, media: string, docs: string }
   }>,
-}
+};
 
 type RelativePath = string;
 
 type RosterLockDraftScriptInfo = {
-  lastLoad: string,
+  lastLoad: number,
   sha: string,
   referencePath: string
-}
+};
 
 export type RosterLockV1Draft = {
   configIdentity: RosterLockIdentity<"draft", 1>,
@@ -29,4 +29,4 @@ export type RosterLockV1Draft = {
     rosterPieceInfo: Record<PieceType, Record<PieceId, RosterLockDraftPieceInfo>>,
     selectionScriptInfo: Record<RelativePath, RosterLockDraftScriptInfo>
   }
-}
+};
