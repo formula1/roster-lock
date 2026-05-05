@@ -1,0 +1,147 @@
+import { useCallback } from "react";
+import { InputProps, usePromisedMemo } from "../../../../../../../utils/react";
+import { useDraftScriptInfo } from "../../../../Contexts/DraftScriptInfo";
+import { showOpenDialog } from "../../../../../../../tauri/window";
+import { fs } from "../../../../../../../tauri/fs";
+import { bufferToStr, createShaFromBuffer } from "@roster-lock/utils";
+import { RosterLockV1Config } from "@roster-lock/types";
+import { DiffView } from "../Views";
+import { useLightbox } from "../../../../../../../components/LightBox";
+
+
+type ScriptDictionary = RosterLockV1Config["selection"]["scriptDictionary"];
+type Script = ScriptDictionary[string];
+export function InfoSummary(
+  { value, onChange }: (
+    & InputProps<{ path: string, file: Script }>
+  )
+){
+  const { value: draft, onChange: setDraft } = useDraftScriptInfo();
+  const info = draft[value.path];
+  const fileContents = usePromisedMemo(async ()=>{
+    if(!info) return null;
+    const contentRaw = await fs.readFile(info.referencePath);
+    const content = bufferToStr(contentRaw);
+    const sha = await createShaFromBuffer(contentRaw);
+    return { sha, content }
+  }, [info])
+  const askForDiff = useDraftDiff({
+    configFile: value,
+    updateConfig: useCallback(({ content })=>{
+      onChange({ ...value, file: { ...value.file, content }})
+    }, [value, onChange])
+  })
+  if(!info){
+    return (
+    <div>
+      <button
+        onClick={async ()=>{
+          const openResult = await showOpenDialog({
+            title: "Link to File",
+            properties: ["openFile"]
+          })
+          if(openResult.canceled) return;
+          if(openResult.filePaths.length === 0) return;
+          const filePath = openResult.filePaths[0];
+          const contentRaw = await fs.readFile(filePath);
+          const content = bufferToStr(contentRaw);
+          const sha = await createShaFromBuffer(contentRaw);
+          setDraft({
+            ...draft,
+            [value.path]: {
+              lastLoad: Date.now(),
+              sha,
+              referencePath: filePath
+            }
+          })
+          askForDiff({ path: filePath, content })
+        }}
+      >Link to File</button>
+    </div>
+    );
+  }
+
+  return (
+    <>
+      <div>
+        <span>Full Path:</span>
+        <span>{info.referencePath}</span>
+      </div>
+      <div>
+        <span>Last Load:</span>
+        <span>{new Date(info.lastLoad).toLocaleString()}</span>
+      </div>
+      <div>
+        <span>Was Modified:</span>
+        <FileContentDiff
+          activeSha={info.sha}
+          loadedValue={fileContents}
+          referencePath={info.referencePath}
+          toggleDiff={askForDiff}
+        />
+      </div>
+    </>
+  )
+}
+
+function FileContentDiff(
+  { activeSha, loadedValue, referencePath, toggleDiff }: {
+    activeSha: string,
+    loadedValue: ReturnType<typeof usePromisedMemo<any, null | { sha: string, content: string }>>,
+    referencePath: string,
+    toggleDiff: (referenceFile: { path: string, content: string })=>any
+  }
+){
+  if(loadedValue.status === "pending") return <span>Loading</span>
+  if(loadedValue.status === "failed") return <span style={{ color: "#FF0000" }}>Failed to Load</span>
+  if(!loadedValue.value) return null;
+  if(loadedValue.value.sha !== activeSha){
+    const content = loadedValue.value.content;
+    return (
+      <>
+        <span style={{ color: "#FFFF00" }}>Script is different than File</span>
+        <button
+          onClick={()=>(toggleDiff({ path: referencePath, content }))}
+        >Update Config</button>
+      </>
+    )
+  }
+  return <span style={{ color: "#00FF00" }}>Content is Correct</span>
+}
+
+
+
+export function useDraftDiff(
+  {
+    configFile, updateConfig
+  }: {
+    configFile: { path: string, file: Script }
+    updateConfig: (config: { content: string })=>any
+  }
+){
+  const lightbox = useLightbox()
+  return useCallback((referenceFile: { path: string, content: string })=>{
+    lightbox.open(
+      <DiffView
+        description={
+          <p>
+            The loaded file's content is different that what is in the lock file.
+            Would you like to overwrite what is in the lock file?
+          </p>
+        }
+        path={referenceFile.path}
+        mimeType={configFile.file.mimeType}
+        configContent={configFile.file.content}
+        fileContent={referenceFile.content}
+        onKeepConfig={()=>{
+          lightbox.close();
+        }}
+        onUseFile={()=>{
+          updateConfig({ content: referenceFile.content })
+          lightbox.close();
+        }}
+      />
+    )
+  }, [lightbox, configFile, updateConfig])
+}
+

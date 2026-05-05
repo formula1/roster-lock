@@ -99,7 +99,7 @@ function MetaValueInput({ type, value, placeholder, onChange, onClear }: MetaVal
   );
 }
 
-type Props = InputProps<PieceMeta | undefined> & {
+type Props = InputProps<PieceMeta> & {
   pieces: Array<RosterLockPiece>;
 };
 
@@ -108,17 +108,14 @@ export function PieceMetaEditor({ value, onChange, pieces }: Props) {
   const [newFieldType, setNewFieldType] = useState<SimpleSchemaType>("string");
   const [addError, setAddError] = useState<string | null>(null);
 
-  const schema = value?.schema ?? {};
-  const defaultMeta = value?.defaultMeta ?? {};
-  const pieceMeta = value?.pieceMeta ?? {};
+  const schema = value.schema;
+  const defaultMeta = value.defaultMeta;
+  const pieceMeta = value.pieceMeta;
 
   const fields = Object.keys(schema);
 
   function update(patch: Partial<PieceMeta>) {
     onChange({
-      schema,
-      defaultMeta,
-      pieceMeta,
       ...value,
       ...patch,
     });
@@ -162,9 +159,7 @@ export function PieceMetaEditor({ value, onChange, pieces }: Props) {
   }
 
   return (
-    <div className="section">
-      <h3>Piece Meta</h3>
-
+    <>
       {/* Schema */}
       <div className="section">
         <h4>Schema Fields</h4>
@@ -287,6 +282,6 @@ export function PieceMetaEditor({ value, onChange, pieces }: Props) {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

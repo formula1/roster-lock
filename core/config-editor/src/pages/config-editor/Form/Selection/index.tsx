@@ -26,8 +26,9 @@ export function SelectionEditPage() {
   const buttons = useFollowButtons();
 
   return (
+    <>
+    <h1>Selection Config</h1>
     <div style={{ overflow: "hidden", flexGrow: 1 }}>
-      <h1>Selection Config</h1>
       <FollowButtonForm
         info={{ title: "Selection Config" }}
         buttons={buttons}
@@ -37,23 +38,21 @@ export function SelectionEditPage() {
             <PieceSelectionConfig
               key={pieceType}
               pieceType={pieceType}
-              strategy={definition.selectionStrategy}
-              pieces={value.rosters[pieceType] ?? []}
               value={value.selection.piece[pieceType]}
               onChange={pieceConfig =>
-                onChange(old => updatePiece(old as Config, pieceType, pieceConfig as Config["selection"]["piece"][string]))
+                onChange(old => updatePiece(old, pieceType, pieceConfig))
               }
             />
           ))}
         </div>
 
         <GlobalValidation
-          value={value.selection.globalValidation ?? []}
+          value={value.selection.globalValidation}
           onChange={scripts =>
             onChange(old => ({
-              ...(old as Config),
+              ...old,
               selection: {
-                ...(old as Config).selection,
+                ...old.selection,
                 globalValidation: scripts,
               },
             }))
@@ -61,5 +60,6 @@ export function SelectionEditPage() {
         />
       </FollowButtonForm>
     </div>
+    </>
   );
 }

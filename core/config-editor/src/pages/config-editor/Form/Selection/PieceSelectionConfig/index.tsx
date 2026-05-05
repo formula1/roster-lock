@@ -1,52 +1,35 @@
 import type {
-  RosterLockPiece,
-  SelectionNormalConfig,
-  SelectionGameControlledConfig,
-  SelectionPreselectedConfig,
-  SelectionPieceMeta,
-  JSONShallowObject,
-  GasLimittedScript,
   EngineSelectionStrategy,
+  RosterLockV1Config,
 } from "@roster-lock/types";
 import type { InputProps } from "../../../../../utils/react/input";
 import { PieceMetaEditor } from "../PieceMetaEditor";
-import { NormalValidation } from "../NormalValidation";
-import { ScriptInput } from "../ScriptInput";
+import { useRosterLock } from "../../Contexts/RosterLock";
 
-type AnySelectionConfig =
-  | SelectionNormalConfig
-  | SelectionGameControlledConfig
-  | SelectionPreselectedConfig;
+import { NormalSelectionInput } from "./NormalSelection";
+import { GameControlledSelectionInput } from "./GameControlled";
+import { PreselectedSelectionInput } from "./Preselected"
+import { UnselectableSelectionInput } from "./Unselectable";
 
-type Props = InputProps<AnySelectionConfig | undefined> & {
-  pieceType: string;
-  strategy: EngineSelectionStrategy;
-  pieces: Array<RosterLockPiece>;
-};
+type SelectionConfig = (
+  RosterLockV1Config["selection"]["piece"][string]
+)
 
-function toNormal(v: AnySelectionConfig | undefined): SelectionNormalConfig {
-  if (v?.type === "normal") return v;
-  return { type: "normal", pieceMeta: (v as any)?.pieceMeta };
-}
-
-function toGameControlled(v: AnySelectionConfig | undefined): SelectionGameControlledConfig {
-  if (v?.type === "game-controlled") return v;
-  return { type: "game-controlled", pieceMeta: (v as any)?.pieceMeta };
-}
-
-function strategyLabel(strategy: EngineSelectionStrategy): string {
-  return { mandatory: "Mandatory", personal: "Personal", shared: "Shared", "on demand": "On Demand" }[strategy] ?? strategy;
-}
-
-export function PieceSelectionConfig({ pieceType, strategy, pieces, value, onChange }: Props) {
-  const isNormal = strategy === "personal" || strategy === "shared";
-
-  const config_ = isNormal ? toNormal(value) : toGameControlled(value);
-  const pieceMeta = config_.pieceMeta;
-
-  function setPieceMeta(pm: SelectionPieceMeta<JSONShallowObject> | undefined) {
-    onChange({ ...config_, pieceMeta: pm } as AnySelectionConfig);
-  }
+export function PieceSelectionConfig(
+  { pieceType, value, onChange }: (
+    & InputProps<SelectionConfig>
+    & { pieceType: string }
+  )
+) {
+  const { value: lock } = useRosterLock();
+  const defintion = lock.engine.pieceDefinitions[pieceType]
+  if(!defintion) return (
+    <h4 className="error">{pieceType} has no engine defintiion</h4>
+  )
+  const pieces = lock.rosters[pieceType]
+  if(!pieces) return (
+    <h4 className="error">{pieceType} has no roster list</h4>
+  );
 
   return (
     <div className="section">
@@ -58,39 +41,60 @@ export function PieceSelectionConfig({ pieceType, strategy, pieces, value, onCha
           fontWeight: "normal",
           opacity: 0.7,
         }}>
-          {strategyLabel(strategy)}
+          {STRATEGY_LABELS[defintion.selectionStrategy]}
         </span>
       </h2>
 
-      <PieceMetaEditor
-        value={pieceMeta}
-        onChange={setPieceMeta}
-        pieces={pieces}
-      />
+      <div className="section">
+        <h3>Piece Meta</h3>
+        <PieceMetaEditor
+          value={value.pieceMeta}
+          onChange={(pieceMeta)=>(onChange({ ...value, pieceMeta }))}
+          pieces={pieces}
+        />
+      </div>
 
-      {isNormal && (() => {
-        const normal = config_ as SelectionNormalConfig;
-        return (
-          <>
-            <NormalValidation
-              value={normal.validation}
-              onChange={validation => onChange({ ...normal, validation })}
-              pieceType={pieceType}
-            />
+      {
+        value.type === "unselectable" ? (
+          <UnselectableSelectionInput
+            value={value}
+            onChange={onChange}
+            pieceType={pieceType}
+          />
+        ):
+        value.type === "game-controlled" ? (
+          <GameControlledSelectionInput
+            value={value}
+            onChange={onChange}
+            pieceType={pieceType}
+          />
+        ) :
+        value.type === "normal" ? (
+          <NormalSelectionInput
+            value={value}
+            onChange={onChange}
+            pieceType={pieceType}
+          />
+        ) : value.type === "preselected" ? (
+          <PreselectedSelectionInput
+            value={value}
+            onChange={onChange}
+            pieceType={pieceType}
+          />
 
-            {strategy === "shared" && (
-              <ScriptInput
-                label="Merge Algorithm"
-                value={normal.mergeAlgorithm}
-                onChange={script => onChange({ ...normal, mergeAlgorithm: script as GasLimittedScript })}
-                onRemove={normal.mergeAlgorithm ? () => onChange({ ...normal, mergeAlgorithm: undefined }) : undefined}
-                purpose="piece-merge"
-                pieceType={pieceType}
-              />
-            )}
-          </>
-        );
-      })()}
+        ) : null
+      }
+
     </div>
   );
 }
+
+
+const STRATEGY_LABELS: Record<EngineSelectionStrategy, string> = {
+  mandatory: "Mandatory",
+  personal: "Personal",
+  shared: "Shared",
+  "on demand": "On Demand"
+}
+
+const UNSELECTABLE_STRATEGIES: Array<EngineSelectionStrategy> = ["mandatory", "on demand"];
