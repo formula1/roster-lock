@@ -13,13 +13,7 @@ const {
     if(typeof json !== "object" || Array.isArray(json) || json === null){
       throw new Error("File is not a valid draft or lock file")
     }
-    if(!("configPurpose" in json)){
-      throw new Error("File is not a valid draft or lock file")
-    }
-    if(json.configPurpose === "draft"){
-      return ROSTERLOCK_V1_DRAFT_CASTER_JSONSCHEMA.cast(json, false)
-    }
-    throw new Error("File is not a valid draft file")
+    return ROSTERLOCK_V1_DRAFT_CASTER_JSONSCHEMA.cast(json, false)
   }
 );
 
