@@ -14,6 +14,26 @@ export function relative(owner: string, subpath: string){
   return subpath.slice(owner.length);
 }
 
+export function join(prefix: string, suffix: string){
+  // If we have a / on the prefix, we're good
+  if(prefix.at(-1) === "/" && suffix.at(0) !== "/"){
+    return prefix + suffix;
+  }
+  // If we have a / on the suffix, we're good
+  if(prefix.at(-1) !== "/" && suffix.at(0) === "/"){
+    return prefix + suffix;
+  }
+  // If we don't have a / on either, just add one
+  if(prefix.at(-1) !== "/" && suffix.at(0) !== "/"){
+    return prefix + "/" + suffix;
+  }
+  // If we have one on both, remove one of the slashes
+  if(prefix.at(-1) === "/" && suffix.at(0) === "/"){
+    return prefix + suffix.slice(1);
+  }
+  throw new Error("Shouldn't reach here")
+}
+
 export function matchesPath(urlPath: string, path: string){
   urlPath = urlPath + (urlPath.slice(-1) === "/" ? "" : "/");
   path = path + (path.slice(-1) === "/" ? "" : "/");
