@@ -9,7 +9,7 @@ export * from "./resetPieces"
 import { useEffect } from "react";
 import { resetPieces } from "./resetPieces";
 import { useRosterLock } from "../Contexts/RosterLock";
-import { useDraftInfo } from "../Contexts/DraftInfo";
+import { useDraftPieceInfo } from "../Contexts/DraftInfo";
 
 type RosterLockV1Config = RosterLockV1Draft["stagedLock"];
 
@@ -37,7 +37,7 @@ import { AddPieceFromFolder } from "./PieceCollection/AddPieceFromFolder";
 
 export function RosterConfigEditPage(){
   const { value, onChange } = useRosterLock();
-  const { value: draft, onChange: onDraftChange } = useDraftInfo()
+  const { value: draft, onChange: onDraftChange } = useDraftPieceInfo()
   const buttons = useFollowButtons();
   
 

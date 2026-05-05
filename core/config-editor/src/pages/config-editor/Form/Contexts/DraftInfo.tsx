@@ -12,10 +12,10 @@ const DraftInfoContext = createContext<StateInputProps<DraftInfo>>({
   onChange: ()=>{throw new Error("Provider Required");}
 })
 
-export function useDraftInfo(){
+export function useDraftPieceInfo(){
   return useContext(DraftInfoContext)
 }
-export function DraftInfoProvider(props: PropsWithChildren<StateInputProps<DraftInfo>>){
+export function DraftPieceInfoProvider(props: PropsWithChildren<StateInputProps<DraftInfo>>){
   return (
   <DraftInfoContext.Provider
     value={{ value: props.value, onChange: props.onChange }}

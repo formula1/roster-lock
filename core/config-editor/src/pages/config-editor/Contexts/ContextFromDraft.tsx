@@ -2,7 +2,7 @@ import { PropsWithChildren } from "react";
 import { StateInputProps } from "../../../utils/react";
 
 import { RosterLockV1Draft } from "@roster-lock/types";
-import { DraftInfoProvider } from "../Form/Contexts/DraftInfo";
+import { DraftPieceInfoProvider } from "../Form/Contexts/DraftInfo";
 import { DraftScriptInfoProvider } from "../Form/Contexts/DraftScriptInfo";
 import { RosterLockProvider } from "../Form/Contexts/RosterLock";
 
@@ -20,7 +20,7 @@ export function ContextFromDraftProvider(props: PropsWithChildren<StateInputProp
         })
       )}
     >
-    <DraftInfoProvider
+    <DraftPieceInfoProvider
       value={props.value.draft.rosterPieceInfo}
       onChange={(rosterPieceInfo)=>(
         props.onChange((oldFullValue)=>{
@@ -46,7 +46,7 @@ export function ContextFromDraftProvider(props: PropsWithChildren<StateInputProp
     >
       {props.children}
     </DraftScriptInfoProvider>
-    </DraftInfoProvider>
+    </DraftPieceInfoProvider>
     </RosterLockProvider>
   )
 }
