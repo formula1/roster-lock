@@ -1,4 +1,4 @@
-import { JSON_Unknown } from "@roster-lock/shared";
+import { JSON_Unknown } from "@roster-lock/utils";
 
 export class SemVer {
   private updateStatus: "none" | "patch" | "minor" | "major" = "none";

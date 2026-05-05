@@ -1,5 +1,6 @@
 import { RosterLockV1Draft } from "@roster-lock/types";
-import { cloneJSON, ROSTERLOCK_V1_CASTER_JSONSCHEMA } from "@roster-lock/shared";
+import { ROSTERLOCK_V1_CASTER_JSONSCHEMA } from "@roster-lock/shared";
+import { cloneJSON, } from "@roster-lock/utils";
 import { showSaveDialog } from "../../../../tauri/window";
 import { diffLocks } from "./diffRosters";
 import { fs } from "../../../../tauri/fs";
