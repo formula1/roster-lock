@@ -10,12 +10,17 @@ import { useSaveFile } from "./data/saveFile";
 import { FollowButtonsProvider } from "../Form/Contexts/Buttons";
 import { ContextFromDraftProvider } from "../Contexts/ContextFromDraft";
 import { confirm } from '@tauri-apps/plugin-dialog';
+import { URLPrefixProvider } from "../Form/Contexts/UrlPrefix";
 
 export function NewConfigOutlet(){
-  return <NewConfigProvider>
-    <ConfigTabs />
-    <OutletWithContext />
-  </NewConfigProvider>
+  return (
+    <URLPrefixProvider prefix="/config/new">
+    <NewConfigProvider>
+      <ConfigTabs />
+      <OutletWithContext />
+    </NewConfigProvider>
+    </URLPrefixProvider>
+  )
 }
 
 function ConfigTabs(){

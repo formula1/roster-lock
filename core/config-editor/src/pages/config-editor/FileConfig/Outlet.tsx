@@ -9,9 +9,11 @@ import { RECENT_ROSTERLOCK_CONFIG_FILES_KEY } from "../constants";
 import { ContextFromDraftProvider } from "../Contexts/ContextFromDraft";
 import { useSaveAs } from "./data/saveAs";
 import { FollowButtonsProvider } from "../Form/Contexts/Buttons";
+import { URLPrefixProvider } from "../Form/Contexts/UrlPrefix";
 
 export function FileConfigOutlet(){
   const params = useParams();
+  const location = useLocation();
 
   const activeFile = useMemo(() => {
     if(!params.filePath) return;
@@ -26,10 +28,14 @@ export function FileConfigOutlet(){
   }, [activeFile])
   
 
-  return <CurrentRosterLockFileProvider filePath={activeFile}>
-    <ConfigTabs />
-    <FileErrorOrOutlet />
-  </CurrentRosterLockFileProvider>
+  return (
+    <URLPrefixProvider prefix={"/config/" + params.filePath} >
+    <CurrentRosterLockFileProvider filePath={activeFile}>
+      <ConfigTabs />
+      <FileErrorOrOutlet />
+    </CurrentRosterLockFileProvider>
+    </URLPrefixProvider>
+  )
 }
 
 function ConfigTabs(){
