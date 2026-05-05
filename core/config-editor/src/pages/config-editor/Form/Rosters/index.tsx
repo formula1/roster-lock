@@ -41,41 +41,45 @@ export function RosterConfigEditPage(){
   const buttons = useFollowButtons();
   
 
-  return <div style={{ overflow: "hidden", flexGrow: 1 }}>
-    <h1>New Engine Config</h1>
-    <FollowButtonForm
-      info={{
-        title: "Roster Config",
-        note: <PieceRosterLegend rosters={value.rosters} />,
-      }}
-      buttons={buttons}
-    >
-      <AddPieceFromFolder
-        rosterLock={value}
-        onSubmit={({ pieceDefinitionKey, piece, draftInfo })=>{
-          onChange((old)=>({
-            ...old,
-            rosters: {
-              ...old.rosters,
-              [pieceDefinitionKey]: [
-                ...old.rosters[pieceDefinitionKey],
-                piece
-              ]
-            }
-          }))
-          onDraftChange((old)=>({
-            ...old,
-            [pieceDefinitionKey]: {
-              ...old[pieceDefinitionKey],
-              [piece.id]: draftInfo
-            }
-          }))
-        }}
-      />
-      <RosterConfigForm
-        value={value}
-        onChange={onChange}
-      />
-    </FollowButtonForm>
-  </div>
+  return (
+    <>
+      <h1>New Engine Config</h1>
+      <div style={{ overflow: "hidden", flexGrow: 1, }}>
+        <FollowButtonForm
+          info={{
+            title: "Roster Config",
+            note: <PieceRosterLegend rosters={value.rosters} />,
+          }}
+          buttons={buttons}
+        >
+          <AddPieceFromFolder
+            rosterLock={value}
+            onSubmit={({ pieceDefinitionKey, piece, draftInfo })=>{
+              onChange((old)=>({
+                ...old,
+                rosters: {
+                  ...old.rosters,
+                  [pieceDefinitionKey]: [
+                    ...old.rosters[pieceDefinitionKey],
+                    piece
+                  ]
+                }
+              }))
+              onDraftChange((old)=>({
+                ...old,
+                [pieceDefinitionKey]: {
+                  ...old[pieceDefinitionKey],
+                  [piece.id]: draftInfo
+                }
+              }))
+            }}
+          />
+          <RosterConfigForm
+            value={value}
+            onChange={onChange}
+          />
+        </FollowButtonForm>
+      </div>
+    </>
+  );
 }
