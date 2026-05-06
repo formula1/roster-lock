@@ -26,7 +26,7 @@ export const banListSchemaValidator = defineKeyword({
 
 export const rangeSchemaValidator = defineKeyword({
   keyword: "selectionRange",
-  type: ["number", "array"],
+  // type: ["number", "array"],
   validate: function (value, config: RosterLockV1Config, path){
     validateRange(value);
   }

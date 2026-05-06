@@ -4,14 +4,14 @@ import { JSONSchemaType } from "./schema-types";
 
 export type AJVKeywordDefinition<K extends string = string> = {
   keyword: SafeKeyword<K>,
-  type: JSONSchemaType,
+  type?: JSONSchemaType,
   validate: SchemaValidateFunction
-}
+};
 
 export function defineKeyword<T, K extends string>(
   definition: {
     keyword: SafeKeyword<K>,
-    type: JSONSchemaType,
+    type?: JSONSchemaType,
     validate: (v: any, engine: T, path: string)=>unknown
   }
 ): AJVKeywordDefinition<K>{
