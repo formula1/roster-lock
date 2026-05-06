@@ -1,6 +1,6 @@
 
 import { relative } from "../../../../../utils/router";
-import { RosterLockPaths } from "../../paths";
+import { RosterLockPaths } from "../../../paths";
 import { Route, Outlet } from "react-router";
 import { CurrentFilesPage } from "./pages/CurrentFiles";
 import { MergeFolderPage } from "./pages/MergeFolder";

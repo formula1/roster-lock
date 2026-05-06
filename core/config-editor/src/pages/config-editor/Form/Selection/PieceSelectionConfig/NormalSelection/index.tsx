@@ -1,7 +1,9 @@
-import { RosterLockV1Config, SelectionNormalConfig, EngineSelectionStrategy } from "@roster-lock/types";
+import { SelectionNormalConfig } from "@roster-lock/types";
 import { InputProps } from "../../../../../../utils/react";
 import { NormalValidation } from "./validation";
-import { ScriptRefOptionalInput } from "../../ScriptRef";
+import { ScriptRefOptionalInput, ScriptRefMandatoryInput } from "../../ScriptRef";
+import { useRosterLock } from "../../../Contexts/RosterLock";
+import { useEffect } from "react";
 
 export function NormalSelectionInput(
   { value, onChange, pieceType }: (
@@ -9,6 +11,12 @@ export function NormalSelectionInput(
     & { pieceType: string }
   )
 ){
+  const { value: lock } = useRosterLock();
+  const definition = lock.engine.pieceDefinitions[pieceType]
+
+  if(!definition){
+    return <h1 className="error">No definition for {pieceType}</h1>
+  }
   return (
     <>
       <div className="section">
@@ -22,14 +30,25 @@ export function NormalSelectionInput(
 
       <div className="section" >
         <h3>Merge Script</h3>
-        <ScriptRefOptionalInput
-          value={value.mergeAlgorithm}
-          onChange={(mergeAlgorithm)=>{
-            onChange({
-              ...value, mergeAlgorithm 
-            })
-          }}
-        />
+        {definition.selectionStrategy === "personal" ? (
+          <ScriptRefOptionalInput
+            value={value.mergeAlgorithm}
+            onChange={(mergeAlgorithm)=>{
+              onChange({
+                ...value, mergeAlgorithm
+              })
+            }}
+          />
+        ) : definition.selectionStrategy === "shared" ? (
+          <ScriptRefMandatoryInput
+            value={value.mergeAlgorithm}
+            onChange={(mergeAlgorithm)=>(
+              onChange({
+                ...value, mergeAlgorithm
+              })
+            )}
+          />
+        ) : null}
       </div>
     </>
   );

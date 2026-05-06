@@ -5,10 +5,9 @@ import { useDraftScriptInfo } from "../../../../Contexts/DraftScriptInfo";
 import { useRosterLock } from "../../../../Contexts/RosterLock";
 import { ROSTERLOCK_SIDECAR } from "../../../../../../../globals/side-car";
 
-import { join as joinPaths } from "../../../../../../../utils/router";
-import { useURLPrefix } from "../../../../Contexts/UrlPrefix";
-import { RosterLockPaths } from "../../../../paths";
-import { Link } from "react-router";
+import { join as joinPaths, replaceParams } from "../../../../../../../utils/router";
+import { RosterLockPaths } from "../../../../../paths";
+import { Link, useParams } from "react-router";
 import { useLightbox } from "../../../../../../../components/LightBox";
 import { FileView } from "../Views";
 
@@ -18,8 +17,8 @@ import { ToolTipSpan } from "../../../../../../../components/ToolTip";
 import { ScriptRefInput } from "../../../ScriptRef/shared";
 
 export function RunScriptPage(){
-  const urlPrefix = useURLPrefix();
-  const lightbox = useLightbox();
+  const params = useParams();
+  const filePath = params.filePath || ""
   const { value: lock } = useRosterLock();
   const scriptDictionary = lock.selection.scriptDictionary
   const [scriptRef, setScriptRef] = useState<UntrustedScriptRef | null>(null)
@@ -60,7 +59,10 @@ export function RunScriptPage(){
         <h1 className="error" >No Scripts to run</h1>
         <h3>
           <Link
-            to={(joinPaths(urlPrefix, RosterLockPaths.Selection.ScriptDictionary.MergeFolder))}
+            to={replaceParams(
+              RosterLockPaths.Selection.ScriptDictionary.MergeFolder,
+              { filePath }
+            )}
           >Merge a Folder</Link>
         </h3>
       </>
@@ -72,7 +74,10 @@ export function RunScriptPage(){
         <h1 className="error" >No valid piece type</h1>
         <h3>
           <Link
-            to={(joinPaths(urlPrefix, RosterLockPaths.Engine))}
+            to={replaceParams(
+              RosterLockPaths.Engine,
+              { filePath }
+            )}
           >Add a new Piece</Link>
         </h3>
       </>

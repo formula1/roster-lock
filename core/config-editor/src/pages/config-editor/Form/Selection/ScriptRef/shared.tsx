@@ -4,10 +4,9 @@ import { useRosterLock } from "../../Contexts/RosterLock";
 import { useState } from "react";
 import { cloneJSON } from "@roster-lock/utils";
 
-import { join as urlJoin } from "../../../../../utils/router";
-import { useURLPrefix } from "../../Contexts/UrlPrefix";
-import { RosterLockPaths } from "../../paths";
-import { Link } from "react-router";
+import { replaceParams } from "../../../../../utils/router";
+import { RosterLockPaths } from "../../../paths";
+import { Link, useParams } from "react-router";
 
 const INITIAL_REF: UntrustedScriptRef = {
   src: "", method: void 0
@@ -16,7 +15,7 @@ const INITIAL_REF: UntrustedScriptRef = {
 export function AddScriptRefForm(
   { onSubmit }: { onSubmit: (value: UntrustedScriptRef)=>any }
 ){
-  const urlPrefix = useURLPrefix();
+  const params = useParams();
   const { value: lock } = useRosterLock();
   const scripts = Object.entries(lock.selection.scriptDictionary);
   const [value, onChange] = useState<UntrustedScriptRef>(
@@ -28,7 +27,10 @@ export function AddScriptRefForm(
       <div>No Scripts Available, please add one</div>
       <div>
         <Link
-          to={urlJoin(urlPrefix, RosterLockPaths.Selection.ScriptDictionary.MergeFolder)}
+          to={replaceParams(
+            RosterLockPaths.Selection.ScriptDictionary.MergeFolder,
+            { filePath: params.filePath || "" }
+          )}
         >Merge Folder</Link>
       </div>
     </>

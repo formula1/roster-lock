@@ -1,6 +1,5 @@
 import { Outlet, useLocation, useParams } from "react-router";
-import { LinkTabs } from "../../../components/Tabs";
-import { FileRosterConfigPaths as ConfigPaths } from "./paths";
+import { RosterLockPaths } from "../paths";
 import { replaceParams } from "../../../utils/router";
 import { useCurrentRosterLockFile, CurrentRosterLockFileProvider } from "./data/CurrentFile";
 import { useEffect, useMemo } from "react";
@@ -9,11 +8,11 @@ import { RECENT_ROSTERLOCK_CONFIG_FILES_KEY } from "../constants";
 import { ContextFromDraftProvider } from "../Contexts/ContextFromDraft";
 import { useSaveAs } from "./data/saveAs";
 import { FollowButtonsProvider } from "../Form/Contexts/Buttons";
-import { URLPrefixProvider } from "../Form/Contexts/UrlPrefix";
+import { useGlobalLinks } from "../../../globals/global-links";
 
 export function FileConfigOutlet(){
   const params = useParams();
-  const location = useLocation();
+  useConfigTabs();
 
   const activeFile = useMemo(() => {
     if(!params.filePath) return;
@@ -26,53 +25,46 @@ export function FileConfigOutlet(){
   useEffect(()=>{
     if(activeFile) addRecentFile(activeFile);
   }, [activeFile])
-  
 
   return (
-    <URLPrefixProvider prefix={"/config/" + params.filePath} >
     <CurrentRosterLockFileProvider filePath={activeFile}>
-      <ConfigTabs />
       <FileErrorOrOutlet />
     </CurrentRosterLockFileProvider>
-    </URLPrefixProvider>
   )
 }
 
-function ConfigTabs(){
-  const currentFile = useCurrentRosterLockFile();
-  const fileReady = currentFile.activeFile && currentFile.state === "ready";
-  return (
-    <LinkTabs
-      className="secondary"
-      pages={[
-        { title: 'Recent Files', href: "/" },
-        { title: 'New', href: ConfigPaths.Root },
-        ...(!fileReady ? [] : [
-          { title: "Save", onClick: () => currentFile.save() },
-          {
-            title: "OverView", href: replaceParams(
-              ConfigPaths.Root, { filePath: encodeURIComponent(currentFile.activeFile) }
-            )
-          },
-          {
-            title: 'Engine', href: replaceParams(
-              ConfigPaths.Engine, { filePath: encodeURIComponent(currentFile.activeFile) }
-            ),
-          },
-          {
-            title: 'Rosters', href: replaceParams(
-              ConfigPaths.Roster, { filePath: encodeURIComponent(currentFile.activeFile) }
-            ),
-          },
-          {
-            title: 'Selection', href: replaceParams(
-              ConfigPaths.Selection, { filePath: encodeURIComponent(currentFile.activeFile) }
-            ),
-          },
-        ])
-      ]}
-    />
-  )
+function useConfigTabs(){
+  const params = useParams();
+  const [,setLinks] = useGlobalLinks();
+  const filePath = params.filePath || "";
+  useEffect(()=>{
+    setLinks([
+      {
+        title: "Overview", href: replaceParams(
+          RosterLockPaths.Root, { filePath }
+        )
+      },
+      {
+        title: 'Engine', href: replaceParams(
+          RosterLockPaths.Engine, { filePath }
+        ),
+      },
+      {
+        title: 'Rosters', href: replaceParams(
+          RosterLockPaths.Roster, { filePath }
+        ),
+      },
+      {
+        title: 'Selection', href: replaceParams(
+          RosterLockPaths.Selection.INDEX, { filePath }
+        ),
+      },
+    ]);
+    return ()=>{
+      setLinks([])
+    }
+  }, [filePath])
+
 }
 
 function FileErrorOrOutlet(){

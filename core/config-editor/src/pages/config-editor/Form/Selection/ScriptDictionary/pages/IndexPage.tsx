@@ -1,25 +1,36 @@
 
-import { RosterLockPaths } from "../../../paths";
+import { RosterLockPaths } from "../../../../paths";
 import { Link } from "react-router";
+import { replaceParams } from "../../../../../../utils/router";
+import { useParams } from "react-router";
 
-import { useURLPrefix } from "../../../Contexts/UrlPrefix"
 export function ScriptDictionaryIndexPage(){
-  const urlPrefix = useURLPrefix();
+  const params = useParams();
+  const filePath = params.filePath || ""
   return (
     <>
     <div>
       <Link
-        to={urlPrefix + RosterLockPaths.Selection.ScriptDictionary.CurrentFiles}
+        to={replaceParams(
+          RosterLockPaths.Selection.ScriptDictionary.CurrentFiles,
+          { filePath }
+        )}
       >View Current Files</Link>
     </div>
     <div>
       <Link
-        to={urlPrefix + RosterLockPaths.Selection.ScriptDictionary.MergeFolder}
+        to={replaceParams(
+          RosterLockPaths.Selection.ScriptDictionary.MergeFolder,
+          { filePath }
+        )}
       >Merge a Folder</Link>
     </div>
     <div>
       <Link
-        to={urlPrefix + RosterLockPaths.Selection.ScriptDictionary.RunScript}
+        to={replaceParams(
+          RosterLockPaths.Selection.ScriptDictionary.RunScript,
+          { filePath }
+        )}
       >Run a Script</Link>
     </div>
     </>
