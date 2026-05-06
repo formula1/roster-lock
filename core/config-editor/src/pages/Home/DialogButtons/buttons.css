@@ -1,0 +1,10 @@
+
+.home-buttons-container {
+  display: flex;
+  justify-content: center;
+}
+
+.home-buttons-container > button {
+  margin: 10px;
+  padding: 10px;
+}

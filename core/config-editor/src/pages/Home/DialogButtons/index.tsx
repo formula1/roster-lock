@@ -6,13 +6,14 @@ import { errorToString } from "../../../utils/error";
 import { openDraft } from "./openDraft";
 import { newDraftFromLock } from "./newDraftFromLock";
 import { newDraft } from "./newDraft";
+import "./buttons.css";
 
 export function DialogButtons(){
   const navigate = useNavigate();
   const [err, setErr] = useState<null | string>(null)
 
   return <>
-    <div>
+    <div className="home-buttons-container">
       <button
         onClick={async ()=>{
           try {
@@ -25,7 +26,7 @@ export function DialogButtons(){
             setErr(errorToString(e))
           }
         }}
-      >Create New Draft...</button>
+      >Create New Draft</button>
       <button
         onClick={async () => {
         try {
@@ -40,7 +41,7 @@ export function DialogButtons(){
           setErr(errorToString(error))
         }
       }}
-      >Open Existing Draft...</button>
+      >Open Existing Draft</button>
       <button
         onClick={async () => {
         try {
@@ -54,7 +55,7 @@ export function DialogButtons(){
           setErr(errorToString(error))
         }
       }}
-      >New Draft from Lock file...</button>
+      >New Draft from Lock File</button>
     </div>
 
     {err && <div className="error" >{err}</div>}
