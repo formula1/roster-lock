@@ -57,7 +57,7 @@ export function replaceParams(pathname: string, params: Record<string, undefined
   let replaced = pathname;
   for(const [key, value] of Object.entries(params)){
     if(!key) throw new Error("key should never be empty");
-    replaced = replaced.replaceAll(`/:${key}/`, `/${value}/`);
+    replaced = replaced.replaceAll(`/:${key}/`, `/${encodeURIComponent(value || "")}/`);
   }
 
   if(!endsWithSlash) replaced = replaced.slice(0, -1);
