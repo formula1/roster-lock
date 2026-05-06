@@ -42,7 +42,7 @@ export function PageArrayTabs({
 import { Link, useLocation } from "react-router-dom";
 
 type LocalURL = { pathname: string, search: string, hash: string };
-type Page = (
+export type Page = (
   & { title: string, isActive?: (location: LocalURL) => boolean }
   & (
     | { href: string }
