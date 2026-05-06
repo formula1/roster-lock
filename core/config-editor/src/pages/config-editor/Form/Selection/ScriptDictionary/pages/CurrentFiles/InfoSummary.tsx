@@ -130,7 +130,6 @@ export function useDraftDiff(
           </p>
         }
         path={referenceFile.path}
-        mimeType={configFile.file.mimeType}
         configContent={configFile.file.content}
         fileContent={referenceFile.content}
         onKeepConfig={()=>{

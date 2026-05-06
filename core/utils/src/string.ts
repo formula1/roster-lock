@@ -33,3 +33,14 @@ export function hexToUint8Array(hexStr: string){
     b => parseInt(b, 16)
   );
 }
+
+
+export function fileExtension(filepath: string){
+  const normalized = filepath.replaceAll("\\", "/");
+  const fileName = normalized.split("/").pop();
+  if(!fileName) return;
+  const lastDot = fileName.lastIndexOf(".");
+  if(lastDot === -1) return;
+  if(lastDot === 0) return;
+  return fileName.slice(lastDot)
+}

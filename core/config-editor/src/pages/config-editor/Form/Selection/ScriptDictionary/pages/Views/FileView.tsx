@@ -9,7 +9,7 @@ type Script = ScriptDictionary[string];
 export function FileView(
   { path, script }: { path: string, script: Script }
 ){
-  const langExtension = getCodeMirrorParser(script.mimeType)
+  const langExtension = getCodeMirrorParser(path)
 
   if(!langExtension){
     return (

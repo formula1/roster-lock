@@ -1,9 +1,9 @@
 
-import { dirname, resolve as pathResolve, join as pathJoin, extname } from "path";
+import { dirname, resolve as pathResolve, join as pathJoin } from "path";
+import { fileExtension } from "@roster-lock/utils";
 
 import { RosterLockV1Config } from "@roster-lock/types";
-import { getUntrustedScript, UntrustedScriptType } from "@roster-lock/shared";
-import mimetypes from "mime-types";
+import { getUntrustedScriptByFileExtension, UntrustedScriptType } from "@roster-lock/shared";
 
 type ScriptDictionary = RosterLockV1Config["selection"]["scriptDictionary"];
 
@@ -15,10 +15,8 @@ export class RequiredModule<T> {
     public availableScripts: ScriptDictionary,
     public currentScriptPath: string,
   ){
-    const mimeType = mimetypes.lookup(currentScriptPath);
-    if(!mimeType) throw new Error(`Invalid initial script ${currentScriptPath}`);
-    const scriptType = getUntrustedScript(mimeType);
-    if(!scriptType) throw new Error(`Cannot support ${mimeType}`);
+    const scriptType = getUntrustedScriptByFileExtension(currentScriptPath);
+    if(!scriptType) throw new Error(`Cannot support ${fileExtension(currentScriptPath)}`);
     this.scriptType = scriptType;
   }
   async require(
@@ -40,13 +38,22 @@ export class RequiredModule<T> {
     this.loadingStack.push(resolvedPath);
     this.currentScriptPath = resolvedPath;
 
-    const { mimeType, content } = this.availableScripts[resolvedPath];
-    if(!this.scriptType.mimeTypes.includes(mimeType)){
+    const { content } = this.availableScripts[resolvedPath];
+    const extension = fileExtension(resolvedPath);
+    if(!extension){
+      throw new Error(
+        [
+          "Filename needs an extension",
+          "Requires: " + JSON.stringify(this.scriptType.extensions),
+        ].join("\n")
+      );
+    }
+    if(!this.scriptType.extensions.includes(extension)){
       throw new Error(
         [
           "We don't currently support inter language communication",
-          "Supports: " + JSON.stringify(this.scriptType.mimeTypes),
-          "Requesting: " + mimeType
+          "Supports: " + JSON.stringify(this.scriptType.extensions),
+          "Requesting: " + extension
         ].join("\n")
       );
     }

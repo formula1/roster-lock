@@ -28,7 +28,7 @@ export type RosterLockSelectionConfig = {
 
   globalValidation: Array<UntrustedScriptRef>
 
-  scriptDictionary: Record<string, { mimeType: string, content: string, }>
+  scriptDictionary: Record<string, { content: string, }>
 };
 
 

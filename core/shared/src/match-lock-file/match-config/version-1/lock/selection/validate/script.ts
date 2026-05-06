@@ -27,11 +27,11 @@ export function validateGasLimittedScriptMethod(
   }
 }
 
-import { getUntrustedScript } from "../../../usage/untrusted-scripts";
-export function validateGasLimittedScriptMimetype(
-  mimetype: string
+import { getUntrustedScriptByFileExtension } from "../../../usage/untrusted-scripts";
+export function validateUntrustedScriptExtension(
+  filename: string
 ){
-  if(!getUntrustedScript(mimetype)){
-    throw new Error("Invalid Script Mimetype");
+  if(!getUntrustedScriptByFileExtension(filename)){
+    throw new Error("Invalid Script Extension");
   }
 }

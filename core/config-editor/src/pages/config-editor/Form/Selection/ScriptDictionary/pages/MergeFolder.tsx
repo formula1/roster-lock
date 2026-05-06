@@ -1,11 +1,10 @@
 import { RosterLockV1Config, RosterLockV1Draft } from "@roster-lock/types";
 import { InputProps } from "../../../../../../utils/react";
 import { useMemo, useState } from "react";
-import mimetypes from "mime-types";
 import { fs } from "../../../../../../tauri/fs";
 import { showOpenDialog } from "../../../../../../tauri/window";
-import { bufferToStr, createShaFromBuffer } from "@roster-lock/utils";
-import { getUntrustedScript } from "@roster-lock/shared";
+import { bufferToStr, createShaFromBuffer, fileExtension } from "@roster-lock/utils";
+import { getUntrustedScriptByFileExtension } from "@roster-lock/shared";
 import { FileSummary } from "./CurrentFiles/FileSummary";
 import { useRosterLock } from "../../../Contexts/RosterLock";
 import { useDraftScriptInfo } from "../../../Contexts/DraftScriptInfo";
@@ -61,14 +60,10 @@ export function MergeFolder(
       if(dictionary[file]){
         addError(file, "File already exists" )
       }
-      const config = files[file];
-      if(config.mimeType === UNKNOWN_MIMETYPE){
-        addError(file, "File has an unknown mimetype" )
-      } else {
-        const supportsMimetype = getUntrustedScript(config.mimeType);
-        if(!supportsMimetype){
-          addError(file, `Mimetype (${config.mimeType}) Is not supported`)
-        }
+      const supportsExtension = getUntrustedScriptByFileExtension(file);
+      const extension = fileExtension(file);
+      if(!supportsExtension){
+        addError(file, `Extension (${extension || "unknown"}) is not supported`)
       }
     }
     function addError(file: string, error: string){
@@ -172,10 +167,8 @@ async function loadFolderContents(folder: string){
     const filepath = fileResult.path;
     const relativePath = fileResult.relative_path;
     promises.push(Promise.resolve().then(async ()=>{
-      const mimeType = mimetypes.lookup(filepath);
       const contentRaw = await fs.readFile(filepath);
       files[relativePath] = {
-        mimeType: mimeType || UNKNOWN_MIMETYPE,
         content: bufferToStr(contentRaw as Uint8Array<ArrayBuffer>)
       }
       const sha = await createShaFromBuffer(contentRaw);

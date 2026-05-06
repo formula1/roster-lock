@@ -7,7 +7,6 @@ const readOnly = EditorState.readOnly.of(true);
 
 export function DiffView({
   path,
-  mimeType,
   configContent,
   fileContent,
   onUseFile,
@@ -15,14 +14,13 @@ export function DiffView({
   description = null
 }: {
   path: string,
-  mimeType: string
   configContent: string;
   fileContent: string;
   onUseFile: () => void;
   onKeepConfig: () => void;
   description?: ReactNode
 }) {
-  const langExtension = getCodeMirrorParser(mimeType)
+  const langExtension = getCodeMirrorParser(path)
 
   if(!langExtension){
     return (

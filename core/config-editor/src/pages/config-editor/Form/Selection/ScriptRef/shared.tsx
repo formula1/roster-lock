@@ -104,7 +104,7 @@ export function ScriptRefSrcInput(
       value={value}
       onChange={(e)=>{onChange(e.target.value)}}
     >
-      {scripts.map(([scriptName, { mimeType }])=>(
+      {scripts.map(([scriptName])=>(
         <option value={scriptName}>{scriptName}</option>
       ))}
     </select>

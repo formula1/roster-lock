@@ -10,7 +10,7 @@ import { unselectableSelectionSchema } from "./selection-types/unselectable";
 
 import {
   untrustedScriptRefSchema, scriptRefSrcSchemaValidator, scriptRefMethodSchemaValidator,
-  untrustedScriptDictionarySchema, scriptDictionaryMimetypeSchemaValidator
+  untrustedScriptDictionarySchema, scriptDictionaryExtensionSchemaValidator
 } from "./script";
 export { untrustedScriptRefSchema };
 
@@ -59,5 +59,5 @@ export const selectionKeywords = [
 
   scriptRefSrcSchemaValidator,
   scriptRefMethodSchemaValidator,
-  scriptDictionaryMimetypeSchemaValidator,
+  scriptDictionaryExtensionSchemaValidator,
 ];

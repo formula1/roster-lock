@@ -1,8 +1,7 @@
 import { ScriptStarter } from "@roster-lock/shared";
-import { getLanguageRunnerFromMimeType } from "./languages";
+import { getLanguageRunnerFromFileExtension } from "./languages";
 import { getScriptGlobals } from "./globals";
-import mime from "mime-types";
-
+import { fileExtension } from "@roster-lock/utils";
 
 export async function runUntrustedScript(
   { config, randomSeeds, purpose, entryScript }: ScriptStarter,
@@ -12,13 +11,9 @@ export async function runUntrustedScript(
   if(!script){
     throw new Error("Missing entry script " + entryScriptPath);
   }
-  const mimetype = script.mimeType || mime.lookup(entryScriptPath);
-  if(!mimetype){
-    throw new Error("Cannot determine mime type of " + entryScriptPath);
-  }
-  const runner = getLanguageRunnerFromMimeType(mimetype);
+  const runner = getLanguageRunnerFromFileExtension(entryScriptPath);
   if(!runner){
-    throw new Error("Cannot run script of type " + mimetype);
+    throw new Error("Cannot run script of type " + fileExtension(entryScriptPath));
   }
   const globals = getScriptGlobals(
     config, entryScriptPath, randomSeeds, purpose
