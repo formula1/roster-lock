@@ -19,10 +19,9 @@ Promise.resolve().then(async ()=>{
   for(const packageDirs of sortedPackages){
     console.log("Running in Parrallel:", packageDirs)
     await Promise.all(packageDirs.map(async (packageDir)=>{
-      await execWithStdIo("npm install", { cwd: packageDir })
-      await execWithStdIo("npm run prepare", { cwd: packageDir })
-    }))
-  }
+      await execWithStdIo("npm install", { cwd: packageDir });
+      // await execWithStdIo("npm run prepare", { cwd: packageDir });
+    }));
   }
 }).catch((e)=>{
   console.error("Failure:", e);
