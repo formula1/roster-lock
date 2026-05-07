@@ -1,14 +1,14 @@
 import { UntrustedScriptRef, RosterLockV1Config } from "@roster-lock/types";
 
-export function validateGasLimittedScript(
+export function validateUntrustedScript(
   script: UntrustedScriptRef,
   config: RosterLockV1Config
 ){
-  validateGasLimittedScriptSrc(script.src, config);
-  validateGasLimittedScriptMethod(script.method);
+  validateUntrustedScriptSrc(script.src, config);
+  validateUntrustedScriptMethod(script.method);
 }
 
-export function validateGasLimittedScriptSrc(
+export function validateUntrustedScriptSrc(
   scriptSrc: UntrustedScriptRef["src"],
   { selection }: RosterLockV1Config
 ){
@@ -18,7 +18,7 @@ export function validateGasLimittedScriptSrc(
 }
 
 const VALID_IDENTIFIER = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
-export function validateGasLimittedScriptMethod(
+export function validateUntrustedScriptMethod(
   method: UntrustedScriptRef["method"]
 ){
   if(method === undefined) return;

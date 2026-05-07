@@ -4,7 +4,7 @@ import { validateSelectionPieceMeta } from "./meta";
 import { validateNormal } from "./selections/normal";
 import { validatePreselected } from "./selections/preselected";
 
-import { validateGasLimittedScript } from "./script";
+import { validateUntrustedScript } from "./script";
 
 export function validateSelectionConfig(
   selectionConfig: RosterLockV1Config["selection"],
@@ -32,7 +32,7 @@ export function validateSelectionConfig(
   }
   if(selectionConfig.globalValidation){
     for(const script of selectionConfig.globalValidation){
-      validateGasLimittedScript(script, config);
+      validateUntrustedScript(script, config);
     }
   }
 }

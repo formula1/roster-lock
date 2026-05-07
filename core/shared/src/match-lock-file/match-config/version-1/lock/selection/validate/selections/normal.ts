@@ -1,6 +1,6 @@
 
 import { RosterLockV1Config, SelectionNormalConfig, PieceType } from "@roster-lock/types";
-import { validateGasLimittedScript } from "../script";
+import { validateUntrustedScript } from "../script";
 
 export function validateNormal(
   selection: SelectionNormalConfig,
@@ -13,7 +13,7 @@ export function validateNormal(
     validateSelection(selection.validation, pieceType, config);
   }
   if(selection.mergeAlgorithm){
-    validateGasLimittedScript(selection.mergeAlgorithm, config);
+    validateUntrustedScript(selection.mergeAlgorithm, config);
   }
 }
 
@@ -51,7 +51,7 @@ export function validateSelection(
   validateRange(validation.count);
   validateSelectionBanList(validation.banList || [], config.rosters[pieceType]);
   for(const script of validation.customValidation){
-    validateGasLimittedScript(script, config);
+    validateUntrustedScript(script, config);
   }
 }
 

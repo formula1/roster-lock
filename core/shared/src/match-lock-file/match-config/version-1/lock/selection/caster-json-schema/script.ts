@@ -4,8 +4,8 @@ import { RosterLockV1Config, UntrustedScriptRef } from "@roster-lock/types";
 import { defineKeyword } from "../../../../../util-types/json-schema";
 
 import {
-  validateGasLimittedScriptSrc,
-  validateGasLimittedScriptMethod,
+  validateUntrustedScriptSrc,
+  validateUntrustedScriptMethod,
   validateUntrustedScriptExtension,
 } from "../validate/script";
 
@@ -13,7 +13,7 @@ export const scriptRefSrcSchemaValidator = defineKeyword({
   keyword: "untrustedScriptSrc",
   type: "string",
   validate(value, config: RosterLockV1Config){
-    validateGasLimittedScriptSrc(value, config);
+    validateUntrustedScriptSrc(value, config);
   }
 });
 
@@ -21,7 +21,7 @@ export const scriptRefMethodSchemaValidator = defineKeyword({
   keyword: "untrustedScriptMethod",
   type: "string",
   validate(value, config: RosterLockV1Config){
-    validateGasLimittedScriptMethod(value);
+    validateUntrustedScriptMethod(value);
   }
 });
 
@@ -43,11 +43,11 @@ export const untrustedScriptRefSchema: JSONSchemaType<UntrustedScriptRef> = {
 
 
 
-export const scriptDictionaryMimetypeSchemaValidator = defineKeyword({
-  keyword: "untrustedScriptMimetype",
+export const scriptDictionaryExtensionSchemaValidator = defineKeyword({
+  keyword: "untrustedScriptExtension",
   type: "string",
   validate(value){
-    validateGasLimittedScriptMimetype(value);
+    validateUntrustedScriptExtension(value);
   }
 });
 
