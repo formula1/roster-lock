@@ -81,7 +81,6 @@ export function PieceSelectionConfig(
             onChange={onChange}
             pieceType={pieceType}
           />
-
         ) : null
       }
 

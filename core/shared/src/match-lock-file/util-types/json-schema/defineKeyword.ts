@@ -41,10 +41,10 @@ function wrapValidator<T>(
         keyword: keyword,
         message: e.message,
         params: {}
-      }]
+      }];
       return false;
     }
-  }
+  };
   return wrapped;
 }
 
