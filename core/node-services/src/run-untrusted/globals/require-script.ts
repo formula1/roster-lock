@@ -88,16 +88,17 @@ export function resolveScriptPath(
   if(availableScripts[resolvedPath]) return resolvedPath;
 
   // Add .lua extension if not present
-  const targetExt = extname(resolvedPath);
-  if(targetExt){
-    throw new Error("Script Not Found");
+  // Support for multiple for example typescript/javascript
+  for(const extension of scriptType.extensions){
+    const resolvedPathWithExt = resolvedPath + extension;
+    if(availableScripts[resolvedPathWithExt]) return resolvedPathWithExt;
   }
-  const resolvedPathWithExt = resolvedPath + extname(currentScriptPath);
-  if(availableScripts[resolvedPathWithExt]) return resolvedPathWithExt;
 
   if(scriptType.directoryFile){
-    const resolvedPathIndex = pathJoin(resolvedPath, scriptType.directoryFile);
-    if(availableScripts[resolvedPathIndex]) return resolvedPathIndex;
+    for(const file of scriptType.directoryFile){
+      const resolvedPathIndex = pathJoin(resolvedPath, file);
+      if(availableScripts[resolvedPathIndex]) return resolvedPathIndex;
+    }
   }
   throw new Error("Script Not Found");
 }

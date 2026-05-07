@@ -4,7 +4,7 @@ export type UntrustedScriptType = {
   name: string,
   extensions: Array<string>,
   mimeTypes: Array<string>,
-  directoryFile?: string | Array<string>,
+  directoryFile?: Array<string>,
 };
 export const UNTRUSTED_SCRIPT_TYPES: Record<string, UntrustedScriptType> = {};
 
@@ -22,7 +22,7 @@ UNTRUSTED_SCRIPT_TYPES["lua"] = {
   name: "lua",
   extensions: [".lua"],
   mimeTypes: [ "text/lua", "text/x-lua" ],
-  directoryFile: "init.lua"
+  directoryFile: ["init.lua"]
 };
 
 UNTRUSTED_SCRIPT_TYPES["typescript/javascript"] = {
