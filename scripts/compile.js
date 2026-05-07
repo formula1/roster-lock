@@ -1,12 +1,9 @@
 #!/bin/node
 
-const { promisify } = require("util")
 const { join: pathJoin, resolve: pathResolve } = require("path");
 const { existsSync } = require("fs");
 const { readFile } = require("fs").promises;
-const { exec: execCallback, spawn } = require("child_process");
-
-const exec = promisify(execCallback);
+const { spawn } = require("child_process");
 
 Promise.resolve().then(async ()=>{
   try {
