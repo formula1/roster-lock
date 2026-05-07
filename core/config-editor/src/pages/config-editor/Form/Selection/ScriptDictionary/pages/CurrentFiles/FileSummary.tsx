@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { RosterLockV1Config } from "@roster-lock/types";
 import { InputProps } from "../../../../../../../utils/react";
+import { useLightbox } from "../../../../../../../components";
 
+import { FileView } from "../Views";
 
 type ScriptDictionary = RosterLockV1Config["selection"]["scriptDictionary"];
 type Script = ScriptDictionary[string];
@@ -12,6 +14,7 @@ export function FileSummary(
     & { allEntries: ScriptDictionary }
   )
 ){
+  const lightbox = useLightbox()
   const [editedPath, setEditedPath] = useState(value.path);
   const isDuplicate = editedPath !== value.path && editedPath in allEntries;
   return (
@@ -31,11 +34,9 @@ export function FileSummary(
         {isDuplicate && <span style={{ color: "#FF0000" }}>Path already exists</span>}
       </div>
       <div>
-        <span>MimeType: </span>
-        <span>{value.file.mimeType}</span>
-      </div>
-      <div>
-        <button>View Contents</button>
+        <button
+          onClick={()=>(lightbox.open(<FileView path={value.path} script={value.file} />))}
+        >View Contents</button>
         <button onClick={()=>(onRemove())}>Remove</button>
       </div>
     </>
