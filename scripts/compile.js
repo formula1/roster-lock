@@ -6,7 +6,6 @@ const { readFile } = require("fs").promises;
 const { spawn } = require("child_process");
 
 Promise.resolve().then(async ()=>{
-  try {
   const dependencyMap = new Map()
   await Promise.all(process.argv.slice(2).map((arg)=>{
     const initialDirectory = pathResolve(process.cwd(), arg);
@@ -24,9 +23,9 @@ Promise.resolve().then(async ()=>{
       await execWithStdIo("npm run prepare", { cwd: packageDir })
     }))
   }
-  }catch(e){
-    console.error("Failure:", e)
   }
+}).catch((e)=>{
+  console.error("Failure:", e);
 });
 
 /* Pseudo Code
