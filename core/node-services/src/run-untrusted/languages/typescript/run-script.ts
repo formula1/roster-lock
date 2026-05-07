@@ -1,0 +1,96 @@
+import { JSON_Unknown } from "@roster-lock/utils";
+import { ScriptRunner } from "../types";
+import { newQuickJSAsyncWASMModule, QuickJSContext } from "quickjs-emscripten";
+import { transform } from "esbuild";
+
+const QuickJSPromise = newQuickJSAsyncWASMModule();
+
+const MAX_CYCLES = 5_000_000 / 1024;
+export const runTSScript: ScriptRunner<any> = async function(
+  globals, input, scriptRaw, initialMethod
+){
+  const QuickJS = await QuickJSPromise;
+  const vm = QuickJS.newContext();
+
+  try {
+
+    let interruptCycles = 0;
+    vm.runtime.setInterruptHandler(() => ++interruptCycles > MAX_CYCLES);
+    vm.runtime.setModuleLoader((relativePath)=>(
+      globals.requireScript(relativePath, async (fullPath, scriptContent)=>{
+        if(fullPath.endsWith(".json")){
+          return `export default ${scriptContent}`;
+        }
+        const { code } = await transform(scriptContent, { loader: "ts" });
+        return code;
+      })
+    ));
+
+    vm.setProp(vm.global, "randomFloat", vm.newFunction("randomFloat", ()=>{
+      return vm.newNumber(globals.randomFloat());
+    }));
+    vm.setProp(vm.global, "randomInt", vm.newFunction("randomInt", (minHandle, maxHandle)=>{
+      const min = vm.getNumber(minHandle);
+      const max = vm.getNumber(maxHandle);
+      return vm.newNumber(globals.randomInt(min, max));
+    }));
+    vm.setProp(vm.global, "shuffleIndexes", vm.newFunction("shuffleIndexes", (lengthHandle)=>{
+      const length = vm.getNumber(lengthHandle);
+      const indexes = globals.shuffleIndexes(length);
+      return newJSON(vm, indexes);
+    }));
+    // Overriding the Math.random just in case people try to use it
+    vm.evalCode("Math.random = randomFloat;");
+
+    vm.setProp(vm.global, "getPieceMeta", vm.newFunction("getPieceMeta", (pieceTypeHandle, pieceIdHandle) =>{
+      const pieceType = vm.getString(pieceTypeHandle);
+      const pieceId = vm.getString(pieceIdHandle);
+      const meta = globals.getPieceMeta(pieceType, pieceId);
+      return newJSON(vm, meta);
+    }));
+    vm.setProp(vm.global, "getAvailablePieces", vm.newFunction("getAvailablePieces", (pieceTypeHandle) =>{
+      const pieceType = vm.getString(pieceTypeHandle);
+      const pieces = globals.getAvailablePieces(pieceType);
+      return newJSON(vm, pieces);
+    }));
+
+    // Add Input
+    if(input.type === "piece-user-validation"){
+      vm.setProp(vm.global, "pieceType", vm.newString(input.pieceType));
+      vm.setProp(vm.global, "selection", newJSON(vm, input.input));
+    } else if(input.type === "piece-merge"){
+      vm.setProp(vm.global, "pieceType", vm.newString(input.pieceType));
+      vm.setProp(vm.global, "users", newJSON(vm, input.users));
+      vm.setProp(vm.global, "selection", newJSON(vm, input.input));
+    } else if(input.type === "global-validation"){
+      vm.setProp(vm.global, "pieceTypes", newJSON(vm, input.pieceTypes));
+      vm.setProp(vm.global, "users", newJSON(vm, input.users));
+      vm.setProp(vm.global, "selection", newJSON(vm, input.input));
+    } else {
+      throw new Error("Unknown Input Type");
+    }
+
+    const { code: script } = await transform(scriptRaw, { loader: "ts" });
+    await vm.evalCodeAsync(script);
+
+    const main = vm.getProp(vm.global, initialMethod);
+    if(vm.typeof(main) !== "function"){
+      throw new Error(`No ${initialMethod} function defined in script`);
+    }
+    // Convert everything to a promise for sanities sake
+    const awaitedResult = await vm.resolvePromise(
+      vm.unwrapResult(
+        await vm.evalCodeAsync(`Promise.resolve(${initialMethod}())`)
+      )
+    );
+
+    return vm.dump(vm.unwrapResult(awaitedResult));
+  }finally{
+    vm.dispose();
+  }
+};
+
+function newJSON(vm: QuickJSContext, value: JSON_Unknown){
+  return vm.unwrapResult(vm.evalCode(JSON.stringify(value)));
+}
+

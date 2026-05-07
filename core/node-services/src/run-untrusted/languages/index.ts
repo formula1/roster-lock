@@ -9,3 +9,6 @@ export function getLanguageRunnerFromFileExtension(filename: string): LanguageRu
 
 import { LUA } from "./lua";
 LANGUAGE_RUNNERS.push(LUA);
+
+import { TYPESCRIPT } from "./typescript";
+LANGUAGE_RUNNERS.push(TYPESCRIPT);

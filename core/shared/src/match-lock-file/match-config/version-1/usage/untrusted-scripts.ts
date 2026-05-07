@@ -24,3 +24,13 @@ UNTRUSTED_SCRIPT_TYPES["lua"] = {
   mimeTypes: [ "text/lua", "text/x-lua" ],
   directoryFile: "init.lua"
 };
+
+UNTRUSTED_SCRIPT_TYPES["typescript/javascript"] = {
+  name: "typescript/javascript",
+  extensions: [".ts", ".js"],
+  mimeTypes: [
+    "text/typescript", "application/typescript",
+    "text/javascript", "application/javascript",
+  ],
+  directoryFile: ["index.ts", "index.js"]
+};
