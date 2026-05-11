@@ -6,7 +6,7 @@ import { transform } from "esbuild";
 const QuickJSPromise = newQuickJSAsyncWASMModule();
 
 const MAX_CYCLES = 5_000_000 / 1024;
-export const runTSScript: ScriptRunner<any> = async function(
+export const runTSScript: ScriptRunner<string> = async function(
   globals, input, scriptRaw, initialMethod
 ){
   const QuickJS = await QuickJSPromise;
@@ -18,9 +18,6 @@ export const runTSScript: ScriptRunner<any> = async function(
     vm.runtime.setInterruptHandler(() => ++interruptCycles > MAX_CYCLES);
     vm.runtime.setModuleLoader((relativePath)=>(
       globals.requireScript(relativePath, async (fullPath, scriptContent)=>{
-        if(fullPath.endsWith(".json")){
-          return `export default ${scriptContent}`;
-        }
         const { code } = await transform(scriptContent, { loader: "ts" });
         return code;
       })
