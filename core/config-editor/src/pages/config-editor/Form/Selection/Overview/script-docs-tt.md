@@ -1,0 +1,1 @@
+The `script docs` page provides documentation you may need when developing scripts for validation and/or merging.

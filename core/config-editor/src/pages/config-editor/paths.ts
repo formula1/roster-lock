@@ -11,6 +11,9 @@ export const CONFIG_ID_PATHS = {
     pieceTypeId: (pieceName: string) => `roster-piece-${pieceName}`,
     pieceValueId: (value: RosterItem) => `roster-piece-value-${value.version.logic}-${value.version.media}-${value.version.docs}`,
   },
+  selection: {
+    pieceType: (pieceName: string) => `selection-piece-${pieceName}`,
+  }
 }
 
 export const RosterLockPaths = {
@@ -20,11 +23,14 @@ export const RosterLockPaths = {
   Roster: "/config/:filePath/roster" as const,
   Selection: {
     INDEX: "/config/:filePath/selection" as const,
+    ScriptDocs: "/config/:filePath/selection/script-docs" as const,
+    GlobalValidation: "/config/:filePath/selection/global-validation" as const,
+    PieceSelection: "/config/:filePath/selection/piece/:pieceType" as const,
     ScriptDictionary: {
       INDEX: "/config/:filePath/selection/dictionary" as const,
       MergeFolder: "/config/:filePath/selection/dictionary/merge-folder" as const,
       CurrentFiles: "/config/:filePath/selection/dictionary/current-files" as const,
       RunScript: "/config/:filePath/selection/dictionary/run-script" as const,
-    }
+    },
   }
 }

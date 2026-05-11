@@ -19,6 +19,8 @@ export function FileView(
 
   return (
     <CodeMirror
+      editable={false}
+      style={{ width: "100%", height: "100%" }}
       value={script.content}
       extensions={[...CODE_MIRROR_EXTENSIONS, langExtension]}
     />

@@ -10,10 +10,55 @@ import { NormalSelectionInput } from "./NormalSelection";
 import { GameControlledSelectionInput } from "./GameControlled";
 import { PreselectedSelectionInput } from "./Preselected"
 import { UnselectableSelectionInput } from "./Unselectable";
+import { isStrategyUnselectable } from "../utils/is-unselectable";
+import {
+  EMPTY_ROSTER_NORMAL_SELECTION,
+  EMPTY_ROSTER_GAME_SELECTION,
+  EMPTY_ROSTER_PRESELECTED_SELECTION,
+} from "../../constants/roster-configs"
+import { cloneJSON } from "@roster-lock/utils";
+import { Link, useParams } from "react-router";
+
+import { RosterLockPaths } from "../../../paths";
+import { replaceParams } from "../../../../../utils/router";
+import { updatePiece } from "../utils/update-piece";
 
 type SelectionConfig = (
   RosterLockV1Config["selection"]["piece"][string]
 )
+
+export function PieceSelectionConfigPage(){
+  const { value, onChange } = useRosterLock();
+  const params = useParams();
+
+  const pieceType = params.pieceType;
+
+  const pieceConfig = value.selection.piece[pieceType || ""];
+
+  if(!pieceType || !pieceConfig){
+    return (
+      <>
+        <h1>Piece Not Found</h1>
+        <p>
+          <Link
+            to={replaceParams(RosterLockPaths.Selection.INDEX, params)}
+          >Go back to Selection</Link>
+        </p>
+      </>
+    );
+  }
+
+  return (
+    <PieceSelectionConfig
+      pieceType={pieceType}
+      value={pieceConfig}
+      onChange={pieceConfig =>
+        onChange(old => updatePiece(old, pieceType, pieceConfig))
+      }
+    />
+  );
+}
+
 
 export function PieceSelectionConfig(
   { pieceType, value, onChange }: (
@@ -43,6 +88,22 @@ export function PieceSelectionConfig(
         }}>
           {STRATEGY_LABELS[defintion.selectionStrategy]}
         </span>
+        {!isStrategyUnselectable(defintion) && (
+          <select
+            value={value.type}
+            onChange={(e)=>{
+              const config = SELECTION_FORMS[e.target.value];
+              if(!config) throw new Error("Missing Selection Type")
+              const cloned = cloneJSON(config.empty);
+              cloned.pieceMeta = value.pieceMeta;
+              onChange(cloned);
+            }}
+          >
+            {Object.entries(SELECTION_FORMS).map(([k, { title }])=>(
+              <option value={k} >{title}</option>
+            ))}
+          </select>
+        )}
       </h2>
 
       <div className="section">
@@ -96,4 +157,8 @@ const STRATEGY_LABELS: Record<EngineSelectionStrategy, string> = {
   "on demand": "On Demand"
 }
 
-const UNSELECTABLE_STRATEGIES: Array<EngineSelectionStrategy> = ["mandatory", "on demand"];
+const SELECTION_FORMS: Record<string, { title: string, empty: SelectionConfig }> = {
+  "normal": { title: "Normal", empty: EMPTY_ROSTER_NORMAL_SELECTION },
+  "preselected": { title: "Preselected", empty: EMPTY_ROSTER_PRESELECTED_SELECTION },
+  "game-controlled": { title: "Game Controlled", empty: EMPTY_ROSTER_GAME_SELECTION },
+}

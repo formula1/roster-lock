@@ -4,16 +4,19 @@ import { InputProps } from "../../../../../utils/react";
 import { ScriptRefInput } from "./shared";
 import { useRosterLock } from "../../Contexts/RosterLock";
 import { useEffect } from "react";
-import { Link } from "react-router";
+import { Link, useParams } from "react-router";
+import { replaceParams } from "../../../../../utils/router";
+import { RosterLockPaths } from "../../../paths";
 
 
 export function ScriptRefMandatoryInput(
   { value, onChange }: InputProps<UntrustedScriptRef | undefined>
 ){
+  const params = useParams();
   const { value: lock } = useRosterLock();
   const scripts = Object.keys(lock.selection.scriptDictionary);
   useEffect(()=>{
-    if(!value) return;
+    if(value) return;
     if(scripts.length === 0) return;
     onChange({ src: scripts[0] })
   }, [value, lock]);
@@ -21,8 +24,15 @@ export function ScriptRefMandatoryInput(
   if(!value && scripts.length === 0){
     return (
       <>
-        <h1 className="error" >No scripts available</h1>
-        <p><Link to="" >Please add one here</Link></p>
+        <div>No Scripts Available, please add one</div>
+        <div>
+          <Link
+            to={replaceParams(
+              RosterLockPaths.Selection.ScriptDictionary.MergeFolder,
+              { filePath: params.filePath || "" }
+            )}
+          >Merge Folder</Link>
+        </div>
       </>
     )
   }
@@ -30,6 +40,12 @@ export function ScriptRefMandatoryInput(
   if(!value) return null;
 
   return (
-    <ScriptRefInput value={value} onChange={onChange} />
+    <div style={{ display: "flex", flexDirection: "row" }}>
+      <ScriptRefInput value={value} onChange={onChange} />
+      <button
+        disabled={true}
+        style={{ alignSelf: "stretch", padding: "10px" }}
+      >Script is Mandatory</button>
+    </div>
   )
 }
