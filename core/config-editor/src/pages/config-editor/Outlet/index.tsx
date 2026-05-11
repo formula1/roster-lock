@@ -9,6 +9,7 @@ import { ContextFromDraftProvider } from "../Contexts/ContextFromDraft";
 import { useSaveAs } from "./data/saveAs";
 import { FollowButtonsProvider } from "../Form/Contexts/Buttons";
 import { useGlobalLinks } from "../../../globals/global-links";
+import { useEnsureCorrectSelection } from "../Form/Selection/utils/ensure-correct-selection";
 
 export function FileConfigOutlet(){
   const params = useParams();
@@ -112,8 +113,14 @@ function FileErrorOrOutlet(){
     value={currentFile.value}
     onChange={currentFile.update}
   >
-    <Outlet />
+    <EnsuredOutlet />
   </ContextFromDraftProvider>
   </FollowButtonsProvider>
   );
+}
+
+
+function EnsuredOutlet(){
+  useEnsureCorrectSelection();
+  return <Outlet />;
 }
