@@ -77,10 +77,10 @@ export const runTSScript: ScriptRunner<string> = async function(
     // Convert everything to a promise for sanities sake
     const awaitedResult = await vm.resolvePromise(
       vm.unwrapResult(
-        await vm.evalCodeAsync(`Promise.resolve(${initialMethod}())`)
+        await vm.evalCodeAsync(`Promise.resolve().then(()=>(${initialMethod}()));`)
       )
     );
-
+    // The unwrap should throw if the script throws
     return vm.dump(vm.unwrapResult(awaitedResult));
   }finally{
     vm.dispose();
