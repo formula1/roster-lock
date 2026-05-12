@@ -4,6 +4,7 @@ import { RosterLockV1Config, SelectionPreselectedConfig } from "@roster-lock/typ
 import { selectionPieceMetaSchema } from "../meta";
 import { validatePreselected } from "../../validate/selections/preselected";
 import { defineKeyword } from "../../../../../../util-types/json-schema";
+import { SelectedPieceSchema, SelectedPieceSchemaDef } from "../../../../shared";
 
 export const preselectedSchemaValidator = defineKeyword({
   keyword: "selectionPreselected",
@@ -25,38 +26,14 @@ export const preselectedSelectionSchema = {
   type: "object",
   required: ["type", "pieces"],
   additionalProperties: false,
-  $defs: {
-    PreselectedPiece: {
-      type: "object",
-      required: ["id", "required"],
-      additionalProperties: false,
-      properties: {
-        id: { type: "string" },
-        required: {
-          type: "object",
-          required: ["mandatory", "selectable"],
-          additionalProperties: false,
-          properties: {
-            mandatory: {
-              type: "array",
-              items: { $ref: "#/$defs/PreselectedPiece" },
-            },
-            selectable: {
-              type: "array",
-              items: { $ref: "#/$defs/PreselectedPiece" },
-            }
-          }
-        },
-      },
-    },
-  },
+  ...SelectedPieceSchemaDef,
   properties: {
     type: { type: "string", const: "preselected" },
     pieceMeta: { ...selectionPieceMetaSchema, nullable: true },
     pieces: {
       type: "array",
       [preselectedSchemaValidator.keyword]: true,
-      items: { $ref: "#/$defs/PreselectedPiece" },
+      items: SelectedPieceSchema,
     },
   },
 } as unknown as JSONSchemaType<SelectionPreselectedConfig>;

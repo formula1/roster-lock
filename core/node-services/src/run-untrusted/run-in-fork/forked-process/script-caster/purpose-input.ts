@@ -4,6 +4,7 @@ import {
   GlobalValidationInput,
   ScriptPurposeInput,
 } from "@roster-lock/shared";
+import { SelectedPieceSchema, SelectedPieceSchemaDef } from "@roster-lock/shared";
 
 import { JSONSchemaType } from "ajv";
 
@@ -17,10 +18,10 @@ const PieceUserValidationInputSchema: JSONSchemaType<PieceUserValidationInput> =
     userId: { type: "string" },
     input: {
       type: "array",
-      items: { type: "object", required: ["id"], additionalProperties: true },
+      items: SelectedPieceSchema,
     },
   },
-}
+};
 
 const PieceMergeInputSchema: JSONSchemaType<PieceMergeInput> = {
   type: "object",
@@ -38,11 +39,11 @@ const PieceMergeInputSchema: JSONSchemaType<PieceMergeInput> = {
       required: [],
       additionalProperties: {
         type: "array",
-        items: { type: "object", required: ["id"], additionalProperties: true },
+        items: SelectedPieceSchema,
       },
     },
   },
-}
+};
 
 const GlobalValidationInputSchema: JSONSchemaType<GlobalValidationInput> = {
   type: "object",
@@ -65,43 +66,31 @@ const GlobalValidationInputSchema: JSONSchemaType<GlobalValidationInput> = {
         anyOf: [
           {
             type: "object",
-            required: ["type"],
-            additionalProperties: false,
-            properties: {
-              type: { type: "string", const: "personal" },
-              value: {
-                type: "object",
-                required: [],
-                additionalProperties: {
-                  type: "array",
-                  items: { type: "object", required: ["id"], additionalProperties: true },
-                },
-              },
+            required: [],
+            additionalProperties: {
+              type: "array",
+              items: SelectedPieceSchema,
             },
           },
           {
-            type: "object",
-            required: ["type"],
-            additionalProperties: false,
-            properties: {
-              type: { type: "string", const: "shared" },
-              value: {
-                type: "array",
-                items: { type: "object", required: ["id"], additionalProperties: true },
-              },
-            },
+            type: "array",
+            items: SelectedPieceSchema,
           }
         ]
       },
     },
   },
-}
+};
 
 
-export const ScriptPurposeInputSchema: JSONSchemaType<ScriptPurposeInput> = {
+// AJV's JSONSchemaType requires a top-level `type`, but union types use anyOf without one
+export const ScriptPurposeInputSchema = {
+  $id: "purpose-schema",
+  ...SelectedPieceSchemaDef,
   anyOf: [
     PieceUserValidationInputSchema,
     PieceMergeInputSchema,
     GlobalValidationInputSchema,
   ]
-}
+} as unknown as JSONSchemaType<ScriptPurposeInput>;
+
