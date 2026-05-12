@@ -1,5 +1,6 @@
 import { Command } from '@tauri-apps/plugin-shell';
 import type { ScriptStarter } from '@roster-lock/shared';
+import { JSON_Unknown } from '@roster-lock/utils';
 
 type OutputLine = { source: "out" | "err", content: string };
 
@@ -24,7 +25,7 @@ export const ROSTERLOCK_SIDECAR = {
     return { log }
   },
 
-  runScript: async function(scriptConfig: ScriptStarter): Promise<unknown> {
+  runScript: async function(scriptConfig: ScriptStarter): Promise<JSON_Unknown> {
     return new Promise((resolve, reject) => {
       const log: Array<OutputLine> = [];
       const instance = Date.now().toString(32);

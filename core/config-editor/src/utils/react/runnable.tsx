@@ -40,6 +40,10 @@ export function useRunnable<T>(
     });
   }, [runnableFunction]);
 
+  useEffect(()=>{
+    setResult({ state: RunnableState.INACTIVE })
+  }, [run]);
+
   (result as ProcessResult<T> & { run: ()=>void }).run = run;
   return result as ProcessResult<T> & { run: ()=>void };
 }

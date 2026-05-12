@@ -16,27 +16,3 @@ export const SCRIPT_PURPOSES: Array<{ title: string, value: ScriptPurpose, descr
 
 ]
 
-export function defaultPurposeInput(purpose: ScriptPurpose, pieceType?: string): ScriptPurposeInput {
-  if (purpose === "piece-user-validation") {
-    return {
-      type: "piece-user-validation",
-      pieceType: pieceType ?? "piece",
-      userId: "test-user",
-      input: [],
-    };
-  }
-  if (purpose === "piece-merge") {
-    return {
-      type: "piece-merge",
-      pieceType: pieceType ?? "piece",
-      users: ["player1", "player2"],
-      input: { "player1": [], "player2": [] },
-    };
-  }
-  return {
-    type: "global-validation",
-    pieceTypes: [],
-    users: ["player1", "player2"],
-    input: {},
-  };
-}
