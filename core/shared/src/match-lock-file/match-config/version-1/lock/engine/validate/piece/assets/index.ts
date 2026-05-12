@@ -2,14 +2,14 @@ import { RosterLockV1Config } from "@roster-lock/types";
 type RosterLockEngineConfig = RosterLockV1Config["engine"];
 type EngineAssetDefinition = RosterLockEngineConfig["pieceDefinitions"][string]["assets"][number];
 
-import { validateRange } from "./range";
+import { validateCount } from "../../../../../shared/count";
 
 export function validateAsset(
   pieceAssetDefinition: RosterLockEngineConfig["pieceDefinitions"][string]["assets"][0],
   definition: RosterLockEngineConfig["pieceDefinitions"][string]
 ){
   validateAssetName(pieceAssetDefinition.name, definition.assets);
-  validateRange(pieceAssetDefinition.count)
+  validateCount(pieceAssetDefinition.count);
   validateGlobList(pieceAssetDefinition.glob);
   for(const g of pieceAssetDefinition.glob){
     validatePathVariablesInGlob(g, definition.pathVariables);
@@ -43,4 +43,4 @@ export function validateGlobList(
   }
 }
 
-export { validatePathVariablesInGlob, validateRange, validateGlobItem };
+export { validatePathVariablesInGlob, validateGlobItem };

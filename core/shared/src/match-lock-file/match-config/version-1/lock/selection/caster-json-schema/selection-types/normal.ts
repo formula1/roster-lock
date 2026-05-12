@@ -8,8 +8,10 @@ import {
 
 import { selectionPieceMetaSchema } from "../meta";
 import { untrustedScriptRefSchema } from "../script";
-import { validateSelectionBanList, validateRange } from "../../validate/selections/normal";
+import { validateSelectionBanList } from "../../validate/selections/normal";
 import { defineKeyword } from "../../../../../../util-types/json-schema";
+import { countSchema, countSchemaValidator } from "../../../../shared/count";
+export { countSchemaValidator };
 
 export const banListSchemaValidator = defineKeyword({
   keyword: "selectionBanList",
@@ -24,35 +26,13 @@ export const banListSchemaValidator = defineKeyword({
   }
 });
 
-export const rangeSchemaValidator = defineKeyword({
-  keyword: "selectionRange",
-  // type: ["number", "array"],
-  validate: function (value, config: RosterLockV1Config, path){
-    validateRange(value);
-  }
-});
 
 const userSelectionValidationSchema: JSONSchemaType<UserSelectionValidation> = {
   type: "object",
   required: ["count", "unique", "customValidation"],
   additionalProperties: false,
   properties: {
-    count: {
-      anyOf: [
-        { type: "number", minimum: 0 },
-        { type: "string", const: "*" },
-        {
-          type: "array",
-          items: [
-            { type: "number", minimum: 0 },
-            { anyOf: [{ type: "number", minimum: 0 }, { type: "string", const: "*" }] },
-          ],
-          minItems: 2,
-          maxItems: 2,
-        },
-      ],
-      [rangeSchemaValidator.keyword]: true,
-    },
+    count: countSchema,
     unique: { type: "boolean" },
     banList: {
       type: "array",

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import type { InputProps } from "../../../../../../../utils/react";
 
 import { EngineAssetDefinition } from "@roster-lock/types";
-import { validateRange } from "@roster-lock/shared";
+import { validateCount as validateCountValue } from "@roster-lock/shared";
 
 import { ToolTipSpan } from "../../../../../../../components/ToolTip";
 import { InputError } from "../../../../../../../components/InputError";
@@ -50,7 +50,7 @@ function ValueInput({ value: countValue, onChange }: InputProps<Count>){
           try {
             setError(null);
             const validValue = validateNumberOrStar(e.target.value);
-            validateRange(validValue)
+            validateCountValue(validValue)
             onChange(validValue);
           }catch(error){
             setError((error as Error).message);
@@ -86,7 +86,7 @@ function RangeInput({ value: countValue, onChange }: InputProps<Count>){
             try {
               setMinError(null);
               const newValues: [number, number | "*"] = [validateCount(e.target.value), value[1]];
-              validateRange(newValues);
+              validateCountValue(newValues);
               onChange(newValues);
             }catch(error){
               setMinError((error as Error).message);
@@ -105,7 +105,7 @@ function RangeInput({ value: countValue, onChange }: InputProps<Count>){
             try {
               setMaxError(null);
               const newValues: [number, number | "*"] = [value[0], validateNumberOrStar(e.target.value)];
-              validateRange(newValues);
+              validateCountValue(newValues);
               onChange(newValues);
             }catch(error){
               console.error(error);

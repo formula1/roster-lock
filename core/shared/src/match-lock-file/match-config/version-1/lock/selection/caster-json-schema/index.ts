@@ -40,7 +40,7 @@ export const selectionConfigSchema: JSONSchemaType<RosterLockV1Config["selection
 };
 
 
-import { banListSchemaValidator, rangeSchemaValidator } from "./selection-types/normal";
+import { banListSchemaValidator, countSchemaValidator } from "./selection-types/normal";
 import { preselectedSchemaValidator } from "./selection-types/preselected";
 
 import {
@@ -50,7 +50,7 @@ import {
 
 export const selectionKeywords = [
   banListSchemaValidator,
-  rangeSchemaValidator,
+  countSchemaValidator,
 
   preselectedSchemaValidator,
 
