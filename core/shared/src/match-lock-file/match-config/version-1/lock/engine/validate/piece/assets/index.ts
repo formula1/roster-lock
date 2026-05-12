@@ -21,13 +21,13 @@ export function validateAssetName(
   name: EngineAssetDefinition["name"], assets: RosterLockEngineConfig["pieceDefinitions"][string]["assets"]
 ){
   if(name === ""){
-    throw new Error(`Name is empty`);
+    throw new Error("Name is empty");
   }
   if(name !== name.trim()){
-    throw new Error(`Name contains a trailing or leading space`);
+    throw new Error("Name contains a trailing or leading space");
   }
   if(assets.find((a) => a.name === name)){
-    throw new Error(`Duplicate name`);
+    throw new Error("Duplicate name");
   }
 }
 
@@ -36,10 +36,10 @@ export function validateGlobList(
   glob: EngineAssetDefinition["glob"],
 ){
   if(glob.length === 0){
-    throw new Error(`Expecting at least 1 glob`);
+    throw new Error("Expecting at least 1 glob");
   }
   if(new Set(glob).size !== glob.length){
-    throw new Error(`Has duplicate globs`);
+    throw new Error("Has duplicate globs");
   }
 }
 
