@@ -1,9 +1,9 @@
 import { JSONShallowObject, SelectionPieceMeta } from "../meta";
 import { UntrustedScriptRef } from "../script";
-import { PieceId } from "../../../shared";
+import { PieceId, Count } from "../../../shared";
 
 export type UserSelectionValidation = {
-  count: number | "*" | [number, number | "*"],
+  count: Count,
   unique: boolean,
   banList: Array<PieceId>,
   customValidation: Array<UntrustedScriptRef>

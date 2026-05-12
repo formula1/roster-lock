@@ -1,6 +1,6 @@
 
 import {
-  PieceType,
+  PieceType, Count
 } from "../shared";
 
 
@@ -13,19 +13,19 @@ export type RosterLockEngineConfig = {
     pathVariables: Array<string>,
     assets: Array<EngineAssetDefinition>
   }>
-}
+};
 
 export type AssetClassification = "logic" | "media" | "doc";
 export type EngineAssetDefinition = {
   name: string,
   classification: AssetClassification,
-  count: number | "*" | [number, number | "*"]
+  count: Count
   glob: Array<string>,
-}
+};
 
 export type EngineSelectionStrategy = (
   | "mandatory"
   | "personal"
   | "shared"
   | "on demand"
-)
+);
