@@ -64,6 +64,7 @@ const GlobalValidationInputSchema: JSONSchemaType<GlobalValidationInput> = {
       required: [],
       additionalProperties: {
         anyOf: [
+          // For personal Selections { [userId: string]: Array<SelectedPiece> }
           {
             type: "object",
             required: [],
@@ -72,10 +73,11 @@ const GlobalValidationInputSchema: JSONSchemaType<GlobalValidationInput> = {
               items: SelectedPieceSchema,
             },
           },
+          // For shared Selections Array<SelectedPiece>
           {
             type: "array",
             items: SelectedPieceSchema,
-          }
+          },
         ]
       },
     },
