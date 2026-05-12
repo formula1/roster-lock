@@ -11,7 +11,7 @@ import { handleNormalSelection } from "./selection-types/normal";
 import { ScriptStarter } from "./types/untrusted-script";
 
 import { RunUntrustedError } from "./constants";
-import { handleValidationResult } from "./handle-validation"
+import { handleValidationResult } from "./handle-validation";
 
 export async function runSelection(
   config: RosterLockV1Config,
@@ -64,7 +64,7 @@ export async function runSelection(
       return;
     }
     throw new Error(`Unknown Selection Type ${(selectionConfig as any).type}`);
-  }))
+  }));
 
   if(!config.selection.globalValidation) return finalSelection;
 
@@ -79,7 +79,7 @@ export async function runSelection(
         input: finalSelection,
       },
       entryScript: script,
-    }))
+    }));
   }));
 
   return finalSelection;
