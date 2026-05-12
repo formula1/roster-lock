@@ -22,7 +22,7 @@
     "noUncheckedSideEffectImports": true
   },
   "include": [
-    "src/main.tsx",
+    "src",
     "@types"
   ]
 }
