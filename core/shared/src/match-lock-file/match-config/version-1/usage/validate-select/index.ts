@@ -68,6 +68,11 @@ export async function runSelection(
 
   if(!config.selection.globalValidation) return finalSelection;
 
+  const strippedSelection: Record<PieceType, Array<SelectedPiece> | Record<UserId, Array<SelectedPiece>>> = {};
+  for(const [k,v] of Object.entries(finalSelection)){
+    strippedSelection[k] = v.value;
+  }
+
   await Promise.all(config.selection.globalValidation.map(async (script)=>{
     return handleValidationResult(script, runScript({
       config,
@@ -76,7 +81,7 @@ export async function runSelection(
         type: "global-validation",
         users,
         pieceTypes: Object.keys(config.engine.pieceDefinitions),
-        input: finalSelection,
+        input: strippedSelection,
       },
       entryScript: script,
     }));

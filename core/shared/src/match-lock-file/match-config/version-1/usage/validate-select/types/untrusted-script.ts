@@ -1,8 +1,8 @@
 
 import {
   UserId,
+  PieceType,
   RosterLockV1Config,
-  FinalSelection,  
   SelectedPiece,
   UntrustedScriptRef
 } from "@roster-lock/types";
@@ -25,7 +25,10 @@ export type GlobalValidationInput = {
   type: "global-validation",
   pieceTypes: Array<string>,
   users: Array<UserId>,
-  input: FinalSelection,
+  input: Record<PieceType, (
+    | Record<UserId, Array<SelectedPiece>>
+    | Array<SelectedPiece>
+  )> ,
 };
 
 
