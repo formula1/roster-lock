@@ -12,12 +12,12 @@
   "app": {
     "windows": [
       {
-        "title": "MatchLock Config Editor",
-        "width": 1024,
-        "height": 768,
+        "label": "main",
+        "title": "RosterLock Config Editor",
+        "width": 1280,
+        "height": 800,
         "resizable": true,
-        "fullscreen": false,
-        "center": true
+        "decorations": true
       }
     ],
     "security": {
