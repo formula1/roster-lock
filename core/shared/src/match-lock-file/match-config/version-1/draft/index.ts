@@ -43,7 +43,7 @@ export const RosterLockV1DraftSchema: JSONSchemaType<RosterLockV1Draft> = {
 
 function ignore(){ return true; }
 export const RosterLockV1DraftSchemaKeywords = RosterLockV1SchemaKeywords.map((keywordDef)=>{
-  return defineKeyword({ keyword: keywordDef.keyword, type: keywordDef.type, validate: ignore  })
+  return defineKeyword({ keyword: keywordDef.keyword, type: keywordDef.type, validate: ignore });
 });
 
 export const ROSTERLOCK_V1_DRAFT_CASTER_JSONSCHEMA = new JSONSchemaCaster<RosterLockV1Draft>(
