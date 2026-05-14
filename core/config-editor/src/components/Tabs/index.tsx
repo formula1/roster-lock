@@ -43,7 +43,7 @@ import { Link, useLocation } from "react-router-dom";
 
 type LocalURL = { pathname: string, search: string, hash: string };
 export type Page = (
-  & { title: string, isActive?: (location: LocalURL) => boolean }
+  & { title: string, isActive?: (location: LocalURL) => boolean, disabled?: boolean }
   & (
     | { href: string }
     | { onClick: ()=>void }
@@ -67,7 +67,18 @@ export function LinkTabs({
     <nav className={combineClassNames("tabs-nav", className)} style={{...navStyle}}>
       {pages.map((page, i) => (
         !page ? null :
-        "onClick" in page ? (
+        page.disabled === true ? (
+          <a
+            href="#"
+            key={`${page.title}-${i}`}
+            onClick={(e) => {
+              e.preventDefault();
+            }}
+            style={{
+              ...linkStyle
+            }}
+          >{page.title}</a>
+        ) : "onClick" in page ? (
           <a
             href="#"
             key={`${page.title}-${i}`}
