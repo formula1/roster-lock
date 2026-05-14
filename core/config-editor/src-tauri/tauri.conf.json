@@ -30,6 +30,10 @@
             "shell:allow-open",
             "shell:allow-execute",
             {
+              "identifier": "shell:allow-stdin-write",
+              "allow": [{ "name": "binaries/node-sidecar", "sidecar": true }]
+            },
+            {
               "identifier": "shell:allow-spawn",
               "allow": [{ "name": "binaries/node-sidecar", "sidecar": true }]
             },
