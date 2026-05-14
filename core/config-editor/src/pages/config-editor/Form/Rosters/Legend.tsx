@@ -1,5 +1,6 @@
 import { RosterLockV1Config } from "@roster-lock/types";
 import { CONFIG_ID_PATHS } from "../../paths";
+import { ToolTipSpan } from "../../../../components/ToolTip";
 
 export function PieceRosterLegend(
   { rosters }: { rosters: RosterLockV1Config["rosters"] }
@@ -13,11 +14,15 @@ export function PieceRosterLegend(
             <h4><a href={`#${CONFIG_ID_PATHS.roster.pieceTypeId(pieceName)}`}>{pieceName}</a></h4>
             <ul>
               {pieceValues.map((piece) => (
-                <li key={piece.version.logic}>
+                <li key={piece.version.logic} style={{ marginLeft: "0px", listStyleType: "none" }}>
                   <a href={`#${CONFIG_ID_PATHS.roster.pieceValueId(piece)}`}>
-                    <div><pre>{piece.id}</pre></div>
-                    <div>{piece.humanInfo.name} by {piece.humanInfo.author}</div>
-                    <div>{piece.version.logic}/{piece.version.media}</div>
+                    <ToolTipSpan
+                      tip={[
+                        `${piece.humanInfo.name} by ${piece.humanInfo.author}`,
+                        `Logic Version: ${piece.version.logic}`,
+                        `Media Version: ${piece.version.logic}`,
+                      ].join("\n\n")}
+                    ><pre>{piece.id}</pre></ToolTipSpan>
                   </a>
                 </li>
               ))}

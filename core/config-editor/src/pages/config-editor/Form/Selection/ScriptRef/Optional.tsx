@@ -10,8 +10,8 @@ export function ScriptRefOptionalInput(
   const wrapperStyle = {
     padding: "8px",
     borderRadius: "4px",
-    border: `2px solid ${isEnabled ? "#4caf50" : "#ccc"}`,
-    backgroundColor: isEnabled ? "#f1f8f4" : "#fafafa",
+    border: `2px solid ${isEnabled ? "#50af50" : "#af5050"}`,
+    backgroundColor: isEnabled ? "#ddfadd" : "#fadddd",
     transition: "all 0.2s ease"
   };
 
@@ -19,7 +19,7 @@ export function ScriptRefOptionalInput(
     marginBottom: "8px",
     fontSize: "12px",
     fontWeight: "500" as const,
-    color: isEnabled ? "#2e7d32" : "#666"
+    color: isEnabled ? "#327d32" : "#7d3232"
   };
 
   if(!value){

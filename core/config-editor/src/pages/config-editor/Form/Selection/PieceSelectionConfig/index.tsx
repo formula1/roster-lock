@@ -3,7 +3,7 @@ import type {
   RosterLockV1Config,
 } from "@roster-lock/types";
 import type { InputProps } from "../../../../../utils/react/input";
-import { PieceMetaEditor } from "../PieceMetaEditor";
+import { pieceMetaTT, PieceMetaEditor } from "../PieceMetaEditor";
 import { useRosterLock } from "../../Contexts/RosterLock";
 
 import { NormalSelectionInput } from "./NormalSelection";
@@ -22,6 +22,7 @@ import { Link, useParams } from "react-router";
 import { RosterLockPaths } from "../../../paths";
 import { replaceParams } from "../../../../../utils/router";
 import { updatePiece } from "../utils/update-piece";
+import { ToolTipSpan } from "../../../../../components/ToolTip";
 
 type SelectionConfig = (
   RosterLockV1Config["selection"]["piece"][string]
@@ -107,7 +108,9 @@ export function PieceSelectionConfig(
       </h2>
 
       <div className="section">
-        <h3>Piece Meta</h3>
+        <h3>
+          <ToolTipSpan tip={pieceMetaTT} >Piece Meta</ToolTipSpan>
+        </h3>
         <PieceMetaEditor
           value={value.pieceMeta}
           onChange={(pieceMeta)=>(onChange({ ...value, pieceMeta }))}

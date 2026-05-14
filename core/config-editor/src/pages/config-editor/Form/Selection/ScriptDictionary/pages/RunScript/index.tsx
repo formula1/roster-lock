@@ -11,26 +11,24 @@ import { Link, useParams } from "react-router";
 import { SCRIPT_PURPOSES } from "./script-purpose";
 import { ToolTipSpan } from "../../../../../../../components/ToolTip";
 
-import { ScriptRefInput } from "../../../ScriptRef/shared";
+import { ScriptRefMandatoryInput } from "../../../ScriptRef";
 import { ScriptPurposeSelectionInput } from "./ScriptPurposeInput";
 import { UserListInput } from "../../../../components/UserListInput"
 import { InputProps, RunnableState, useRunnable } from "../../../../../../../utils/react"
 import { createEmptyPurposeBody } from "./createEmptyPurposebody";
 
 export function RunScriptPage(){
+  const { value: lock } = useRosterLock();
   const params = useParams();
   const filePath = params.filePath || ""
-  const { value: lock } = useRosterLock();
+  console.log("lock:", lock);
   const scriptDictionary = lock.selection.scriptDictionary
   const [scriptRef, setScriptRef] = useState<UntrustedScriptRef | null>(null)
   const [randomSeed, setRandomSeed] = useState("");
   const [users, setUsers] = useState<Array<string>>([])
-  const [purposeBody, setPurposeBody] = useState<ScriptPurposeInput>({
-    type: "global-validation",
-    pieceTypes: [],
-    users: [],
-    input: {}
-  })
+  const [purposeBody, setPurposeBody] = useState<ScriptPurposeInput>(
+    createEmptyPurposeBody(lock, "global-validation", [])
+  )
   useEffect(()=>{
     const scriptSources = Object.keys(scriptDictionary);
     if(scriptSources.length === 0) return;
@@ -79,50 +77,58 @@ export function RunScriptPage(){
   }
   return (
     <>
-      <ScriptRefInput
-        value={scriptRef}
-        onChange={(newScriptRef)=>(setScriptRef(newScriptRef))}
-      />
-      <RandomSeedInput
-        value={randomSeed}
-        onChange={setRandomSeed}
-      />
-      <UserListInput
-        value={users} onChange={(newUsers)=>{
-          setUsers(newUsers);
-          if(purposeBody.type === "piece-user-validation") return;
-          if(purposeBody.type === "piece-merge"){
-            const newInput: Record<UserId, Array<SelectedPiece>> = {};
-            for(const user of newUsers){
-              newInput[user] = purposeBody.input[user] || []
-            }
-            setPurposeBody({ ...purposeBody, users: newUsers, input: newInput })
-            return;
-          }
-          if(purposeBody.type === "global-validation"){
-            const newInput: Record<PieceType, Array<SelectedPiece> | Record<UserId, Array<SelectedPiece>>> = {};
-            for(const [pieceType, def] of Object.entries(lock.engine.pieceDefinitions)){
-              if(def.selectionStrategy === "mandatory" || def.selectionStrategy === "on demand"){
-                continue
-              }
-              newInput[pieceType] = {}
-              const oldInput = purposeBody.input[pieceType];
-              if(def.selectionStrategy === "shared"){
-                newInput[pieceType] = Array.isArray(oldInput) ? oldInput : []
-                continue;
-              }
-              const isMap = !Array.isArray(oldInput);
+      <div className="section">
+        <ScriptRefMandatoryInput
+          value={scriptRef}
+          onChange={(newScriptRef)=>{
+            if(newScriptRef) setScriptRef(newScriptRef)
+          }}
+        />
+      </div>
+      <div className="section">
+        <RandomSeedInput
+          value={randomSeed}
+          onChange={setRandomSeed}
+        />
+      </div>
+      <div className="section">
+        <UserListInput
+          value={users} onChange={(newUsers)=>{
+            setUsers(newUsers);
+            if(purposeBody.type === "piece-user-validation") return;
+            if(purposeBody.type === "piece-merge"){
+              const newInput: Record<UserId, Array<SelectedPiece>> = {};
               for(const user of newUsers){
-                newInput[pieceType][user] = !oldInput ? [] : !isMap ? [] : oldInput[user]
+                newInput[user] = purposeBody.input[user] || []
               }
+              setPurposeBody({ ...purposeBody, users: newUsers, input: newInput })
+              return;
             }
-            setPurposeBody({ ...purposeBody, users: newUsers, input: newInput });
-            return;
-          }
-          throw new Error("Invalid purpose body type " + (purposeBody as any).type);
-        }}
-      />
-      <div>
+            if(purposeBody.type === "global-validation"){
+              const newInput: Record<PieceType, Array<SelectedPiece> | Record<UserId, Array<SelectedPiece>>> = {};
+              for(const [pieceType, def] of Object.entries(lock.engine.pieceDefinitions)){
+                if(def.selectionStrategy === "mandatory" || def.selectionStrategy === "on demand"){
+                  continue
+                }
+                newInput[pieceType] = {}
+                const oldInput = purposeBody.input[pieceType];
+                if(def.selectionStrategy === "shared"){
+                  newInput[pieceType] = Array.isArray(oldInput) ? oldInput : []
+                  continue;
+                }
+                const isMap = !Array.isArray(oldInput);
+                for(const user of newUsers){
+                  newInput[pieceType][user] = !oldInput ? [] : !isMap ? [] : oldInput[user]
+                }
+              }
+              setPurposeBody({ ...purposeBody, users: newUsers, input: newInput });
+              return;
+            }
+            throw new Error("Invalid purpose body type " + (purposeBody as any).type);
+          }}
+        />
+      </div>
+      <div className="section">
         <div><span>Purpose: </span></div>
         {SCRIPT_PURPOSES.map((purposeItem)=>(
           <div
@@ -139,7 +145,7 @@ export function RunScriptPage(){
         ))}
       </div>
       {purposeBody.type !== "global-validation" && (
-        <div>
+        <div className="section" >
           <span>Piece Type: </span>
           <select
             value={purposeBody.pieceType}
@@ -151,10 +157,13 @@ export function RunScriptPage(){
           </select>
         </div>
       )}
-      <ScriptPurposeSelectionInput
-        value={purposeBody}
-        onChange={setPurposeBody}
-      />
+      <div className="section">
+        <div>Selection: </div>
+        <ScriptPurposeSelectionInput
+          value={purposeBody}
+          onChange={setPurposeBody}
+        />
+      </div>
       <ScriptRunner
         script={scriptRef}
         purposeBody={purposeBody}
@@ -170,7 +179,7 @@ export function RandomSeedInput(
 ){
   return (
     <div>
-      <span>Random Seed</span>
+      <span>Random Seed: </span>
       <input type="text" value={value} onChange={(e)=>(onChange(e.target.value))} />
     </div>
   )
@@ -200,22 +209,18 @@ export function ScriptRunner(
   const running = runResult.state === RunnableState.PENDING
   return (
     <div className="section">
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <h5 style={{ margin: 0 }}>Test Runner</h5>
-      </div>
-
-      <button type="button" onClick={runResult.run} disabled={running}>
-        {running ? "Running…" : "Run"}
+      <button type="button" onClick={runResult.run} disabled={running} style={{ padding: "20px", fontSize: "2em" }}>
+        {running ? "Running…" : "Run Test"}
       </button>
       {runResult.state === RunnableState.FAILED ? (
         <div style={{ border: "#FF0000 1px solid"}}>
           <h5 className="error">Error</h5>
-          <pre>{JSON.stringify(runResult.error)}</pre>
+          <pre>{JSON.stringify(runResult.error, null, 2)}</pre>
         </div>
       ) : runResult.state === RunnableState.SUCCESS ? (
         <div style={{ border: "#00FF00 1px solid"}}>
           <h5>Success</h5>
-          <pre>{JSON.stringify(runResult.value)}</pre>
+          <pre>{JSON.stringify(runResult.value, null, 2)}</pre>
         </div>
       ) : null}
     </div>

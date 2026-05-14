@@ -34,52 +34,50 @@ import { PieceRosterLegend } from "./Legend";
 
 import { FollowButtonForm } from "../../../../components/FollowButtonForm";
 import { AddPieceFromFolder } from "./PieceCollection/AddPieceFromFolder";
+import { usePageInfo } from "../../Contexts/PageTitle";
 
 export function RosterConfigEditPage(){
   const { value, onChange } = useRosterLock();
   const { value: draft, onChange: onDraftChange } = useDraftPieceInfo()
   const buttons = useFollowButtons();
+  const { onChange: setPageInfo } = usePageInfo();
+
+  useEffect(()=>{
+    setPageInfo({
+      title: "Roster Config",
+      note: <PieceRosterLegend rosters={value.rosters} />
+    })
+  }, [])
   
 
   return (
     <>
-      <h1>New Engine Config</h1>
-      <div style={{ overflow: "hidden", flexGrow: 1, }}>
-        <FollowButtonForm
-          info={{
-            title: "Roster Config",
-            note: <PieceRosterLegend rosters={value.rosters} />,
-          }}
-          buttons={buttons}
-        >
-          <AddPieceFromFolder
-            rosterLock={value}
-            onSubmit={({ pieceDefinitionKey, piece, draftInfo })=>{
-              onChange((old)=>({
-                ...old,
-                rosters: {
-                  ...old.rosters,
-                  [pieceDefinitionKey]: [
-                    ...old.rosters[pieceDefinitionKey],
-                    piece
-                  ]
-                }
-              }))
-              onDraftChange((old)=>({
-                ...old,
-                [pieceDefinitionKey]: {
-                  ...old[pieceDefinitionKey],
-                  [piece.id]: draftInfo
-                }
-              }))
-            }}
-          />
-          <RosterConfigForm
-            value={value}
-            onChange={onChange}
-          />
-        </FollowButtonForm>
-      </div>
+      <AddPieceFromFolder
+        rosterLock={value}
+        onSubmit={({ pieceDefinitionKey, piece, draftInfo })=>{
+          onChange((old)=>({
+            ...old,
+            rosters: {
+              ...old.rosters,
+              [pieceDefinitionKey]: [
+                ...old.rosters[pieceDefinitionKey],
+                piece
+              ]
+            }
+          }))
+          onDraftChange((old)=>({
+            ...old,
+            [pieceDefinitionKey]: {
+              ...old[pieceDefinitionKey],
+              [piece.id]: draftInfo
+            }
+          }))
+        }}
+      />
+      <RosterConfigForm
+        value={value}
+        onChange={onChange}
+      />
     </>
   );
 }

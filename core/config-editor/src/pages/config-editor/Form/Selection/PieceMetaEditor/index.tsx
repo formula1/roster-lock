@@ -3,12 +3,20 @@ import type { SelectionPieceMeta, JSONShallowObject } from "@roster-lock/types";
 import type { RosterLockPiece } from "@roster-lock/types";
 import type { InputProps } from "../../../../../utils/react/input";
 
+import pieceMetaTT from "./tooltip.md"
+export { pieceMetaTT }
+
 type SimpleSchemaType = "boolean" | "number" | "string" | "boolean[]" | "number[]" | "string[]";
 type PieceMeta = SelectionPieceMeta<JSONShallowObject>;
 
-const SCHEMA_TYPES: SimpleSchemaType[] = [
-  "boolean", "number", "string", "boolean[]", "number[]", "string[]",
-];
+const SCHEMA_TYPES: Record<SimpleSchemaType, { title: string }> = {
+  "boolean": { title: "True/False" },
+  "number": { title: "Number" },
+  "string": { title: "Text" },
+  "boolean[]": { title: "List of True/False" },
+  "number[]": { title: "List of Numbers" },
+  "string[]": { title: "List of Text" },
+};
 
 function defaultValue(type: SimpleSchemaType): JSONShallowObject[string] {
   if (type === "boolean") return false;
@@ -181,7 +189,7 @@ export function PieceMetaEditor({ value, onChange, pieces }: Props) {
                       value={schema[name]}
                       onChange={e => update({ schema: { ...schema, [name]: e.target.value as SimpleSchemaType } })}
                     >
-                      {SCHEMA_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                      {Object.entries(SCHEMA_TYPES).map(([k, v])=> <option key={k} value={k}>{v.title}</option>)}
                     </select>
                   </td>
                   <td>
@@ -207,7 +215,7 @@ export function PieceMetaEditor({ value, onChange, pieces }: Props) {
             value={newFieldType}
             onChange={e => setNewFieldType(e.target.value as SimpleSchemaType)}
           >
-            {SCHEMA_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+            {Object.entries(SCHEMA_TYPES).map(([k,v]) => <option key={k} value={k}>{v.title}</option>)}
           </select>
           <button type="submit">Add Field</button>
         </form>

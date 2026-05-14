@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
-import type { InputProps } from "../../../../../../../utils/react";
+import type { InputProps } from "../../../../../utils/react";
 
 import { EngineAssetDefinition } from "@roster-lock/types";
 import { validateCount as validateCountValue } from "@roster-lock/shared";
 
-import { ToolTipSpan } from "../../../../../../../components/ToolTip";
-import { InputError } from "../../../../../../../components/InputError";
+import { ToolTipSpan } from "../../../../../components/ToolTip";
+import { InputError } from "../../../../../components/InputError";
 import explainTT from "./explain.md";
 
 type Count = EngineAssetDefinition["count"];
@@ -13,7 +13,7 @@ type Count = EngineAssetDefinition["count"];
 export function CountUnknownInput({ value, onChange }: InputProps<Count>){
   const [valueOrRange, setValueOrRange] = useState<"value" | "range">(Array.isArray(value) ? "range" : "value");
   return <>
-    <h3><ToolTipSpan tip={explainTT} clickable>Count</ToolTipSpan></h3>
+    <h4><ToolTipSpan tip={explainTT} clickable>Count</ToolTipSpan></h4>
     <div style={{ display: "flex", gap: "1rem" }}>
       <label>
         <input type="radio" checked={valueOrRange === "value"} onChange={()=> setValueOrRange("value")} />

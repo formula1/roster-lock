@@ -3,6 +3,7 @@ import { RosterLockPaths } from "../../../paths";
 import { Link, useParams } from "react-router";
 import { replaceParams } from "../../../../../utils/router";
 import { ToolTipSpan } from "../../../../../components/ToolTip";
+import { Center } from "../../../../../components/Center"
 
 import scriptDocsTT from "./script-docs-tt.md";
 import scriptDictionaryTT from "./script-dictionary-tt.md";
@@ -13,7 +14,7 @@ export function SelectionOverviewPage(){
   const { value } = useRosterLock();
   const params = useParams();
   return (
-    <>
+    <Center>
       <h1>
         <Link
           to={replaceParams(RosterLockPaths.Selection.ScriptDocs, params)}
@@ -60,7 +61,7 @@ export function SelectionOverviewPage(){
           </div>
         ))}
       </div>
-    </>
+    </Center>
   )
 }
 

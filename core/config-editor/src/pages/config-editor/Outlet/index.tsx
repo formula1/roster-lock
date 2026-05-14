@@ -10,6 +10,8 @@ import { useSaveAs } from "./data/saveAs";
 import { FollowButtonsProvider } from "../Form/Contexts/Buttons";
 import { useGlobalLinks } from "../../../globals/global-links";
 import { useEnsureCorrectSelection } from "../Form/Selection/utils/ensure-correct-selection";
+import { PageInfoProvider, usePageInfo } from "../Contexts/PageTitle";
+import { FollowButtonForm } from "../../../components/FollowButtonForm";
 
 export function FileConfigOutlet(){
   const params = useParams();
@@ -28,10 +30,12 @@ export function FileConfigOutlet(){
   }, [activeFile])
 
   return (
+    <PageInfoProvider>
     <CurrentRosterLockFileProvider filePath={activeFile}>
       <FileErrorOrOutlet />
     </CurrentRosterLockFileProvider>
-  )
+    </PageInfoProvider>
+  );
 }
 
 function useConfigTabs(){
@@ -72,21 +76,12 @@ function FileErrorOrOutlet(){
   const currentFile = useCurrentRosterLockFile();
   const saveAs = useSaveAs();
   const location = useLocation();
+  const { value: pageInfo } = usePageInfo();
 
-  if(!currentFile.activeFile) return <Outlet />;
-  if(currentFile.state === "loading") return <Outlet />;
-  if(currentFile.state === "failed"){
-    console.log("Failed to load file", currentFile);
-    return <div>
-      <h1>Failed to load file</h1>
-      <h3><button onClick={()=>(currentFile.reload())}>Reload</button></h3>
-      <pre>{currentFile.error.message || JSON.stringify(currentFile.error, null, 2)}</pre>
-      {currentFile.value && <pre>{JSON.stringify(currentFile.value, null, 2)}</pre>}
-    </div>
-  }
-  return (
-  <FollowButtonsProvider
-    buttons={[
+  const buttons = useMemo(()=>{
+    if(!currentFile.activeFile || currentFile.state !== "ready") return []
+    console.log("update");
+    return [
       {
         label: "Save",
         onClick: async ()=>{
@@ -107,7 +102,24 @@ function FileErrorOrOutlet(){
         onClick: () => currentFile.reset(),
         disabled: !currentFile.isDirty,
       },
-    ]}
+    ]
+  }, [currentFile, location])
+
+  if(!currentFile.activeFile) return <Outlet />;
+  if(currentFile.state === "loading") return <Outlet />;
+  if(currentFile.state === "failed"){
+    console.log("Failed to load file", currentFile);
+    return <div>
+      <h1>Failed to load file</h1>
+      <h3><button onClick={()=>(currentFile.reload())}>Reload</button></h3>
+      <pre>{currentFile.error.message || JSON.stringify(currentFile.error, null, 2)}</pre>
+      {currentFile.value && <pre>{JSON.stringify(currentFile.value, null, 2)}</pre>}
+    </div>
+  }
+  return (
+  <FollowButtonForm
+    info={pageInfo}
+    buttons={buttons}
   >
   <ContextFromDraftProvider
     value={currentFile.value}
@@ -115,7 +127,7 @@ function FileErrorOrOutlet(){
   >
     <EnsuredOutlet />
   </ContextFromDraftProvider>
-  </FollowButtonsProvider>
+  </FollowButtonForm>
   );
 }
 

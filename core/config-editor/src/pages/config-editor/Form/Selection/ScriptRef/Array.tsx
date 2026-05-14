@@ -1,12 +1,20 @@
 import { UntrustedScriptRef } from "@roster-lock/types";
-import { InputProps } from "../../../../../utils/react";
+import { InputProps, useTrackedKey } from "../../../../../utils/react";
 
 import {
   AddScriptRefForm, ScriptRefInputSubmit
 } from "./shared";
+import { CSSProperties } from "react";
 
 export function ScriptRefArrayInput(
-  { value: scripts, onChange }: InputProps<Array<UntrustedScriptRef>>
+  {
+    value: scripts,
+    onChange,
+    itemStyle
+  }: (
+    & InputProps<Array<UntrustedScriptRef>>
+    & { itemStyle?: CSSProperties }
+  )
 ){
   return (
     <>
@@ -17,7 +25,8 @@ export function ScriptRefArrayInput(
       <ul>
         {scripts.map((script, oldI)=>(
           <ScriptRefInputSubmit
-            key={`${script.src} ${script.method} ${oldI}`}
+            style={itemStyle}
+            key={`${script.src} ${oldI}`}
             value={script}
             onChange={(updated)=>(
               onChange(scripts.map((s, newI)=>{

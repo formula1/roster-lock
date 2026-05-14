@@ -128,7 +128,7 @@ function GlobalValidationSelectionInput(
   const selectConfig = useMemo<InputProps<Array<SelectedPiece>>>(()=>{
     const currentSelect = oldSelection[currentPieceType]
     if(!currentSelect){
-      throw new Error("Missing piece type:" + currentPieceType);
+      throw new Error("Missing piece type: " + currentPieceType);
     }
     if(currentDef.selectionStrategy === "shared"){
       return {
@@ -146,7 +146,7 @@ function GlobalValidationSelectionInput(
     }
     if(currentDef.selectionStrategy === "personal"){
       return {
-        value: Array.isArray(currentSelect) ? [] : currentSelect[currentUser],
+        value: Array.isArray(currentSelect) ? [] : currentSelect[currentUser] || [],
         onChange(newValue){
           onChange({
             ...value,
@@ -165,13 +165,15 @@ function GlobalValidationSelectionInput(
     throw new Error("Only supports personal and shared selection types")
   }, [currentPieceType, currentUser, value, onChange])
 
+  console.log("selectConfig:", selectConfig);
+
   return (
     <div>
       <div>
         <span>Piece Type:</span>
         <select value={currentPieceType} onChange={(e)=>(setCurrentPieceType(e.target.value))} >
           {pieceTypes.map((pieceType)=>(
-            <option value={pieceType} >{pieceType}</option>
+            <option key={pieceType} value={pieceType} >{pieceType}</option>
           ))}
         </select>
       </div>

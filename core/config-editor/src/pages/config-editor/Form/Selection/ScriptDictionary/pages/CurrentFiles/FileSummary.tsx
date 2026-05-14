@@ -19,9 +19,10 @@ export function FileSummary(
   const isDuplicate = editedPath !== value.path && editedPath in allEntries;
   return (
     <>
-      <div>
+      <div style={{ display: "flex" }}>
         <span>Path: </span>
         <input
+          style={{ flexGrow: 1 }}
           type="text"
           value={editedPath}
           onChange={(e) => {

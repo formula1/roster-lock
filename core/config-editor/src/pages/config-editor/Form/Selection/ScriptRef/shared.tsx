@@ -1,7 +1,7 @@
 import { UntrustedScriptRef } from "@roster-lock/types";
 import { InputProps } from "../../../../../utils/react";
 import { useRosterLock } from "../../Contexts/RosterLock";
-import { useEffect, useState } from "react";
+import { CSSProperties, useEffect, useState } from "react";
 import { cloneJSON } from "@roster-lock/utils";
 
 import { replaceParams } from "../../../../../utils/router";
@@ -52,15 +52,15 @@ export function AddScriptRefForm(
 }
 
 export function ScriptRefInputSubmit(
-  { value, onChange, onSubmit, submitName }: (
+  { value, onChange, onSubmit, submitName, style }: (
     & InputProps<UntrustedScriptRef>
     & { onSubmit: ()=> any }
     & { submitName: string }
-
+    & { style?: CSSProperties }
   )
 ){
   return (
-    <div style={{ display: "flex", flexDirection: "row" }} className="section" >
+    <div style={{ display: "flex", flexDirection: "row", ...style }} className="section" >
       <ScriptRefInput
         value={value}
         onChange={onChange}

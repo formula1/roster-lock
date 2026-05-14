@@ -13,6 +13,7 @@ export function createEmptyPurposeBody(
     return false;
   });
   if(pieceTypes.length === 0){
+    console.log("No piece types:", lock, pieceTypes);
     throw new Error("No piece types available");
   }
   switch(type){
