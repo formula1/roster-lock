@@ -58,7 +58,7 @@ export const ROSTERLOCK_SIDECAR = {
   },
 };
 
-class ProcessError extends Error {
+export class ProcessError extends Error {
   constructor(public code: number, public log: Array<OutputLine>){
     super("Process Error: " + code)
   }
