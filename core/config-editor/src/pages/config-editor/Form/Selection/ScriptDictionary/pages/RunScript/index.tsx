@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ScriptPurposeInput } from "@roster-lock/shared";
 import { PieceType, SelectedPiece, UntrustedScriptRef, UserId } from "@roster-lock/types";
 import { useRosterLock } from "../../../../Contexts/RosterLock";
-import { ROSTERLOCK_SIDECAR } from "../../../../../../../globals/side-car";
+import { ProcessError, ROSTERLOCK_SIDECAR } from "../../../../../../../globals/side-car";
 
 import { replaceParams } from "../../../../../../../utils/router";
 import { RosterLockPaths } from "../../../../../paths";
@@ -215,7 +215,7 @@ export function ScriptRunner(
       {runResult.state === RunnableState.FAILED ? (
         <div style={{ border: "#FF0000 1px solid"}}>
           <h5 className="error">Error</h5>
-          <pre>{JSON.stringify(runResult.error, null, 2)}</pre>
+          <StringifyError error={runResult.error} />
         </div>
       ) : runResult.state === RunnableState.SUCCESS ? (
         <div style={{ border: "#00FF00 1px solid"}}>
@@ -225,5 +225,19 @@ export function ScriptRunner(
       ) : null}
     </div>
   );
+}
+
+function StringifyError({ error }:{ error: unknown }){
+  if(error instanceof ProcessError){
+    return (
+      <div>
+      {error.log.map((line)=>{
+        if(line.source === "out") return <pre>{line.content}</pre> 
+        return <pre style={{ color: "#FF0000" }}>{line.content}</pre>
+      })}
+      </div>
+    );
+  }
+  return <pre>{JSON.stringify(error, null, 2)}</pre>
 }
 
