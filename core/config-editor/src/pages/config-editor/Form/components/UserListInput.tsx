@@ -16,6 +16,7 @@ export function UserListInput(
       <span>Total Users: </span>
       <input
         type="number" min="1" step={1}
+        defaultValue={1}
         onBlur={(e)=>{
           const count = Number.parseInt(e.target.value);
           if(Number.isNaN(count)) return;
