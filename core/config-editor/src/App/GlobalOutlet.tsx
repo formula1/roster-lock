@@ -10,7 +10,9 @@ export function GlobalOutlet(){
     <GlobalLinksContext.Provider value={globalLinks} >
     <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
     <GlobalLinks />
+    <div style={{ flexGrow: 1, overflow: "auto" }}>
     <Outlet />
+    </div>
     </div>
     </GlobalLinksContext.Provider>
   )
