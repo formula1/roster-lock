@@ -1,5 +1,5 @@
 // services/src/download/ipfs.ts
-import { IPFSHTTPClient } from 'ipfs-http-client';
+import { IpfsHttpClient } from "./client.js";
 import { DownloadResult } from "../types";
 import { getProcessorsFromPathnameMimetypes, storeFile } from "../../utils";
 import { PassThrough, Readable } from 'node:stream';
@@ -9,7 +9,7 @@ import { IPFSError } from "./utils";
 import { ProcessHandlers } from "../../types";
 
 export async function handleSingleFile(
-  ipfs: IPFSHTTPClient,
+  ipfs: IpfsHttpClient,
   cid: string,
   folderDestination: string,
   { onProgress, abortSignal }: ProcessHandlers
@@ -60,7 +60,7 @@ export async function handleSingleFile(
 
 
 async function handleRawFile(
-  ipfs: IPFSHTTPClient,
+  ipfs: IpfsHttpClient,
   cid: string,
   folderDestination: string,
   { onProgress, abortSignal }: ProcessHandlers

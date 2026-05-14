@@ -3,11 +3,11 @@ import { DownloadResult } from "../types";
 import { PassThrough, Readable } from 'node:stream';
 import { storeFile } from "../../utils";
 import { IPFSError } from "./utils";
-import { IPFSHTTPClient } from "ipfs-http-client";
+import { IpfsHttpClient } from "./client.js";
 import { ProcessHandlers } from "../../types";
 
 export async function handleDirectory(
-  ipfs: IPFSHTTPClient,
+  ipfs: IpfsHttpClient,
   cid: string,
   folderDestination: string,
   { onProgress, abortSignal }: ProcessHandlers
