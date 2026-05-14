@@ -10,8 +10,7 @@ import { selectionPieceMetaSchema } from "../meta";
 import { untrustedScriptRefSchema } from "../script";
 import { validateSelectionBanList } from "../../validate/selections/normal";
 import { defineKeyword } from "../../../../../../util-types/json-schema";
-import { countSchema, countSchemaValidator } from "../../../../shared/count";
-export { countSchemaValidator };
+import { countSchema } from "../../../../shared/count";
 
 export const banListSchemaValidator = defineKeyword({
   keyword: "selectionBanList",

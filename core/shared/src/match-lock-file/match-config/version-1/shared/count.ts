@@ -4,7 +4,7 @@ import { Count } from "@roster-lock/types";
 import { defineKeyword } from "../../../util-types/json-schema";
 
 export const countSchemaValidator = defineKeyword({
-  keyword: "assetCount",
+  keyword: "Count",
   type: ["number", "string", "array"],
   validate: validateCount
 });

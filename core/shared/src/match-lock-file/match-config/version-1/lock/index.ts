@@ -7,6 +7,7 @@ import { rosterKeywords, rostersSchema } from "./rosters";
 export * from "./rosters";
 import { selectionKeywords, selectionConfigSchema  } from "./selection";
 export * from "./selection";
+import { sharedKeywords } from "../shared";
 
 import { RosterLockV1Config } from "@roster-lock/types";
 
@@ -34,6 +35,7 @@ export const RosterLockV1Schema: JSONSchemaType<RosterLockV1Config> =   {
 };
 
 export const RosterLockV1SchemaKeywords = [
+  ...sharedKeywords,
   ...engineKeywords,
   ...rosterKeywords,
   ...selectionKeywords,

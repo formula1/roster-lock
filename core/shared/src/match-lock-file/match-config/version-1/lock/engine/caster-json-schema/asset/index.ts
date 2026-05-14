@@ -1,6 +1,6 @@
 import { JSONSchemaType } from "ajv";
 import { RosterLockV1Config } from "@roster-lock/types";
-import { countSchema, countSchemaValidator } from "../../../../shared/count";
+import { countSchema } from "../../../../shared/count";
 type RosterLockEngineConfig = RosterLockV1Config["engine"];
 
 
@@ -40,7 +40,6 @@ export const assetsSchema: JSONSchemaType<
 
 export const assetKeywords = [
   assetNameSchemaValidator,
-  countSchemaValidator,
   assetGlobListSchemaValidator,
   assetGlobPathVariablesSchemaValidator,
   assetGlobItemSchemaValidator,
