@@ -1,7 +1,7 @@
 
-import { runUntrustedScript } from '@roster-lock/node-services';
+import { runUntrustedScript } from "@roster-lock/node-services";
 import { ScriptStarter } from "@roster-lock/shared";
-import { z, ZodType} from 'zod';
+import { z, ZodType} from "zod";
 
 const PurposeSchema = z.discriminatedUnion("type", [
   z.object({
@@ -40,11 +40,11 @@ export async function runUntrustedScriptCommand(json: unknown) {
   try {
     const config = ScriptConfigSchema.parse(json) as ScriptStarter;
     const result = await runUntrustedScript(config);
-    process.stdout.write(JSON.stringify(result) + '\n');
+    process.stdout.write(JSON.stringify(result) + "\n");
     process.exitCode = 0;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    process.stderr.write(message + '\n');
+    process.stderr.write(message + "\n");
     process.exitCode = 1;
   }
 }
