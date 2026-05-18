@@ -52,6 +52,7 @@ export const runTSScript: ScriptRunner<string> = async function(
     }));
 
     // Add Input
+    vm.setProp(vm.global, "scriptPurpose", vm.newString(input.type));
     if(input.type === "piece-user-validation"){
       vm.setProp(vm.global, "pieceType", vm.newString(input.pieceType));
       vm.setProp(vm.global, "selection", newJSON(vm, input.input));

@@ -50,6 +50,7 @@ export const runLuaScript: ScriptRunner<any> = async function(
     ));
 
     // Add Input
+    lua.global.set("scriptPurpose", input.type);
     if(input.type === "piece-user-validation"){
       lua.global.set("pieceType", input.pieceType);
       lua.global.set("selection", input.input);
