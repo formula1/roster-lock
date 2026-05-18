@@ -15,6 +15,7 @@ export const runLuaScript: ScriptRunner<any> = async function(
     // Prevent filesystem calls
     lua.global.set("dofile", undefined);
     lua.global.set("loadfile", undefined);
+    lua.global.set("loadstring", undefined);
     lua.global.set("io", undefined);
     lua.global.set("os", undefined); // Also block os module
 
