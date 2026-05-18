@@ -17,21 +17,20 @@
     "@types/seedrandom": "^3.0.8",
     "@types/unzipper": "^0.10.11",
     "@types/webtorrent": "^0.110.1",
-    "rimraf": "^6.0.1",
-    "typescript": "^5.9.3"
+    "rimraf": "^6.0.1"
   },
   "dependencies": {
     "@roster-lock/shared": "file:../shared",
     "@roster-lock/utils": "file:../utils",
     "ajv": "^8.17.1",
     "basic-ftp": "^5.0.5",
-    "esbuild": "^0.28.0",
     "isomorphic-git": "^1.36.1",
     "mime-types": "^3.0.2",
     "node-unrar-js": "^2.0.2",
     "quickjs-emscripten": "^0.32.0",
     "seedrandom": "^3.0.5",
     "tar": "^7.5.2",
+    "typescript": "^5.9.3",
     "unzipper": "^0.12.3",
     "wasmoon": "^1.16.0",
     "webtorrent": "^2.8.5"

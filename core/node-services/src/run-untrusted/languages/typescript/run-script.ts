@@ -1,7 +1,7 @@
 import { JSON_Unknown } from "@roster-lock/utils";
 import { ScriptRunner } from "../types";
 import { newQuickJSAsyncWASMModule, QuickJSContext } from "quickjs-emscripten";
-import { transform } from "esbuild";
+import { transpileModule, ModuleKind, ScriptTarget } from "typescript";
 
 const QuickJSPromise = newQuickJSAsyncWASMModule();
 
@@ -18,8 +18,10 @@ export const runTSScript: ScriptRunner<string> = async function(
     vm.runtime.setInterruptHandler(() => ++interruptCycles > MAX_CYCLES);
     vm.runtime.setModuleLoader((relativePath)=>(
       globals.requireScript(relativePath, async (fullPath, scriptContent)=>{
-        const { code } = await transform(scriptContent, { loader: "ts" });
-        return code;
+        const { outputText } = transpileModule(scriptContent, {
+          compilerOptions: { module: ModuleKind.ESNext, target: ScriptTarget.ESNext }
+        });
+        return outputText;
       })
     ));
 
@@ -68,8 +70,10 @@ export const runTSScript: ScriptRunner<string> = async function(
       throw new Error("Unknown Input Type");
     }
 
-    const { code: script } = await transform(scriptRaw, { loader: "ts" });
-    await vm.evalCodeAsync(script);
+    const { outputText } = transpileModule(scriptRaw, {
+      compilerOptions: { module: ModuleKind.ESNext, target: ScriptTarget.ESNext }
+    });
+    await vm.evalCodeAsync(outputText);
 
     const main = vm.getProp(vm.global, initialMethod);
     if(vm.typeof(main) !== "function"){
