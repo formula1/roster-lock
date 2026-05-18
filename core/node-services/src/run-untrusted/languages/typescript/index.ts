@@ -3,7 +3,7 @@ import { LanguageRunner } from "../types";
 
 import { runTSScript } from "./run-script";
 
-const config = UNTRUSTED_SCRIPT_TYPES["typescript"];
+const config = UNTRUSTED_SCRIPT_TYPES["typescript/javascript"];
 if(!config) throw new Error("Missing typecript config");
 export const TYPESCRIPT: LanguageRunner<any> = {
   config: config,
