@@ -31,10 +31,10 @@ export function AddScriptRefForm(
       <div>
         <Link
           to={replaceParams(
-            RosterLockPaths.Selection.ScriptDictionary.MergeFolder,
+            RosterLockPaths.Selection.ScriptDictionary.AddScripts,
             { filePath: params.filePath || "" }
           )}
-        >Merge Folder</Link>
+        >Add Scripts</Link>
       </div>
     </>
   }

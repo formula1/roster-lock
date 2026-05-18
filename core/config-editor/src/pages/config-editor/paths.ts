@@ -23,13 +23,13 @@ export const RosterLockPaths = {
   Roster: "/config/:filePath/roster" as const,
   Selection: {
     INDEX: "/config/:filePath/selection" as const,
-    ScriptDocs: "/config/:filePath/selection/script-docs" as const,
     GlobalValidation: "/config/:filePath/selection/global-validation" as const,
     PieceSelection: "/config/:filePath/selection/piece/:pieceType" as const,
     ScriptDictionary: {
       INDEX: "/config/:filePath/selection/dictionary" as const,
-      MergeFolder: "/config/:filePath/selection/dictionary/merge-folder" as const,
-      CurrentFiles: "/config/:filePath/selection/dictionary/current-files" as const,
+      Docs: "/config/:filePath/selection/dictionary/script-docs" as const,
+      AddScripts: "/config/:filePath/selection/dictionary/add-scripts" as const,
+      AvailableScripts: "/config/:filePath/selection/dictionary/available-scripts" as const,
       RunScript: "/config/:filePath/selection/dictionary/run-script" as const,
     },
   }

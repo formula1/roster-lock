@@ -52,10 +52,10 @@ export function RunScriptPage(){
         <h3>
           <Link
             to={replaceParams(
-              RosterLockPaths.Selection.ScriptDictionary.MergeFolder,
+              RosterLockPaths.Selection.ScriptDictionary.AddScripts,
               { filePath }
             )}
-          >Merge a Folder</Link>
+          >Add Scripts</Link>
         </h3>
       </>
     )

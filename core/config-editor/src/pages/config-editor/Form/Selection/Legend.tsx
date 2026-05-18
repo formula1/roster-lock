@@ -12,16 +12,29 @@ export function SelectionLegend({ config }: { config: RosterLockV1Config }){
   <div className="section" style={{ textAlign: "left" }}>
     <h2>Legend</h2>
     <div className="alternate-list">
-      <h4 className="section" >
-        <Link
-          to={replaceParams(RosterLockPaths.Selection.ScriptDocs, params)}
-        >Script Docs</Link>
-      </h4>
-      <h4 className="section" >
-        <Link
-          to={replaceParams(RosterLockPaths.Selection.ScriptDictionary.INDEX, params)}
-        >Script Dictionary</Link>
-      </h4>
+      <div className="section" >
+        <h4>Script Dictionary</h4>
+        <div>
+          <Link
+            to={replaceParams(RosterLockPaths.Selection.ScriptDictionary.Docs, params)}
+          >Script Docs</Link>
+        </div>
+        <div>
+          <Link
+            to={replaceParams(RosterLockPaths.Selection.ScriptDictionary.AvailableScripts, params)}
+          >Available Scripts</Link>
+        </div>
+        <div>
+          <Link
+            to={replaceParams(RosterLockPaths.Selection.ScriptDictionary.AddScripts, params)}
+          >Add Scripts</Link>
+        </div>
+        <div>
+          <Link
+            to={replaceParams(RosterLockPaths.Selection.ScriptDictionary.RunScript, params)}
+          >Run Script</Link>
+        </div>
+      </div>
       <h4 className="section" >
         <Link
           to={replaceParams(RosterLockPaths.Selection.GlobalValidation, params)}

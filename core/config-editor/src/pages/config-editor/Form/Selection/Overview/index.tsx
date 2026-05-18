@@ -15,27 +15,39 @@ export function SelectionOverviewPage(){
   const params = useParams();
   return (
     <Center>
-      <h1>
-        <Link
-          to={replaceParams(RosterLockPaths.Selection.ScriptDocs, params)}
-        >
-          <ToolTipSpan
-            tip={scriptDocsTT}
-          >Script Docs</ToolTipSpan>
-        </Link>
-      </h1>
-      <h1>
-        <Link
-          to={replaceParams(
-            RosterLockPaths.Selection.ScriptDictionary.INDEX, params
-          )}
-        >
+      <div className="section">
+        <h1>
           <ToolTipSpan
             tip={scriptDictionaryTT}
           >Script Dictionary</ToolTipSpan>
-        </Link>
-      </h1>
-      <h1>
+        </h1>
+        <div>
+          <Link
+            to={replaceParams(RosterLockPaths.Selection.ScriptDictionary.Docs, params)}
+          >
+            <ToolTipSpan
+              tip={scriptDocsTT}
+            >Script Docs</ToolTipSpan>
+          </Link>
+        </div>
+        <div>
+          <Link
+            to={replaceParams(RosterLockPaths.Selection.ScriptDictionary.AvailableScripts, params)}
+          >Available Scripts</Link>
+        </div>
+        <div>
+          <Link
+            to={replaceParams(RosterLockPaths.Selection.ScriptDictionary.AddScripts, params)}
+          >Add Scripts</Link>
+        </div>
+        <div>
+          <Link
+            to={replaceParams(RosterLockPaths.Selection.ScriptDictionary.RunScript, params)}
+          >Run Script</Link>
+        </div>
+
+      </div>
+      <h1 className="section">
         <Link
           to={replaceParams(
             RosterLockPaths.Selection.GlobalValidation, params
@@ -46,20 +58,22 @@ export function SelectionOverviewPage(){
           >Global Validation</ToolTipSpan>
         </Link>
       </h1>
-      <h1>
-        <ToolTipSpan tip={pieceConfigTT}>Piece Configurations</ToolTipSpan>
-      </h1>
-      <div className="alternate-list">
-        {Object.entries(value.selection.piece).map(([pieceType, pieceConfig]) => (
-          <div>
-            <Link
-              to={replaceParams(
-                RosterLockPaths.Selection.PieceSelection,
-                { filePath: params.filePath, pieceType}
-              )}
-            >{pieceType}</Link>
-          </div>
-        ))}
+      <div className="section">
+        <h1>
+          <ToolTipSpan tip={pieceConfigTT}>Piece Configurations</ToolTipSpan>
+        </h1>
+        <div className="alternate-list">
+          {Object.entries(value.selection.piece).map(([pieceType, pieceConfig]) => (
+            <div>
+              <Link
+                to={replaceParams(
+                  RosterLockPaths.Selection.PieceSelection,
+                  { filePath: params.filePath, pieceType}
+                )}
+              >{pieceType}</Link>
+            </div>
+          ))}
+        </div>
       </div>
     </Center>
   )

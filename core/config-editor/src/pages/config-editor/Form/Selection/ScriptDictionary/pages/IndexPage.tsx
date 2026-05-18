@@ -13,18 +13,18 @@ export function ScriptDictionaryIndexPage(){
     <div>
       <Link
         to={replaceParams(
-          RosterLockPaths.Selection.ScriptDictionary.CurrentFiles,
+          RosterLockPaths.Selection.ScriptDictionary.AvailableScripts,
           { filePath }
         )}
-      >View Current Files</Link>
+      >View Available Scripts</Link>
     </div>
     <div>
       <Link
         to={replaceParams(
-          RosterLockPaths.Selection.ScriptDictionary.MergeFolder,
+          RosterLockPaths.Selection.ScriptDictionary.AddScripts,
           { filePath }
         )}
-      >Merge a Folder</Link>
+      >Add Scripts</Link>
     </div>
     <div>
       <Link

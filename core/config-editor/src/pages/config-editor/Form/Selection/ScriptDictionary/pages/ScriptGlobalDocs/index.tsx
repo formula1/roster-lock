@@ -1,39 +1,13 @@
 
 import { useState, useMemo } from "react";
-import { useRosterLock } from "../../Contexts/RosterLock";
-import type { ScriptPurpose } from "../ScriptDictionary/pages/RunScript/script-purpose";
-import { SCRIPT_PURPOSES } from "../ScriptDictionary/pages/RunScript/script-purpose";
+import { useRosterLock } from "../../../../Contexts/RosterLock";
+import type { ScriptPurpose } from "../RunScript/script-purpose";
+import { SCRIPT_PURPOSES } from "../RunScript/script-purpose";
+import { buildDts, downloadDts,  } from "./build-dts";
+import { COMMON_GLOBALS, PURPOSE_GLOBALS, PURPOSE_RETURN } from "./constants";
 
-const COMMON_GLOBALS = [
-  { name: "randomFloat()", type: "number", description: "Seeded random float in [0, 1)" },
-  { name: "randomInt(min, max)", type: "number", description: "Seeded random integer in [min, max]" },
-  { name: "shuffleIndexes(length)", type: "number[]", description: "Seeded shuffle of indexes 0..length-1" },
-  { name: "getPieceMeta(pieceType, pieceId)", type: "object", description: "Returns the meta object for a specific piece" },
-  { name: "getAvailablePieces(pieceType)", type: "string[]", description: "Returns all available piece ids for a piece type" },
-];
 
-const PURPOSE_GLOBALS: Record<ScriptPurpose, Array<{ name: string; type: string }>> = {
-  "piece-user-validation": [
-    { name: "pieceType", type: "string" },
-    { name: "selection", type: "SelectedPiece[]" },
-  ],
-  "piece-merge": [
-    { name: "pieceType", type: "string" },
-    { name: "users", type: "string[]" },
-    { name: "selection", type: "{ [userId: string]: SelectedPiece[] }" },
-  ],
-  "global-validation": [
-    { name: "pieceTypes", type: "string[]" },
-    { name: "users", type: "string[]" },
-    { name: "selection", type: "{ [pieceType: string]: SelectedPiece[] | { [userId: string]: SelectedPiece[] } }" },
-  ],
-};
 
-const PURPOSE_RETURN: Record<ScriptPurpose, string> = {
-  "piece-user-validation": "void | boolean | [boolean, string] | string",
-  "piece-merge": "SelectedPiece[] (shared) | { [userId: string]: SelectedPiece[] } (personal)",
-  "global-validation": "void | boolean | [boolean, string] | string",
-};
 
 export function ScriptGlobalDocsPage() {
   const { value: lock } = useRosterLock();
@@ -76,9 +50,16 @@ export function ScriptGlobalDocsPage() {
 
   const isPieceSpecific = purpose !== "global-validation";
 
+  const handleDownload = () => {
+    downloadDts(buildDts(lock), "globals.d.ts");
+  };
+
   return (
     <div className="section">
-      <h3>Script Globals</h3>
+      <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+        <h3 style={{ margin: 0 }}>Script Globals</h3>
+        <button onClick={handleDownload}>Download .d.ts</button>
+      </div>
 
       <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", marginBottom: "0.75rem" }}>
         <div>
