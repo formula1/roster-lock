@@ -1,7 +1,7 @@
 
 import { nativeAPI } from "../../tauri";
 
-import { join } from 'path-browserify';
+import { join } from '@tauri-apps/api/path';
 
 // User settings management using TypeScript
 const USER_SETTINGS_KEY = 'user-settings';
@@ -40,7 +40,7 @@ export async function updateUserSettings(newSettings: Partial<UserSettings>): Pr
 export async function initializeUserDirectories(): Promise<{ shouldShowDialog: boolean; matchLockDir: string }> {
   try {
     const homeDir = await nativeAPI.fs.homeDir();
-    const matchLockDir = join(homeDir, 'match-lock');
+    const matchLockDir = await join(homeDir, 'match-lock');
     
     // Check if the match-lock directory already exists
     if (await nativeAPI.fs.exists(matchLockDir)) {
@@ -67,7 +67,7 @@ export async function initializeUserDirectories(): Promise<{ shouldShowDialog: b
   } catch (error) {
     console.error('Error initializing user directories:', error);
     const homeDir = await nativeAPI.fs.homeDir();
-    const matchLockDir = join(homeDir, 'match-lock');
+    const matchLockDir = await join(homeDir, 'match-lock');
     return { shouldShowDialog: true, matchLockDir };
   }
 }

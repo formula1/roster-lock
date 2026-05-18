@@ -4,19 +4,19 @@ import { cloneJSON, } from "@roster-lock/utils";
 import { showSaveDialog } from "../../../../tauri/window";
 import { diffLocks } from "./diffRosters";
 import { fs } from "../../../../tauri/fs";
-import { join as pathJoin, dirname } from "path-browserify";
+import { join as pathJoin, dirname } from "@tauri-apps/api/path";
 
 export async function publishStagedLock(draft: RosterLockV1Draft, draftFilePath?: string){
   const stagedLock = cloneJSON(draft.stagedLock);
   ROSTERLOCK_V1_CASTER_JSONSCHEMA.cast(stagedLock);
 
-  const defaultDir = (
-    !draftFilePath ? await fs.getMatchLockDir() :
+  const defaultDir = await (
+    !draftFilePath ? fs.getMatchLockDir() :
     dirname(draftFilePath)
   );
   const { canceled, filePath } = await showSaveDialog({
     title: "Publish new Roster Lock file",
-    defaultPath: pathJoin(defaultDir, `${stagedLock.title}-${stagedLock.version}.rosterlock.json`),
+    defaultPath: await pathJoin(defaultDir, `${stagedLock.title}-${stagedLock.version}.rosterlock.json`),
     filters: [
       { name: 'JSON Files', extensions: ['json'] }
     ]
