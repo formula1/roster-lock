@@ -76,7 +76,7 @@ export function ClickableButton({
             </div>
             <div>
               <p><ErrorText error={clickResult.error} /></p>
-              {process.env.NODE_ENV === "development" && (
+              {import.meta.env.NODE_ENV === "development" && (
                 <details>
                   <summary>Debug details</summary>
                   <pre>{JSON.stringify(clickResult.error, null, 2)}</pre>

@@ -1,7 +1,7 @@
 
 import { nativeAPI } from "../../tauri";
 
-import { join } from 'path';
+import { join } from 'path-browserify';
 
 // User settings management using TypeScript
 const USER_SETTINGS_KEY = 'user-settings';

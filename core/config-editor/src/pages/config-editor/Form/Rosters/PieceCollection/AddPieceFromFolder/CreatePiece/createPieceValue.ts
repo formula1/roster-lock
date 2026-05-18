@@ -1,6 +1,6 @@
 
 
-import { join as pathJoin } from "path";
+import { join as pathJoin } from "path-browserify";
 import {
   PATH_ROSTERLOCK_PIECE_META,
   ROSTERLOCK_V1_PIECEMETADATA_CASTER_JSONSCHEMA,

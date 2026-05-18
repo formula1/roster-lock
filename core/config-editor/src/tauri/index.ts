@@ -10,7 +10,7 @@ import { nativeWindow } from './window';
 
 
 // Initialize console bridge in development
-if (process.env.NODE_ENV === 'development' || !process.env.NODE_ENV) {
+if (import.meta.env.NODE_ENV === 'development' || !import.meta.env.NODE_ENV) {
   console.log('🔧 Console bridge initialized - messages will appear in terminal');
 }
 

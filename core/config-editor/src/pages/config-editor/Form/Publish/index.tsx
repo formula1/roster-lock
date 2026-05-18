@@ -4,7 +4,7 @@ import { cloneJSON, } from "@roster-lock/utils";
 import { showSaveDialog } from "../../../../tauri/window";
 import { diffLocks } from "./diffRosters";
 import { fs } from "../../../../tauri/fs";
-import { join as pathJoin, dirname } from "path";
+import { join as pathJoin, dirname } from "path-browserify";
 
 export async function publishStagedLock(draft: RosterLockV1Draft, draftFilePath?: string){
   const stagedLock = cloneJSON(draft.stagedLock);

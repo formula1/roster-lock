@@ -3,7 +3,7 @@ import { useRecentFiles } from "../../../../../globals/recent-files";
 import { nativeWindow } from "../../../../../tauri/window";
 import { InputProps } from "../../../../../utils/react";
 
-import { dirname } from "path";
+import { dirname } from "path-browserify";
 
 const TEST_FOLDERS = "engine-test-folders";
 export function FolderInput(
