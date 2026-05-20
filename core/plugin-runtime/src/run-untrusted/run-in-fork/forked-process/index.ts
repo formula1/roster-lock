@@ -1,6 +1,12 @@
 
+import { z, ZodType } from "zod";
 import { ScriptStarterCaster } from "./script-caster";
 import { runUntrustedScript } from "../../run-script";
+
+const runUntrustedSchema: ZodType<{ pluginDir: string, input: any }> = z.object({
+  pluginDir: z.string(),
+  input: z.any()
+})
 
 export function bindRunUntrustedToProcess(){
   if(!process.send){
@@ -15,8 +21,9 @@ export function bindRunUntrustedToProcess(){
       }
       running = true;
       console.log("Recieved Message", message);
-      const input = ScriptStarterCaster.cast(message, true);
-      const result = await runUntrustedScript(input);
+      const { pluginDir, input: inputRaw } = runUntrustedSchema.parse(message);
+      const input = ScriptStarterCaster.cast(inputRaw, true);
+      const result = await runUntrustedScript(pluginDir, input);
       send({
         type: "result",
         data: result

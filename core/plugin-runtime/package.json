@@ -16,6 +16,8 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "@roster-lock/shared": "file:../shared",
+    "@roster-lock/types": "file:../types",
     "@roster-lock/utils": "file:../utils",
     "ajv": "^8.20.0",
     "commander": "^14.0.3",

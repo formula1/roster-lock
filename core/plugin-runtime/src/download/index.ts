@@ -1,24 +1,30 @@
 
-export * from "./protocolHandlers";
-export * from "./utils";
-export * from "./archive";
-export * from "./compression";
+import { ProtocolHandler } from "@roster-lock/types";
+import { getPluginModulesOfType } from "../plugin-management";
 
-import { getDownloadableSourceProtocol } from "@roster-lock/shared";
-import { getSourceHandlerFromProtocol } from "./protocolHandlers";
-import { ProcessHandlers } from "./types";
+type DownloadArgs = Parameters<ProtocolHandler["download"]>
 
-export function downloadToFolder(
-  url: string, destinationFolder: string,
-  processHandlers: ProcessHandlers
+export async function downloadToFolder(
+  pluginDir: string,
+  { url, destinationFolder, processHandlers }: {
+    url: DownloadArgs[0],
+    destinationFolder: DownloadArgs[1],
+    processHandlers: DownloadArgs[2]
+  }
 ){
-  const protocol = getDownloadableSourceProtocol(url);
-  if(!protocol){
-    throw new Error("Invalid Protocol");
-  }
-  const sourceHandler = getSourceHandlerFromProtocol(protocol);
-  if(!sourceHandler){
-    throw new Error("No Source Handler Found");
-  }
-  return sourceHandler.download(url, destinationFolder, processHandlers);
+  const protocol = await getURLProtocol(pluginDir, url);
+  return protocol.download(url, destinationFolder, processHandlers);
 }
+
+async function getURLProtocol(
+  pluginDir: string, url: string
+){
+  for(const protocol of await getPluginModulesOfType(pluginDir, "dl-protocol")){
+    try {
+      if(protocol.validateURL(url)) return protocol
+    }catch(e){
+    }
+  }
+  throw new Error("No protocol to handle url")
+}
+

@@ -3,7 +3,10 @@ import { getUntrustedScriptByFileExtension } from "./get-by-extension";
 import { getScriptGlobals } from "./globals";
 import { fileExtension } from "@roster-lock/utils";
 
+import { getPluginModulesOfType } from "../plugin-management"
+
 export async function runUntrustedScript(
+  pluginDir: string,
   { config, randomSeeds, purpose, entryScript }: ScriptStarter,
 ) {
   const entryScriptPath = entryScript.src;
@@ -11,11 +14,11 @@ export async function runUntrustedScript(
   if(!script){
     throw new Error("Missing entry script " + entryScriptPath);
   }
-  const runner = getUntrustedScriptByFileExtension(entryScriptPath);
+  const untrustedScripts = await getPluginModulesOfType(pluginDir, "untrusted-script")
+  const runner = getUntrustedScriptByFileExtension(entryScriptPath, untrustedScripts);
   if(!runner){
     throw new Error("Cannot run script of type " + fileExtension(entryScriptPath));
   }
-  console.error("Runner:", runner.name);
   const globals = getScriptGlobals(
     config, entryScriptPath, randomSeeds, purpose, runner
   );
