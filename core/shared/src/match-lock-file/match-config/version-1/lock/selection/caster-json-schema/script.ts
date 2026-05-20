@@ -6,7 +6,6 @@ import { defineKeyword } from "../../../../../util-types/json-schema";
 import {
   validateUntrustedScriptSrc,
   validateUntrustedScriptMethod,
-  validateUntrustedScriptExtension,
 } from "../validate/script";
 
 export const scriptRefSrcSchemaValidator = defineKeyword({
@@ -42,21 +41,9 @@ export const untrustedScriptRefSchema: JSONSchemaType<UntrustedScriptRef> = {
 };
 
 
-
-export const scriptDictionaryExtensionSchemaValidator = defineKeyword({
-  keyword: "untrustedScriptExtension",
-  type: "string",
-  validate(value){
-    validateUntrustedScriptExtension(value);
-  }
-});
-
 export const untrustedScriptDictionarySchema: JSONSchemaType<RosterLockV1Config["selection"]["scriptDictionary"]> = {
   type: "object", required: [],
-  propertyNames: {
-    type: "string",
-    [scriptDictionaryExtensionSchemaValidator.keyword]: true,
-  },
+  propertyNames: { type: "string" },
   additionalProperties: {
     type: "object", required: ["content"],
     additionalProperties: false,
