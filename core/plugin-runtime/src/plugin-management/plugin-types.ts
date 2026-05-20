@@ -32,10 +32,10 @@ export const PLUGIN_TYPE_VALIDATORS: Record<PluginType, (p: Record<string, unkno
     return true;
   },
   "untrusted-script": (p) =>{
-    if(typeof p.name !== "string") return false;
-    if(!isStringArray(p.extensions)) return false;
-    if(!isStringArray(p.directoryFile)) return false;
-    if(typeof p.runScript !== "function") return false;
+    if(typeof p.name !== "string") throw new Error("\"name\" should be a string");
+    if(!isStringArray(p.extensions)) throw new Error("\"extensions\" should be a string[]");
+    if(!isStringArray(p.directoryFile)) throw new Error("\"directoryFile\" should be a string[]");
+    if(typeof p.runScript !== "function") throw new Error("\"runScript\" should be a function");
     return true;
   },
 };

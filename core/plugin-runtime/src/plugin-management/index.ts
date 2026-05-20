@@ -1,8 +1,12 @@
 import { execSync } from "node:child_process";
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import path from "node:path";
-import { importPackage, importPlugin } from "./utils";
-import { PluginType, PluginTypeMap, PLUGIN_TYPES, PLUGIN_TYPE_VALIDATORS } from "./plugin-types";
+import { importPluginPackage, PluginPackageType } from "./package";
+import { importPluginModule } from "./module";
+import { PluginType, PluginTypeMap, PLUGIN_TYPE_VALIDATORS } from "./plugin-types";
+
+export { DEFAULT_PLUGIN_DIR } from "./constants";
+export * from "./plugin-types";
 
 type PluginEntry = {
   package: string;
@@ -46,18 +50,6 @@ function resolvePackageName(packagePath: string): string {
 }
 
 
-function readPluginType(pkgJson: Record<string, unknown>, packageName: string): PluginType {
-  const meta = pkgJson["roster-lock"];
-  if (typeof meta !== "object" || meta === null || !("pluginType" in meta)) {
-    throw new Error(`${packageName}: missing "roster-lock": { "pluginType": "..." } in package.json`);
-  }
-  const pluginType = (meta as Record<string, unknown>).pluginType;
-  if (!PLUGIN_TYPES.has(pluginType as PluginType)) {
-    throw new Error(`${packageName}: invalid pluginType "${pluginType}". Must be one of: ${[...PLUGIN_TYPES].join(", ")}`);
-  }
-  return pluginType as PluginType;
-}
-
 function validatePluginShape(plugin: unknown, type: PluginType, packageName: string): void {
   if (typeof plugin !== "object" || plugin === null) {
     throw new Error(`${packageName}: plugin must export an object`);
@@ -74,14 +66,14 @@ export async function installPlugin(
 
   execSync(`npm install "${packagePath}" --prefix "${pluginDir}"`, { stdio: "inherit" });
 
-  const installedPkgJson = importPackage(pluginDir, packageName);
-  const version = installedPkgJson.version as string;
-  const type = readPluginType(installedPkgJson, packageName);
+  const installedPkgJson = await importPluginPackage(pluginDir, packageName);
+  const version = installedPkgJson.version;
+  const type = installedPkgJson["roster-lock"].pluginType;
 
-  const pluginModule = await importPlugin(pluginDir, packageName, installedPkgJson);
+  const pluginModule = await importPluginModule(pluginDir, packageName, installedPkgJson);
 
   validatePluginShape(
-    pluginModule.default ?? pluginModule, type, packageName
+    pluginModule, type, packageName
   );
 
   const manifest = readManifest(pluginDir);
@@ -89,7 +81,7 @@ export async function installPlugin(
   if (existing >= 0) {
     manifest.plugins[existing] = { ...manifest.plugins[existing], version, type };
   } else {
-    manifest.plugins.push({ package: packageName, version, type, priority: 0 });
+    manifest.plugins.push({ package: packageName, version, type, priority: installedPkgJson["roster-lock"].priority || 0 });
   }
   writeManifest(pluginDir, manifest);
 }
@@ -114,7 +106,22 @@ export function setPluginPriority(
   writeManifest(pluginDir, manifest);
 }
 
-export function getPluginsOfType<T extends PluginType>(
+export function getPluginPackagesOfType(
+  pluginDir: string,
+  type: PluginType
+){
+  const pluginPkgs = readManifest(pluginDir)
+    .plugins.filter((p) => p.type === type)
+    .sort((a, b) => b.priority - a.priority);
+  return Promise.all(pluginPkgs.map(async (plugin) => {
+    return {
+      entry: plugin,
+      package: await importPluginPackage(pluginDir, plugin.package),
+    }
+  }))
+}
+
+export function getPluginModulesOfType<T extends PluginType>(
   pluginDir: string,
   type: T
 ): Promise<Array<PluginTypeMap[T]>> {
@@ -123,8 +130,26 @@ export function getPluginsOfType<T extends PluginType>(
     .sort((a, b) => b.priority - a.priority);
 
   return Promise.all(pluginPkgs.map(async (plugin) => {
-    const packageJson = importPackage(pluginDir, plugin.package);
-    return await importPlugin(pluginDir, plugin.package, packageJson) as PluginTypeMap[T];
+    const packageJson = await importPluginPackage(pluginDir, plugin.package);
+    return await importPluginModule(pluginDir, plugin.package, packageJson) as PluginTypeMap[T]
+  }));
+}
+
+export function getPluginFullOfType<T extends PluginType>(
+  pluginDir: string,
+  type: T
+): Promise<Array<{ entry: PluginEntry, package: PluginPackageType, module: PluginTypeMap[T] }>>{
+  const pluginPkgs = readManifest(pluginDir)
+    .plugins.filter((p) => p.type === type)
+    .sort((a, b) => b.priority - a.priority);
+
+  return Promise.all(pluginPkgs.map(async (plugin) => {
+    const packageJson = await importPluginPackage(pluginDir, plugin.package);
+    return {
+      entry: plugin,
+      package: packageJson,
+      module: await importPluginModule(pluginDir, plugin.package, packageJson) as PluginTypeMap[T]
+    }
   }));
 }
 
