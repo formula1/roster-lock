@@ -81,12 +81,12 @@ export const runTSScript: UntrustedScript<string>["runScript"] = async function(
     if(vm.typeof(main) !== "function"){
       throw new Error(`No ${initialMethod} function defined in script`);
     }
-    // Convert everything to a promise for sanities sake
-    const awaitedResult = await vm.resolvePromise(
-      vm.unwrapResult(
-        await vm.evalCodeAsync(`Promise.resolve().then(()=>(${initialMethod}()));`)
-      )
+    const resultHandle = vm.unwrapResult(
+      await vm.evalCodeAsync(`Promise.resolve().then(()=>(${initialMethod}()));`)
     );
+    const resultPromise = vm.resolvePromise(resultHandle);
+    vm.runtime.executePendingJobs();
+    const awaitedResult = await resultPromise;
     // The unwrap should throw if the script throws
     return vm.dump(vm.unwrapResult(awaitedResult));
   }finally{
