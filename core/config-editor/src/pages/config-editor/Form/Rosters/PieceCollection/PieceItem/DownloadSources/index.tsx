@@ -1,34 +1,28 @@
 
 import { PieceDefinition, PieceValue } from "../../types";
-import { InputProps } from "../../../../../../../utils/react";
+import { InputProps, usePromisedMemo } from "../../../../../../../utils/react";
 import { ToolTipSpan } from "../../../../../../../components/ToolTip";
-import { ValidatingTextInput } from "../../../../../../../components/inputs/ValidatingTextInput";
+import { AsyncValidatingTextInput } from "../../../../../../../components/inputs/AsyncValidatingTextInput";
 
+import { ROSTERLOCK_SIDECAR } from "../../../../../../../globals/side-car";
+import { getPluginDir } from "../../../../../../../globals/plugin-dir";
 
 import { getDownloadSourceVersion } from "./getDownloadVersion";
-import {
-  DOWNLOADABLE_SOURCE_PROTOCOLS,
-  validateDownloadableSource
-} from "@roster-lock/shared";
-import downloadSourcesTTRAW from "./downloadSourcesTT.md";
-let downloadSourcesTT = downloadSourcesTTRAW;
-
-
-downloadSourcesTT += "\n\n## Available Protocols";
-downloadSourcesTT += "\n\n" + (
-  Object.values(DOWNLOADABLE_SOURCE_PROTOCOLS)
-  .map((v) => `- ${v.protocol}`)
-  .join('\n')
-);
+import downloadSourcesTT from "./downloadSourcesTT.md";
 
 export function DownloadSources({ value, onChange, piece, pieceDefinition }: (
   & InputProps<PieceValue["downloadSources"]>
   & { piece: PieceValue }
   & { pieceDefinition: PieceDefinition }
 )){
+  const pluginText = useDownloadPluginsText();
   return (
     <div className="section">
-      <div><ToolTipSpan tip={downloadSourcesTT}>Download Sources</ToolTipSpan></div>
+      <div>
+        <ToolTipSpan
+          tip={downloadSourcesTT + (pluginText.status === "success" ? pluginText.value : "")}
+        >Download Sources</ToolTipSpan>
+      </div>
       {value.length === 0 ? <div className="error">At least one source is required</div> : (
         <div>
           {value.map((source, index) => (
@@ -53,11 +47,18 @@ export function DownloadSources({ value, onChange, piece, pieceDefinition }: (
                   }
                 }}
               >Test</button>
-              <ValidatingTextInput
+              <AsyncValidatingTextInput
                 style={{ flexGrow: 1 }}
                 value={source}
                 onChange={v => onChange(value.map((oldSource, i) => i !== index ? oldSource : v))}
-                validate={validateDownloadableSource}
+                validate={async (url: string)=>{
+                  const protocols = await ROSTERLOCK_SIDECAR.matchDownloadProtocols(
+                    await getPluginDir(), url
+                  )
+                  if(protocols.length === 0){
+                    throw new Error("No matching protocols")
+                  }
+                }}
               />
             </div>
             </>
@@ -68,4 +69,20 @@ export function DownloadSources({ value, onChange, piece, pieceDefinition }: (
   )
 }
 
+
+function useDownloadPluginsText(){
+  return usePromisedMemo(async ()=>{
+    const plugins = await ROSTERLOCK_SIDECAR.getDownloadPlugins(
+      await getPluginDir()
+    );
+
+    let downloadSourcesTT = ""
+    downloadSourcesTT += "\n\n## Available Protocols";
+    downloadSourcesTT += "\n\n" + (
+      Object.values(plugins.protocol)
+      .map((v) => `- ${v.name}`)
+      .join('\n')
+    );
+  }, [])
+}
 
