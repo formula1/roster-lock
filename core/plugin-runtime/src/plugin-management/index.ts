@@ -86,6 +86,23 @@ export async function installPlugin(
   writeManifest(pluginDir, manifest);
 }
 
+export async function updatePlugin(
+  pluginDir: string, packageName: string
+): Promise<void> {
+  const manifest = readManifest(pluginDir);
+  const existing = manifest.plugins.find((p) => p.package === packageName);
+  if (!existing) throw new Error(`Plugin not installed: ${packageName}`);
+
+  execSync(`npm update "${packageName}" --prefix "${pluginDir}"`, { stdio: "inherit" });
+
+  const installedPkgJson = await importPluginPackage(pluginDir, packageName);
+  const pluginModule = await importPluginModule(pluginDir, packageName, installedPkgJson);
+  validatePluginShape(pluginModule, existing.type, packageName);
+
+  existing.version = installedPkgJson.version;
+  writeManifest(pluginDir, manifest);
+}
+
 export function uninstallPlugin(pluginDir: string, packageName: string): void {
   execSync(`npm uninstall "${packageName}" --prefix "${pluginDir}"`, { stdio: "inherit" });
 

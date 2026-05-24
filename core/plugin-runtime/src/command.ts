@@ -1,6 +1,6 @@
 import {
   DEFAULT_PLUGIN_DIR,
-  installPlugin, uninstallPlugin, setPluginPriority, getPluginPackagesOfType,
+  installPlugin, updatePlugin, uninstallPlugin, setPluginPriority, getPluginPackagesOfType,
   PLUGIN_TYPES, PluginType,
 } from "./plugin-management";
 import { mkdir, stat as fsStat } from "node:fs/promises";
@@ -27,6 +27,15 @@ program.command('install')
   .action(async (pluginPackage, options) => {
     const pluginDir = await getPluginDir(options.pluginDir);
     await installPlugin(pluginDir, pluginPackage);
+  });
+
+program.command('update')
+  .description('Update an installed plugin to its latest semver-compatible version. For local file: plugins, re-run install with the original path instead.')
+  .argument('<package>', 'name of the installed plugin package to update')
+  .option('-d, --plugin-dir <dir>', 'folder where the plugins are')
+  .action(async (pluginPackage, options) => {
+    const pluginDir = await getPluginDir(options.pluginDir);
+    await updatePlugin(pluginDir, pluginPackage);
   });
 
 program.command('uninstall')
