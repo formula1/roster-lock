@@ -11,7 +11,7 @@ export const UserSettingsDialog: React.FC<UserSettingsDialogProps> = (
   { onSelect }
 ) => {
   console.log('🔧 UserSettingsDialog component loaded - testing console.log output');
-  const { state, matchLockDir, handleUserChoice } = useUserSettings();
+  const { state, rosterLockDir, handleUserChoice } = useUserSettings();
 
   useEffect(()=>{
     if(state === "ready" && onSelect){
@@ -53,7 +53,7 @@ export const UserSettingsDialog: React.FC<UserSettingsDialogProps> = (
             This app would like to create a folder at:
           </p>
           <div className="bg-gray-100 p-3 rounded-md font-mono text-sm text-gray-800 mb-4">
-            {matchLockDir}
+            {rosterLockDir}
           </div>
           <p className="text-gray-600 text-sm">
             This folder will be used to store your MatchLock configurations and data. 
