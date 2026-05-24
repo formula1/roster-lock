@@ -27,6 +27,12 @@ export const runTSScript: UntrustedScript<string>["runScript"] = async function(
       })
     ));
 
+    // Debug
+    vm.setProp(vm.global, "log", vm.newFunction("debug", (...handles) => {
+      globals.debug(...handles.map(h => vm.dump(h)));
+    }));
+
+    // RNG
     vm.setProp(vm.global, "randomFloat", vm.newFunction("randomFloat", ()=>{
       return vm.newNumber(globals.randomFloat());
     }));

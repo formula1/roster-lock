@@ -21,6 +21,7 @@ const ScriptStarterSchema: JSONSchemaType<ScriptStarter> = {
     },
     purpose: ScriptPurposeInputSchema,
     entryScript: untrustedScriptRefSchema,
+    debugLog: { type: "array", items: { type: "string" }, nullable: true }
   },
 };
 

@@ -52,7 +52,7 @@ export const ROSTERLOCK_SIDECAR = {
     ]) as Array<PluginInfo & { extensions: Array<string> }>
   },
 
-  runScript: async function(pluginDir: string, scriptConfig: ScriptStarter): Promise<JSON_Unknown> {
+  runScript: async function(pluginDir: string, scriptConfig: ScriptStarter): Promise<{ debugLog: Array<string>, result: JSON_Unknown}> {
     return new Promise((resolve, reject) => {
       const log: Array<OutputLine> = [];
       const instance = Date.now().toString(32);
@@ -70,9 +70,26 @@ export const ROSTERLOCK_SIDECAR = {
           reject(new ProcessError(data.code, log));
         } else {
           try {
-            resolve(JSON.parse(stdout));
-          } catch {
-            reject(new Error('Failed to parse script result: ' + stdout));
+            let result;
+            try {
+              result = JSON.parse(stdout)
+            } catch(e) {
+              throw new Error('Failed to parse script result: ' + stdout);
+            }
+            if(!Array.isArray(result.debugLog)){
+              throw new Error("debugLog is expected to be an array of strings");
+            }
+            for(const line of result.debugLog){
+              if(typeof line !== "string"){
+                throw new Error("debugLog is expected to be an array of strings")
+              }
+            }
+            if(!("result" in result)){
+              throw new Error("there should be a result")
+            }
+            resolve(result);
+          }catch(e){
+            reject(e)
           }
         }
       });

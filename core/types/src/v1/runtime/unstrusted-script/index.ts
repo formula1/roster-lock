@@ -7,6 +7,7 @@ export type ScriptStarter = {
   randomSeeds: string[],
   purpose: ScriptPurposeInput,
   entryScript: UntrustedScriptRef
+  debugLog?: Array<string>,
 };
 
 
@@ -17,6 +18,7 @@ export type ScriptGlobals<ScriptModule> = {
   getPieceMeta: (pieceType: string, pieceId: string)=>any,
   getAvailablePieces: (pieceType: string)=>Array<string>,
   requireScript: (path: string, runCode: (newPath: string, content: string)=>Promise<ScriptModule>)=>Promise<ScriptModule>,
+  debug: (...args: any)=>void
 };
 
 

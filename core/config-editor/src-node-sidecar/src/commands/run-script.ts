@@ -24,7 +24,7 @@ const PurposeSchema = z.discriminatedUnion("type", [
   }),
 ]);
 
-const ScriptConfigSchema: ZodType<ScriptStarter> = z.object({
+const ScriptConfigSchema: ZodType<Omit<ScriptStarter, "debugLog">> = z.object({
   randomSeeds: z.array(z.string()),
   purpose: PurposeSchema,
   config: z.any(),
@@ -38,9 +38,11 @@ export async function runUntrustedScriptCommand(
   pluginDir: string, json: unknown
 ) {
   try {
-    const config = ScriptConfigSchema.parse(json) as ScriptStarter;
+    const config = { ...ScriptConfigSchema.parse(json), debugLog: [] };
     const result = await runUntrustedScript(pluginDir, config);
-    process.stdout.write(JSON.stringify(result) + "\n");
+    process.stdout.write(
+      JSON.stringify({ debugLog: config.debugLog, result }) + "\n"
+    );
     process.exitCode = 0;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
