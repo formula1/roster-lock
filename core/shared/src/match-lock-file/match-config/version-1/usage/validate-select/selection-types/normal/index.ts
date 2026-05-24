@@ -2,7 +2,7 @@ import {
   RosterLockV1Config, SelectionNormalConfig, PieceType, SelectedPiece, UserId, FinalSelection
 } from "@roster-lock/types";
 import { ensurePiecesAreInRoster } from "../../ensure-pieces-are-in-roster";
-import { ScriptStarter } from "../../types/untrusted-script";
+import { ScriptStarter } from "@roster-lock/types";
 
 import { validateUserSelection } from "./validate-user-selection";
 import { handleValidationResult } from "../../handle-validation";

@@ -1,4 +1,4 @@
-import type { ScriptPurposeInput } from "@roster-lock/shared";
+import type { ScriptPurposeInput } from "@roster-lock/types";
 import { RosterLockV1Config, SelectedPiece } from "@roster-lock/types";
 
 export function createEmptyPurposeBody(

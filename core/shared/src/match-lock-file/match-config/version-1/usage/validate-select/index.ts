@@ -2,13 +2,11 @@ import {
   RosterLockV1Config, UserId, PieceType, SelectedPiece, FinalSelection, UserInput
 } from "@roster-lock/types";
 
-export * from "./types/untrusted-script";
-
 
 import { handleGameControlledSelection } from "./selection-types/game-controlled";
 import { handlePreselectedSelection } from "./selection-types/preselected";
 import { handleNormalSelection } from "./selection-types/normal";
-import { ScriptStarter } from "./types/untrusted-script";
+import { ScriptStarter } from "@roster-lock/types";
 
 import { RunUntrustedError } from "./constants";
 import { handleValidationResult } from "./handle-validation";

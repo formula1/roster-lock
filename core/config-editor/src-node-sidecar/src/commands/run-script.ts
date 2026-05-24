@@ -1,6 +1,6 @@
 
 import { runUntrustedScript } from "@roster-lock/plugin-runtime";
-import { ScriptStarter } from "@roster-lock/shared";
+import { ScriptStarter } from "@roster-lock/types";
 import { z, ZodType} from "zod";
 
 const PurposeSchema = z.discriminatedUnion("type", [

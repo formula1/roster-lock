@@ -7,10 +7,10 @@ import { getPluginModulesOfType } from "../plugin-management"
 
 export async function runUntrustedScript(
   pluginDir: string,
-  { config, randomSeeds, purpose, entryScript }: ScriptStarter,
+  scriptStarter: ScriptStarter,
 ) {
-  const entryScriptPath = entryScript.src;
-  const script = config.selection.scriptDictionary[entryScriptPath];
+  const entryScriptPath = scriptStarter.entryScript.src;
+  const script = scriptStarter.config.selection.scriptDictionary[entryScriptPath];
   if(!script){
     throw new Error("Missing entry script " + entryScriptPath);
   }
@@ -20,9 +20,12 @@ export async function runUntrustedScript(
     throw new Error("Cannot run script of type " + fileExtension(entryScriptPath));
   }
   const globals = getScriptGlobals(
-    config, entryScriptPath, randomSeeds, purpose, runner
+    scriptStarter, runner
   );
   return await runner.runScript(
-    globals, purpose, script.content, entryScript.method || "main"
+    globals,
+    scriptStarter.purpose,
+    script.content,
+    scriptStarter.entryScript.method || "main"
   );
 }

@@ -3,7 +3,7 @@ import {
   PieceMergeInput,
   GlobalValidationInput,
   ScriptPurposeInput,
-} from "@roster-lock/shared";
+} from "@roster-lock/types";
 import { SelectedPieceSchema, SelectedPieceSchemaDef } from "@roster-lock/shared";
 
 import { JSONSchemaType } from "ajv";

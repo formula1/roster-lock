@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { ScriptPurposeInput } from "@roster-lock/shared";
+import type { ScriptPurposeInput } from "@roster-lock/types";
 import { PieceType, SelectedPiece, UntrustedScriptRef, UserId } from "@roster-lock/types";
 import { useRosterLock } from "../../../../Contexts/RosterLock";
 import { ProcessError, ROSTERLOCK_SIDECAR } from "../../../../../../../globals/side-car";

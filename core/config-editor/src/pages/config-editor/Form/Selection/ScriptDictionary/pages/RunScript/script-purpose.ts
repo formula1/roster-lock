@@ -1,5 +1,3 @@
-import { ScriptPurposeInput } from "@roster-lock/shared";
-
 
 export type ScriptPurpose = "piece-user-validation" | "piece-merge" | "global-validation";
 

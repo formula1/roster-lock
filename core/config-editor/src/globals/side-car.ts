@@ -1,5 +1,5 @@
 import { Command } from '@tauri-apps/plugin-shell';
-import type { ScriptStarter } from '@roster-lock/shared';
+import type { ScriptStarter } from '@roster-lock/types';
 import { JSON_Unknown } from '@roster-lock/utils';
 
 type OutputLine = { source: "out" | "err", content: string };

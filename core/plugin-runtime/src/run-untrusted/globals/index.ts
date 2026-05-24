@@ -1,25 +1,12 @@
-import { RosterLockV1Config, PieceType, UntrustedScript } from "@roster-lock/types";
-import { ScriptPurposeInput } from "@roster-lock/types";
+import { RosterLockV1Config, PieceType, UntrustedScript, ScriptStarter } from "@roster-lock/types";
+import { ScriptGlobals } from "@roster-lock/types";
 import { MultiSeedPRNG } from "./random";
 import { AvailablePieces } from "./available-pieces";
 import { createPieceMetaGetter } from "./get-piece-meta";
 import { RequiredModule } from "./require-script";
 
-export type ScriptGlobals<ScriptModule> = {
-  randomFloat: ()=>number,
-  randomInt: (min: number, max: number)=>number,
-  shuffleIndexes: (length: number, startOffset?: number)=>Array<number>,
-  getPieceMeta: (pieceType: string, pieceId: string)=>any,
-  getAvailablePieces: (pieceType: string)=>Array<string>,
-  requireScript: (path: string, runCode: (newPath: string, content: string)=>Promise<ScriptModule>)=>Promise<ScriptModule>,
-};
-
-
 export function getScriptGlobals<ScriptModule>(
-  config: RosterLockV1Config,
-  currentScriptPath: string,
-  randomSeeds: string[],
-  purpose: ScriptPurposeInput,
+  { config, randomSeeds, purpose, entryScript, debugLog }: ScriptStarter,
   scriptType: UntrustedScript<any>
 ): ScriptGlobals<ScriptModule> {
   const scripts = config.selection.scriptDictionary;
@@ -48,7 +35,7 @@ export function getScriptGlobals<ScriptModule>(
   const allowedPieces = getAllowedPieces(config, pieceType);
   randomSeeds.sort();
   const rng = new MultiSeedPRNG(seeds.concat(randomSeeds));
-  const requiredModule = new RequiredModule<ScriptModule>(scripts, currentScriptPath, scriptType);
+  const requiredModule = new RequiredModule<ScriptModule>(scripts, entryScript.src, scriptType);
   return {
     randomFloat: ()=>rng.nextFloat(),
     randomInt: (min: number, max: number)=>rng.nextInt(min, max),
