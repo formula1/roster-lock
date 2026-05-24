@@ -93,7 +93,17 @@ export async function updatePlugin(
   const existing = manifest.plugins.find((p) => p.package === packageName);
   if (!existing) throw new Error(`Plugin not installed: ${packageName}`);
 
-  execSync(`npm update "${packageName}" --prefix "${pluginDir}"`, { stdio: "inherit" });
+  const pluginDirPkgJson = JSON.parse(readFileSync(path.join(pluginDir, "package.json"), "utf-8")) as {
+    dependencies?: Record<string, string>;
+  };
+  const specifier = pluginDirPkgJson.dependencies?.[packageName];
+  if (!specifier) throw new Error(`No install specifier found for ${packageName} in ${pluginDir}/package.json`);
+
+  const npmCommand = specifier.startsWith("file:")
+    ? `npm install "${specifier}" --prefix "${pluginDir}"`
+    : `npm update "${packageName}" --prefix "${pluginDir}"`;
+
+  execSync(npmCommand, { stdio: "inherit" });
 
   const installedPkgJson = await importPluginPackage(pluginDir, packageName);
   const pluginModule = await importPluginModule(pluginDir, packageName, installedPkgJson);
