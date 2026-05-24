@@ -4,7 +4,7 @@
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "types": [],
-    "lib": ["es2024"],
+    "lib": ["es2024", "dom"],
     "sourceMap": true,
     "rootDir": "./src",
     "outDir": "./dist",
