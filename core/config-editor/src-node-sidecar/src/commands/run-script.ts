@@ -1,5 +1,5 @@
 
-import { runUntrustedScript } from "@roster-lock/node-services";
+import { runUntrustedScript } from "@roster-lock/plugin-runtime";
 import { ScriptStarter } from "@roster-lock/shared";
 import { z, ZodType} from "zod";
 
@@ -25,21 +25,21 @@ const PurposeSchema = z.discriminatedUnion("type", [
 ]);
 
 const ScriptConfigSchema: ZodType<ScriptStarter> = z.object({
-  entryScriptPath: z.string(),
   randomSeeds: z.array(z.string()),
   purpose: PurposeSchema,
   config: z.any(),
   entryScript: z.object({
-    type: z.string().optional(),
     src: z.string(),
     method: z.string().optional()
   })
 });
 
-export async function runUntrustedScriptCommand(json: unknown) {
+export async function runUntrustedScriptCommand(
+  pluginDir: string, json: unknown
+) {
   try {
     const config = ScriptConfigSchema.parse(json) as ScriptStarter;
-    const result = await runUntrustedScript(config);
+    const result = await runUntrustedScript(pluginDir, config);
     process.stdout.write(JSON.stringify(result) + "\n");
     process.exitCode = 0;
   } catch (error) {
