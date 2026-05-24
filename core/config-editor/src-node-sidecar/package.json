@@ -11,7 +11,7 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
-    "@roster-lock/node-services": "file:../../node-services",
+    "@roster-lock/plugin-runtime": "file:../../plugin-runtime",
     "commander": "^11.1.0",
     "zod": "^4.3.5"
   },
