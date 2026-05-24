@@ -1,5 +1,4 @@
 import { RosterLockV1Config } from "@roster-lock/types";
-import { getUntrustedScriptByFileExtension } from "@roster-lock/shared";
 import { fileExtension } from "@roster-lock/utils";
 import { StreamLanguage } from '@codemirror/language';
 import { Extension } from '@codemirror/state';
@@ -16,8 +15,6 @@ const CODE_MIRROR_LANGUAGE_EXTENSIONS: Record<string, Extension> = {
 };
 
 export function getCodeMirrorParser(filename: string){
-  const untrustedScript = getUntrustedScriptByFileExtension(filename);
-  if(!untrustedScript) return;
   const ext = fileExtension(filename);
   if(!ext) return;
   return CODE_MIRROR_LANGUAGE_EXTENSIONS[ext];

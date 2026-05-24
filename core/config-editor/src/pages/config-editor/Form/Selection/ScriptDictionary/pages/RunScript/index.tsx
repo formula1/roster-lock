@@ -16,6 +16,7 @@ import { ScriptPurposeSelectionInput } from "./ScriptPurposeInput";
 import { UserListInput } from "../../../../components/UserListInput"
 import { InputProps, RunnableState, useRunnable } from "../../../../../../../utils/react"
 import { createEmptyPurposeBody } from "./createEmptyPurposebody";
+import { getPluginDir } from "../../../../../../../globals/plugin-dir";
 
 export function RunScriptPage(){
   const { value: lock } = useRosterLock();
@@ -195,13 +196,16 @@ export function ScriptRunner(
   const { value: lock } = useRosterLock();
 
   const runResult = useRunnable(
-    useCallback(()=>{
-      return ROSTERLOCK_SIDECAR.runScript({
-        config: lock,
-        purpose: purposeBody,
-        randomSeeds: [seedPrefix],
-        entryScript: script
-      });
+    useCallback(async ()=>{
+      return ROSTERLOCK_SIDECAR.runScript(
+        await getPluginDir(),
+        {
+          config: lock,
+          purpose: purposeBody,
+          randomSeeds: [seedPrefix],
+          entryScript: script
+        }
+      );
     }, [lock, purposeBody, seedPrefix, script])
   )
 
