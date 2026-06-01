@@ -1,5 +1,6 @@
 import { execSync } from "node:child_process";
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { importPluginPackage, PluginPackageType } from "./package";
 import { importPluginModule } from "./module";
@@ -32,15 +33,9 @@ function writeManifest(pluginDir: string, manifest: PluginManifest): void {
 }
 
 function resolvePackageName(packagePath: string): string {
-  const isLocal =
-    packagePath.startsWith("file:") ||
-    packagePath.startsWith("./") ||
-    packagePath.startsWith("../") ||
-    path.isAbsolute(packagePath);
-
-  if (isLocal) {
-    const localPath = packagePath.startsWith("file:") ? packagePath.slice(5) : packagePath;
-    const pkgJson = JSON.parse(readFileSync(path.join(localPath, "package.json"), "utf-8"));
+  if (path.isAbsolute(packagePath)) {
+    packagePath = path.join(packagePath, "package.json")
+    const pkgJson = JSON.parse(readFileSync(packagePath, "utf-8"));
     return pkgJson.name as string;
   }
 
@@ -59,9 +54,28 @@ function validatePluginShape(plugin: unknown, type: PluginType, packageName: str
   }
 }
 
+function normalizePackagePath(packagePath: string): string {
+  if (packagePath.startsWith("file:"))
+    packagePath = packagePath.slice(5);
+  if (packagePath.startsWith("~/") || packagePath.startsWith("~\\"))
+    packagePath = path.join(os.homedir(), packagePath.slice(2));
+  if(path.isAbsolute(packagePath)) return packagePath;
+  const isLocal =
+    packagePath.startsWith("./") ||
+    packagePath.startsWith(".\\") ||
+    packagePath.startsWith("../") ||
+    packagePath.startsWith("..\\");
+  if(isLocal) return path.resolve(process.cwd(), packagePath)
+
+  // If the packagePath isn't a valid path
+  // We're expecting the package is a normal npm package
+  return packagePath;
+}
+
 export async function installPlugin(
   pluginDir: string, packagePath: string
 ): Promise<void> {
+  packagePath = normalizePackagePath(packagePath);
   const packageName = resolvePackageName(packagePath);
 
   execSync(`npm install "${packagePath}" --prefix "${pluginDir}"`, { stdio: "inherit" });
@@ -99,9 +113,15 @@ export async function updatePlugin(
   const specifier = pluginDirPkgJson.dependencies?.[packageName];
   if (!specifier) throw new Error(`No install specifier found for ${packageName} in ${pluginDir}/package.json`);
 
-  const npmCommand = specifier.startsWith("file:")
-    ? `npm install "${specifier}" --prefix "${pluginDir}"`
-    : `npm update "${packageName}" --prefix "${pluginDir}"`;
+
+  const npmCommand = (()=>{
+    if(specifier.startsWith("file:")){
+      const specifierPath = path.resolve(pluginDir, specifier.slice(5));
+      return `npm install "${specifierPath}" --prefix "${pluginDir}"`
+    } else {
+      return `npm update "${packageName}" --prefix "${pluginDir}"`;
+    }
+  })();
 
   execSync(npmCommand, { stdio: "inherit" });
 
