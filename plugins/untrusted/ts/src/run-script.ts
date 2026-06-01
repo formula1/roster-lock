@@ -28,8 +28,8 @@ export const runTSScript: UntrustedScript<string>["runScript"] = async function(
     ));
 
     // Debug
-    vm.setProp(vm.global, "log", vm.newFunction("debug", (...handles) => {
-      globals.debug(...handles.map(h => vm.dump(h)));
+    vm.setProp(vm.global, "log", vm.newFunction("log", (...handles) => {
+      globals.log(...handles.map(h => vm.dump(h)));
     }));
 
     // RNG

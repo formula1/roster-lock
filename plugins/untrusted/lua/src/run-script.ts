@@ -39,7 +39,7 @@ export const runLuaScript: UntrustedScript<any>["runScript"] = async function(
     lua.global.set("os", undefined);
 
     // Staged as __debug so Lua's built-in debug library survives long enough for the gas hook setup
-    lua.global.set("log", (...args: any) => globals.debug(...args));
+    lua.global.set("log", (...args: any) => globals.log(...args));
 
     // RNG globals (referenced by RNG_OVERRIDE_LUA)
     lua.global.set("randomFloat", () => globals.randomFloat());

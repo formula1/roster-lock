@@ -1,6 +1,6 @@
 {
   "name": "@roster-lock/untrusted-lua",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Run lua in an untrusted environment",
   "license": "JSON",
   "author": "Sam Tobia",
