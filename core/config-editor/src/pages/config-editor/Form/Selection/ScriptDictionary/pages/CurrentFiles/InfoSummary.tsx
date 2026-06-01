@@ -27,9 +27,12 @@ export function InfoSummary(
   }, [info])
   const askForDiff = useDraftDiff({
     configFile: value,
-    updateConfig: useCallback(({ content })=>{
+    updateConfig: useCallback(({ content, sha }: { content: string, sha?: string })=>{
       onChange({ ...value, file: { ...value.file, content }})
-    }, [value, onChange])
+      if(sha !== undefined && info){
+        setDraft({ ...draft, [value.path]: { ...info, sha, lastLoad: Date.now() } })
+      }
+    }, [value, onChange, draft, info, setDraft])
   })
   if(!info){
     return (
@@ -89,19 +92,19 @@ function FileContentDiff(
     activeSha: string,
     loadedValue: ReturnType<typeof usePromisedMemo<any, null | { sha: string, content: string }>>,
     referencePath: string,
-    toggleDiff: (referenceFile: { path: string, content: string })=>any
+    toggleDiff: (referenceFile: { path: string, content: string, sha?: string })=>any
   }
 ){
   if(loadedValue.status === "pending") return <span>Loading</span>
   if(loadedValue.status === "failed") return <span style={{ color: "#FF0000" }}>Failed to Load</span>
   if(!loadedValue.value) return null;
   if(loadedValue.value.sha !== activeSha){
-    const content = loadedValue.value.content;
+    const { content, sha } = loadedValue.value;
     return (
       <>
         <span style={{ color: "#FFFF00" }}>Script is different than File</span>
         <button
-          onClick={()=>(toggleDiff({ path: referencePath, content }))}
+          onClick={()=>(toggleDiff({ path: referencePath, content, sha }))}
         >Update Config</button>
       </>
     )
@@ -116,11 +119,11 @@ export function useDraftDiff(
     configFile, updateConfig
   }: {
     configFile: { path: string, file: Script }
-    updateConfig: (config: { content: string })=>any
+    updateConfig: (config: { content: string, sha?: string })=>any
   }
 ){
   const lightbox = useLightbox()
-  return useCallback((referenceFile: { path: string, content: string })=>{
+  return useCallback((referenceFile: { path: string, content: string, sha?: string })=>{
     lightbox.open(
       <DiffView
         description={
@@ -136,7 +139,7 @@ export function useDraftDiff(
           lightbox.close();
         }}
         onUseFile={()=>{
-          updateConfig({ content: referenceFile.content })
+          updateConfig({ content: referenceFile.content, sha: referenceFile.sha })
           lightbox.close();
         }}
       />
