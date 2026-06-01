@@ -49,7 +49,7 @@ export function getScriptGlobals<ScriptModule>(
     requireScript: (path: string, runCode: (newPath: string, content: string)=>Promise<ScriptModule>)=>{
       return requiredModule.require(path, runCode);
     },
-    debug(...args: any[]){
+    log(...args: any[]){
       if(!debugLog) return;
       debugLog.push(args.map(a => inspect(a, { depth: 4, compact: true })).join(" "));
     }
