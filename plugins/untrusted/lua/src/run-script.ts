@@ -78,8 +78,12 @@ export const runLuaScript: UntrustedScript<any>["runScript"] = async function(
       throw new Error("Unknown Input Type");
     }
 
+    // Pass the script as a global so load() can give it its own line numbering.
+    lua.global.set("__userScript", script);
+
     // The gas-limit hook, RNG override, user script, and main() call all run in
     // one doString so the debug hook stays active for the entire execution.
+    // The user script is loaded via load() so error line numbers match the user's file.
     return await lua.doString(`
       do
         local _gas = 0
@@ -92,7 +96,9 @@ export const runLuaScript: UntrustedScript<any>["runScript"] = async function(
 
       ${RNG_OVERRIDE_LUA}
 
-      ${script}
+      local _fn, _err = load(__userScript, "@script", "t")
+      if not _fn then error(_err) end
+      _fn()
 
       if type(${initialMethod}) ~= "function" then
         error("No ${initialMethod} function defined in script")
