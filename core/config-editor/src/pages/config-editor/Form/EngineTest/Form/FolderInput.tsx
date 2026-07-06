@@ -3,7 +3,7 @@ import { useRecentFiles } from "../../../../../globals/recent-files";
 import { nativeWindow } from "../../../../../tauri/window";
 import { InputProps } from "../../../../../utils/react";
 
-import { dirname } from "path";
+import { dirname } from "@tauri-apps/api/path";
 
 const TEST_FOLDERS = "engine-test-folders";
 export function FolderInput(
@@ -19,7 +19,7 @@ export function FolderInput(
       <h3>Folder to Test</h3>
       <button
         onClick={async ()=>{
-          const defaultPath = (function(){
+          const defaultPath = await (function(){
             const path = value || recentFiles && recentFiles[0]?.path;
             if(!path) return;
             return dirname(path);

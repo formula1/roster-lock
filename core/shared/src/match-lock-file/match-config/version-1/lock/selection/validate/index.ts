@@ -4,6 +4,7 @@ import { validateSelectionPieceMeta } from "./meta";
 import { validateNormal } from "./selections/normal";
 import { validatePreselected } from "./selections/preselected";
 
+import { validateUntrustedScript } from "./script";
 
 export function validateSelectionConfig(
   selectionConfig: RosterLockV1Config["selection"],
@@ -15,9 +16,7 @@ export function validateSelectionConfig(
     if(!pieceDefinition){
       throw new Error(`Piece type ${pieceType} is not defined in engine`);
     }
-    if(selection.pieceMeta){
-      validateSelectionPieceMeta(selection.pieceMeta, pieceType, config);
-    }
+    validateSelectionPieceMeta(selection.pieceMeta, pieceType, config);
     switch(selection.type){
       case "preselected":
         validatePreselected(selection.pieces, pieceType, config);
@@ -27,6 +26,13 @@ export function validateSelectionConfig(
         break;
       case "game-controlled":
         break;
+      case "unselectable":
+        break;
+    }
+  }
+  if(selectionConfig.globalValidation){
+    for(const script of selectionConfig.globalValidation){
+      validateUntrustedScript(script, config);
     }
   }
 }

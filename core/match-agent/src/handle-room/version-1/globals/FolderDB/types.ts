@@ -1,4 +1,4 @@
-import { RosterLockPiece, RosterLockV1Config } from "@match-lock/shared";
+import { RosterLockPiece, RosterLockV1Config } from "@roster-lock/types";
 import { ProgressHandlers } from "../../handleDownloads/types";
 
 export interface IFolderDB {

@@ -67,7 +67,8 @@ export function AddPieceFromFolder(
           }}
           >Load Piece From Folder</button>
         </div>
-        {currentFolder && <div>Selected: {currentFolder}</div>}
+        {currentFolder && <div>{currentFolder}</div>}
+        {currentFolder && <div><button onClick={()=>(setCurrentFolder(null))} >Clear Folder</button></div>}
       </div>
       {pieceDefinition && pathVariables && pieceDefinition.pathVariables.length > 0 && (
         <div className="section">

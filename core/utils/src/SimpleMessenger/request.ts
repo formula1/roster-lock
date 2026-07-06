@@ -1,6 +1,7 @@
 import { JSON_Unknown } from "../JSON";
 import { uniqueId } from "../string";
 
+import { promiseWithResolvers } from "../Promise/withResolvers";
 import { SimpleMessenger } from "./types"
 
 type RequestMessage = {
@@ -79,7 +80,7 @@ export function makeRequest(
   messager: SimpleMessenger, path: string, data: undefined | JSON_Unknown
 ): Promise<JSON_Unknown>{
   const originalId = uniqueId();
-  const { resolve, reject, promise } = Promise.withResolvers<JSON_Unknown>();
+  const { resolve, reject, promise } = promiseWithResolvers<JSON_Unknown>();
   const off = messager.onMessage(async (message)=>{
     try {
       if(!castResponse(message)){

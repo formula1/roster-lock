@@ -1,6 +1,6 @@
 
 
-import { MessageBridge } from "../../../utils/MessageBridge";
+import { MessageBridge } from "@roster-lock/utils";
 import { WebSocketHandlerCallback } from "../../../utils/websocket-router";
 import { castRoomRequest, exchangeAndDownloadSelections } from "./exchange-and-download-selections";
 

@@ -1,6 +1,6 @@
 
 import { IncomingMessage, ServerResponse } from "http";
-import { GenericRouter, RouterConfig, GenericRouterCallbackArg, GenericHandlerCallback } from "./generic-router";
+import { GenericRouter, RouterConfig, GenericRouterCallbackArg, GenericHandlerCallback } from "@roster-lock/utils";
 
 export async function jsonBody(req: IncomingMessage){
   const data: string = await new Promise((resolve, reject)=>{

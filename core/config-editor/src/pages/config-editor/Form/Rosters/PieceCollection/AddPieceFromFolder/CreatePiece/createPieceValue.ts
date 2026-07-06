@@ -1,6 +1,6 @@
 
 
-import { join as pathJoin } from "path";
+import { join as pathJoin } from "@tauri-apps/api/path";
 import {
   PATH_ROSTERLOCK_PIECE_META,
   ROSTERLOCK_V1_PIECEMETADATA_CASTER_JSONSCHEMA,
@@ -43,7 +43,7 @@ export async function createPieceValue(
     Promise.resolve().then(async ()=>{
       piece.version = await calculatePieceVersion(
         filesWithAssets, async (path)=>{
-          path = pathJoin(folderPath, path);
+          path = await pathJoin(folderPath, path);
           const byteSize = await fs.stat(path).then(r=>r.size);
           return { byteSize, stream: fs.getFileStream(path) };
         },
@@ -53,7 +53,7 @@ export async function createPieceValue(
     }),
     Promise.resolve().then(async ()=>{
       try {
-        const path = pathJoin(folderPath, PATH_ROSTERLOCK_PIECE_META);
+        const path = await pathJoin(folderPath, PATH_ROSTERLOCK_PIECE_META);
         if(!await fs.exists(path)) return;
         const json = await fs.readJSON(path);
         const metaData = ROSTERLOCK_V1_PIECEMETADATA_CASTER_JSONSCHEMA.cast(json, true);

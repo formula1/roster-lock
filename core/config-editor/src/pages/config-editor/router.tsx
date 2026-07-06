@@ -1,27 +1,23 @@
 import { Route } from "react-router";
-import { ConfigEditorRoute } from "./Form";
 
-import {
-  NewConfigOutlet,
-} from "./NewConfig";
-import {
-  FileConfigOutlet,
-} from "./FileConfig";
+import { FileConfigOutlet } from "./Outlet";
 import { relative } from "../../utils/router";
 
-import { NewRosterConfigPaths } from "./NewConfig";
-import { FileRosterConfigPaths } from "./FileConfig";
+import { RosterLockPaths } from "./paths";
 
+import { ConfigRoot } from "./Form/ConfigRoot"
+import { EngineEditPage } from "./Form/Engine";
+import { EngineTest } from "./Form/EngineTest";
+import { RosterConfigEditPage } from "./Form/Rosters";
+import { SelectionRoute } from "./Form/Selection";
 
-
-export const NewConfigEditorRoute = (
-  <Route path={relative("/", NewRosterConfigPaths.Root)} element={<NewConfigOutlet />}>
-    {ConfigEditorRoute}
-  </Route>
-);
 
 export const FileConfigEditorRoute = (
-  <Route path={relative("/", FileRosterConfigPaths.Root)} element={<FileConfigOutlet />}>
-    {ConfigEditorRoute}
+  <Route path={relative("/", RosterLockPaths.Root)} element={<FileConfigOutlet />}>
+    <Route index element={<ConfigRoot />} />
+    <Route path={relative(RosterLockPaths.Root, RosterLockPaths.Engine)} element={<EngineEditPage />} />
+    <Route path={relative(RosterLockPaths.Root, RosterLockPaths.EngineTest)} element={<EngineTest />} />
+    <Route path={relative(RosterLockPaths.Root, RosterLockPaths.Roster)} element={<RosterConfigEditPage />} />
+    {SelectionRoute}
   </Route>
 )

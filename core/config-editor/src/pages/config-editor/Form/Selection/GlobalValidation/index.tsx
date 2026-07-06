@@ -1,25 +1,31 @@
-import type { GasLimittedScript } from "@roster-lock/types";
+import type { UntrustedScriptRef } from "@roster-lock/types";
 import type { InputProps } from "../../../../../utils/react/input";
-import { ScriptInput } from "../ScriptInput";
+import { ScriptRefArrayInput } from "../ScriptRef"
+import { useRosterLock } from "../../Contexts/RosterLock";
 
-type Props = InputProps<Array<GasLimittedScript>>;
+type Props = InputProps<Array<UntrustedScriptRef>>;
+
+export function GlobalValidationPage(){
+  const { value, onChange } = useRosterLock();
+
+  return (
+    <GlobalValidation
+      value={value.selection.globalValidation}
+      onChange={scripts =>
+        onChange(old => ({
+          ...old,
+          selection: {
+            ...old.selection,
+            globalValidation: scripts,
+          },
+        }))
+      }
+    />
+  );
+
+}
 
 export function GlobalValidation({ value, onChange }: Props) {
-  function addScript() {
-    onChange([...value, { type: "text/lua", src: "" }]);
-  }
-
-  function updateScript(i: number, script: GasLimittedScript | undefined) {
-    if (!script) return;
-    const next = [...value];
-    next[i] = script;
-    onChange(next);
-  }
-
-  function removeScript(i: number) {
-    onChange(value.filter((_, j) => j !== i));
-  }
-
   return (
     <div className="section">
       <h2>Global Validation</h2>
@@ -27,21 +33,10 @@ export function GlobalValidation({ value, onChange }: Props) {
         Scripts run after all piece selections are merged. Receives the complete final selection.
       </p>
 
-      {value.map((script, i) => (
-        <ScriptInput
-          key={i}
-          label={`Global Validation Script ${i + 1}`}
-          value={script}
-          onChange={s => updateScript(i, s as GasLimittedScript)}
-          onRemove={() => removeScript(i)}
-          purpose="global-validation"
-
-        />
-      ))}
-
-      <button type="button" onClick={addScript}>
-        Add Global Validation Script
-      </button>
+      <ScriptRefArrayInput
+        value={value}
+        onChange={onChange}
+      />
     </div>
   );
 }

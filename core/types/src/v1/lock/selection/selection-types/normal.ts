@@ -1,13 +1,13 @@
-import { JSONShallowObject, SelectionPieceMeta } from "../meta"
-import { GasLimittedScript } from "../script"
-import { PieceId } from "../../../shared"
+import { JSONShallowObject, SelectionPieceMeta } from "../meta";
+import { UntrustedScriptRef } from "../script";
+import { PieceId, Count } from "../../../shared";
 
 export type UserSelectionValidation = {
-  count: number | "*" | [number, number | "*"],
+  count: Count,
   unique: boolean,
-  banList?: Array<PieceId>,
-  customValidation: Array<GasLimittedScript>
-}
+  banList: Array<PieceId>,
+  customValidation: Array<UntrustedScriptRef>
+};
 
 
 export type SelectionNormalConfig = {
@@ -16,13 +16,13 @@ export type SelectionNormalConfig = {
   Shared meta exists so there doesn't have to be duplication of metadata between validation and merging
   If a path of the shared meta intersects with validation of merge meta then its invalid
   */
-  pieceMeta?: SelectionPieceMeta<JSONShallowObject>,
+  pieceMeta: SelectionPieceMeta<JSONShallowObject>,
 
   /*
     The validation is used to validate the current user's and other player's choices
     The validation does not validate the final choices after the merge algorithm is run
   */
-  validation?: UserSelectionValidation,
+  validation: UserSelectionValidation,
 
   /*
     A merge algorithm takes in each player's choices and returns a new set of choices
@@ -33,6 +33,6 @@ export type SelectionNormalConfig = {
     
     We validate the return type of the algorithm to ensure it matches the pieceType
   */
-  mergeAlgorithm?: GasLimittedScript
-}
+  mergeAlgorithm?: UntrustedScriptRef
+};
 

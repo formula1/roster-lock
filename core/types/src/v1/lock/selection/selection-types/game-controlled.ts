@@ -8,5 +8,5 @@ import { JSONShallowObject, SelectionPieceMeta } from "../meta";
 // Room will handle the selection as if it were a "preselected" config
 export type SelectionGameControlledConfig = {
   type: "game-controlled",
-  pieceMeta?: SelectionPieceMeta<JSONShallowObject>,
-}
+  pieceMeta: SelectionPieceMeta<JSONShallowObject>,
+};

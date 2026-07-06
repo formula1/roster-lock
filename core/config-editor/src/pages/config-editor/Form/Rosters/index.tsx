@@ -9,7 +9,7 @@ export * from "./resetPieces"
 import { useEffect } from "react";
 import { resetPieces } from "./resetPieces";
 import { useRosterLock } from "../Contexts/RosterLock";
-import { useDraftInfo } from "../Contexts/DraftInfo";
+import { useDraftPieceInfo } from "../Contexts/DraftInfo";
 
 type RosterLockV1Config = RosterLockV1Draft["stagedLock"];
 
@@ -34,22 +34,24 @@ import { PieceRosterLegend } from "./Legend";
 
 import { FollowButtonForm } from "../../../../components/FollowButtonForm";
 import { AddPieceFromFolder } from "./PieceCollection/AddPieceFromFolder";
+import { usePageInfo } from "../../Contexts/PageTitle";
 
 export function RosterConfigEditPage(){
   const { value, onChange } = useRosterLock();
-  const { value: draft, onChange: onDraftChange } = useDraftInfo()
+  const { value: draft, onChange: onDraftChange } = useDraftPieceInfo()
   const buttons = useFollowButtons();
+  const { onChange: setPageInfo } = usePageInfo();
+
+  useEffect(()=>{
+    setPageInfo({
+      title: "Roster Config",
+      note: <PieceRosterLegend rosters={value.rosters} />
+    })
+  }, [])
   
 
-  return <div style={{ overflow: "hidden", flexGrow: 1 }}>
-    <h1>New Engine Config</h1>
-    <FollowButtonForm
-      info={{
-        title: "Roster Config",
-        note: <PieceRosterLegend rosters={value.rosters} />,
-      }}
-      buttons={buttons}
-    >
+  return (
+    <>
       <AddPieceFromFolder
         rosterLock={value}
         onSubmit={({ pieceDefinitionKey, piece, draftInfo })=>{
@@ -76,6 +78,6 @@ export function RosterConfigEditPage(){
         value={value}
         onChange={onChange}
       />
-    </FollowButtonForm>
-  </div>
+    </>
+  );
 }

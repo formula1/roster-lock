@@ -1,5 +1,5 @@
 
-import { MessageBridge } from "../../../utils/MessageBridge";
+import { MessageBridge } from "@roster-lock/utils";
 import {
   FinalSelection, RosterLockV1Config, SelectedPiece, UserSelection,
   RosterLockV1SyncDLResult
@@ -9,7 +9,7 @@ import { encryptJSON, decryptJSON } from "../handleRoomSelections/encryption";
 import { createRandomSeed } from "../handleRoomSelections/random";
 import { z, ZodType } from "zod";
 import { UserSelectionSchema } from "../schema/selected";
-import { runUntrustedScript } from "@roster-lock/node-services";
+import { runUntrustedScript, DEFAULT_PLUGIN_DIR } from "@roster-lock/plugin-runtime";
 import { handleDownloads } from "../handleDownloads";
 import { IFolderDB } from "../globals/FolderDB";
 import { RosterLockDownloadUpdate } from "@roster-lock/types";
@@ -121,7 +121,7 @@ export function bindStepsToBridge(
       decryptedSelections[user.publicKey] = casted.data;
     }))
     const finalSelection = await runSelection(
-      lockConfig, gameControlledSelections, decryptedSelections, runUntrustedScript
+      lockConfig, gameControlledSelections, decryptedSelections, (script)=>(runUntrustedScript(DEFAULT_PLUGIN_DIR, script))
     );
     stateTracker.set({ state: "user-download", finalSelection: finalSelection });
 

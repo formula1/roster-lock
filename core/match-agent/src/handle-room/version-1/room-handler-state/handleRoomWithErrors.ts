@@ -1,4 +1,4 @@
-import { RosterLockV1Config, UserInput } from "@match-lock/shared";
+import { RosterLockV1Config, UserInput } from "@roster-lock/types";
 
 import { IRoom } from "../globals/Room";
 import { waitForExternalError, waitForStoppedRoomHeartbeat } from "./roomErrors";

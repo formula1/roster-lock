@@ -11,14 +11,14 @@ export function fetchBody(method: string, body: JSON_Unknown): RequestInit {
   }
 }
 
-export async function handleFetch(fetched: ReturnType<typeof fetch>){
+export async function handleFetch<T extends JSON_Unknown>(fetched: ReturnType<typeof fetch>): Promise<T>{
   const response = await fetched;
-  const json = await response.json() as JSON_Unknown;
+  const json = await response.json();
 
   if(!response.ok){
-    throw new FetchError("Fetch Failed", response, json);
+    throw new FetchError("Fetch Failed", response, json as JSON_Unknown);
   }
-  return json;
+  return json as T;
 }
 
 

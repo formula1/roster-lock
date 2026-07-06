@@ -4,7 +4,7 @@ import { createContext, PropsWithChildren, useContext, useCallback } from "react
 import { StateInputProps } from "../../../../utils/react/input";
 
 import { RosterLockV1Config } from "@roster-lock/types";
-import { EMPTY_ROSTER_LOCK } from "../constants/roster-configs";
+import { EMPTY_ROSTER_LOCK } from "@roster-lock/shared";
 
 const RosterLockContext = createContext<StateInputProps<RosterLockV1Config>>({
   value: EMPTY_ROSTER_LOCK,

@@ -1,0 +1,1 @@
+The `global validation` page is for scripts that require the final results from more than one piece types.

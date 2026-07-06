@@ -38,7 +38,7 @@ export function PieceValueList(
             key={index}
             pieceDefinition={pieceDefinition}
             config={config}
-
+            pieceType={pieceType}
 
             value={piece}
             onChange={v => onChange(value.map((oldPiece, i) => i !== index ? oldPiece : v))}
@@ -46,7 +46,7 @@ export function PieceValueList(
             index={index}
             items={value}
             onDelete={() => onChange(value.filter((_, i) => i !== index))}
-            
+
           />
         </div>
       ))}

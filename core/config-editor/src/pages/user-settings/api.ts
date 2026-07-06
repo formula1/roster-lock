@@ -1,17 +1,17 @@
 
 import { nativeAPI } from "../../tauri";
 
-import { join } from 'path';
+import { join } from '@tauri-apps/api/path';
 
 // User settings management using TypeScript
 const USER_SETTINGS_KEY = 'user-settings';
 
 type UserSettings = {
-  matchLockDirChoice: 'create' | 'dontAsk' | 'askLater';
+  rosterLockDirChoice: 'create' | 'dontAsk' | 'askLater';
 }
 
 const DEFAULT_SETTINGS: UserSettings = {
-  matchLockDirChoice: 'askLater'
+  rosterLockDirChoice: 'askLater'
 };
 
 export async function getUserSettings(): Promise<UserSettings> {
@@ -37,56 +37,56 @@ export async function updateUserSettings(newSettings: Partial<UserSettings>): Pr
   }
 }
 
-export async function initializeUserDirectories(): Promise<{ shouldShowDialog: boolean; matchLockDir: string }> {
+export async function initializeUserDirectories(): Promise<{ shouldShowDialog: boolean; rosterLockDir: string }> {
   try {
     const homeDir = await nativeAPI.fs.homeDir();
-    const matchLockDir = join(homeDir, 'match-lock');
+    const rosterLockDir = await join(homeDir, 'roster-lock');
     
     // Check if the match-lock directory already exists
-    if (await nativeAPI.fs.exists(matchLockDir)) {
-      return { shouldShowDialog: false, matchLockDir };
+    if (await nativeAPI.fs.exists(rosterLockDir)) {
+      return { shouldShowDialog: false, rosterLockDir };
     }
     
     const settings = await getUserSettings();
     
     // If user previously chose to create, create it automatically
-    if (settings.matchLockDirChoice === 'create') {
-      await nativeAPI.fs.mkdirAll(matchLockDir);
-      console.log('✅ Created match-lock directory automatically:', matchLockDir);
-      return { shouldShowDialog: false, matchLockDir };
+    if (settings.rosterLockDirChoice === 'create') {
+      await nativeAPI.fs.mkdirAll(rosterLockDir);
+      console.log('✅ Created match-lock directory automatically:', rosterLockDir);
+      return { shouldShowDialog: false, rosterLockDir };
     }
 
     // If user chose don't ask, skip
-    if (settings.matchLockDirChoice === 'dontAsk') {
+    if (settings.rosterLockDirChoice === 'dontAsk') {
       console.log('ℹ️ User chose not to be asked again, skipping match-lock directory creation');
-      return { shouldShowDialog: false, matchLockDir };
+      return { shouldShowDialog: false, rosterLockDir };
     }
 
     // Default: ask the user
-    return { shouldShowDialog: true, matchLockDir };
+    return { shouldShowDialog: true, rosterLockDir };
   } catch (error) {
     console.error('Error initializing user directories:', error);
     const homeDir = await nativeAPI.fs.homeDir();
-    const matchLockDir = join(homeDir, 'match-lock');
-    return { shouldShowDialog: true, matchLockDir };
+    const rosterLockDir = await join(homeDir, 'roster-lock');
+    return { shouldShowDialog: true, rosterLockDir };
   }
 }
 
 export async function handleUserChoice(
   choice: 'create' | 'askLater' | 'dontAsk',
-  matchLockDir: string
+  rosterLockDir: string
 ): Promise<boolean> {
   try {
     switch (choice) {
       case 'create':
-        await nativeAPI.fs.mkdirAll(matchLockDir);
-        await updateUserSettings({ matchLockDirChoice: 'create' });
-        console.log('✅ Created match-lock directory:', matchLockDir);
+        await nativeAPI.fs.mkdirAll(rosterLockDir);
+        await updateUserSettings({ rosterLockDirChoice: 'create' });
+        console.log('✅ Created match-lock directory:', rosterLockDir);
         return true;
       case 'askLater':
         return true;
       case 'dontAsk':
-        await updateUserSettings({ matchLockDirChoice: 'dontAsk' });
+        await updateUserSettings({ rosterLockDirChoice: 'dontAsk' });
         console.log('ℹ️ User chose not to be asked again');
         return true;
       default:

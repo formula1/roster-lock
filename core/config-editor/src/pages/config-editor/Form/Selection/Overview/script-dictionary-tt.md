@@ -1,0 +1,1 @@
+The `script dictionary` page provides you the ability to add and view scripts that can be used for validation and/or merging.

@@ -4,13 +4,13 @@ import { initializeUserDirectories, handleUserChoice as handleUserChoiceAPI } fr
 
 interface UserSettingsState {
   state: "loading" | "expecting-input" | "ready";
-  matchLockDir: string;
+  rosterLockDir: string;
 }
 
 export const useUserSettings = () => {
   const [state, setState] = useState<UserSettingsState>({
     state: "loading",
-    matchLockDir: '',
+    rosterLockDir: '',
   });
 
   useEffect(() => {
@@ -23,12 +23,12 @@ export const useUserSettings = () => {
         if (result.shouldShowDialog) {
           setState({
             state: "expecting-input",
-            matchLockDir: result.matchLockDir,
+            rosterLockDir: result.rosterLockDir,
           });
         } else {
           setState({
             state: "ready",
-            matchLockDir: result.matchLockDir,
+            rosterLockDir: result.rosterLockDir,
           });
         }
       } catch (error) {
@@ -40,7 +40,7 @@ export const useUserSettings = () => {
   const handleUserChoice = useCallback(async (choice: 'create' | 'askLater' | 'dontAsk') => {
     try {
       console.log("Handling User Choice:", choice);
-      await handleUserChoiceAPI(choice, state.matchLockDir);
+      await handleUserChoiceAPI(choice, state.rosterLockDir);
       setState(prev => ({ ...prev, state: "ready" }));
     } catch (error) {
       console.error('Failed to handle user choice:', error);
@@ -49,7 +49,7 @@ export const useUserSettings = () => {
 
   return {
     state: state.state,
-    matchLockDir: state.matchLockDir,
+    rosterLockDir: state.rosterLockDir,
     handleUserChoice,
   };
 };

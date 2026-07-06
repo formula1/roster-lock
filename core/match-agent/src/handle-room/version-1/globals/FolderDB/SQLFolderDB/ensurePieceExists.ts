@@ -6,7 +6,7 @@ import { rm as fsRm, mkdir } from "node:fs/promises";
 import { join as pathJoin, isAbsolute as isAbsolutePath } from "node:path";
 import { ProgressHandlers } from "../../../handleDownloads/types";
 
-import { downloadToFolder } from "@roster-lock/node-services";
+import { downloadToFolder, DEFAULT_PLUGIN_DIR } from "@roster-lock/plugin-runtime";
 import { getDownloadSourceVersion } from "./getVersions";
 import { prepareDatabase } from "./schema";
 import { MultiAbortSignal, raceWithAbort } from "./MultiAbort";
@@ -136,16 +136,20 @@ export class SQLite3FolderDB implements IFolderDB {
         await mkdir(fullPath, { recursive: true });
         this.db.updateDownloadSource(lockConfig, pieceInfo, downloadLocation);
         await downloadToFolder(
-          downloadLocation, fullPath, {
-            onProgress: (progress) => {
-              this.emitProgress(lockConfig, pieceInfo, {
-                type: ROSTERLOCK_DOWNLOAD_STATE.downloadProgress,
-                pieceType: pieceType,
-                pieceVersions: { logic: pieceInfo.logic, media: pieceInfo.media },
-                progress,
-              });
-            },
-            abortSignal,
+          DEFAULT_PLUGIN_DIR, {
+            url: downloadLocation,
+            destinationFolder: fullPath,
+            processHandlers: {
+              onProgress: (progress) => {
+                this.emitProgress(lockConfig, pieceInfo, {
+                  type: ROSTERLOCK_DOWNLOAD_STATE.downloadProgress,
+                  pieceType: pieceType,
+                  pieceVersions: { logic: pieceInfo.logic, media: pieceInfo.media },
+                  progress,
+                });
+              },
+              abortSignal,
+            }
           }
         );
         this.emitProgress(lockConfig, pieceInfo, {

@@ -15,4 +15,4 @@ export type RosterLockV1SyncDLRequestClientToAgent = {
   },
   rosterConfig: RosterLockV1Config,
   userSelection: UserSelection,
-}
+};

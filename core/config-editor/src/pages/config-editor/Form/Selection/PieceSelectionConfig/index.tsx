@@ -1,52 +1,81 @@
 import type {
-  RosterLockPiece,
-  SelectionNormalConfig,
-  SelectionGameControlledConfig,
-  SelectionPreselectedConfig,
-  SelectionPieceMeta,
-  JSONShallowObject,
-  GasLimittedScript,
   EngineSelectionStrategy,
+  RosterLockV1Config,
 } from "@roster-lock/types";
 import type { InputProps } from "../../../../../utils/react/input";
-import { PieceMetaEditor } from "../PieceMetaEditor";
-import { NormalValidation } from "../NormalValidation";
-import { ScriptInput } from "../ScriptInput";
+import { pieceMetaTT, PieceMetaEditor } from "../PieceMetaEditor";
+import { useRosterLock } from "../../Contexts/RosterLock";
 
-type AnySelectionConfig =
-  | SelectionNormalConfig
-  | SelectionGameControlledConfig
-  | SelectionPreselectedConfig;
+import { NormalSelectionInput } from "./NormalSelection";
+import { GameControlledSelectionInput } from "./GameControlled";
+import { PreselectedSelectionInput } from "./Preselected"
+import { UnselectableSelectionInput } from "./Unselectable";
+import { isStrategyUnselectable } from "../utils/is-unselectable";
+import {
+  EMPTY_ROSTER_NORMAL_SELECTION,
+  EMPTY_ROSTER_GAME_SELECTION,
+  EMPTY_ROSTER_PRESELECTED_SELECTION,
+} from "@roster-lock/shared"
+import { cloneJSON } from "@roster-lock/utils";
+import { Link, useParams } from "react-router";
 
-type Props = InputProps<AnySelectionConfig | undefined> & {
-  pieceType: string;
-  strategy: EngineSelectionStrategy;
-  pieces: Array<RosterLockPiece>;
-};
+import { RosterLockPaths } from "../../../paths";
+import { replaceParams } from "../../../../../utils/router";
+import { updatePiece } from "../utils/update-piece";
+import { ToolTipSpan } from "../../../../../components/ToolTip";
 
-function toNormal(v: AnySelectionConfig | undefined): SelectionNormalConfig {
-  if (v?.type === "normal") return v;
-  return { type: "normal", pieceMeta: (v as any)?.pieceMeta };
-}
+type SelectionConfig = (
+  RosterLockV1Config["selection"]["piece"][string]
+)
 
-function toGameControlled(v: AnySelectionConfig | undefined): SelectionGameControlledConfig {
-  if (v?.type === "game-controlled") return v;
-  return { type: "game-controlled", pieceMeta: (v as any)?.pieceMeta };
-}
+export function PieceSelectionConfigPage(){
+  const { value, onChange } = useRosterLock();
+  const params = useParams();
 
-function strategyLabel(strategy: EngineSelectionStrategy): string {
-  return { mandatory: "Mandatory", personal: "Personal", shared: "Shared", "on demand": "On Demand" }[strategy] ?? strategy;
-}
+  const pieceType = params.pieceType;
 
-export function PieceSelectionConfig({ pieceType, strategy, pieces, value, onChange }: Props) {
-  const isNormal = strategy === "personal" || strategy === "shared";
+  const pieceConfig = value.selection.piece[pieceType || ""];
 
-  const config_ = isNormal ? toNormal(value) : toGameControlled(value);
-  const pieceMeta = config_.pieceMeta;
-
-  function setPieceMeta(pm: SelectionPieceMeta<JSONShallowObject> | undefined) {
-    onChange({ ...config_, pieceMeta: pm } as AnySelectionConfig);
+  if(!pieceType || !pieceConfig){
+    return (
+      <>
+        <h1>Piece Not Found</h1>
+        <p>
+          <Link
+            to={replaceParams(RosterLockPaths.Selection.INDEX, params)}
+          >Go back to Selection</Link>
+        </p>
+      </>
+    );
   }
+
+  return (
+    <PieceSelectionConfig
+      pieceType={pieceType}
+      value={pieceConfig}
+      onChange={pieceConfig =>
+        onChange(old => updatePiece(old, pieceType, pieceConfig))
+      }
+    />
+  );
+}
+
+
+export function PieceSelectionConfig(
+  { pieceType, value, onChange }: (
+    & InputProps<SelectionConfig>
+    & { pieceType: string }
+  )
+) {
+  const { value: lock } = useRosterLock();
+  const defintion = lock.engine.pieceDefinitions[pieceType]
+  if(!defintion) return (
+    <h4 className="error">{pieceType} has no engine defintiion</h4>
+  )
+  const pieces = lock.rosters[pieceType]
+  if(!pieces) return (
+    <h4 className="error">{pieceType} has no roster list</h4>
+  );
 
   return (
     <div className="section">
@@ -58,39 +87,81 @@ export function PieceSelectionConfig({ pieceType, strategy, pieces, value, onCha
           fontWeight: "normal",
           opacity: 0.7,
         }}>
-          {strategyLabel(strategy)}
+          {STRATEGY_LABELS[defintion.selectionStrategy]}
         </span>
+        {!isStrategyUnselectable(defintion) && (
+          <select
+            value={value.type}
+            onChange={(e)=>{
+              const config = SELECTION_FORMS[e.target.value];
+              if(!config) throw new Error("Missing Selection Type")
+              const cloned = cloneJSON(config.empty);
+              cloned.pieceMeta = value.pieceMeta;
+              onChange(cloned);
+            }}
+          >
+            {Object.entries(SELECTION_FORMS).map(([k, { title }])=>(
+              <option value={k} >{title}</option>
+            ))}
+          </select>
+        )}
       </h2>
 
-      <PieceMetaEditor
-        value={pieceMeta}
-        onChange={setPieceMeta}
-        pieces={pieces}
-      />
+      <div className="section">
+        <h3>
+          <ToolTipSpan tip={pieceMetaTT} >Piece Meta</ToolTipSpan>
+        </h3>
+        <PieceMetaEditor
+          value={value.pieceMeta}
+          onChange={(pieceMeta)=>(onChange({ ...value, pieceMeta }))}
+          pieces={pieces}
+        />
+      </div>
 
-      {isNormal && (() => {
-        const normal = config_ as SelectionNormalConfig;
-        return (
-          <>
-            <NormalValidation
-              value={normal.validation}
-              onChange={validation => onChange({ ...normal, validation })}
-              pieceType={pieceType}
-            />
+      {
+        value.type === "unselectable" ? (
+          <UnselectableSelectionInput
+            value={value}
+            onChange={onChange}
+            pieceType={pieceType}
+          />
+        ):
+        value.type === "game-controlled" ? (
+          <GameControlledSelectionInput
+            value={value}
+            onChange={onChange}
+            pieceType={pieceType}
+          />
+        ) :
+        value.type === "normal" ? (
+          <NormalSelectionInput
+            value={value}
+            onChange={onChange}
+            pieceType={pieceType}
+          />
+        ) : value.type === "preselected" ? (
+          <PreselectedSelectionInput
+            value={value}
+            onChange={onChange}
+            pieceType={pieceType}
+          />
+        ) : null
+      }
 
-            {strategy === "shared" && (
-              <ScriptInput
-                label="Merge Algorithm"
-                value={normal.mergeAlgorithm}
-                onChange={script => onChange({ ...normal, mergeAlgorithm: script as GasLimittedScript })}
-                onRemove={normal.mergeAlgorithm ? () => onChange({ ...normal, mergeAlgorithm: undefined }) : undefined}
-                purpose="piece-merge"
-                pieceType={pieceType}
-              />
-            )}
-          </>
-        );
-      })()}
     </div>
   );
+}
+
+
+const STRATEGY_LABELS: Record<EngineSelectionStrategy, string> = {
+  mandatory: "Mandatory",
+  personal: "Personal",
+  shared: "Shared",
+  "on demand": "On Demand"
+}
+
+const SELECTION_FORMS: Record<string, { title: string, empty: SelectionConfig }> = {
+  "normal": { title: "Normal", empty: EMPTY_ROSTER_NORMAL_SELECTION },
+  "preselected": { title: "Preselected", empty: EMPTY_ROSTER_PRESELECTED_SELECTION },
+  "game-controlled": { title: "Game Controlled", empty: EMPTY_ROSTER_GAME_SELECTION },
 }

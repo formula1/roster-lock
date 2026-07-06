@@ -6,13 +6,17 @@ import { RosterLockV1Config } from "@roster-lock/types";
 import { preselectedSelectionSchema } from "./selection-types/preselected";
 import { normalSelectionSchema } from "./selection-types/normal";
 import { gameControlledSelectionSchema } from "./selection-types/game-controlled";
+import { unselectableSelectionSchema } from "./selection-types/unselectable";
 
-import { gasLimittedScriptSchema } from "./script";
-export { gasLimittedScriptSchema };
+import {
+  untrustedScriptRefSchema, scriptRefSrcSchemaValidator, scriptRefMethodSchemaValidator,
+  untrustedScriptDictionarySchema
+} from "./script";
+export { untrustedScriptRefSchema };
 
 export const selectionConfigSchema: JSONSchemaType<RosterLockV1Config["selection"]> = {
   type: "object",
-  required: ["piece", "scripts"],
+  required: ["piece", "scriptDictionary"],
   additionalProperties: false,
   properties: {
     piece: {
@@ -23,21 +27,17 @@ export const selectionConfigSchema: JSONSchemaType<RosterLockV1Config["selection
           preselectedSelectionSchema,
           normalSelectionSchema,
           gameControlledSelectionSchema,
+          unselectableSelectionSchema
         ],
       },
     },
     globalValidation: {
       type: "array",
-      items: gasLimittedScriptSchema,
-      nullable: true,
+      items: untrustedScriptRefSchema,
     },
-    scripts: {
-      type: "object",
-      required: [],
-      additionalProperties: { type: "string" }
-    }
+    scriptDictionary: untrustedScriptDictionarySchema
   },
-}
+};
 
 
 import { banListSchemaValidator } from "./selection-types/normal";
@@ -50,7 +50,12 @@ import {
 
 export const selectionKeywords = [
   banListSchemaValidator,
+
   preselectedSchemaValidator,
+
   metaDefaultValueSchemaValidator,
-  metaPieceValueSchemaValidator
-]
+  metaPieceValueSchemaValidator,
+
+  scriptRefSrcSchemaValidator,
+  scriptRefMethodSchemaValidator,
+];

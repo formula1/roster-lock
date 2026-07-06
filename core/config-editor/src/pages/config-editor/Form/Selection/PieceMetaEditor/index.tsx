@@ -3,12 +3,20 @@ import type { SelectionPieceMeta, JSONShallowObject } from "@roster-lock/types";
 import type { RosterLockPiece } from "@roster-lock/types";
 import type { InputProps } from "../../../../../utils/react/input";
 
+import pieceMetaTT from "./tooltip.md"
+export { pieceMetaTT }
+
 type SimpleSchemaType = "boolean" | "number" | "string" | "boolean[]" | "number[]" | "string[]";
 type PieceMeta = SelectionPieceMeta<JSONShallowObject>;
 
-const SCHEMA_TYPES: SimpleSchemaType[] = [
-  "boolean", "number", "string", "boolean[]", "number[]", "string[]",
-];
+const SCHEMA_TYPES: Record<SimpleSchemaType, { title: string }> = {
+  "boolean": { title: "True/False" },
+  "number": { title: "Number" },
+  "string": { title: "Text" },
+  "boolean[]": { title: "List of True/False" },
+  "number[]": { title: "List of Numbers" },
+  "string[]": { title: "List of Text" },
+};
 
 function defaultValue(type: SimpleSchemaType): JSONShallowObject[string] {
   if (type === "boolean") return false;
@@ -99,7 +107,7 @@ function MetaValueInput({ type, value, placeholder, onChange, onClear }: MetaVal
   );
 }
 
-type Props = InputProps<PieceMeta | undefined> & {
+type Props = InputProps<PieceMeta> & {
   pieces: Array<RosterLockPiece>;
 };
 
@@ -108,17 +116,14 @@ export function PieceMetaEditor({ value, onChange, pieces }: Props) {
   const [newFieldType, setNewFieldType] = useState<SimpleSchemaType>("string");
   const [addError, setAddError] = useState<string | null>(null);
 
-  const schema = value?.schema ?? {};
-  const defaultMeta = value?.defaultMeta ?? {};
-  const pieceMeta = value?.pieceMeta ?? {};
+  const schema = value.schema;
+  const defaultMeta = value.defaultMeta;
+  const pieceMeta = value.pieceMeta;
 
   const fields = Object.keys(schema);
 
   function update(patch: Partial<PieceMeta>) {
     onChange({
-      schema,
-      defaultMeta,
-      pieceMeta,
       ...value,
       ...patch,
     });
@@ -162,9 +167,7 @@ export function PieceMetaEditor({ value, onChange, pieces }: Props) {
   }
 
   return (
-    <div className="section">
-      <h3>Piece Meta</h3>
-
+    <>
       {/* Schema */}
       <div className="section">
         <h4>Schema Fields</h4>
@@ -186,7 +189,7 @@ export function PieceMetaEditor({ value, onChange, pieces }: Props) {
                       value={schema[name]}
                       onChange={e => update({ schema: { ...schema, [name]: e.target.value as SimpleSchemaType } })}
                     >
-                      {SCHEMA_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                      {Object.entries(SCHEMA_TYPES).map(([k, v])=> <option key={k} value={k}>{v.title}</option>)}
                     </select>
                   </td>
                   <td>
@@ -212,7 +215,7 @@ export function PieceMetaEditor({ value, onChange, pieces }: Props) {
             value={newFieldType}
             onChange={e => setNewFieldType(e.target.value as SimpleSchemaType)}
           >
-            {SCHEMA_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+            {Object.entries(SCHEMA_TYPES).map(([k,v]) => <option key={k} value={k}>{v.title}</option>)}
           </select>
           <button type="submit">Add Field</button>
         </form>
@@ -287,6 +290,6 @@ export function PieceMetaEditor({ value, onChange, pieces }: Props) {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

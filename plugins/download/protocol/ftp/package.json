@@ -1,0 +1,29 @@
+{
+  "name": "@roster-lock/dl-protocol-ftp",
+  "version": "1.0.0",
+  "description": "Handle downloading over ftp",
+  "license": "JSON",
+  "author": "Sam Tobia",
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "types": "./src/index.ts",
+  "roster-lock": {
+    "pluginType": "dl-protocol"
+  },
+  "scripts": {
+    "build": "rimraf ./dist && tsc",
+    "prepare": "pnpm run build",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@roster-lock/types": "workspace:*",
+    "@types/node": "^25.9.1",
+    "rimraf": "^6.1.3",
+    "typescript": "^6.0.3",
+    "vitest": "^2.0.0"
+  },
+  "dependencies": {
+    "@roster-lock/dl-shared": "workspace:*",
+    "basic-ftp": "^6.0.1"
+  }
+}

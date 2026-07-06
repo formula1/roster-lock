@@ -1,31 +1,34 @@
 
 import { PieceType } from "../../shared";
-import { GasLimittedScript } from "./script";
-import { SelectionPreselectedConfig } from "./selection-types/preselected";
+import { UntrustedScriptRef } from "./script";
 import { SelectionGameControlledConfig } from "./selection-types/game-controlled";
 import { SelectionNormalConfig, UserSelectionValidation } from "./selection-types/normal";
+import { SelectionPreselectedConfig } from "./selection-types/preselected";
+import { SelectionUnselectableConfig } from "./selection-types/unselectable";
 
-export * from "./meta"
+export * from "./meta";
 
 export {
   SelectionPreselectedConfig,
   SelectionGameControlledConfig,
   SelectionNormalConfig,
+  SelectionUnselectableConfig,
   UserSelectionValidation,
-}
+};
 
-export { GasLimittedScript }
+export { UntrustedScriptRef };
 
 export type RosterLockSelectionConfig = {
   piece: Record<PieceType, (
     | SelectionGameControlledConfig
     | SelectionNormalConfig
     | SelectionPreselectedConfig
+    | SelectionUnselectableConfig
   )>,
 
-  globalValidation?: Array<GasLimittedScript>
+  globalValidation: Array<UntrustedScriptRef>
 
-  scripts: Record<string, string>
-}
+  scriptDictionary: Record<string, { content: string, }>
+};
 
 

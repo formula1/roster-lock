@@ -1,7 +1,7 @@
 
 import { IncomingMessage } from "http";
 import { WebSocket } from "ws";
-import { GenericRouter, GenericHandlerCallback, GenericRouterCallbackArg, RouterConfig } from "./generic-router";
+import { GenericRouter, RouterConfig, GenericRouterCallbackArg, GenericHandlerCallback } from "@roster-lock/utils";
 
 const WEBSOCKET_METHOD = "WebSocket";
 

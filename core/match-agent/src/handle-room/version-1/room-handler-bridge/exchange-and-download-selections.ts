@@ -1,12 +1,11 @@
 
 import { WebSocket } from "ws";
-import { MessageBridge } from "../../../utils/MessageBridge";
+import { MessageBridge, handleFetch } from "@roster-lock/utils";
 import { bindStepsToBridge, ProgressListeners } from "./steps";
 import { RosterLockV1Config, RosterLockV1SyncDLRequestClientToAgent } from "@roster-lock/types";
 import { ROSTERLOCK_V1_CASTER_JSONSCHEMA } from "@roster-lock/shared";
 import { UserSelectionSchema } from "../schema/selected";
 import { getSQLite3FolderDB } from "../globals/FolderDB";
-import { handleFetch } from "../../../utils/fetch";
 import { once } from "events";
 import z, { ZodType } from "zod";
 

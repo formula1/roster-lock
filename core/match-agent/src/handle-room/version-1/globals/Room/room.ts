@@ -1,4 +1,4 @@
-import { JSON_Unknown, ISimpleEventEmitter } from "@match-lock/shared";
+import { JSON_Unknown, ISimpleEventEmitter } from "@roster-lock/utils";
 
 export interface IRoom {
   numberOfUsers: number

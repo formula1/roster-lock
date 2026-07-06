@@ -1,0 +1,1 @@
+If no method is set, roster lock will call `main` even if it isn't available.

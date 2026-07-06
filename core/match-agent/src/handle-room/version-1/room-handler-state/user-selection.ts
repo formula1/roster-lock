@@ -1,9 +1,11 @@
 import {
-  RosterLockV1Config, SelectedPiece, UserInput,
   PieceType, UserId,
-  FinalSelection,
   runSelection,
-} from "@match-lock/shared";
+} from "@roster-lock/shared";
+import {
+  RosterLockV1Config, SelectedPiece,
+  UserInput, FinalSelection,
+} from "@roster-lock/types";
 import { JSONSchemaType } from "ajv";
 
 // Using 'as unknown as' because AJV's JSONSchemaType doesn't handle recursive $ref well
@@ -42,20 +44,18 @@ export const userInputSchema: JSONSchemaType<UserInput> = {
   },
 }
 
-import { runUntrustedScript } from "@roster-lock/node-services";
+import { runUntrustedScript, DEFAULT_PLUGIN_DIR } from "@roster-lock/plugin-runtime";
 export function finalizeSelection(
   config: RosterLockV1Config,
-  scriptsByPath: Record<string, string>,
   gameControlledSelections: Record<PieceType, Array<SelectedPiece> | Record<UserId, Array<SelectedPiece>>>,
   userInputs: Record<UserId, UserInput>,
 ): Promise<FinalSelection> {
 
   return runSelection(
     config,
-    scriptsByPath,
     gameControlledSelections,
     userInputs,
-    runUntrustedScript
+    (script)=>(runUntrustedScript(DEFAULT_PLUGIN_DIR, script))
   )
 }
 

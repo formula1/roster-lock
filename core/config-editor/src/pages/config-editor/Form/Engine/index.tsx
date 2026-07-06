@@ -40,25 +40,26 @@ import { useRosterLock } from "../Contexts/RosterLock";
 import { EngineLegend } from "./Legend";
 
 import { FollowButtonForm } from "../../../../components/FollowButtonForm";
+import { usePageInfo } from "../../Contexts/PageTitle";
+import { useEffect } from "react";
 
 export function EngineEditPage(){
   const { value, onChange } = useRosterLock();
   const buttons = useFollowButtons();
-  
+  const { onChange: setPageInfo } = usePageInfo();
 
-  return <div style={{ overflow: "hidden", flexGrow: 1 }}>
-    <h1>New Engine Config</h1>
-    <FollowButtonForm
-      info={{
-        title: "Engine Config",
-        note: <EngineLegend config={value} />,
-      }}
-      buttons={buttons}
-    >
+  useEffect(()=>{
+    setPageInfo({
+      title: "New Engine Config",
+      note: <EngineLegend config={value} />
+    });
+
+  }, [value]);
+
+  return <>
       <EngineConfigForm
         value={value}
         onChange={onChange}
       />
-    </FollowButtonForm>
-  </div>
+  </>
 }

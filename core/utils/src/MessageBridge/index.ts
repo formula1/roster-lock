@@ -1,4 +1,3 @@
-import { uniqueId } from "../string";
 
 import {
   MessageBridgeMessage,
@@ -6,115 +5,52 @@ import {
 } from "./types";
 
 export { MessageBridgeMessage } from "./types";
+import { EventHandler } from "./event";
+import { RequestHandler } from "./request";
+import { SimpleStream, StreamHandler } from "./stream";
 
 export class MessageBridge {
-  private eventHandler: {
-    listeners: Record<string, Array<(message: MessageBridgeMessage) => any>>,
-  } = { listeners: {} };
-  private requestHandler: {
-    listeners: Record<string, (message: MessageBridgeMessage) => any>,
-    pending: Record<string, {
-      resolve: (value: any) => void,
-      reject: (reason: any) => void,
-    }>,
-  } = { listeners: {}, pending: {} };
+  private eventHandler: EventHandler
+  private requestHandler: RequestHandler;
+  private streamHandler: StreamHandler
 
-  private sendMessage: (message: MessageBridgeMessage) => void;
-  protected debug: boolean;
-
-  constructor(sendMessage: (message: MessageBridgeMessage) => void, debug: boolean = false){
-    this.sendMessage = sendMessage;
-    this.debug = debug;
+  constructor(
+    private sendMessage: (message: MessageBridgeMessage) => void,
+    protected debug: boolean = false
+  ){
+    this.eventHandler = new EventHandler(sendMessage, debug);
+    this.requestHandler = new RequestHandler(sendMessage, debug);
+    this.streamHandler = new StreamHandler(sendMessage, debug);
   }
 
   async handleMessage(messageRaw: any): Promise<void>{
     const message = castMessage(messageRaw);
-    switch(message.messageType){
-      case "event": {
-        try {
-          const handlers = this.eventHandler.listeners[message.path];
-          if(!handlers) throw new Error(`no event listener at ${message.path}`);
-          for(const handler of handlers) {
-            await handler(message.value);
-          }
-        }catch(e) {
-          this.debug && console.error("error handling message", e);
-        }
-        return;
-      }
-      case "request": {
-        try {
-          const handler = this.requestHandler.listeners[message.path];
-          if(!handler) throw new Error(`no request listener at ${message.path}`);
-          const result = await handler(message.value);
-          this.sendMessage({
-            id: message.id,
-            messageType: "response",
-            valueType: "result",
-            value: result
-          });
-        }catch(e) {
-          this.sendMessage({
-            id: message.id,
-            messageType: "response",
-            valueType: "error",
-            value: typeof e === "string" ? e : e instanceof Error ? e.message : "Unknown Error"
-          });
-        }
-        return;
-      }
-      case "response": {
-        try {
-          const pending = this.requestHandler.pending[message.id];
-          if(!pending) throw new Error(`no pending request for ${message.id}`);
-          delete this.requestHandler.pending[message.id];
-          if(message.valueType === "error"){
-            pending.reject(message.value);
-          } else {
-            pending.resolve(message.value);
-          }
-        }catch(e) {
-          this.debug && console.error("error handling message", e);
-        }
-        return;
-      }
-    }
+    if(this.eventHandler.handleMessage(message)) return;
+    if(this.requestHandler.handleMessage(message)) return;
+    if(this.streamHandler.handleMessage(message)) return;
   }
 
-  request(path: string, body: any): Promise<any>{
-    return new Promise((resolve, reject)=>{
-      const id = uniqueId();
-      this.requestHandler.pending[id] = { resolve, reject };
-      this.sendMessage({
-        id,
-        path,
-        messageType: "request",
-        value: body
-      });
-    });
+  sendStream(path: string): Promise<SimpleStream>{
+    return this.streamHandler.sendStream(path)
   }
 
-  respond(path: string, handler: (data: any) => any): void{
-    if(path in this.requestHandler.listeners){
-      throw new Error(`Duplicate Path: ${path}`);
-    }
-    this.requestHandler.listeners[path] = handler;
+  onStream(path: string, handler: (stream: SimpleStream)=>any){
+    return this.streamHandler.onStream(path, handler)
   }
 
-  emit(path: string, body: any): void{
-    this.sendMessage({
-      path,
-      messageType: "event",
-      value: body
-    });
+  sendRequest(path: string, body: any): Promise<any>{
+    return this.requestHandler.sendRequest(path, body);
   }
 
-  listen(path: string, handler: (data: any) => void | Promise<void>): void{
-    const listeners = this.eventHandler.listeners[path] || [];
-    listeners.push(handler);
-    this.eventHandler.listeners[path] = listeners;
-    if(path in this.eventHandler.listeners){
-      this.eventHandler.listeners[path].push(handler);
-    }
+  onRequest(path: string, handler: (data: any) => any){
+    return this.requestHandler.onRequest(path, handler);
+  }
+
+  sendEvent(path: string, body: any){
+    return this.eventHandler.sendEvent(path, body);
+  }
+
+  onEvent(path: string, handler: (data: any) => any){
+    return this.eventHandler.onEvent(path, handler);
   }
 }

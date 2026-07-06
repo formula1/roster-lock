@@ -1,4 +1,4 @@
-import { PropsWithChildren, useEffect, useState } from "react";
+import { PropsWithChildren, useCallback, useEffect, useState } from "react";
 import { useRunnable, RunnableState } from "../../utils/react/runnable";
 
 type ClicableButtonProps = PropsWithChildren<{
@@ -17,10 +17,10 @@ export function ClickableButton({
 }: ClicableButtonProps){
   const [toggleError, setToggleError] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const clickResult = useRunnable(async ()=>{
+  const clickResult = useRunnable(useCallback(async ()=>{
     if(!onClick) return;
     await onClick();
-  });
+  }, [onClick]));
 
   useEffect(()=>{
     if(clickResult.state !== RunnableState.FAILED) setToggleError(false);
@@ -76,7 +76,7 @@ export function ClickableButton({
             </div>
             <div>
               <p><ErrorText error={clickResult.error} /></p>
-              {process.env.NODE_ENV === "development" && (
+              {import.meta.env.NODE_ENV === "development" && (
                 <details>
                   <summary>Debug details</summary>
                   <pre>{JSON.stringify(clickResult.error, null, 2)}</pre>

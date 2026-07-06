@@ -1,7 +1,7 @@
 
 
 import { validatePathVariableValue, collectAssetFileErrors, getAssetsOfFiles } from "@roster-lock/shared";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useRunnable, RunnableState } from "../../../../../../../utils/react";
 import { PieceDefinition, PieceValue } from "../../types";
 
@@ -25,7 +25,7 @@ export function CreatePiece(
   }
 ){
   const [progressMap, setProgressMap] = useState<Record<string, { current: number, total: number }>>({});
-  const status = useRunnable(async ()=>{
+  const status = useRunnable(useCallback(async ()=>{
     const emptyProgressMap: Record<string, { current: number, total: number }> = {};
     for(const [file, { assets }] of filesWithAssets.entries()){
       emptyProgressMap[file] = { current: 0, total: -1 };
@@ -40,7 +40,7 @@ export function CreatePiece(
         }));
       },
     })
-  });
+  }, [folderPath, pathVariables, filesWithAssets, pieceDefinition]));
 
   const pathVariableErrors = validatePathVariables(pieceDefinition, pathVariables);
   if(fileErrors.length > 0 || pathVariableErrors.length > 0){

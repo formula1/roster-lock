@@ -6,7 +6,7 @@ export type AJVKeywordDefinition<K extends string = string> = {
   keyword: SafeKeyword<K>,
   type: JSONSchemaType,
   validate: SchemaValidateFunction
-}
+};
 
 export function defineKeyword<T, K extends string>(
   definition: {
@@ -41,10 +41,10 @@ function wrapValidator<T>(
         keyword: keyword,
         message: e.message,
         params: {}
-      }]
+      }];
       return false;
     }
-  }
+  };
   return wrapped;
 }
 

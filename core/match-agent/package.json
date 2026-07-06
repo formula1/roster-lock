@@ -1,5 +1,5 @@
 {
-  "name": "@roster-lock/client",
+  "name": "@roster-lock/match-agent",
   "version": "0.0.0",
   "description": "To be used in game to ensure all peices are ready",
   "keywords": [
@@ -22,7 +22,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rimraf ./dist && tsc",
-    "prepare": "npm run build"
+    "prepare": "pnpm run build"
   },
   "devDependencies": {
     "@types/async": "^3.2.25",
@@ -34,9 +34,10 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@roster-lock/node-services": "file:../node-services",
-    "@roster-lock/shared": "file:../shared",
-    "@roster-lock/types": "file:../types",
+    "@roster-lock/plugin-runtime": "workspace:^",
+    "@roster-lock/shared": "workspace:*",
+    "@roster-lock/types": "workspace:*",
+    "@roster-lock/utils": "workspace:*",
     "ajv": "^8.17.1",
     "async": "^3.2.6",
     "better-sqlite3": "^12.5.0",

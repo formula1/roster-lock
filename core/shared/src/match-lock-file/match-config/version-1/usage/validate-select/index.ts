@@ -1,19 +1,15 @@
 import {
-  RosterLockV1Config, UserId, PieceType, SelectedPiece, FinalSelection
+  RosterLockV1Config, UserId, PieceType, SelectedPiece, FinalSelection, UserInput
 } from "@roster-lock/types";
-
-export * from "./types/untrusted-script";
-import { UserInput } from "./types/selection";
-export { UserInput };
 
 
 import { handleGameControlledSelection } from "./selection-types/game-controlled";
 import { handlePreselectedSelection } from "./selection-types/preselected";
 import { handleNormalSelection } from "./selection-types/normal";
-import { ScriptStarter } from "./types/untrusted-script";
+import { ScriptStarter } from "@roster-lock/types";
 
 import { RunUntrustedError } from "./constants";
-import { handleValidationResult } from "./handle-validation"
+import { handleValidationResult } from "./handle-validation";
 
 export async function runSelection(
   config: RosterLockV1Config,
@@ -66,9 +62,14 @@ export async function runSelection(
       return;
     }
     throw new Error(`Unknown Selection Type ${(selectionConfig as any).type}`);
-  }))
+  }));
 
   if(!config.selection.globalValidation) return finalSelection;
+
+  const strippedSelection: Record<PieceType, Array<SelectedPiece> | Record<UserId, Array<SelectedPiece>>> = {};
+  for(const [k,v] of Object.entries(finalSelection)){
+    strippedSelection[k] = v.value;
+  }
 
   await Promise.all(config.selection.globalValidation.map(async (script)=>{
     return handleValidationResult(script, runScript({
@@ -78,10 +79,10 @@ export async function runSelection(
         type: "global-validation",
         users,
         pieceTypes: Object.keys(config.engine.pieceDefinitions),
-        input: finalSelection,
+        input: strippedSelection,
       },
       entryScript: script,
-    }))
+    }));
   }));
 
   return finalSelection;

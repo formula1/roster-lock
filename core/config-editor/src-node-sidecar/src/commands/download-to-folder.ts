@@ -1,28 +1,30 @@
 import {
-  downloadToFolder as nodeServicesDownloadToFolder,
-  SOURCE_HANDLERS
-} from '@roster-lock/node-services';
+  downloadToFolder
+} from "@roster-lock/plugin-runtime";
 
-export const SUPPORTED_PROTOCOLS = SOURCE_HANDLERS.map(handler => handler.protocols).flat();
-
-export async function downloadToFolder(
+export async function downloadToFolderCommand(
+  pluginDir: string,
   url: string,
   destinationFolder: string
 ) {
   try {
     
-    console.log('Testing download source:', url, ' to ', destinationFolder);
+    console.log("Testing download source:", url, " to ", destinationFolder);
     
     const abortController = new AbortController();
-    const result = await nodeServicesDownloadToFolder(
-      url, destinationFolder, { abortSignal: abortController.signal }
+    const result = await downloadToFolder(
+      pluginDir, {
+        url,
+        destinationFolder,
+        processHandlers: { abortSignal: abortController.signal }
+      }
     );
     
-    await result.finishPromise
+    await result.finishPromise;
     
     process.exitCode = 0;
   } catch (error) {
-    console.error('❌ Download test failed:', error);
+    console.error("❌ Download test failed:", error);
     process.exitCode = 1;
   }
 }

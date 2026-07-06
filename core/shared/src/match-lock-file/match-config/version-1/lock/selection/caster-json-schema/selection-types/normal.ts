@@ -7,9 +7,10 @@ import {
 } from "@roster-lock/types";
 
 import { selectionPieceMetaSchema } from "../meta";
-import { gasLimittedScriptSchema } from "../script";
+import { untrustedScriptRefSchema } from "../script";
 import { validateSelectionBanList } from "../../validate/selections/normal";
 import { defineKeyword } from "../../../../../../util-types/json-schema";
+import { countSchema } from "../../../../shared/count";
 
 export const banListSchemaValidator = defineKeyword({
   keyword: "selectionBanList",
@@ -24,39 +25,25 @@ export const banListSchemaValidator = defineKeyword({
   }
 });
 
+
 const userSelectionValidationSchema: JSONSchemaType<UserSelectionValidation> = {
   type: "object",
   required: ["count", "unique", "customValidation"],
   additionalProperties: false,
   properties: {
-    count: {
-      anyOf: [
-        { type: "number", minimum: 0 },
-        { type: "string", const: "*" },
-        {
-          type: "array",
-          items: [
-            { type: "number", minimum: 0 },
-            { anyOf: [{ type: "number", minimum: 0 }, { type: "string", const: "*" }] },
-          ],
-          minItems: 2,
-          maxItems: 2,
-        },
-      ],
-    },
+    count: countSchema,
     unique: { type: "boolean" },
     banList: {
       type: "array",
       items: { type: "string" },
-      nullable: true,
       [banListSchemaValidator.keyword]: true,
     },
     customValidation: {
       type: "array",
-      items: gasLimittedScriptSchema,
+      items: untrustedScriptRefSchema,
     },
   },
-}
+};
 
 export const normalSelectionSchema: JSONSchemaType<SelectionNormalConfig> = {
   type: "object",
@@ -64,10 +51,10 @@ export const normalSelectionSchema: JSONSchemaType<SelectionNormalConfig> = {
   additionalProperties: false,
   properties: {
     type: { type: "string", const: "normal" },
-    pieceMeta: { ...selectionPieceMetaSchema, nullable: true },
-    validation: { ...userSelectionValidationSchema, nullable: true },
-    mergeAlgorithm: { ...gasLimittedScriptSchema, nullable: true },
+    pieceMeta: selectionPieceMetaSchema,
+    validation: userSelectionValidationSchema,
+    mergeAlgorithm: { ...untrustedScriptRefSchema, nullable: true },
   },
-}
+};
 
 
