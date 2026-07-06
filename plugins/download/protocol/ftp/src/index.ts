@@ -6,13 +6,13 @@ const FTP_Handler: ProtocolHandler = {
   name: "ftp",
   validateURL(url){
     const parsed = new URL(url);
-    if (parsed.protocol !== "ftps:") {
-      throw new Error("Protocol must be ftps:");
+    const isLocalhostFtp = parsed.protocol === "ftp:" && parsed.hostname === "localhost";
+    if (parsed.protocol !== "ftps:" && !isLocalhostFtp) {
+      throw new Error("Protocol must be ftps: or ftp://localhost");
     }
     if (!parsed.hostname) {
       throw new Error("Missing hostname");
     }
-    // FTPS URLs should have a path
     if (!parsed.pathname || parsed.pathname === "/") {
       throw new Error("FTPS URL must include a file path");
     }
