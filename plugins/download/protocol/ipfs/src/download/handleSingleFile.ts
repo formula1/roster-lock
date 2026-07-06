@@ -1,47 +1,31 @@
-// services/src/download/ipfs.ts
-import { IpfsHttpClient } from "./client.js";
-import { DownloadResult } from "../types.js";
-import { getProcessorsFromPathnameMimetypes, storeFile } from "../../utils.js";
-import { PassThrough, Readable } from 'node:stream';
-import { saveStreamToFilesystem } from "../../utils.js";
-
-import { IPFSError } from "./utils.js";
-import { ProcessHandlers } from "../../types.js";
+import { IpfsHttpClient } from "./client";
+import { DownloadResult, ProcessHandlers } from "./types";
+import { storeFile, saveStreamToFilesystem } from "@roster-lock/dl-shared";
+import { IPFSError } from "./utils";
 
 export async function handleSingleFile(
   ipfs: IpfsHttpClient,
   cid: string,
   folderDestination: string,
-  { onProgress, abortSignal }: ProcessHandlers
+  processHandlers: ProcessHandlers
 ): Promise<DownloadResult> {
+  const { onProgress, abortSignal } = processHandlers;
   if (abortSignal?.aborted) {
     throw new IPFSError(cid, 'Download aborted');
   }
 
   // Assume it's an archive (we don't know the filename from IPFS)
-  const fileName = `${cid}.tar.gz`; // Default assumption
-  
-  try {
-    const { decompressors, archiveHandler } = getProcessorsFromPathnameMimetypes(fileName);
-    
-    const progressWatcher = new PassThrough();
-    let downloaded = 0;
-    
-    progressWatcher.on('data', (chunk: Buffer) => {
-      downloaded += chunk.length;
-      onProgress?.(downloaded, undefined);
-    });
+  const fileName = `${cid}.tar.gz`;
 
-    // Stream directly from IPFS - no buffering!
+  try {
+    const processors = processHandlers.getProcessors!(fileName);
     const ipfsStream = ipfs.cat(cid, { signal: abortSignal });
-    const stream = Readable.from(ipfsStream);
 
     const finishPromise = saveStreamToFilesystem(
-      stream,
-      decompressors,
-      archiveHandler,
+      ipfsStream,
+      processors,
       folderDestination,
-      { abortSignal, progressWatcher }
+      { abortSignal, onProgress: onProgress ? (bytes) => onProgress(bytes) : undefined }
     );
 
     return {
@@ -53,8 +37,8 @@ export async function handleSingleFile(
       }
     };
   } catch (e) {
-    // Not an archive, just save as-is
-    return handleRawFile(ipfs, cid, folderDestination, { onProgress, abortSignal });
+    // Not an archive, just save raw
+    return handleRawFile(ipfs, cid, folderDestination, processHandlers);
   }
 }
 
@@ -63,30 +47,24 @@ async function handleRawFile(
   ipfs: IpfsHttpClient,
   cid: string,
   folderDestination: string,
-  { onProgress, abortSignal }: ProcessHandlers
+  { onProgress, abortSignal }: ProcessHandlers,
 ): Promise<DownloadResult> {
-  const progressWatcher = new PassThrough();
-  let downloaded = 0;
-  
-  progressWatcher.on('data', (chunk: Buffer) => {
-    downloaded += chunk.length;
-    onProgress?.(downloaded, undefined);
-  });
+  const ipfsIterable = ipfs.cat(cid, { signal: abortSignal });
 
-  // Stream directly - no buffering
-  const ipfsStream = ipfs.cat(cid, { signal: abortSignal });
-  const stream = Readable.from(ipfsStream);
-  const fileName = cid; // Use CID as filename
-
-  const finishPromise = storeFile(
-    folderDestination,
-    fileName,
-    stream,
-    { abortSignal, progressWatcher }
-  );
+  let stream: AsyncIterable<Uint8Array> = ipfsIterable;
+  if (onProgress) {
+    let downloaded = 0;
+    stream = (async function* () {
+      for await (const chunk of ipfsIterable) {
+        downloaded += chunk.length;
+        onProgress(downloaded, undefined);
+        yield chunk;
+      }
+    })();
+  }
 
   return {
-    finishPromise,
+    finishPromise: storeFile(folderDestination, cid, stream, { abortSignal }),
     metaData: {
       url: `ipfs://${cid}`,
       cid,

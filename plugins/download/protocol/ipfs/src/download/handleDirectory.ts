@@ -1,10 +1,23 @@
-// services/src/download/ipfs.ts
-import { DownloadResult } from "../types";
-import { PassThrough, Readable } from 'node:stream';
-import { storeFile } from "../../utils";
+import { DownloadResult, ProcessHandlers } from "./types";
+import { storeFile } from "@roster-lock/dl-shared";
 import { IPFSError } from "./utils";
-import { IpfsHttpClient } from "./client.js";
-import { ProcessHandlers } from "../../types";
+import { IpfsHttpClient } from "./client";
+
+async function* walkDirectory(
+  ipfs: IpfsHttpClient,
+  cid: string,
+  relPath: string,
+  abortSignal?: AbortSignal,
+): AsyncIterable<{ path: string; cid: string; size?: number; name: string }> {
+  for await (const entry of ipfs.ls(cid, { signal: abortSignal })) {
+    const entryPath = relPath ? `${relPath}/${entry.name}` : entry.name;
+    if (entry.type === 'dir') {
+      yield* walkDirectory(ipfs, entry.cid, entryPath, abortSignal);
+    } else {
+      yield { path: entryPath, cid: entry.cid, size: entry.size, name: entry.name };
+    }
+  }
+}
 
 export async function handleDirectory(
   ipfs: IpfsHttpClient,
@@ -12,39 +25,17 @@ export async function handleDirectory(
   folderDestination: string,
   { onProgress, abortSignal }: ProcessHandlers
 ): Promise<DownloadResult> {
-  let totalDownloaded = 0;
-  
   const filePromises: Promise<void>[] = [];
   const fileList: Array<{ name: string; size?: number }> = [];
 
-  // Walk directory tree
-  for await (const entry of ipfs.ls(cid, { signal: abortSignal })) {
+  for await (const file of walkDirectory(ipfs, cid, '', abortSignal)) {
     if (abortSignal?.aborted) {
       throw new IPFSError(cid, 'Download aborted');
     }
 
-    if (entry.type === 'file') {
-      fileList.push({ name: entry.name, size: entry.size });
-      
-      const progressWatcher = new PassThrough();
-      progressWatcher.on('data', (chunk: Buffer) => {
-        totalDownloaded += chunk.length;
-        onProgress?.(totalDownloaded, undefined);
-      });
-
-      // Stream directly - no buffering!
-      const ipfsStream = ipfs.cat(entry.cid, { signal: abortSignal });
-      const stream = Readable.from(ipfsStream);
-      
-      const promise = storeFile(
-        folderDestination,
-        entry.path || entry.name,
-        stream,
-        { abortSignal, progressWatcher }
-      );
-      
-      filePromises.push(promise);
-    }
+    fileList.push({ name: file.path, size: file.size });
+    const stream = ipfs.cat(file.cid, { signal: abortSignal });
+    filePromises.push(storeFile(folderDestination, file.path, stream, { abortSignal }));
   }
 
   const finishPromise = Promise.all(filePromises).then(() => {});
