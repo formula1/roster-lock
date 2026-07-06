@@ -7,8 +7,9 @@ import { handleMultipleFileTorrent } from "./multiFile";
 type DownloadResult = Awaited<ReturnType<ProtocolHandler["download"]>>;
 
 export const runTorrentDownload: ProtocolHandler["download"] = async function(
-  magnetUri, folderDestination, { onProgress, abortSignal }
+  magnetUri, folderDestination, processHandlers
 ) {
+  const { onProgress, abortSignal } = processHandlers;
  if (abortSignal?.aborted) {
     throw new TorrentError(magnetUri, 'Download aborted');
   }
@@ -44,7 +45,7 @@ export const runTorrentDownload: ProtocolHandler["download"] = async function(
         magnetUri, torrent,
         torrent.files[0],
         folderDestination,
-        { onProgress, abortSignal }
+        processHandlers
       );
       if(singleFile){
         singleFile.finishPromise.finally(() => {
@@ -61,7 +62,7 @@ export const runTorrentDownload: ProtocolHandler["download"] = async function(
       magnetUri,
       torrent,
       folderDestination,
-      { onProgress, abortSignal }
+      processHandlers
     );
     multiFile.finishPromise.finally(() => {
       client.destroy();

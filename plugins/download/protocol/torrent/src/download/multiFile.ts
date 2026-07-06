@@ -1,7 +1,6 @@
-import { storeFile } from "../../utils";
+import { storeFile } from "@roster-lock/dl-shared";
 import { Torrent } from 'webtorrent';
-import { PassThrough } from 'node:stream';
-import { ProcessHandlers } from "../../types";
+import { ProcessHandlers } from "./types";
 
 
 export function handleMultipleFileTorrent(
@@ -13,21 +12,29 @@ export function handleMultipleFileTorrent(
 
   let totalSize = 0;
   for(const file of torrent.files) totalSize += file.length;
-  
+
+  // file.path includes the torrent name as a leading directory (e.g. "fixtures/sample.txt").
+  // Strip it so files land directly in destinationFolder.
+  const namePrefix = torrent.name ? `${torrent.name}/` : '';
+
   let downloaded = 0;
   const promises: Array<Promise<any>> = [];
   for(const file of torrent.files){
-    const progressWatcher = new PassThrough();
-    progressWatcher.on('data', (chunk: Buffer) => {
-      downloaded += chunk.length;
-      onProgress?.(downloaded, totalSize);
-    });
+    const filePath = namePrefix && file.path.startsWith(namePrefix)
+      ? file.path.slice(namePrefix.length)
+      : file.path;
     const filePromise = storeFile(
       destinationFolder,
-      file.name,
+      filePath,
       file.createReadStream() as any,
-      { abortSignal, progressWatcher }
-    )
+      { abortSignal }
+    );
+    if (onProgress) {
+      filePromise.then(() => {
+        downloaded += file.length;
+        onProgress(downloaded, totalSize);
+      });
+    }
     promises.push(filePromise);
   }
 

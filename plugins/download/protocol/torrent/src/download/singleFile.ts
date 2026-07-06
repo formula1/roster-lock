@@ -1,9 +1,6 @@
-import { getProcessorsFromPathnameMimetypes } from "../../utils";
-import { createSimpleEmitter } from "@roster-lock/utils";
 import { Torrent, TorrentFile } from 'webtorrent';
-import { saveStreamToFilesystem } from "../../utils";
-import { PassThrough } from "stream";
-import { ProcessHandlers } from "../../types";
+import { saveStreamToFilesystem } from "@roster-lock/dl-shared";
+import { ProcessHandlers } from "./types";
 
 
 export function handleSingleFileTorrent(
@@ -11,28 +8,25 @@ export function handleSingleFileTorrent(
   torrent: Torrent,
   file: TorrentFile,
   folderDestination: string,
-  { onProgress, abortSignal }: ProcessHandlers
+  processHandlers: ProcessHandlers
 ){
+  const { onProgress, abortSignal } = processHandlers;
   try {
-    const { decompressors, archiveHandler } = getProcessorsFromPathnameMimetypes(file.name);
+    const processors = processHandlers.getProcessors!(file.name);
     const totalSize = file.length;
-
-    const progressWatcher = new PassThrough();
-    let downloaded = 0;
-    progressWatcher.on('data', (chunk: Buffer) => {
-      downloaded += chunk.length;
-      onProgress?.(downloaded, totalSize);
-    });
 
     return {
       finishPromise: saveStreamToFilesystem(
         file.createReadStream() as any,
-        decompressors,
-        archiveHandler,
+        processors,
         folderDestination,
-        { abortSignal, progressWatcher }
+        {
+          abortSignal,
+          onProgress: onProgress
+            ? (bytes) => onProgress(bytes, totalSize)
+            : undefined,
+        }
       ),
-      onProgress,
       metaData: {
         size: totalSize,
         magnetUri,
