@@ -2,6 +2,7 @@
 import { UntrustedScript } from "@roster-lock/types";
 import { LuaFactory } from "wasmoon";
 import { getOrCreate } from "./util";
+import { parseLuaError } from "./error";
 
 const getFactory = getOrCreate(() => new LuaFactory());
 
@@ -84,7 +85,8 @@ export const runLuaScript: UntrustedScript<any>["runScript"] = async function(
     // The gas-limit hook, RNG override, user script, and main() call all run in
     // one doString so the debug hook stays active for the entire execution.
     // The user script is loaded via load() so error line numbers match the user's file.
-    return await lua.doString(`
+    try {
+      return await lua.doString(`
       do
         local _gas = 0
         debug.sethook(function()
@@ -107,6 +109,11 @@ export const runLuaScript: UntrustedScript<any>["runScript"] = async function(
       if not _ok then error(_val, 0) end
       return _val
     `);
+    } catch (e) {
+      const rawMessage = e instanceof Error ? e.message : String(e);
+      if (rawMessage.includes("Gas limit exceeded")) throw new Error("Script gas limit exceeded");
+      throw parseLuaError(e);
+    }
   } finally {
     lua.global.close();
   }
