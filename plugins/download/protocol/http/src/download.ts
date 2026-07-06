@@ -6,7 +6,6 @@ import { request as httpRequest, IncomingMessage, ClientRequest } from 'node:htt
 import { request as httpsRequest } from 'node:https';
 import { once } from "node:events";
 import { saveStreamToFilesystem } from "@roster-lock/dl-shared";
-import { ProcessHandlers } from "./types";
 
 export const runDownloadInit: ProtocolHandler["download"] = function(
   url, folderDestination, processHandlers,
