@@ -34,7 +34,7 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@roster-lock/node-services": "file:../node-services",
+    "@roster-lock/plugin-runtime": "file:../plugin-runtime",
     "@roster-lock/shared": "file:../shared",
     "@roster-lock/types": "file:../types",
     "@roster-lock/utils": "file:../utils",
