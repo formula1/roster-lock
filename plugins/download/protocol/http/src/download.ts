@@ -2,13 +2,11 @@ import { ProtocolHandler } from "@roster-lock/types";
 
 type DLArgs = Parameters<ProtocolHandler["download"]>;
 
-import { getProcessorsFromPathnameMimetypes } from "../utils";
-
 import { request as httpRequest, IncomingMessage, ClientRequest } from 'node:http';
 import { request as httpsRequest } from 'node:https';
 import { once } from "node:events";
-import { saveStreamToFilesystem } from "../utils";
-import { ProcessHandlers } from "../types";
+import { saveStreamToFilesystem } from "@roster-lock/dl-shared";
+import { ProcessHandlers } from "./types";
 
 export const runDownloadInit: ProtocolHandler["download"] = function(
   url, folderDestination, processHandlers,
@@ -24,7 +22,7 @@ async function runDownload(
   if(processHandlers.abortSignal.aborted) throw new Error("Download Aborted");
   let urlObj = new URL(url);
   const request = urlObj.protocol === 'https:' ? httpsRequest : httpRequest;
-  const processor = getProcessorsFromPathnameMimetypes(urlObj.pathname);
+  const processor = processHandlers.getProcessors!(urlObj.pathname);
 
   const req = request(url);
   req.end();
@@ -52,22 +50,17 @@ async function runDownload(
   })();
 
 
-  if(processHandlers.onProgress){
-    const { onProgress } = processHandlers;
-    let totalProgress = 0;
-    res.on('data', (chunk: Buffer) => {
-      totalProgress += chunk.length;
-      onProgress(totalProgress, contentLength);
-    });
-  }
-
   return {
     finishPromise: saveStreamToFilesystem(
       res,
-      processor.decompressors,
-      processor.archiveHandler,
+      processor,
       folderDestination,
-      { abortSignal: processHandlers.abortSignal }
+      {
+        abortSignal: processHandlers.abortSignal,
+        onProgress: processHandlers.onProgress
+          ? (bytes) => processHandlers.onProgress!(bytes, contentLength)
+          : undefined,
+      }
     ),
     metaData: {
       url: urlObj.href,

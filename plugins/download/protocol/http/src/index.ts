@@ -7,11 +7,10 @@ const HTTP_Handler: ProtocolHandler = {
   validateURL(url){
     const parsed = new URL(url); // Will throw if invalid URL
     if(parsed.protocol === "http:"){
-      if(parsed.hostname !== "locahost"){
+      if(parsed.hostname !== "localhost"){
         throw new Error("Protocol must be https: or http://localhost");
       }
-    }
-    if (parsed.protocol !== "https:") {
+    } else if (parsed.protocol !== "https:") {
       throw new Error("Protocol must be https: or http://localhost");
     }
     if (!parsed.hostname) {
