@@ -7,6 +7,18 @@ import { UntrustedScript } from "@roster-lock/types";
 
 type ScriptDictionary = RosterLockV1Config["selection"]["scriptDictionary"];
 
+export class ScriptImportError extends Error {
+  constructor(
+    public readonly importPath: string,
+    public readonly fromPath: string,
+    cause: unknown,
+  ) {
+    const causeMessage = cause instanceof Error ? cause.message : String(cause);
+    super(`Cannot import "${importPath}" from "${fromPath}": ${causeMessage}`);
+    this.name = "ScriptImportError";
+  }
+}
+
 export class RequiredModule<T> {
   public loadedModules: Map<string, T> = new Map();
   public loadingStack: Array<string> = [];
@@ -19,38 +31,34 @@ export class RequiredModule<T> {
     targetScriptpath: string,
     runCode: (newPath: string, content: string)=>Promise<T>,
   ){
+    const fromPath = this.currentScriptPath;
+
     const resolvedPath = resolveScriptPath(
-      this.availableScripts, this.scriptType, this.currentScriptPath, targetScriptpath
+      this.availableScripts, this.scriptType, fromPath, targetScriptpath
     );
+
     const module = this.loadedModules.get(resolvedPath);
     if(typeof module !== "undefined") return module;
 
     if(this.loadingStack.includes(resolvedPath)){
       const cycle = [...this.loadingStack, resolvedPath].join(" -> ");
-      throw new Error(`Circular dependency detected: ${cycle}`);
+      throw new ScriptImportError(targetScriptpath, fromPath, `Circular dependency detected: ${cycle}`);
     }
 
-    const previousFile = this.currentScriptPath;
+    const previousFile = fromPath;
     this.loadingStack.push(resolvedPath);
     this.currentScriptPath = resolvedPath;
 
     const { content } = this.availableScripts[resolvedPath];
     const extension = fileExtension(resolvedPath);
     if(!extension){
-      throw new Error(
-        [
-          "Filename needs an extension",
-          "Requires: " + JSON.stringify(this.scriptType.extensions),
-        ].join("\n")
+      throw new ScriptImportError(targetScriptpath, fromPath,
+        "Filename needs an extension, requires: " + JSON.stringify(this.scriptType.extensions)
       );
     }
     if(!this.scriptType.extensions.includes(extension)){
-      throw new Error(
-        [
-          "We don't currently support inter language communication",
-          "Supports: " + JSON.stringify(this.scriptType.extensions),
-          "Requesting: " + extension
-        ].join("\n")
+      throw new ScriptImportError(targetScriptpath, fromPath,
+        `Unsupported extension "${extension}", supports: ${JSON.stringify(this.scriptType.extensions)}`
       );
     }
 
@@ -96,5 +104,7 @@ export function resolveScriptPath(
       if(availableScripts[resolvedPathIndex]) return resolvedPathIndex;
     }
   }
-  throw new Error("Script Not Found");
+  throw new ScriptImportError(
+    targetScriptpath, currentScriptPath, "Script Not Found"
+  );
 }

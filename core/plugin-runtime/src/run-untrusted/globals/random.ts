@@ -14,13 +14,13 @@ export class MultiSeedPRNG {
   }
 
   nextInt(min: number, max: number): number {
-    if (min > max) throw new Error("Min is greater than max");
+    if (min > max) throw new Error(`randomInt(${min}, ${max}): min must not be greater than max`);
     return Math.floor(this.nextFloat() * (max - min)) + min;
   }
 
   // For array shuffling (Fisher-Yates)
   shuffleIndexes(length: number, startOffset: number = 0): number[] {
-    if (length < 0) throw new Error("Length is negative");
+    if (length < 0) throw new Error(`shuffleIndexes(${length}): length must be non-negative`);
     const result = Array.from({ length }, (_, i) => i + startOffset);
     for (let i = result.length - 1; i > 0; i--) {
       const j = this.nextInt(0, i + 1);

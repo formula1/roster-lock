@@ -29,3 +29,14 @@ export async function runUntrustedScript(
     scriptStarter.entryScript.method || "main"
   );
 }
+
+export class ScriptError extends Error {
+  constructor(e: unknown){
+    const message = (
+      typeof e === "string" ? e :
+      e instanceof Error ? e.message :
+      "Unknown Error"
+    );
+    super(message)
+  }
+}
