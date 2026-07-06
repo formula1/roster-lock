@@ -14,7 +14,9 @@ export const download: ProtocolHandler["download"] = async function(
 
   // Parse ref from URL (e.g., https://github.com/user/repo.git#branch)
   const [repoUrl, ref] = url.split('#');
-  const urlObj = new URL(repoUrl);
+  // Strip the "git+" prefix (git+https://, git+http://) so isomorphic-git
+  // receives a transport URL it understands.
+  const urlObj = new URL(repoUrl.replace(/^git\+/, ''));
 
   return {
     finishPromise: runGitDownload(urlObj, ref || 'main', folderDestination, onProgress),
@@ -27,7 +29,7 @@ export const download: ProtocolHandler["download"] = async function(
 
 async function runGitDownload(
   repoUrl: URL, ref: string,
-  folderDestination: string, 
+  folderDestination: string,
   onProgress?: (progress: number, total?: number) => void,
 ) {
   try {

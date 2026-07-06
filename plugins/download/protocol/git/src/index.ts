@@ -13,8 +13,11 @@ const Git_Handler: ProtocolHandler = {
       }
     })();
     
-    if (parsed.protocol !== "https:") {
-      throw new Error("Git URL must use https:// protocol");
+    const isHttps = parsed.protocol === "https:" || parsed.protocol === "git+https:";
+    const isLocalhostHttp = (parsed.protocol === "http:" || parsed.protocol === "git+http:")
+      && parsed.hostname === "localhost";
+    if (!isHttps && !isLocalhostHttp) {
+      throw new Error("Git URL must use https://, git+https://, or http(s)://localhost");
     }
     if (!parsed.hostname) {
       throw new Error("Missing hostname");
