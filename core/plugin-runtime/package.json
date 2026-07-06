@@ -12,13 +12,13 @@
   },
   "scripts": {
     "build": "rimraf ./dist && tsc",
-    "prepare": "npm run build",
+    "prepare": "pnpm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@roster-lock/shared": "file:../shared",
-    "@roster-lock/types": "file:../types",
-    "@roster-lock/utils": "file:../utils",
+    "@roster-lock/shared": "workspace:*",
+    "@roster-lock/types": "workspace:*",
+    "@roster-lock/utils": "workspace:*",
     "ajv": "^8.20.0",
     "commander": "^14.0.3",
     "seedrandom": "^3.0.5",

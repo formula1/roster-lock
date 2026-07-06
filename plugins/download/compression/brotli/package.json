@@ -6,15 +6,17 @@
   "author": "Sam Tobia",
   "type": "commonjs",
   "main": "dist/index.js",
+  "roster-lock": {
+    "pluginType": "dl-compression"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rimraf ./dist && tsc",
-    "prepare": "npm run build"
+    "prepare": "pnpm run build"
   },
-  "dependencies": {
-    "@roster-lock/types": "file:../../../core/types"
-  },
+  "dependencies": {},
   "devDependencies": {
+    "@roster-lock/types": "workspace:*",
     "@types/node": "^25.9.1",
     "rimraf": "^6.1.3",
     "typescript": "^6.0.3"

@@ -6,16 +6,19 @@
   "author": "Sam Tobia",
   "type": "commonjs",
   "main": "dist/index.js",
+  "roster-lock": {
+    "pluginType": "dl-archive"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rimraf ./dist && tsc",
-    "prepare": "npm run build"
+    "prepare": "pnpm run build"
   },
   "dependencies": {
-    "@roster-lock/types": "file:../../../core/types",
     "node-unrar-js": "^2.0.2"
   },
   "devDependencies": {
+    "@roster-lock/types": "workspace:*",
     "@types/node": "^25.9.1",
     "rimraf": "^6.1.3",
     "typescript": "^6.0.3"

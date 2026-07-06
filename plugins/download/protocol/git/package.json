@@ -12,15 +12,18 @@
     "priority": 1
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "rimraf ./dist && tsc",
+    "prepare": "pnpm run build",
+    "test": "vitest run"
   },
   "devDependencies": {
+    "@roster-lock/types": "workspace:*",
     "@types/node": "^25.9.1",
     "rimraf": "^6.1.3",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^2.0.0"
   },
   "dependencies": {
-    "@roster-lock/types": "file:../../core/types",
     "isomorphic-git": "^1.38.1"
   }
 }

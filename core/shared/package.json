@@ -21,7 +21,7 @@
   "scripts": {
     "test": "vitest run tests/",
     "build": "rimraf ./dist && tsc",
-    "prepare": "npm run build"
+    "prepare": "pnpm run build"
   },
   "devDependencies": {
     "@types/is-glob": "^4.0.4",
@@ -33,11 +33,12 @@
     "vitest": "^4.1.5"
   },
   "dependencies": {
-    "@roster-lock/types": "file:../types",
-    "@roster-lock/utils": "file:../utils",
+    "@roster-lock/types": "workspace:*",
+    "@roster-lock/utils": "workspace:*",
     "ajv": "^8.17.1",
     "cids": "^1.1.9",
     "is-glob": "^4.0.3",
+    "json-diff-ts": "^4.8.2",
     "magnet-uri": "^7.0.7",
     "micromatch": "^4.0.8",
     "runtypes": "^7.0.4"
