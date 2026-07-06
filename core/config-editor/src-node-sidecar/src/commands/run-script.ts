@@ -1,5 +1,5 @@
 
-import { runUntrustedScript } from "@roster-lock/plugin-runtime";
+import { runUntrustedScript, ScriptError } from "@roster-lock/plugin-runtime";
 import { ScriptStarter } from "@roster-lock/types";
 import { z, ZodType} from "zod";
 
@@ -39,12 +39,19 @@ export async function runUntrustedScriptCommand(
 ) {
   try {
     const config = { ...ScriptConfigSchema.parse(json), debugLog: [] };
-    const result = await runUntrustedScript(pluginDir, config);
-    process.stdout.write(
-      JSON.stringify({ debugLog: config.debugLog, result }) + "\n"
-    );
-    process.exitCode = 0;
-  } catch (error) {
+    try {
+      const result = await runUntrustedScript(pluginDir, config);
+      process.stdout.write(
+        JSON.stringify({ debugLog: config.debugLog, status: "success", result }) + "\n"
+      );
+      process.exitCode = 0;
+    } catch (error) {
+      process.stdout.write(
+        JSON.stringify({ debugLog: config.debugLog, status: "fail", result: error.message }) + "\n"
+      );
+      process.exitCode = 0;
+    }
+  }catch(error){
     const message = error instanceof Error ? error.message : String(error);
     process.stderr.write(message + "\n");
     process.exitCode = 1;

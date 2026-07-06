@@ -52,7 +52,7 @@ export const ROSTERLOCK_SIDECAR = {
     ]) as Array<PluginInfo & { extensions: Array<string> }>
   },
 
-  runScript: async function(pluginDir: string, scriptConfig: ScriptStarter): Promise<{ debugLog: Array<string>, result: JSON_Unknown}> {
+  runScript: async function(pluginDir: string, scriptConfig: ScriptStarter): Promise<{ debugLog: Array<string>, status: "success" | "fail", result: JSON_Unknown }> {
     return new Promise((resolve, reject) => {
       const log: Array<OutputLine> = [];
       const instance = Date.now().toString(32);
@@ -83,6 +83,9 @@ export const ROSTERLOCK_SIDECAR = {
               if(typeof line !== "string"){
                 throw new Error("debugLog is expected to be an array of strings")
               }
+            }
+            if(!["success", "fail"].includes(result.status)){
+              throw new Error("status should be success or fail")
             }
             if(!("result" in result)){
               throw new Error("there should be a result")

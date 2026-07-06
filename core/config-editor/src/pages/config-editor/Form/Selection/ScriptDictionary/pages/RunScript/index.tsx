@@ -222,9 +222,10 @@ export function ScriptRunner(
           <StringifyError error={runResult.error} />
         </div>
       ) : runResult.state === RunnableState.SUCCESS ? (
-        <div style={{ border: "#00FF00 1px solid"}}>
-          <h5>Success</h5>
-          <pre>{JSON.stringify(runResult.value, null, 2)}</pre>
+        <div style={{ border: runResult.value.status === "success" ? "#00FF00 1px solid" : "#FF0000 1px solid" }}>
+          <h5>{runResult.value.status === "success" ? "Script Result" : "Script Error"}</h5>
+          <pre>{JSON.stringify(runResult.value.result, null, 2)}</pre>
+          <pre>{runResult.value.debugLog.join("\n")}</pre>
         </div>
       ) : null}
     </div>
