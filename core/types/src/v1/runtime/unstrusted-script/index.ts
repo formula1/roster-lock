@@ -35,3 +35,18 @@ export type UntrustedScript<ScriptModule> = {
   directoryFile: Array<string>,
   runScript: ScriptRunner<ScriptModule>,
 };
+
+export type ScriptStackFrame = {
+  filename: string | null,
+  line: number | null,
+  name: string | null,
+};
+
+export type NormalizedScriptError = {
+  type: "UntrustedScriptError"
+  message: string,
+  filename: string | null,
+  line: number | null,
+  column: number | null,
+  stack: ScriptStackFrame[] | null,
+};
