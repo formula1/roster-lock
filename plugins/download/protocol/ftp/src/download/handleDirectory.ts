@@ -1,6 +1,6 @@
 import { Client as FTPClient, FileInfo as FTPFileInfo } from 'basic-ftp';
 import { PassThrough } from 'node:stream';
-import { storeFile } from "../../utils";
+import { storeFile } from "@roster-lock/dl-shared";
 import { join as pathJoin } from "node:path";
 import { FTPError } from "./util";
 import { ProcessHandlers } from './types';
@@ -12,8 +12,6 @@ export async function handleDirectory(
   { onProgress, abortSignal }: ProcessHandlers,
 ) {
   const remotePath = urlObj.pathname;
-  let totalDownloaded = 0;
-
   const filePromises: Promise<void>[] = [];
   const fileList: Array<{ name: string; size?: number }> = [];
 
@@ -25,23 +23,15 @@ export async function handleDirectory(
 
     fileList.push({ name: relativePath, size: fileInfo.size });
 
-    const progressWatcher = new PassThrough();
-    progressWatcher.on('data', (chunk: Buffer) => {
-      totalDownloaded += chunk.length;
-      onProgress?.(totalDownloaded, undefined);
-    });
-
-    // Download file
     const downloadStream = new PassThrough();
     const remoteFilePath = pathJoin(remotePath, relativePath).replace(/\\/g, '/');
-    
     const downloadPromise = client.downloadTo(downloadStream, remoteFilePath);
-    
+
     const savePromise = storeFile(
       folderDestination,
       relativePath,
       downloadStream,
-      { abortSignal, progressWatcher }
+      { abortSignal }
     );
 
     filePromises.push(
