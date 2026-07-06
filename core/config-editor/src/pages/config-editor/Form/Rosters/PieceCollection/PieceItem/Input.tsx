@@ -1,5 +1,5 @@
 import { InputProps, ListItemProps } from "../../../../../../utils/react";
-import { PieceDefinition, PieceValue } from "../types";
+import { PieceDefinition, PieceDraftInfo, PieceValue } from "../types";
 
 import { useState } from "react";
 import { RosterLockV1Draft } from "@roster-lock/types";
@@ -12,19 +12,37 @@ import { DisplayPathVariables } from "./PathVariables";
 import { HumanInfo } from "./HumanInfo";
 import { DownloadSources } from "./DownloadSources";
 import { RequiredPieces } from "./RequiredPieces";
+import { ReferenceFolder } from "./ReferenceFolder";
+import { useDraftPieceInfo } from "../../../Contexts/DraftInfo";
+
 export function PieceValueItemInput({
   value, onChange,
-  index, items, pieceDefinition, config, onDelete
+  index, items, pieceDefinition, config, onDelete,
+  pieceType,
 }: (
   & InputProps<PieceValue>
   & ListItemProps<PieceValue>
   & {
     pieceDefinition: PieceDefinition,
-    config: RosterLockV1Config
+    config: RosterLockV1Config,
+    pieceType: string,
   }
 )){
   const rosters = config.rosters;
   const [displayRaw, setDisplayRaw] = useState(false);
+
+  const { value: allDraftInfo, onChange: onAllDraftInfoChange } = useDraftPieceInfo();
+  const draftInfo: PieceDraftInfo = allDraftInfo[pieceType]?.[value.id] ?? { testedDownloadSources: [] };
+  const onDraftInfoChange = (newInfo: PieceDraftInfo) => {
+    onAllDraftInfoChange(old => ({
+      ...old,
+      [pieceType]: {
+        ...old[pieceType],
+        [value.id]: newInfo,
+      }
+    }));
+  };
+
   return (
     <div>
       <h4 style={{ display: "flex", justifyContent: "space-between" }}>
@@ -60,11 +78,19 @@ export function PieceValueItemInput({
           value={value.humanInfo}
           onChange={v => onChange({ ...value, humanInfo: v })}
         />
+        <ReferenceFolder
+          value={draftInfo.referenceFolder}
+          onChange={v => onDraftInfoChange({ ...draftInfo, referenceFolder: v })}
+          piece={value}
+          pieceDefinition={pieceDefinition}
+        />
         <DownloadSources
           value={value.downloadSources}
           onChange={v => onChange({ ...value, downloadSources: v })}
           piece={value}
           pieceDefinition={pieceDefinition}
+          draftInfo={draftInfo}
+          onDraftInfoChange={onDraftInfoChange}
         />
         <RequiredPieces
           value={value.requiredPieces}

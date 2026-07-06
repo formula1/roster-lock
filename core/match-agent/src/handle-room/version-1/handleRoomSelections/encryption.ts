@@ -7,7 +7,7 @@ import { webcrypto as crypto } from "crypto";
 type EncryptedMessage = {
   iv: string;
   ciphertext: string;
-}
+};
 
 import { Ajv, JSONSchemaType } from "ajv";
 
@@ -19,7 +19,7 @@ export const encryptedSchema: JSONSchemaType<EncryptedMessage> = {
     iv: { type: "string" },
     ciphertext: { type: "string" },
   },
-}
+};
 
 
 export async function encryptJSON(

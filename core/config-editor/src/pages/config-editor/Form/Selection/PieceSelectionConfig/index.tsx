@@ -15,7 +15,7 @@ import {
   EMPTY_ROSTER_NORMAL_SELECTION,
   EMPTY_ROSTER_GAME_SELECTION,
   EMPTY_ROSTER_PRESELECTED_SELECTION,
-} from "../../constants/roster-configs"
+} from "@roster-lock/shared"
 import { cloneJSON } from "@roster-lock/utils";
 import { Link, useParams } from "react-router";
 

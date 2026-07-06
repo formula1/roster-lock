@@ -1,8 +1,8 @@
-import { EMPTY_ROSTER_DRAFT } from "../../config-editor/Form/constants/roster-configs";
 import { nativeWindow } from "../../../tauri/window";
 import { fs } from "../../../tauri/fs";
 import {
-  ROSTERLOCK_V1_CASTER_JSONSCHEMA
+  ROSTERLOCK_V1_CASTER_JSONSCHEMA,
+  EMPTY_ROSTER_DRAFT
 } from "@roster-lock/shared";
 import { cloneJSON } from "@roster-lock/utils";
 

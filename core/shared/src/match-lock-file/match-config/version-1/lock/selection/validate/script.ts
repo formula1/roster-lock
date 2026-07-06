@@ -26,12 +26,3 @@ export function validateUntrustedScriptMethod(
     throw new Error("Script method must be a valid identifier");
   }
 }
-
-import { getUntrustedScriptByFileExtension } from "../../../usage/untrusted-scripts";
-export function validateUntrustedScriptExtension(
-  filename: string
-){
-  if(!getUntrustedScriptByFileExtension(filename)){
-    throw new Error("Invalid Script Extension");
-  }
-}

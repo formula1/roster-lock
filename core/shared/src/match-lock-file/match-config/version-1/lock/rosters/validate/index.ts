@@ -12,7 +12,6 @@ import { validateVersions, validateVersionUniqueness } from "./version";
 import { validateHumanInfo } from "./human";
 import {
   validateDownloadableSourceList,
-  validateDownloadableSource
 } from "./downloadable-source";
 import {
   validateAllExpectedPathVariableNamesSet,
@@ -40,14 +39,11 @@ export function validateRosterLockPieces(
       validatePieceIdUniqueness(piece.id, i, pieceList);
 
       validateVersions(piece.version);
-      validateVersionUniqueness(piece.version, i, pieceList)
+      validateVersionUniqueness(piece.version, i, pieceList);
 
       validateHumanInfo(piece.humanInfo);
       // Download Sources
       validateDownloadableSourceList(piece.downloadSources);
-      for(const downloadSource of piece.downloadSources){
-        validateDownloadableSource(downloadSource);
-      }
 
       // Path Variables
       validateAllExpectedPathVariableNamesSet(piece.pathVariables, pieceConfig);

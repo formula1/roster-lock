@@ -9,7 +9,7 @@
   "types": "src/index.ts",
   "scripts": {
     "build": "rimraf ./dist && tsc",
-    "prepare": "npm run build",
+    "prepare": "pnpm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {

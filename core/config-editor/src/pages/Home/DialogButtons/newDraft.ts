@@ -1,5 +1,5 @@
 import { showSaveDialog } from "../../../tauri/window";
-import { EMPTY_ROSTER_LOCK } from "../../config-editor/Form/constants/roster-configs";
+import { EMPTY_ROSTER_LOCK } from "@roster-lock/shared";
 import { fs } from "../../../tauri/fs";
 
 export async function newDraft(){

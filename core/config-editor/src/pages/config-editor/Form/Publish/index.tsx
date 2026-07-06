@@ -1,8 +1,7 @@
 import { RosterLockV1Draft } from "@roster-lock/types";
-import { ROSTERLOCK_V1_CASTER_JSONSCHEMA } from "@roster-lock/shared";
+import { ROSTERLOCK_V1_CASTER_JSONSCHEMA, diffLocks } from "@roster-lock/shared";
 import { cloneJSON, } from "@roster-lock/utils";
 import { showSaveDialog } from "../../../../tauri/window";
-import { diffLocks } from "./diffRosters";
 import { fs } from "../../../../tauri/fs";
 import { join as pathJoin, dirname } from "@tauri-apps/api/path";
 
@@ -42,5 +41,3 @@ export function promoteStagedLock(draft: RosterLockV1Draft): RosterLockV1Draft {
   updatedDraft.previousLock = cloneJSON(updatedDraft.stagedLock);
   return updatedDraft;
 }
-
-export { diffLocks };

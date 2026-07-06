@@ -4,7 +4,7 @@ import { cloneJSON } from "@roster-lock/utils";
 import {
   EMPTY_ROSTER_NORMAL_SELECTION,
   EMPTY_ROSTER_UNSELECTABLE_SELECTION,
-} from "../../constants/roster-configs";
+} from "@roster-lock/shared";
 import { useRosterLock } from "../../Contexts/RosterLock";
 import { RosterLockV1Config } from "@roster-lock/types";
 

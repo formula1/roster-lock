@@ -2,7 +2,7 @@ import { SelectedPiece } from "@roster-lock/types";
 import {
   ScriptPurposeInput,
   PieceUserValidationInput, PieceMergeInput, GlobalValidationInput
-} from "@roster-lock/shared";
+} from "@roster-lock/types";
 import { InputProps } from "../../../../../../../utils/react";
 import { useEffect, useMemo, useState } from "react";
 import { useRosterLock } from "../../../../Contexts/RosterLock";

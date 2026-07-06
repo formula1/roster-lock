@@ -1,12 +1,13 @@
-import { InputProps } from "../../../../../../../utils/react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { InputProps, usePromisedMemo } from "../../../../../../../utils/react";
+import { useMemo, useState } from "react";
 import { fileExtension } from "@roster-lock/utils";
-import { getUntrustedScriptByFileExtension } from "@roster-lock/shared";
 import { FileSummary } from "../CurrentFiles/FileSummary";
 
 import { PreppedScripts, ScriptDictionary } from "./types";
 import { useRosterLock } from "../../../../Contexts/RosterLock";
 import { useTrackedKey } from "../../../../../../../utils/react"
+import { ROSTERLOCK_SIDECAR } from "../../../../../../../globals/side-car";
+import { getPluginDir } from "../../../../../../../globals/plugin-dir";
 
 
 export function MergeForm(
@@ -19,14 +20,18 @@ export function MergeForm(
   const dictionary = lock.selection.scriptDictionary;
   const [prepped, setPrepped] = useState<PreppedScripts>(preppedInput);
   const keyTracker = useTrackedKey();
+  const untrustedScripts = usePromisedMemo(async ()=>{
+    return ROSTERLOCK_SIDECAR.getScriptPlugins(await getPluginDir())
+  }, []);
 
   const problems = useMemo(()=>{
+    if(untrustedScripts.status !== "success") return null;
     const problems: Record<string, Array<string>> = {}
     for(const file in prepped.files){
       if(dictionary[file]){
         addError(file, "File already exists" )
       }
-      const supportsExtension = getUntrustedScriptByFileExtension(file);
+      const supportsExtension = getUntrustedScriptByFileExtension(file, untrustedScripts.value);
       const extension = fileExtension(file);
       if(!supportsExtension){
         addError(file, `Extension (${extension || "unknown"}) is not supported`)
@@ -37,7 +42,9 @@ export function MergeForm(
       problems[file].push(error);
     }
     return problems;
-  }, [dictionary, prepped.files]);
+  }, [dictionary, prepped.files, untrustedScripts]);
+
+  if(problems === null) return null;
 
   return (
     <>
@@ -119,4 +126,15 @@ function LoadedFileEntry(
   )
 }
 
+export function getUntrustedScriptByFileExtension(
+  filename: string, availableScripts: Array<{ extensions: Array<string> }>
+){
+  const extension = fileExtension(filename);
+  if(!extension) return;
+  for(const script of availableScripts){
+    if(script.extensions.includes(extension)){
+      return script;
+    }
+  }
+}
 

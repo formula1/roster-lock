@@ -8,7 +8,6 @@ import { versionSchema, sha256SchemaValidator } from "./version";
 import { humanInfoSchema, urlSchemaValidator, friendlyStringSchemaValidator } from "./human";
 import {
   downloadableSourcesSchema,
-  downloadableSourceSchemaValidator,
   downloadableSourceListSchemaValidator,
 } from "./downloadableSources";
 import {
@@ -49,7 +48,7 @@ export const rosterLockPiece: JSONSchemaType<RosterLockPiece> = {
     pathVariables: pathVariablesSchema,
     requiredPieces: requiredPiecesSchema,
   },
-}
+};
 
 
 import { validateAllEnginePiecesDefined, validatePieceInEngine } from "../validate";
@@ -69,13 +68,12 @@ export const rostersSchema: JSONSchemaType<RosterLockV1Config["rosters"]> = {
     type: "array",
     items: rosterLockPiece,
   },
-}
+};
 
 
 export const rosterKeywords = [
   // Download Related
   downloadableSourceListSchemaValidator,
-  downloadableSourceSchemaValidator,
 
   // Human Related
   urlSchemaValidator,
@@ -102,4 +100,4 @@ export const rosterKeywords = [
   // Defined Here
   allPieceTypesInEngineSchemaValidator,
   pieceTypeInEngineSchemaValidator,
-]
+];

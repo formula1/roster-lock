@@ -1,6 +1,6 @@
 
-import { runUntrustedScript } from "@roster-lock/node-services";
-import { ScriptStarter } from "@roster-lock/shared";
+import { runUntrustedScript, ScriptError } from "@roster-lock/plugin-runtime";
+import { ScriptStarter } from "@roster-lock/types";
 import { z, ZodType} from "zod";
 
 const PurposeSchema = z.discriminatedUnion("type", [
@@ -24,25 +24,34 @@ const PurposeSchema = z.discriminatedUnion("type", [
   }),
 ]);
 
-const ScriptConfigSchema: ZodType<ScriptStarter> = z.object({
-  entryScriptPath: z.string(),
+const ScriptConfigSchema: ZodType<Omit<ScriptStarter, "debugLog">> = z.object({
   randomSeeds: z.array(z.string()),
   purpose: PurposeSchema,
   config: z.any(),
   entryScript: z.object({
-    type: z.string().optional(),
     src: z.string(),
     method: z.string().optional()
   })
 });
 
-export async function runUntrustedScriptCommand(json: unknown) {
+export async function runUntrustedScriptCommand(
+  pluginDir: string, json: unknown
+) {
   try {
-    const config = ScriptConfigSchema.parse(json) as ScriptStarter;
-    const result = await runUntrustedScript(config);
-    process.stdout.write(JSON.stringify(result) + "\n");
-    process.exitCode = 0;
-  } catch (error) {
+    const config = { ...ScriptConfigSchema.parse(json), debugLog: [] };
+    try {
+      const result = await runUntrustedScript(pluginDir, config);
+      process.stdout.write(
+        JSON.stringify({ debugLog: config.debugLog, status: "success", result }) + "\n"
+      );
+      process.exitCode = 0;
+    } catch (error) {
+      process.stdout.write(
+        JSON.stringify({ debugLog: config.debugLog, status: "fail", result: error.message }) + "\n"
+      );
+      process.exitCode = 0;
+    }
+  }catch(error){
     const message = error instanceof Error ? error.message : String(error);
     process.stderr.write(message + "\n");
     process.exitCode = 1;

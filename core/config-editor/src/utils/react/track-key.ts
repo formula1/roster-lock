@@ -2,11 +2,12 @@ import { useMemo, useRef } from "react";
 
 export function useTrackedKey(){
   const keys = useRef(new Map<string, number>());
+  const counter = useRef(0);
   return useMemo(()=>{
     const tracker = {
       findOrCreate(path: string){
         if(!keys.current.has(path)){
-          keys.current.set(path, Date.now());
+          keys.current.set(path, counter.current++);
         }
         return keys.current.get(path)!;
       },

@@ -23,7 +23,10 @@ export class PieceDownloadTracker {
     }
     // We don't skip required as different pieces may have different required pieces
     for(const [requiredPieceType, requiredPieces] of Object.entries(piece.required)){
-      for(const requiredPiece of requiredPieces){
+      for(const requiredPiece of requiredPieces.mandatory){
+        this.tryToDownloadAndNested(requiredPieceType, requiredPiece);
+      }
+      for(const requiredPiece of requiredPieces.selectable){
         this.tryToDownloadAndNested(requiredPieceType, requiredPiece);
       }
     }

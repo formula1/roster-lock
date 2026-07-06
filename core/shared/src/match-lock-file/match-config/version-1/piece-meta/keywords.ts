@@ -4,7 +4,6 @@ import {
   friendlyStringSchemaValidator,
 } from "../lock/rosters/caster-json-schema/human";
 import {
-  downloadableSourceSchemaValidator,
   downloadableSourceListSchemaValidator,
 } from "../lock/rosters/caster-json-schema/downloadableSources";
 import {
@@ -21,7 +20,6 @@ export const rosterLockPieceMetadataKeywords = [
   urlSchemaValidator,
   friendlyStringSchemaValidator,
 
-  downloadableSourceSchemaValidator,
   downloadableSourceListSchemaValidator,
   defineKeyword({
     keyword: pathVariableNameSchemaValidator.keyword,
@@ -38,4 +36,4 @@ export const rosterLockPieceMetadataKeywords = [
     type: allPathVariableNameSetSchemaValidator.type,
     validate: ignore,
   }),
-]
+];

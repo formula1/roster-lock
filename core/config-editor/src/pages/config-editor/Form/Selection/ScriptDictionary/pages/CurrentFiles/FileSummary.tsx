@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { RosterLockV1Config } from "@roster-lock/types";
 import { InputProps } from "../../../../../../../utils/react";
 import { useLightbox } from "../../../../../../../components";
@@ -16,7 +16,8 @@ export function FileSummary(
 ){
   const lightbox = useLightbox()
   const [editedPath, setEditedPath] = useState(value.path);
-  const isDuplicate = editedPath !== value.path && editedPath in allEntries;
+  useEffect(() => { setEditedPath(value.path); }, [value.path]);
+  const isDuplicate = editedPath !== value.path && Object.hasOwn(allEntries, editedPath);
   return (
     <>
       <div style={{ display: "flex" }}>
@@ -28,7 +29,7 @@ export function FileSummary(
           onChange={(e) => {
             const newPath = e.target.value;
             setEditedPath(newPath);
-            const duplicate = newPath !== value.path && newPath in allEntries;
+            const duplicate = newPath !== value.path && Object.hasOwn(allEntries, newPath);
             if (!duplicate) onChange({ ...value, path: newPath });
           }}
         />

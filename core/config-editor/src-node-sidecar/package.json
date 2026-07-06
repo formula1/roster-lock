@@ -3,15 +3,15 @@
   "version": "1.0.0",
   "main": "dist/index.js",
   "scripts": {
-    "prepare": "npm run build",
-    "build": "npm run build:ts && npm run build:pkg",
+    "prepare": "pnpm run build",
+    "build": "pnpm run build:ts && pnpm run build:pkg",
     "build:ts": "rimraf ./dist && tsc",
     "build:pkg": "node scripts/build-sidecar.js",
     "dev": "tsx src/index.ts",
     "start": "node dist/index.js"
   },
   "dependencies": {
-    "@roster-lock/node-services": "file:../../node-services",
+    "@roster-lock/plugin-runtime": "workspace:*",
     "commander": "^11.1.0",
     "zod": "^4.3.5"
   },

@@ -1,4 +1,4 @@
-#!/bin/node
+#!/usr/local/bin/node
 
 const { join: pathJoin, resolve: pathResolve } = require("path");
 const { existsSync } = require("fs");

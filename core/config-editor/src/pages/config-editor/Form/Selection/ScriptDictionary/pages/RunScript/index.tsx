@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { ScriptPurposeInput } from "@roster-lock/shared";
+import type { ScriptPurposeInput } from "@roster-lock/types";
 import { PieceType, SelectedPiece, UntrustedScriptRef, UserId } from "@roster-lock/types";
 import { useRosterLock } from "../../../../Contexts/RosterLock";
 import { ProcessError, ROSTERLOCK_SIDECAR } from "../../../../../../../globals/side-car";
@@ -16,6 +16,7 @@ import { ScriptPurposeSelectionInput } from "./ScriptPurposeInput";
 import { UserListInput } from "../../../../components/UserListInput"
 import { InputProps, RunnableState, useRunnable } from "../../../../../../../utils/react"
 import { createEmptyPurposeBody } from "./createEmptyPurposebody";
+import { getPluginDir } from "../../../../../../../globals/plugin-dir";
 
 export function RunScriptPage(){
   const { value: lock } = useRosterLock();
@@ -195,13 +196,16 @@ export function ScriptRunner(
   const { value: lock } = useRosterLock();
 
   const runResult = useRunnable(
-    useCallback(()=>{
-      return ROSTERLOCK_SIDECAR.runScript({
-        config: lock,
-        purpose: purposeBody,
-        randomSeeds: [seedPrefix],
-        entryScript: script
-      });
+    useCallback(async ()=>{
+      return ROSTERLOCK_SIDECAR.runScript(
+        await getPluginDir(),
+        {
+          config: lock,
+          purpose: purposeBody,
+          randomSeeds: [seedPrefix],
+          entryScript: script
+        }
+      );
     }, [lock, purposeBody, seedPrefix, script])
   )
 
@@ -218,9 +222,10 @@ export function ScriptRunner(
           <StringifyError error={runResult.error} />
         </div>
       ) : runResult.state === RunnableState.SUCCESS ? (
-        <div style={{ border: "#00FF00 1px solid"}}>
-          <h5>Success</h5>
-          <pre>{JSON.stringify(runResult.value, null, 2)}</pre>
+        <div style={{ border: runResult.value.status === "success" ? "#00FF00 1px solid" : "#FF0000 1px solid" }}>
+          <h5>{runResult.value.status === "success" ? "Script Result" : "Script Error"}</h5>
+          <pre>{JSON.stringify(runResult.value.result, null, 2)}</pre>
+          <pre>{runResult.value.debugLog.join("\n")}</pre>
         </div>
       ) : null}
     </div>

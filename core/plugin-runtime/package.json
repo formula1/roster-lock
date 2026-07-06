@@ -1,0 +1,33 @@
+{
+  "name": "@roster-lock/plugin-runtime",
+  "version": "0.0.0",
+  "description": "Uses external plugins to run untrusted script lanuages and download protocols",
+  "license": "JSON",
+  "author": "Sam Tobia",
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "types": "./src/index.ts",
+  "bin": {
+    "roster-lock-plugin-manager": "dist/index.js"
+  },
+  "scripts": {
+    "build": "rimraf ./dist && tsc",
+    "prepare": "pnpm run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@roster-lock/shared": "workspace:*",
+    "@roster-lock/types": "workspace:*",
+    "@roster-lock/utils": "workspace:*",
+    "ajv": "^8.20.0",
+    "commander": "^14.0.3",
+    "seedrandom": "^3.0.5",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.0",
+    "@types/seedrandom": "^3.0.8",
+    "rimraf": "^6.1.3",
+    "typescript": "^6.0.3"
+  }
+}
