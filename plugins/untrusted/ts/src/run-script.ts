@@ -1,6 +1,7 @@
 
 import { UntrustedScript } from "@roster-lock/types";
 import { newQuickJSAsyncWASMModule, QuickJSContext } from "quickjs-emscripten";
+import { extractQuickJSError } from "./error";
 import { transpileModule, ModuleKind, ScriptTarget } from "typescript";
 
 import { getOrCreate } from "./util";
@@ -81,20 +82,35 @@ export const runTSScript: UntrustedScript<string>["runScript"] = async function(
     const { outputText } = transpileModule(scriptRaw, {
       compilerOptions: { module: ModuleKind.ESNext, target: ScriptTarget.ESNext }
     });
-    await vm.evalCodeAsync(outputText);
+    const throwIfInterrupted = () => {
+      if (interruptCycles > MAX_CYCLES) throw new Error("Script cycle limit exceeded");
+    };
+
+    const loadResult = await vm.evalCodeAsync(outputText);
+    if ("error" in loadResult) {
+      throwIfInterrupted();
+      throw extractQuickJSError(vm, loadResult.error!);
+    }
+    loadResult.value!.dispose();
 
     const main = vm.getProp(vm.global, initialMethod);
     if(vm.typeof(main) !== "function"){
       throw new Error(`No ${initialMethod} function defined in script`);
     }
-    const resultHandle = vm.unwrapResult(
-      await vm.evalCodeAsync(`Promise.resolve().then(()=>(${initialMethod}()));`)
-    );
-    const resultPromise = vm.resolvePromise(resultHandle);
+
+    const evalResult = await vm.evalCodeAsync(`Promise.resolve().then(()=>(${initialMethod}()));`);
+    if ("error" in evalResult) {
+      throwIfInterrupted();
+      throw extractQuickJSError(vm, evalResult.error!);
+    }
+    const resultPromise = vm.resolvePromise(evalResult.value!);
     vm.runtime.executePendingJobs();
     const awaitedResult = await resultPromise;
-    // The unwrap should throw if the script throws
-    return vm.dump(vm.unwrapResult(awaitedResult));
+    if ("error" in awaitedResult) {
+      throwIfInterrupted();
+      throw extractQuickJSError(vm, awaitedResult.error!);
+    }
+    return vm.dump(awaitedResult.value!);
   }finally{
     vm.dispose();
   }
