@@ -64,4 +64,3 @@ function diffPieces(versionTracker: SemVer, collection: string, oldLock: PieceCo
     )
   }
 }
-

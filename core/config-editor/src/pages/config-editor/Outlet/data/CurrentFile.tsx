@@ -1,8 +1,7 @@
-import { ROSTERLOCK_V1_CASTER_JSONSCHEMA, ROSTERLOCK_V1_DRAFT_CASTER_JSONSCHEMA } from "@roster-lock/shared";
+import { ROSTERLOCK_V1_CASTER_JSONSCHEMA, ROSTERLOCK_V1_DRAFT_CASTER_JSONSCHEMA, EMPTY_ROSTER_DRAFT } from "@roster-lock/shared";
 import { RosterLockV1Draft } from "@roster-lock/types";
 
 import { createCurrentFileContext } from "../../../../components/data/CurrentFileContext";
-import { EMPTY_ROSTER_DRAFT } from "../../Form/constants/roster-configs";
 
 const {
   useCurrentFile: useCurrentRosterLockFile,
