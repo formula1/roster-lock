@@ -26,7 +26,7 @@ export function validateAssetName(
   if(name !== name.trim()){
     throw new Error("Name contains a trailing or leading space");
   }
-  if(assets.find((a) => a.name === name)){
+  if(assets.filter((a) => a.name === name).length > 1){
     throw new Error("Duplicate name");
   }
 }
