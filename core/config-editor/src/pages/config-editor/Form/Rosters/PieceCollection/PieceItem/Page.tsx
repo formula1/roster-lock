@@ -36,7 +36,7 @@ export function PieceValueItemPage(){
     <PieceValueItemInput
       pieceDefinition={pieceDefinition}
       config={rosterLock}
-
+      pieceType={pieceType}
 
       value={piece}
       onChange={(v)=>{

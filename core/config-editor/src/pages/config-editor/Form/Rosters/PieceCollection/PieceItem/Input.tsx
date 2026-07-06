@@ -89,6 +89,8 @@ export function PieceValueItemInput({
           onChange={v => onChange({ ...value, downloadSources: v })}
           piece={value}
           pieceDefinition={pieceDefinition}
+          draftInfo={draftInfo}
+          onDraftInfoChange={onDraftInfoChange}
         />
         <RequiredPieces
           value={value.requiredPieces}
