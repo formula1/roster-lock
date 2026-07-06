@@ -1,5 +1,4 @@
 import { Parser } from 'tar';
-import { Readable } from 'node:stream';
 import type { ArchiveHandler, ArchiveFile } from '@roster-lock/types';
 
 const tar: ArchiveHandler = {
@@ -7,8 +6,18 @@ const tar: ArchiveHandler = {
   extensions: ['.tar'],
   extractFiles(input: AsyncIterable<Uint8Array>): AsyncIterable<ArchiveFile> {
     return (async function* () {
+      // tar@7's Parser is a plain EventEmitter (not a real Writable stream —
+      // it has no `.destroy()`), so it must be driven via write()/end() directly
+      // rather than through Readable.pipe(), which assumes stream semantics.
       const parser = new Parser();
-      Readable.from(input).pipe(parser);
+      (async () => {
+        try {
+          for await (const chunk of input) parser.write(chunk);
+          parser.end();
+        } catch (err) {
+          parser.emit('error', err);
+        }
+      })();
 
       const pending: ArchiveFile[] = [];
       let done = false;
@@ -18,7 +27,7 @@ const tar: ArchiveHandler = {
       function signal() { notify?.(); notify = null; }
 
       parser.on('entry', (entry: any) => {
-        if (entry.type !== 'File') { entry.autodrain(); return; }
+        if (entry.type !== 'File') { entry.resume(); return; }
         pending.push({ path: entry.path, contents: entry as AsyncIterable<Uint8Array> });
         signal();
       });
