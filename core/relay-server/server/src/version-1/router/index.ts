@@ -23,6 +23,10 @@ app.route('/admin', adminRouter);
 import { app as matchmakerRouter } from './matchmaker';
 app.route('/matchmaker', matchmakerRouter);
 
+// ============= Game Coordinator Routes =============
+import { app as gameCoordinatorRouter } from "./game-coordinator";
+app.route("/game-coordinator", gameCoordinatorRouter);
+
 // ============= Room Routes =============
 import { app as roomRouter } from './room';
 app.route('/room', roomRouter);
