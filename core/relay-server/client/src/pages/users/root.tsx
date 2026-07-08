@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { RELAY_API } from "../../globals/api";
 import { useUser } from "../../globals/user";
 import { usePromisedMemo } from "../../utils/promised-memo";
@@ -46,12 +46,12 @@ export function Users() {
 function CreateUser({ updateUsers }: { updateUsers: ()=>void }) {
   const { user } = useUser();
   const [username, setUsername] = useState('');
-  const createResult = useRunnable(async ()=>{
+  const createResult = useRunnable(useCallback(async ()=>{
     if(!user) throw new Error("Not logged in");
     const result = await RELAY_API.users.create({ authToken: user.token }, { username });
     updateUsers();
     return result;
-  })
+  }, [user, username]));
 
   return (
     <>

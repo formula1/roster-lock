@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useUser } from "../../globals/user";
 import { RunnableState, useRunnable } from "../../utils/runnable";
 
@@ -6,9 +6,9 @@ export function Login() {
   const { login } = useUser();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const loginResult = useRunnable(async ()=>{
+  const loginResult = useRunnable(useCallback(async ()=>{
     await login(username, password);
-  })
+  }, [login, username, password]));
 
   return (
     <div>

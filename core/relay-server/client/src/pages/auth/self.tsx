@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { RELAY_API } from "../../globals/api";
 import { useUser } from "../../globals/user";
 import { usePromisedMemo } from "../../utils/promised-memo";
@@ -31,10 +31,10 @@ function UserDisplay({ self }: {
 }){
   const { user } = useUser();
   const [password, setPassword] = useState('');
-  const updateResult = useRunnable(async ()=>{
+  const updateResult = useRunnable(useCallback(async ()=>{
     if(!user) throw new Error("Not logged in");
     await RELAY_API.auth.updatePassword({ authToken: user.token }, { password });
-  })
+  }, [user, password]));
 
   return (
     <div>
