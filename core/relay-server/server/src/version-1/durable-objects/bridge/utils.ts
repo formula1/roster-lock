@@ -1,4 +1,4 @@
-import { DurableObjectState } from '@cloudflare/workers-types';
+import { DurableObjectState } from "@cloudflare/workers-types";
 import { WebSocketAttachment } from "../types";
 
 export type UserPublicKey = string;
@@ -6,7 +6,7 @@ export type WebSocket = ReturnType<DurableObjectState["getWebSockets"]>[0];
 export type WaitingRequest = {
   path: string,
   publicKey: UserPublicKey,
-}
+};
 
 export const CONVO_STATE_KEY = "convo-state";
 

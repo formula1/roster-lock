@@ -7,22 +7,22 @@ const RESPONSE_HANDLERS: Record<string, (room: RoomType, user: WebSocket, value:
   "all-selection-for-user-decryption": handleReveal,
   "all-decryption-for-user-final": handleFinal,
   "user-download": handleDownload,
-}
+};
 
 import { handleDownloadProgress } from "./event-handlers";
 import { handleBridgeMessage, makeBridgeRequest } from "./bridge-compatability";
 import { RoomType } from "../types";
 const EVENT_HANDLERS: Record<string, (room: RoomType, user: WebSocket, value: any)=>Promise<any>> = {
   "download-progress": handleDownloadProgress,
-}
+};
 
-const REQUEST_HANDLERS: Record<string, (room: RoomType, user: WebSocket, value: any)=>Promise<void>> = {}
+const REQUEST_HANDLERS: Record<string, (room: RoomType, user: WebSocket, value: any)=>Promise<void>> = {};
 
 const handlers = {
   response: RESPONSE_HANDLERS,
   event: EVENT_HANDLERS,
   request: REQUEST_HANDLERS,
-}
+};
 
 export function handleMessage(room: RoomType, user: WebSocket, messageRaw: string){
   return handleBridgeMessage(room, handlers, user, messageRaw);

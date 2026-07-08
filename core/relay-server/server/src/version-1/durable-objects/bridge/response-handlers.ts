@@ -1,12 +1,11 @@
-import { DurableObjectState } from '@cloudflare/workers-types';
 import { WebSocket } from "./utils";
 import { storeValueInState, getPublicKey } from "./utils";
 import { CONVO_STATE_KEY } from "./utils";
 import { isDeepEqual } from "../../../utils/json";
-import { makeBridgeEvent, makeBridgeRequest } from './bridge-compatability';
-import { RoomType } from '../types';
-import { successWebhook } from '../webhook';
-import { RoomConfig } from '../../types';
+import { makeBridgeEvent, makeBridgeRequest } from "./bridge-compatability";
+import { RoomType } from "../types";
+import { successWebhook } from "../webhook";
+import { RoomConfig } from "../../types";
 
 
 export async function handleSelection(room: RoomType, user: WebSocket, value: any){
@@ -80,9 +79,9 @@ export async function handleDownload(room: RoomType, user: WebSocket, value: any
 
   if(!download) return;
 
-  const config = await room.state.storage.get<RoomConfig>('config');
+  const config = await room.state.storage.get<RoomConfig>("config");
   if (!config) return;
-  await successWebhook(room.env, config)
+  await successWebhook(room.env, config);
 
   await Promise.all(room.state.getWebSockets().map((user)=>{
     return makeBridgeEvent(room, user, "all-download", {});

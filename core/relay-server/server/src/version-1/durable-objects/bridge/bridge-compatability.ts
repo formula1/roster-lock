@@ -7,7 +7,7 @@ type Handlers = {
   response: Record<string, (room: RoomType, user: WebSocket, value: any)=>Promise<void>>,
   event: Record<string, (room: RoomType, user: WebSocket, value: any)=>Promise<void>>,
   request: Record<string, (room: RoomType, user: WebSocket, value: any)=>Promise<any>>,
-}
+};
 
 export async function handleBridgeMessage(
   room: RoomType, handlers: Handlers, user: WebSocket, messageRaw: string
@@ -33,14 +33,14 @@ export async function handleBridgeMessage(
         messageType: "response",
         valueType: "result",
         value: response,
-      }))
+      }));
     }catch(e){
       user.send(JSON.stringify({
         id: message.id,
         messageType: "response",
         valueType: "error",
         value: (e as Error).message,
-      }))
+      }));
     }
     return;
   }
