@@ -6,14 +6,10 @@ export interface Env {
   DB: D1Database;
   CLIENT_ASSETS: Fetcher;  // Static assets binding for serving the React client
   ENVIRONMENT: string;
-<<<<<<< HEAD
 
   JWT_SECRET: string;  // Secret for signing JWTs
   GAME_COORDINATOR_ENCRYPTION_KEY: string;
 
-=======
-  JWT_SECRET: string;  // Secret for signing JWTs
->>>>>>> Feature-RelayServer
   INITIAL_ADMIN_USERNAME?: string;  // Optional: initial admin username (default: 'admin')
   INITIAL_ADMIN_PASSWORD?: string;  // Optional: initial admin password for bootstrap
 }

@@ -40,6 +40,7 @@
   },
   "dependencies": {
     "@noble/ed25519": "^3.0.0",
+    "@roster-lock/utils": "link:../utils",
     "hono": "^4.11.3",
     "zod": "^4.3.5"
   }

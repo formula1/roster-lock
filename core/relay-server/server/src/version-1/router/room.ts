@@ -3,14 +3,12 @@ import { Hono } from 'hono';
 import { Env, RoomConfig } from '../types';
 
 import { z, ZodType } from 'zod';
-import { verifySignature, createSha } from '../../utils/crypto';
-<<<<<<< HEAD
+import { SIGNATURE_ASYMMETRIC, createShaFromJSON } from '@roster-lock/utils';
 import { GameCoordinatorRow, MatchmakerRow, RoomStatsRow } from '../schema/types';
-=======
-import { MatchmakerRow, RoomStatsRow } from '../schema/types';
->>>>>>> Feature-RelayServer
 import { D1Database } from '@cloudflare/workers-types';
 import { ContentfulStatusCode } from 'hono/utils/http-status';
+
+type PublicKey = Parameters<typeof SIGNATURE_ASYMMETRIC.verifySignature>[0];
 
 export const app = new Hono<{ Bindings: Env }>();
 
@@ -67,17 +65,21 @@ app.post('/', async (c)=> {
   }
 
 
-  const isValid = await verifySignature(matchmaker.public_key, body.signature, {
-    service: 'create-room',
-    publicKey: body.publicKey,
-    rosterConfigHash: body.rosterConfigHash,
-    users: body.users,
-    coordinatorId: body.coordinatorId,
-  });
+  const isValid = await SIGNATURE_ASYMMETRIC.verifySignature(
+    matchmaker.public_key as PublicKey,
+    body.signature,
+    {
+      service: 'create-room',
+      publicKey: body.publicKey,
+      rosterConfigHash: body.rosterConfigHash,
+      users: body.users,
+      coordinatorId: body.coordinatorId,
+    }
+  );
   if(!isValid) return c.json({ error: 'Invalid signature' }, 401);
   
   const roomId = crypto.randomUUID();
-  const full_hashBuffer = await createSha(body.rosterConfig);
+  const full_hashBuffer = await createShaFromJSON(body.rosterConfig);
   if(body.rosterConfigHash !== full_hashBuffer){
     return c.json({ error: 'Invalid roster config hash' }, 401);
   }
@@ -104,7 +106,7 @@ app.post('/', async (c)=> {
   if(!response.ok) return c.json({ error: 'Failed to create room' }, 500);
 
   // Now store room stats in D1 after DO creation succeeded
-  const rosterHash = await createSha(body.rosterConfig.rosters);
+  const rosterHash = await createShaFromJSON(body.rosterConfig.rosters);
   const engineId = body.rosterConfig.engine.name;
   const engineVersion = body.rosterConfig.engine.version;
   const users_ids = JSON.stringify(body.users.sort());
