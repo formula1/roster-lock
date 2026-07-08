@@ -19,6 +19,9 @@
   "type": "commonjs",
   "main": "dist/index.js",
   "types": "src/index.ts",
+  "bin": {
+    "rosterlock-match-agent": "dist/index.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rimraf ./dist && tsc",
@@ -41,6 +44,7 @@
     "ajv": "^8.17.1",
     "async": "^3.2.6",
     "better-sqlite3": "^12.5.0",
+    "commander": "14.0.3",
     "node-fetch-commonjs": "^3.3.2",
     "path-to-regexp": "^8.3.0",
     "runtypes": "^7.0.4",
