@@ -1,5 +1,4 @@
 import { MessageBridgeMessageCaster } from "./message-schema";
-import { DurableObjectState } from '@cloudflare/workers-types';
 import { getPublicKey, WaitingRequest, WebSocket } from "./utils";
 import { RoomType } from "../types";
 

@@ -20,7 +20,7 @@ export async function storeValueInState(
     const currentState = await txn.get<string>(CONVO_STATE_KEY);
     if(currentState !== expectedState) throw new Error(`Expected State ${expectedState} but got ${currentState}`);
     const userValues = await txn.get<Record<UserPublicKey, any>>(key) || {};
-    if(userValues[publicKey]) throw new Error(`Duplicate Value for Key ${key}`);
+    if(publicKey in userValues) throw new Error(`Duplicate Value for Key ${key}`);
     userValues[publicKey] = value;
     await txn.put(key, userValues);
 

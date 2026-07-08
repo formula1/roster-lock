@@ -1,7 +1,7 @@
 import { WebSocket } from "./utils";
 import { storeValueInState, getPublicKey } from "./utils";
 import { CONVO_STATE_KEY } from "./utils";
-import { isDeepEqual } from "../../../utils/json";
+import { compareJSON } from "@roster-lock/utils";
 import { makeBridgeEvent, makeBridgeRequest } from "./bridge-compatability";
 import { RoomType } from "../types";
 import { successWebhook } from "../webhook";
@@ -47,7 +47,7 @@ export async function handleFinal(room: RoomType, user: WebSocket, value: any){
     if(finalSelection.users.includes(publicKey)){
       // if first user, the users array will be empty
       throw new Error("Duplicate Final");
-    } else if(!isDeepEqual(finalSelection.value, value)){
+    } else if(!compareJSON(finalSelection.value, value)){
       // if first user, the final selection will always be equal to the value
       throw new Error("Final Selection Mismatch");
     } else {
