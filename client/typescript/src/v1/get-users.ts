@@ -1,6 +1,9 @@
 
 import { RosterLockV1SyncDLRequestUserToClient } from "@roster-lock/types";
-import { signMessage } from "../utils/crypto";
+import { SIGNATURE } from "@roster-lock/utils";
+
+type PrivateKey = Parameters<typeof SIGNATURE.ASYMMETRIC.createSignature>[0];
+
 
 type User = {
   userId: string;
@@ -16,12 +19,15 @@ export async function getUsers(
   }: Pick<RosterLockV1SyncDLRequestUserToClient, "user" | "relay">
 ){
   const timestamp = Date.now();
-  const signature = await signMessage(user.keys.privateKey, {
-    service: 'room-ws',
-    roomId: relay.roomId,
-    publicKey: user.keys.publicKey,
-    timestamp: timestamp,
-  });
+  const signature = await SIGNATURE.ASYMMETRIC.createSignature(
+    user.keys.privateKey as PrivateKey,
+    {
+      service: 'room-ws',
+      roomId: relay.roomId,
+      publicKey: user.keys.publicKey,
+      timestamp: timestamp,
+    }
+  );
   return await getRoomUsers(relay.url, {
     room: relay.roomId,
     timestamp,

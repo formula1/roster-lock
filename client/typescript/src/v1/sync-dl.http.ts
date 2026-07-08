@@ -4,11 +4,13 @@ import {
   RosterLockV1SyncDLRequestClientToAgent,
   RosterLockV1SyncDLResult,
 } from "@roster-lock/types";
-import { signMessage } from "../utils/crypto";
+import { SIGNATURE } from "@roster-lock/utils";
 import { HTTPError } from "../utils/fetch";
 
 import { ROSTERLOCK_MATCH_AGENT_URL } from "../constants/match-agent";
 const syncDLURL = new URL("/v1/sync-dl", ROSTERLOCK_MATCH_AGENT_URL);
+
+type PrivateKey = Parameters<typeof SIGNATURE.ASYMMETRIC.createSignature>[0];
 
 export async function syncDownloadOverHTTP(
   {
@@ -22,12 +24,15 @@ export async function syncDownloadOverHTTP(
 ): Promise<RosterLockV1SyncDLResult>{
   if(version !== 1) throw new Error(`Unsupported Version ${version}`);
   const timestamp = Date.now();
-  const signature = await signMessage(user.keys.privateKey, {
-    service: 'room-ws',
-    roomId: relay.roomId,
-    publicKey: user.keys.publicKey,
-    timestamp: timestamp,
-  });
+  const signature = await SIGNATURE.ASYMMETRIC.createSignature(
+    user.keys.privateKey as PrivateKey,
+    {
+      service: 'room-ws',
+      roomId: relay.roomId,
+      publicKey: user.keys.publicKey,
+      timestamp: timestamp,
+    }
+  );
 
 
   const response = await fetch(syncDLURL.href, {

@@ -6,8 +6,9 @@ import {
   RosterLockDownloadUpdate,
 } from "@roster-lock/types";
 import WebSocket from "isomorphic-ws";
-import { MessageBridge } from "../utils/MessageBridge";
-import { signMessage } from "../utils/crypto";
+import { MessageBridge, SIGNATURE } from "@roster-lock/utils";
+
+type PrivateKey = Parameters<typeof SIGNATURE.ASYMMETRIC.createSignature>[0];
 
 import { ROSTERLOCK_MATCH_AGENT_URL } from "../constants/match-agent";
 const syncDLURL = new URL("/v1/sync-dl", ROSTERLOCK_MATCH_AGENT_URL);
@@ -31,12 +32,15 @@ export async function syncDownloadOverWebSocket(
 ): Promise<RosterLockV1SyncDLResult>{
   if(version !== 1) throw new Error(`Unsupported Version ${version}`);
   const timestamp = Date.now();
-  const signature = await signMessage(user.keys.privateKey, {
-    service: 'room-ws',
-    roomId: relay.roomId,
-    publicKey: user.keys.publicKey,
-    timestamp: timestamp,
-  });
+  const signature = await SIGNATURE.ASYMMETRIC.createSignature(
+    user.keys.privateKey as PrivateKey,
+    {
+      service: 'room-ws',
+      roomId: relay.roomId,
+      publicKey: user.keys.publicKey,
+      timestamp: timestamp,
+    }
+  );
 
   const ws = new WebSocket(syncDLURL.href);
   const bridge = new MessageBridge((message)=>ws.send(JSON.stringify(message)));
