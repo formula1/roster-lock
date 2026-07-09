@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { runTSScript } from '../src/run-script';
+import TS_RUNNER from '../src/index';
+import json5 from '@roster-lock/untrusted-config-json5';
 
 function makeGlobals(modules: Record<string, string> = {}) {
   return {
@@ -41,6 +43,30 @@ describe('runTSScript', () => {
       }
     `;
     const result = await runTSScript(makeGlobals(modules), basicInput, script, 'main');
+    expect(result).toBe(99);
+  });
+
+  it('imports a json5 config file via dynamic import', async () => {
+    // json5 allows comments, unlike plain JSON — a real reason to require it over ".json"
+    const configSource = `{
+      // the piece's base value
+      value: 99,
+    }`;
+    // Parse ahead of time and keep requireScript synchronous — see the note
+    // above makeGlobals about QuickJS hanging on the Asyncify suspension path.
+    const parsed = await json5.runConfig(configSource);
+    const globals = makeGlobals();
+    globals.requireScript = (path: string) => {
+      if (path !== 'data.json5') throw new Error(`Module not found: ${path}`);
+      return TS_RUNNER.exportConfig(parsed);
+    };
+    const script = `
+      async function main() {
+        const data = await import("./data.json5");
+        return data.default.value;
+      }
+    `;
+    const result = await runTSScript(globals, basicInput, script, 'main');
     expect(result).toBe(99);
   });
 

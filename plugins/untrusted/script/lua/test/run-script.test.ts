@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { runLuaScript } from '../src/run-script';
+import LUA_RUNNER from '../src/index';
+import json5 from '@roster-lock/untrusted-config-json5';
 
 function makeGlobals(modules: Record<string, unknown> = {}) {
   return {
@@ -40,6 +42,30 @@ describe('runLuaScript', () => {
       end
     `;
     const result = await runLuaScript(makeGlobals(modules), basicInput, script, 'main');
+    expect(result).toBe(99);
+  });
+
+  it('imports a json5 config file via require', async () => {
+    // json5 allows comments, unlike plain JSON — a real reason to require it over ".json"
+    const configSource = `{
+      // the piece's base value
+      value: 99,
+    }`;
+    // Parse ahead of time and keep requireScript synchronous — see the note
+    // above makeGlobals about wasmoon stalling on a Promise-returning host call.
+    const parsed = await json5.runConfig(configSource);
+    const globals = makeGlobals();
+    globals.requireScript = (path: string) => {
+      if (path !== './data.json5') throw new Error(`Module not found: ${path}`);
+      return LUA_RUNNER.exportConfig(parsed);
+    };
+    const script = `
+      local data = require("./data.json5")
+      function main()
+        return data.value
+      end
+    `;
+    const result = await runLuaScript(globals, basicInput, script, 'main');
     expect(result).toBe(99);
   });
 

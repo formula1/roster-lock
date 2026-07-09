@@ -5,7 +5,8 @@ const LUA_RUNNER: UntrustedScript<any> = {
   name: "lua",
   extensions: [".lua"],
   directoryFile: ["init.lua"],
-  runScript: runLuaScript
+  runScript: runLuaScript,
+  exportConfig: (config)=>(config)
 }
 
 export default LUA_RUNNER;
