@@ -44,19 +44,13 @@ type ReqParams = {
   signature: string,
 }
 async function getRoomUsers(url: string, params: ReqParams){
-  const roomURL = new URL(`/api/v1/rooms/${params.room}/users`, url);
-  const searchParams = new URLSearchParams();
-  searchParams.set("room", params.room);
-  searchParams.set("t", params.timestamp.toString());
-  searchParams.set("pk", params.publicKey);
-  searchParams.set("sig", params.signature);
+  const roomURL = new URL(`/api/v1/room/${params.room}/users`, url);
+  roomURL.searchParams.set("room", params.room);
+  roomURL.searchParams.set("t", params.timestamp.toString());
+  roomURL.searchParams.set("pk", params.publicKey);
+  roomURL.searchParams.set("sig", params.signature);
 
-  const response = await fetch(roomURL, {
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: searchParams.toString(),
-  });
+  const response = await fetch(roomURL);
   if(!response.ok) throw new Error("Failed to get room users");
   return await response.json() as Array<User>;
 }
