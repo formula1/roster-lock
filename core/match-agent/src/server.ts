@@ -52,10 +52,10 @@ export class MatchAgentServer {
         })();
 
         res.writeHead(error.statusCode, { "Content-Type": "application/json" });
-        res.end({
+        res.end(JSON.stringify({
           error: error.message,
           context: error.context,
-        });
+        }));
       });
     })
   }
