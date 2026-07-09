@@ -145,6 +145,14 @@ export class Room {
       // Tags allow you to get specific sockets later via state.getWebSockets(tag)
       this.state.acceptWebSocket(server as any, [user.userId]);
 
+      // There is no hibernatable "open" callback (only webSocketMessage/
+      // webSocketClose/webSocketError), so check here - right as each
+      // connection is accepted - whether all users are now connected.
+      const sockets = this.state.getWebSockets();
+      if (sockets.length === config.users.length) {
+        await startBridgeRoom({ state: this.state, env: this.env });
+      }
+
       // Return the client-side socket to be forwarded to the browser
       // The webSocket property is Cloudflare Workers specific
       return new Response(null, {
@@ -175,20 +183,6 @@ export class Room {
     return this.app.fetch(wsRequest, this.env);
   }
 
-  async webSocketOpen(ws: WebSocket) {
-    const attachment = (ws as any).deserializeAttachment() as WebSocketAttachment | null;
-    if (!attachment) return;
-
-    const config = await this.state.storage.get<RoomConfig>('config');
-    if (!config) return;
-
-    const sockets = this.state.getWebSockets();
-    
-    // Check if all users are now connected
-    if (sockets.length === config.users.length) {
-      await startBridgeRoom({ state: this.state, env: this.env });
-    }
-  }
   /**
    * Called by Cloudflare when a WebSocket receives a message.
    * This works even after hibernation - the DO wakes up and this is called.
