@@ -14,13 +14,16 @@ export async function runUntrustedScript(
   if(!script){
     throw new Error("Missing entry script " + entryScriptPath);
   }
-  const untrustedScripts = await getPluginModulesOfType(pluginDir, "untrusted-script")
+  const [untrustedScripts, untrustedConfigs] = await Promise.all([
+    getPluginModulesOfType(pluginDir, "untrusted-script"),
+    getPluginModulesOfType(pluginDir, "untrusted-config")
+  ])
   const runner = getUntrustedScriptByFileExtension(entryScriptPath, untrustedScripts);
   if(!runner){
     throw new Error("Cannot run script of type " + fileExtension(entryScriptPath));
   }
   const globals = getScriptGlobals(
-    scriptStarter, runner
+    scriptStarter, runner, untrustedConfigs
   );
   return await runner.runScript(
     globals,

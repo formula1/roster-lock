@@ -1,14 +1,21 @@
-import { UntrustedScript, ArchiveHandler, Decompressor, ProtocolHandler } from "@roster-lock/types";
+import { UntrustedScript, UntrustedConfig, ArchiveHandler, Decompressor, ProtocolHandler } from "@roster-lock/types";
 
-export type PluginType = "dl-protocol" | "dl-compression" | "dl-archive" | "untrusted-script";
+export type PluginType = (
+  | "dl-protocol" | "dl-compression" | "dl-archive"
+  | "untrusted-script" | "untrusted-config"
+);
 
-export const PLUGIN_TYPES = new Set<PluginType>(["dl-protocol", "dl-compression", "dl-archive", "untrusted-script"]);
+export const PLUGIN_TYPES = new Set<PluginType>([
+  "dl-protocol", "dl-compression", "dl-archive",
+  "untrusted-script", "untrusted-config"
+]);
 
 export type PluginTypeMap = {
   "dl-protocol": ProtocolHandler;
   "dl-compression": Decompressor;
   "dl-archive": ArchiveHandler;
   "untrusted-script": UntrustedScript<any>;
+  "untrusted-config": UntrustedConfig
 };
 
 export const PLUGIN_TYPE_VALIDATORS: Record<PluginType, (p: Record<string, unknown>) => boolean> = {
@@ -36,6 +43,12 @@ export const PLUGIN_TYPE_VALIDATORS: Record<PluginType, (p: Record<string, unkno
     if(!isStringArray(p.extensions)) throw new Error("\"extensions\" should be a string[]");
     if(!isStringArray(p.directoryFile)) throw new Error("\"directoryFile\" should be a string[]");
     if(typeof p.runScript !== "function") throw new Error("\"runScript\" should be a function");
+    return true;
+  },
+  "untrusted-config": (p) =>{
+    if(typeof p.name !== "string") throw new Error("\"name\" should be a string");
+    if(!isStringArray(p.extensions)) throw new Error("\"extensions\" should be a string[]");
+    if(typeof p.runConfig !== "function") throw new Error("\"runConfig\" should be a function");
     return true;
   },
 };
