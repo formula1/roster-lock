@@ -13,11 +13,11 @@ export const pathVariableNameSchemaValidator = defineKeyword({
   type: "string",
   validate: function (pathVariableValue, { engine }: RosterLockV1Config, path){
     const pathParts = path.split("/");
-    // config/pieces/pieceType/pieceIndex/pathVariables/variableName/index
-    const variableName = pathParts.at(-2);
+    // config/pieces/pieceType/pieceIndex/pathVariables/variableName
+    const variableName = pathParts.at(-1);
     if(!variableName)
       throw new Error(`Invalid variable name path`);
-    const pieceType = pathParts.at(-5);
+    const pieceType = pathParts.at(-4);
     if(!pieceType)
       throw new Error(`Invalid piece type path`);
 

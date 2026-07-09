@@ -10,8 +10,8 @@ export const metaDefaultValueSchemaValidator = defineKeyword({
   type: "object",
   validate: (defaultMeta: JSONShallowObject, { selection }: RosterLockV1Config, path)=>{
     const pathParts = path.split("/");
-    // /selection/piece/pieceType
-    const pieceType = pathParts[2];
+    // /selection/piece/pieceType/pieceMeta/defaultMeta
+    const pieceType = pathParts[3];
     const sharedPieceMeta = selection.piece[pieceType].pieceMeta;
     if(!sharedPieceMeta){
       throw new Error(`Piece type ${pieceType} does not have shared piece meta`);
@@ -26,9 +26,9 @@ export const metaPieceValueSchemaValidator = defineKeyword({
   type: "object",
   validate: (pieceMeta: JSONShallowObject, { selection, rosters }: RosterLockV1Config, path)=>{
     const pathParts = path.split("/");
-    // /selection/piece/pieceType/pieceMeta/pieceId
-    const pieceType = pathParts[2];
-    const pieceId = pathParts[4];
+    // /selection/piece/pieceType/pieceMeta/pieceMeta/pieceId
+    const pieceType = pathParts[3];
+    const pieceId = pathParts[6]?.replace(/~1/g, "/").replace(/~0/g, "~");
     const sharedPieceMeta = selection.piece[pieceType].pieceMeta;
     if(!sharedPieceMeta){
       throw new Error(`Piece type ${pieceType} does not have shared piece meta`);

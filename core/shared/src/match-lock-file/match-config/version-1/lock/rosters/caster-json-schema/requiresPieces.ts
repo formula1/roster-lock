@@ -23,11 +23,12 @@ export const allRequiredPieceTypesSetSchemaValidator = defineKeyword({
 export const requiredPieceValueSchemaValidator = defineKeyword({
   keyword: "rosterRequiredPieceValue",
   type: "string",
-  // config/pieces/pieceType/pieceIndex/requiredPieces/pieceType/index
+  // rosters/pieceType/pieceIndex/requiredPieces/requiredPieceType/expected/index
   validate: function (requiredPiece: string, { rosters }: RosterLockV1Config, path){
     const pathParts = path.split("/");
     pathParts.pop();
-    const pieceType = pathParts[2];
+    const pieceType = pathParts.at(-2);
+    if(!pieceType) throw new Error("Invalid path");
     const pieceValues = rosters[pieceType];
     validateRequiredPieceValue(pieceType, requiredPiece, pieceValues);
   }
