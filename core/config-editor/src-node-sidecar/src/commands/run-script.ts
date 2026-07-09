@@ -47,7 +47,15 @@ export async function runUntrustedScriptCommand(
       process.exitCode = 0;
     } catch (error) {
       process.stdout.write(
-        JSON.stringify({ debugLog: config.debugLog, status: "fail", result: error.message }) + "\n"
+        JSON.stringify({
+          debugLog: config.debugLog,
+          status: "fail",
+          result: (
+            error instanceof Error ? error.message :
+            typeof error === "string" ? error :
+            JSON.stringify(error)
+          )
+        }) + "\n"
       );
       process.exitCode = 0;
     }
