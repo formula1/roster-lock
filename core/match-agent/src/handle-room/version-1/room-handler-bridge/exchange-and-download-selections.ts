@@ -53,12 +53,12 @@ export async function exchangeAndDownloadSelections(
   const roomURL = prepareRelayURL(roomRequest);
 
   const httpURL = new URL(roomURL);
-  httpURL.pathname = "/" + roomRequest.relay.roomId + "/users";
+  httpURL.pathname = "/api/v1/room/" + roomRequest.relay.roomId + "/users";
   const users = await handleFetch<Array<User>>(fetch(httpURL.href));
 
   const wsURL = new URL(roomURL);
   wsURL.protocol = roomURL.protocol === "https:" ? "wss:" : "ws:";
-  wsURL.pathname = "/" + roomRequest.relay.roomId;
+  wsURL.pathname = "/api/v1/room/" + roomRequest.relay.roomId;
   const roomWebSocket = new WebSocket(wsURL.href);
   const roomBridge = new MessageBridge((message)=>roomWebSocket.send(JSON.stringify(message)));
   roomWebSocket.on("message", (message)=>{
