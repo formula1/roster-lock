@@ -15,6 +15,7 @@ export default [
       "@stylistic/comma-dangle": ["warn", "only-multiline"],
       "@stylistic/indent": ["warn", 2],
       "@typescript-eslint/no-unused-vars": ["warn"],
+      "@stylistic/indent": ["off"]
     },
   },
   {
