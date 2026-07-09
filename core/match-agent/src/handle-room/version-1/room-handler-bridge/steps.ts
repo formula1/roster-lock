@@ -21,7 +21,7 @@ type EncryptedValue = Awaited<ReturnType<typeof encryptJSON>>;
 type RoomState = (
   | { state: "user-selection" }
   | { state: "all-selection-for-user-decryption" }
-  | { state: "all-decryption-for-user-final", encrypted: Record<UserPublicKey, EncryptedValue["encrypted"]> }
+  | { state: "all-decryption-for-user-final", encrypted: Record<UserPublicKey, EncryptedValue["encryptedValue"]> }
   | { state: "user-download", finalSelection: FinalSelection }
   | { state: "all-download", finalSelection: FinalSelection, downloadResults: Awaited<ReturnType<typeof handleDownloads>> }
   | { state: "ended" }
@@ -77,9 +77,9 @@ export function bindStepsToBridge(
     heartbeat.heartBeat();
     const state = stateTracker.get();
     if(state.state !== "user-selection") throw new Error("Invalid State");
-    const { encrypted } = await ownEncrypted;
+    const { encryptedValue } = await ownEncrypted;
     stateTracker.set({ state: "all-selection-for-user-decryption" });
-    return encrypted;
+    return encryptedValue;
   });
   // Handle All Selections
   // Return Decryption Key
@@ -179,12 +179,9 @@ export function bindStepsToBridge(
   ]);
 }
 
-const EncryptedSelectionSchema: ZodType<Record<UserPublicKey, EncryptedValue["encrypted"]>> = z.record(z.string(), z.object({
-  iv: z.string(),
-  ciphertext: z.string(),
-}));
+const EncryptedSelectionSchema: ZodType<Record<UserPublicKey, EncryptedValue["encryptedValue"]>> = z.record(z.string(), z.string());
 
-const DecryptionKeySchema: ZodType<Record<UserPublicKey, EncryptedValue["key"]>> = z.record(z.string(), z.string());
+const DecryptionKeySchema: ZodType<Record<UserPublicKey, string>> = z.record(z.string(), z.string());
 
 const SelectionSchema: ZodType<UserInput> = z.object({
   userSelection: UserSelectionSchema,

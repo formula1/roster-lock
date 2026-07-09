@@ -27,7 +27,7 @@ export class RoomState {
   private state: MATCHLOCK_SELECTION_STATE = MATCHLOCK_SELECTION_STATE.hello;
   private recievedMessages = new Map<MATCHLOCK_SELECTION_STATE, Set<string>>();
 
-  encryptedData = new Map<string, { iv: string, ciphertext: string }>();
+  encryptedData = new Map<string, string>();
   userSelections = new Map<string, UserInput>();
   agreedSelection: FinalSelection | null = null;
 
@@ -84,7 +84,7 @@ export class RoomState {
         deepEqual(data, this.lockConfig, "Restriction Mismatch")
       },
       finished: ()=>(
-        this.room.broadcast(MATCHLOCK_SELECTION_STATE.selectionEncrypt, this.ownEncrypted.encrypted)
+        this.room.broadcast(MATCHLOCK_SELECTION_STATE.selectionEncrypt, this.ownEncrypted.encryptedValue)
       )
     },
     [MATCHLOCK_SELECTION_STATE.selectionEncrypt]: {
