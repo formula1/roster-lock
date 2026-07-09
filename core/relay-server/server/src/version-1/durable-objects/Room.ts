@@ -241,10 +241,16 @@ export class Room {
     });
     if(alreadyClosed) return true;
     await this.state.storage.put("closeReason", reason);
+    // WebSocket close frames are hard-capped at 125 bytes total (2-byte
+    // status code + reason); an untruncated reason here can produce a
+    // close frame the wire protocol rejects as malformed.
+    const closeReason = new TextEncoder().encode(reason).length > 123
+      ? new TextDecoder().decode(new TextEncoder().encode(reason).slice(0, 123))
+      : reason;
     const sockets = this.state.getWebSockets();
     for (const ws of sockets) {
       try {
-        ws.close(1000, reason);
+        ws.close(1000, closeReason);
       } catch (error) {
         console.error(`Failed to close socket:`, error);
       }
