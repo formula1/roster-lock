@@ -10,8 +10,8 @@ export const ENCRYPT_SYMMETRIC = {
   decryptValue: decryptValue,
 }
 
-export function generateSymmetricEncryptionKey(): SymmetricEncryptionKey {
-  const bytes = crypto.getRandomValues(new Uint8Array(32));
+export function generateSymmetricEncryptionKey(length = 32): SymmetricEncryptionKey {
+  const bytes = crypto.getRandomValues(new Uint8Array(length));
   return uint8ArrayToHex(bytes) as SymmetricEncryptionKey;
 }
 
