@@ -117,6 +117,8 @@ export const runTSScript: UntrustedScript<string>["runScript"] = async function(
 };
 
 function newJSON(vm: QuickJSContext, value: any){
-  return vm.unwrapResult(vm.evalCode(JSON.stringify(value)));
+  // Wrap in parens: a leading `{` in an eval'd program is parsed as a
+  // block statement, not an object literal, which breaks on any object value.
+  return vm.unwrapResult(vm.evalCode(`(${JSON.stringify(value)})`));
 }
 
