@@ -71,7 +71,7 @@ export function validateMetaDefaultValue(
   meta: SelectionPieceMeta<any>["defaultMeta"]
 ){
   const metaSchema = simpleSchemaToJSONSchemaType(simpleSchema);
-  const defaultMeta = Object.keys(meta.defaultMeta);
+  const defaultMeta = Object.keys(meta);
   if(defaultMeta.length !== metaSchema.required.length){
     throw new Error(`Piece meta default meta must have all required keys`);
   }
@@ -81,7 +81,7 @@ export function validateMetaDefaultValue(
     }
   }
   const ajv = new Ajv();
-  if(!ajv.validate(metaSchema, meta.defaultMeta)){
+  if(!ajv.validate(metaSchema, meta)){
     throw new Error(`Piece meta default meta does not match schema`);
   }
 }
