@@ -65,7 +65,7 @@ export function bindStepsToBridge(
   const stateTracker = new StateTracker({ state: "user-selection" }, progressListeners);
 
   const rngSeed = createRandomSeed();
-  const ownEncrypted = encryptJSON({ selection: ownSelection, rngSeed })
+  const ownEncrypted = encryptJSON({ userSelection: ownSelection, randomSeed: rngSeed });
 
   bridge.onRequest("ping", ()=>{
     heartbeat.heartBeat();
