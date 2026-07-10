@@ -1,24 +1,13 @@
 import { SelectedPiece, UserId } from "@roster-lock/types";
 import Ajv from "ajv";
+import { SelectedPieceSchema, SelectedPieceSchemaDef } from "../../../../shared/SelectedPiece";
 
 const ajv = new Ajv({ allErrors: true, strict: true, allowUnionTypes: true });
 
 ajv.addSchema({
   $id: "SelectedPiece",
-  type: "object",
-  required: ["id", "required"],
-  additionalProperties: false,
-  properties: {
-    id: { type: "string" },
-    required: {
-      type: "object",
-      required: [],
-      additionalProperties: {
-        type: "array",
-        items: { $ref: "SelectedPiece" },
-      },
-    },
-  },
+  ...SelectedPieceSchemaDef,
+  ...SelectedPieceSchema,
 });
 
 const validateShared = ajv.compile<Array<SelectedPiece>>({

@@ -1,6 +1,15 @@
 import { JSONSchemaType } from "ajv";
 import { SelectedPiece } from "@roster-lock/types";
 
+/*
+type SelectedPiece = {
+    id: string;
+    required: Record<string, {
+        mandatory: Array<SelectedPiece>;
+        selectable: Array<SelectedPiece>;
+    }>;
+}
+*/
 
 export const SelectedPieceSchemaDef = {
   $defs: {
@@ -12,18 +21,22 @@ export const SelectedPieceSchemaDef = {
         id: { type: "string" },
         required: {
           type: "object",
-          required: ["mandatory", "selectable"],
-          additionalProperties: false,
-          properties: {
-            mandatory: {
-              type: "array",
-              items: { $ref: "#/$defs/SelectedPiece" },
-            },
-            selectable: {
-              type: "array",
-              items: { $ref: "#/$defs/SelectedPiece" },
+          required: [],
+          additionalProperties: {
+            type: "object",
+            required: ["mandatory", "selectable"],
+            additionalProperties: false,
+            properties: {
+              mandatory: {
+                type: "array",
+                items: { $ref: "#/$defs/SelectedPiece" },
+              },
+              selectable: {
+                type: "array",
+                items: { $ref: "#/$defs/SelectedPiece" },
+              }
             }
-          }
+          },
         },
       },
     },
