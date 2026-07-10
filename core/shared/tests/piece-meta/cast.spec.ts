@@ -9,8 +9,9 @@ describe("ROSTERLOCK_V1_PIECEMETADATA_CASTER_JSONSCHEMA", () => {
     const result = ROSTERLOCK_V1_PIECEMETADATA_CASTER_JSONSCHEMA.safeCast(pieceMetaJson);
     expect(result.valid).toBe(true);
     if (!result.valid) return;
-    expect(result.value.configPurpose).toBe("piece-meta");
-    expect(result.value.configVersion).toBe(1);
+    expect(result.value.configIdentity.namespace).toBe("roster-lock");
+    expect(result.value.configIdentity.purpose).toBe("piece-meta");
+    expect(result.value.configIdentity.version).toBe(1);
     expect(result.value.humanInfo.name).toBe("Blue");
     expect(result.value.humanInfo.author).toBe("match-lock");
     expect(result.value.downloadSources).toEqual(["http://localhost:7342/pieces/character/blue.tar"]);
