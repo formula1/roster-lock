@@ -4,7 +4,7 @@ import {
   castMessage,
 } from "./types";
 
-export { MessageBridgeMessage } from "./types";
+export type { MessageBridgeMessage } from "./types";
 import { EventHandler } from "./event";
 import { RequestHandler } from "./request";
 import { SimpleStream, StreamHandler } from "./stream";
