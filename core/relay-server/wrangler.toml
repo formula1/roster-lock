@@ -17,13 +17,19 @@ script_name = "roster-lock-relay"
 [[d1_databases]]
 binding = "DB"
 database_name = "roster-lock-db"
-database_id = "" # Will be filled after creation
+database_id = "f530d547-ebeb-4366-ad6f-204555927f89" # local dev id; any UUID works for local persistence
 
 # Environment variables
+# Cloudflare Workers don't read process.env - these are the only source of
+# truth for c.env bindings when running under `wrangler dev`, so the
+# INITIAL_ADMIN_* values here must match services/env-vars/relay.env
+# (which only reaches the container's process.env, not the Worker sandbox).
 [vars]
 ENVIRONMENT = "development"
-JWT_SECRET = "not-so-secret"
-GAME_COORDINATOR_ENCRYPTION_KEY = "not-so-secret"
+JWT_SECRET = "1e2bedf4cd762bb76a01f029facad13592b3d4c2f7215dc963eb947a06fc6da2"
+GAME_COORDINATOR_ENCRYPTION_KEY = "77da16bcdc1e23f3b362e8889ba14537101fdfdb958d17271d75143624076264"
+INITIAL_ADMIN_USERNAME = "hello"
+INITIAL_ADMIN_PASSWORD = "world"
 
 # Production environment overrides
 [env.production]
