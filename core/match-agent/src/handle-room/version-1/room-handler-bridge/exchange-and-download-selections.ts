@@ -59,7 +59,11 @@ export async function exchangeAndDownloadSelections(
   const wsURL = new URL(roomURL);
   wsURL.protocol = roomURL.protocol === "https:" ? "wss:" : "ws:";
   wsURL.pathname = "/api/v1/room/" + roomRequest.relay.roomId;
-  const roomWebSocket = new WebSocket(wsURL.href);
+  // perMessageDeflate disabled: workerd's hibernatable WebSocket (relay-server,
+  // local wrangler dev) mishandles fragmented/compressed frames for larger
+  // messages, corrupting frame parsing on the "ws" client (surfaces as
+  // "Invalid WebSocket frame: invalid payload length").
+  const roomWebSocket = new WebSocket(wsURL.href, { perMessageDeflate: false });
   const roomBridge = new MessageBridge((message)=>roomWebSocket.send(JSON.stringify(message)));
   roomWebSocket.on("message", (message)=>{
     roomBridge.handleMessage(JSON.parse(message.toString()));
