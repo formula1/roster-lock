@@ -61,7 +61,7 @@ export function bindStepsToBridge(
 ): Promise<RosterLockV1SyncDLResult>{
   const { resolve, reject, promise } = Promise.withResolvers<RosterLockV1SyncDLResult>();
   const downloadAbort = new AbortController();
-  const heartbeat = trackHeartbeat(10_000);
+  const heartbeat = trackHeartbeat(30_000);
   const stateTracker = new StateTracker({ state: "user-selection" }, progressListeners);
 
   const rngSeed = createRandomSeed();
