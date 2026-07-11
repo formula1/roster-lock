@@ -162,7 +162,7 @@ export class SQLite3FolderDB implements IFolderDB {
           pieceVersions: { logic: pieceInfo.logic, media: pieceInfo.media },
         });
         const downloadedVersions = await getDownloadSourceVersion(
-          downloadLocation, newPiece.pathVariables, lockConfig.engine.pieceDefinitions[pieceType]
+          fullPath, newPiece.pathVariables, lockConfig.engine.pieceDefinitions[pieceType]
         );
         if(downloadedVersions.logic !== pieceInfo.logic || downloadedVersions.media !== pieceInfo.media){
           throw new Error("Version Mismatch");
