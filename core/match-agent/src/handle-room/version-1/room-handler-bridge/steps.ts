@@ -95,7 +95,6 @@ export function bindStepsToBridge(
     }
     const { key } = await ownEncrypted;
     stateTracker.set({ state: "all-decryption-for-user-final", encrypted: casted.data });
-    console.log("roomInfo", data);
     return key;
   })
   // Handle All Decryption Keys
@@ -125,7 +124,6 @@ export function bindStepsToBridge(
     );
     stateTracker.set({ state: "user-download", finalSelection: finalSelection });
 
-    console.log("roomInfo", data);
     return finalSelection;
   })
 
