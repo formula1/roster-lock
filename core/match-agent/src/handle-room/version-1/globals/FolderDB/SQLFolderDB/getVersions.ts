@@ -10,29 +10,39 @@ export async function getDownloadSourceVersion(
   pieceDefinition: PieceDefinition,
 ){
   const { filesWithAssets } = await getAssetsOfFiles(
-    walkDirectory(folder), pathVariables, pieceDefinition
+    walkRelative(folder), pathVariables, pieceDefinition
   );
   return calculatePieceVersion(
-    filesWithAssets, getFile
+    filesWithAssets, (relativePath) => getFileFromRoot(folder, relativePath)
   );
 }
 
 import { readdir } from "node:fs/promises";
-import { join as pathJoin } from "node:path";
-async function* walkDirectory(folder: string): AsyncIterable<string>{
-  const files = await readdir(folder, { withFileTypes: true })
+import { join as pathJoin, relative as pathRelative, sep as pathSep } from "node:path";
+// getAssetsOfFiles matches file paths against each asset's glob (e.g.
+// "media/particles.json"), which is relative to the piece folder root -
+// so these must be yielded relative, not absolute.
+async function* walkRelative(root: string): AsyncIterable<string>{
+  yield* walkDirectory(root, root);
+}
+async function* walkDirectory(root: string, dir: string): AsyncIterable<string>{
+  const files = await readdir(dir, { withFileTypes: true })
   for(const file of files){
+    const fullPath = pathJoin(dir, file.name);
     if(file.isDirectory()){
-      yield* walkDirectory(pathJoin(folder, file.name));
+      yield* walkDirectory(root, fullPath);
     } else {
-      yield pathJoin(folder, file.name);
+      yield pathRelative(root, fullPath).split(pathSep).join("/");
     }
   }
 }
 
 import { stat as fsStat } from "node:fs/promises";
 import { createReadStream } from "node:fs";
-async function getFile(filePath: string): Promise<{ byteSize: number, stream: AsyncIterable<Uint8Array> }> {
+async function getFileFromRoot(
+  root: string, relativePath: string
+): Promise<{ byteSize: number, stream: AsyncIterable<Uint8Array> }> {
+  const filePath = pathJoin(root, relativePath);
   const stats = await fsStat(filePath);
   return { byteSize: stats.size, stream: createReadStream(filePath) } ;
 }
