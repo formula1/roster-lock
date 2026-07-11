@@ -1,49 +1,63 @@
 
+export type Random = {
+  createSeed(): string,
+  seed(seed: Record<string, string>): void,
+  release(): void,
+  float(): number,
+  int(min: number, max?: number): number,
+  shuffleImmutable<T>(array: Array<T>): Array<T>,
+  shuffleMutable<T>(array: Array<T>): void,
+};
 
-export const RANDOM = {
-  createSeed(){
-    const array = new Uint8Array(16); // 16 bytes = 128 bits = 32 hex characters
-    crypto.getRandomValues(array);
-    const randHex = Array.from(array)
-      .map(b => b.toString(16).padStart(2, "0"))
-      .join(""); // 32-character hex string
-    return randHex;
-  },
+// Each Game owns its own Random instance rather than sharing one process-wide singleton —
+// two Game instances in the same process (e.g. simulating two peers in a test) would
+// otherwise steal draws from each other's sequence.
+export function createRandom(): Random {
+  return {
+    createSeed(){
+      const array = new Uint8Array(16); // 16 bytes = 128 bits = 32 hex characters
+      crypto.getRandomValues(array);
+      const randHex = Array.from(array)
+        .map(b => b.toString(16).padStart(2, "0"))
+        .join(""); // 32-character hex string
+      return randHex;
+    },
 
-  seed(seed: Record<string, string>){
-    const hash = hashSeedRecord(seed);
-    this.float = mulberry32(hash);
-  },
-  release(){
-    this.float = emptyFloat;
-  },
+    seed(seed: Record<string, string>){
+      const hash = hashSeedRecord(seed);
+      this.float = mulberry32(hash);
+    },
+    release(){
+      this.float = emptyFloat;
+    },
 
-  float: emptyFloat,
+    float: emptyFloat,
 
-  int(min: number, max?: number){
-    if(max === undefined){
-      max = min;
-      min = 0;
-    }
-    if(min > max) throw new Error("Min is greater than max");
-    return Math.floor(this.float() * (max - min)) + min;
-  },
+    int(min: number, max?: number){
+      if(max === undefined){
+        max = min;
+        min = 0;
+      }
+      if(min > max) throw new Error("Min is greater than max");
+      return Math.floor(this.float() * (max - min)) + min;
+    },
 
-  shuffleImmutable<T>(array: Array<T>): Array<T>{
-    const result = [...array];
-    this.shuffleMutable(result);
-    return result;
-  },
-  shuffleMutable<T>(array: Array<T>): void{
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(this.float() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
-    }
-  },
+    shuffleImmutable<T>(array: Array<T>): Array<T>{
+      const result = [...array];
+      this.shuffleMutable(result);
+      return result;
+    },
+    shuffleMutable<T>(array: Array<T>): void{
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(this.float() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    },
+  };
 }
 
 function emptyFloat(): number {
-  throw new Error("RANDOM not seeded — call RANDOM.seed() before use");
+  throw new Error("Random not seeded — call random.seed() before use");
 }
 
 function hashSeedRecord(seedRecord: Record<string, string>): number {

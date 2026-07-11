@@ -1,8 +1,7 @@
 
-import { FinalState, GameState, MoveDescription, TurnState } from "../../types";
+import { GameState, MoveDescription, TurnState } from "../../types";
 
 export function validatePlayer(
-  finalState: FinalState,
   gameState: GameState,
   turnState: TurnState,
   move: MoveDescription,

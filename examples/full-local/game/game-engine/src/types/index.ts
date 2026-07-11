@@ -9,9 +9,6 @@ export type MoveDescription = {
 }
 
 import { RunnableMove } from "./move";
-export type FinalState = {
-  availableMoves: Record<string, RunnableMove>,
-}
 
 import { Stage, WeatherType } from "./stage";
 export type GameState = {

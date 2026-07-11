@@ -1,9 +1,10 @@
 
 type ListenerSource = string;
 type Listener<Args extends Array<any>> =  (...args: Args)=>void;
-import { RANDOM } from "./Random";
+import { Random } from "./Random";
 
 interface IGameEventEmitterContext<Args extends Array<any>> {
+  random: Random
   config: {
     allowDuplicateCallback: boolean,
     maximumListeners: number,
@@ -28,6 +29,7 @@ export interface IGameEventEmitter<Args extends Array<any>> extends IGameEventEm
 }
 
 export function createGameEventEmitter<Args extends Array<any>>(
+  random: Random,
   config = {
     allowDuplicateCallback: false,
     maximumListeners: Number.POSITIVE_INFINITY,
@@ -40,6 +42,7 @@ export function createGameEventEmitter<Args extends Array<any>>(
   }
 
   const context: IGameEventEmitterContext<Args> = {
+    random,
     config,
     listeners: [],
   }
@@ -99,7 +102,7 @@ function emitEvent<Args extends Array<any>>(
   const sortedListeners = this.listeners.sort((a, b)=>{
     return a.source.localeCompare(b.source);
   });
-  const shuffledListeners = RANDOM.shuffleImmutable(sortedListeners);
+  const shuffledListeners = this.random.shuffleImmutable(sortedListeners);
 
   for(const { listener } of shuffledListeners){
     try {

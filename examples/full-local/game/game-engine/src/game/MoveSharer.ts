@@ -8,7 +8,7 @@ import { CommitReveal } from "../room/CommitReveal";
 const moveSchema: ZodType<Array<Omit<MoveDescription, "player">>> = z.array(
   z.object({
     characterId: z.string(),
-    move: z.object({ id: z.string(), targets: z.array(z.string()), config: z.any() }).strict(),
+    move: z.object({ id: z.string(), config: z.any() }).strict(),
   }).strict()
 );
 

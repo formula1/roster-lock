@@ -1,7 +1,6 @@
-import { FinalState, GameState, MoveDescription, TurnState } from "../../types";
+import { GameState, MoveDescription, TurnState } from "../../types";
 
 export function validateCharacter(
-  finalState: FinalState,
   gameState: GameState,
   turnState: TurnState,
   move: MoveDescription,
@@ -20,7 +19,7 @@ export function validateCharacter(
   if(character.hp.current <= 0){
     throw new Error(`Character ${move.characterId} is dead`);
   }
-  if(!character.moves.includes(move.move.id)){
+  if(!(move.move.id in character.moves)){
     throw new Error(`Move ${move.move.id} not found for character ${move.characterId}`);
   }
   return character;
