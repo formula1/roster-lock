@@ -138,7 +138,7 @@ export class SQLite3FolderDB implements IFolderDB {
       try {
         await mkdir(fullPath, { recursive: true });
         this.db.updateDownloadSource(lockConfig, pieceInfo, downloadLocation);
-        await downloadToFolder(
+        const { finishPromise } = await downloadToFolder(
           DEFAULT_PLUGIN_DIR, {
             url: downloadLocation,
             destinationFolder: fullPath,
@@ -155,6 +155,7 @@ export class SQLite3FolderDB implements IFolderDB {
             }
           }
         );
+        await finishPromise;
         this.emitProgress(lockConfig, pieceInfo, {
           type: ROSTERLOCK_DOWNLOAD_STATE.downloadValidation,
           pieceType: pieceInfo.pieceType,
