@@ -91,10 +91,13 @@ export class SQLite3FolderDB implements IFolderDB {
       multiSignal,
       result: promise,
     });
+    // promise is already awaited below via raceWithAbort; catch here too so
+    // this second attached continuation doesn't count as an unhandled
+    // rejection (each .then/.finally chain is tracked independently by Node).
     promise.finally(()=>{
       multiSignal.clear();
       this.activeDownloads.delete(key);
-    });
+    }).catch(()=>{});
     try {
       return await raceWithAbort(promise, progressHandlers.abortSignal);
     }catch(e){
