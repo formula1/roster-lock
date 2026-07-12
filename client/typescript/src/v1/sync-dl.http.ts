@@ -20,6 +20,7 @@ export async function syncDownloadOverHTTP(
     rosterConfig,
     userSelection: selection,
   }: RosterLockV1SyncDLRequestUserToClient,
+  matchAgentAuth: string,
   matchAgentUrl: string | URL = ROSTERLOCK_MATCH_AGENT_URL,
 ): Promise<RosterLockV1SyncDLResult>{
   if(version !== 1) throw new Error(`Unsupported Version ${version}`);
@@ -43,6 +44,7 @@ export async function syncDownloadOverHTTP(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      "Authorization": "Bearer " + matchAgentAuth
     },
     body: JSON.stringify({
       folder: folder,

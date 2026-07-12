@@ -5,7 +5,7 @@ import { WebSocketHandlerCallback } from "../../../utils/websocket-router";
 import { castRoomRequest, exchangeAndDownloadSelections } from "./exchange-and-download-selections";
 
 export const wsHandler: WebSocketHandlerCallback = async (
-  gameWebSocket, params, next
+  { ws: gameWebSocket }, params, next
 )=>{
   try {
     const gameBridge = new MessageBridge((message)=>gameWebSocket.send(JSON.stringify(message)));

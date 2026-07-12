@@ -5,13 +5,13 @@ import { GenericRouter, RouterConfig, GenericRouterCallbackArg, GenericHandlerCa
 
 const WEBSOCKET_METHOD = "WebSocket";
 
-export type WSRequest = WebSocket & { httpRequest: IncomingMessage };
+export type WSRequest = { req: IncomingMessage, ws: WebSocket };
 
 export type WebSocketHandlerCallback = GenericHandlerCallback<WSRequest>;
 export class WebSocketRouter extends GenericRouter<WSRequest> {
   constructor(config: RouterConfig  = {}){
     super(
-      (request)=>new URL(request.url, "ws://localhost:80"),
+      ({ req })=>new URL(req.url || "", "ws://localhost:80"),
       (request)=>WEBSOCKET_METHOD,
       config
     );

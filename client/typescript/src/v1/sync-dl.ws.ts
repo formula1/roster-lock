@@ -26,6 +26,7 @@ export async function syncDownloadOverWebSocket(
     rosterConfig,
     userSelection: selection,
   }: RosterLockV1SyncDLRequestUserToClient,
+  matchAgentAuth: string,
   progressListeners: ProgressListeners = {},
   matchAgentUrl: string | URL = ROSTERLOCK_MATCH_AGENT_URL,
 ): Promise<RosterLockV1SyncDLResult>{
@@ -35,6 +36,7 @@ export async function syncDownloadOverWebSocket(
     throw new Error("Expecting The match agent url to be http or https");
   }
   syncDLURL.protocol = syncDLURL.protocol === "https:" ? "wss:" : "ws";
+  syncDLURL.searchParams.set("authorization", matchAgentAuth);
   const timestamp = Date.now();
   const signature = await SIGNATURE.ASYMMETRIC.createSignature(
     user.keys.privateKey as PrivateKey,

@@ -14,22 +14,21 @@ export class MatchAgentServer {
     this.httpServer = new Server();
     this.wss = new WebSocketServer({ server: this.httpServer });
     this.httpServer.on('upgrade', async (request, socket, head)=>{
-      const ws = await (async ()=>{
+      const context = await (async ()=>{
         try {
           if(!request.url) throw new Error("No URL");
           const url = new URL(request.url, "ws://localhost");
-          const ws = await handleUpgrade(this.wss, request, socket, head) as WSRequest;
-          ws.httpRequest = request;
-          return ws;
+          const ws = await handleUpgrade(this.wss, request, socket, head);
+          return { ws, req: request };
         }catch(e){
           console.log("Failed to upgrade connection", e);
           socket.destroy();
           throw e;
         }
       })()
-      this.wsRouter.handleRequest(ws, (err)=>{
+      this.wsRouter.handleRequest(context, (err)=>{
         console.log("Failed to route request", err);
-        ws.terminate();
+        context.ws.terminate();
       });
     });
     this.httpServer.on('request', (req, res)=>{
