@@ -68,6 +68,12 @@ export async function exchangeAndDownloadSelections(
   roomWebSocket.on("message", (message)=>{
     roomBridge.handleMessage(JSON.parse(message.toString()));
   });
+  roomWebSocket.on("error", (err)=>{
+    // An unhandled "error" event on an EventEmitter throws and crashes the
+    // whole process - and one match-agent process serves many concurrent
+    // games, so a single room's socket hiccup must not take the rest down.
+    console.error("room websocket error", err);
+  });
 
   const roomPromise = bindStepsToBridge({
     bridge: roomBridge,
