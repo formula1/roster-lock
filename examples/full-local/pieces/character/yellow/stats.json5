@@ -1,0 +1,8 @@
+// Yellow Character
+// A balanced tank. High HP, decent attack, low speed.
+{
+  id: 'yellow',
+  name: 'Yellow',
+  color: '#ffe066',
+  stats: { hp: 3, attack: 2, speed: 1 },
+}
