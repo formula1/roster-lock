@@ -1,6 +1,9 @@
 import { Hono } from 'hono';
 import v1Router from './version-1/router';
 import { Env } from './version-1/types';
+import { Room } from './version-1/durable-objects/Room';
+
+export { Room };
 
 const app = new Hono<{ Bindings: Env }>();
 
