@@ -64,8 +64,12 @@ export async function handleFinal(room: RoomType, user: WebSocket, value: any){
 
   if(!allFinal) return;
 
+  // "user-download" is a request/response step like the others (match-agent
+  // registers it via bridge.onRequest and returns "ok", which pairs with
+  // RESPONSE_HANDLERS["user-download"] = handleDownload below) - not a
+  // fire-and-forget event, which match-agent has no listener for.
   await Promise.all(room.state.getWebSockets().map((user)=>{
-    return makeBridgeEvent(room, user, "user-download", {});
+    return makeBridgeRequest(room, user, "user-download", {});
   }));
 }
 
