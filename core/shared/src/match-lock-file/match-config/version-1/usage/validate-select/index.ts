@@ -20,7 +20,15 @@ export async function runSelection(
   const users: Array<string> = [];
   const seeds: Array<string> = [];
   const allSelections: Record<UserId, Record<PieceType, Array<SelectedPiece>>> = {};
-  for(const [userId, { randomSeed, userSelection }] of Object.entries(userInputs)){
+  // userInputs is built by each party independently (e.g. from concurrent
+  // per-user decryption), so its key-insertion order isn't guaranteed to
+  // match across parties. Sort by userId so the merge script's RNG seed
+  // (derived from `seeds`) is deterministic regardless of insertion order -
+  // otherwise two parties can compute different "random" tie-breaks for the
+  // same selection and disagree on the final result.
+  const sortedUserIds = Object.keys(userInputs).sort();
+  for(const userId of sortedUserIds){
+    const { randomSeed, userSelection } = userInputs[userId];
     users.push(userId);
     seeds.push(randomSeed);
     allSelections[userId] = userSelection;
