@@ -4,6 +4,12 @@ import { createSimpleEmitter } from "./utils/SimpleEvent";
 import { Room } from "./room";
 import { GameState, MoveDescription, TurnState, ModifierState } from "./types";
 
+// Public surface for consumers (UI, headless runners) that build a Room adapter
+// and a moveRequest callback around this class.
+export type { Room } from "./room";
+export type { MoveDescription, GameState } from "./types";
+export type { GetFileContents } from "./game/assets/loadPieceFile";
+
 import { prepareGlobalRandom } from "./game/prepare-random";
 import { buildGameFromSelection } from "./game/build-game";
 import { GetFileContents } from "./game/assets/loadPieceFile";
@@ -11,8 +17,6 @@ import { MoveSharer } from "./game/MoveSharer";
 import { prepareTurn } from "./game/prepare-turn";
 import { runTurn } from "./game/run-turn";
 import { createRandom, Random } from "./utils/Random";
-
-const MAX_CHARACTERS_PER_PLAYER = 2;
 
 type GameStates = (
   | ["waitingForMoves", { state: GameState }]
@@ -26,7 +30,7 @@ type GameStates = (
 
 
 export class Game {
-  onStateUpdate = createSimpleEmitter<GameStates>()
+  public onStateUpdate = createSimpleEmitter<GameStates>()
 
   // Public so game clients (UI, headless runners) can read live state directly,
   // not just through onStateUpdate.
@@ -34,6 +38,9 @@ export class Game {
   // Owned per-Game rather than a process-wide singleton, so two Game instances in the
   // same process (e.g. simulating two peers in a test) never draw from each other's sequence.
   private readonly random: Random = createRandom();
+  // The combined commit-reveal seed record every peer converges on - exposed so callers
+  // can sanity-check that independent peers actually ended up with the same seed.
+  public randomSeed: Record<string, string> = {};
 
   private moveSharer: MoveSharer;
 
@@ -48,7 +55,7 @@ export class Game {
   ): Promise<Game> {
     const { gameState } = await buildGameFromSelection(selectionDownloadResult, getFileContents);
     const game = new Game(room, gameState, moveRequest);
-    await prepareGlobalRandom(room, game.random);
+    game.randomSeed = await prepareGlobalRandom(room, game.random);
     return game;
   }
 
@@ -59,15 +66,9 @@ export class Game {
   ){
     this.gameState = gameState;
 
-    const charCount = new Map<string, number>();
     for(const character of Object.values(this.gameState.characters)){
       if(!this.gameState.players[character.ownerPlayer]){
         throw new Error(`Player ${character.ownerPlayer} not found`);
-      }
-      const count = (charCount.get(character.ownerPlayer) || 0) + 1;
-      charCount.set(character.ownerPlayer, count);
-      if(count > MAX_CHARACTERS_PER_PLAYER){
-        throw new Error(`Player ${character.ownerPlayer} has too many characters`);
       }
     }
     const players = Object.values(this.gameState.players);
@@ -80,9 +81,6 @@ export class Game {
     for(const player of players){
       if(!this.room.userIds.includes(player.id)){
         throw new Error(`Player ${player.id} not found in room`);
-      }
-      if(charCount.get(player.id) !== MAX_CHARACTERS_PER_PLAYER){
-        throw new Error(`Player ${player.id} does not have enough characters`);
       }
     }
 
