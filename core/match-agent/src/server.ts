@@ -33,6 +33,15 @@ export class MatchAgentServer {
     });
     this.httpServer.on('request', (req, res)=>{
       this.httpRouter.handleRequest({ req, res }, (err: unknown)=>{
+        if(res.writableEnded){
+          console.warn("Router threw error and response ended")
+          return;
+        }
+        if(res.headersSent){
+          console.warn("Router threw error and headers already sent")
+          res.destroy();
+          return;
+        }
         const error: HTTPError = (()=>{
           if(err instanceof HTTPError) return err;
           if(!err){
