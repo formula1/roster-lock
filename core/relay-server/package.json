@@ -36,10 +36,9 @@
     "@types/node": "^22.14.1",
     "rimraf": "^6.0.1",
     "typescript": "^7.0.2",
-    "wrangler": "^4.54.0"
+    "wrangler": "^4.110.0"
   },
   "dependencies": {
-    "@noble/ed25519": "^3.0.0",
     "@roster-lock/utils": "link:../utils",
     "hono": "^4.11.3",
     "zod": "^4.3.5"
