@@ -162,10 +162,12 @@ export function bindStepsToBridge(
     reject(error);
   })
 
+  // .finally()'s returned promise mirrors promise's rejection - it has to
+  // be observed here too, or a failed room leaves an unhandled rejection.
   promise.finally(()=>{
     heartbeat.stop();
     stateTracker.set({ state: "ended" });
-  });
+  }).catch(()=>{});
 
   return Promise.race([
     promise,
