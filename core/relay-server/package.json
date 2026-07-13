@@ -1,5 +1,5 @@
 {
-  "name": "@match-lock/server",
+  "name": "@roster-lock/server",
   "version": "0.0.0",
   "description": "To be used to connect multiple clients",
   "keywords": [
