@@ -6,7 +6,7 @@ import { DEFAULT_MATCH_CONIFG } from "./config";
 import { getDefaultAuthCode, saveAuthCode, authMiddleware, validateAuthCode } from "./authentication";
 import { MatchAgentServer } from "./server";
 import { program } from "commander";
-import { wsHandler, httpHandler } from "./handle-room/version-1";
+import { createV1Routers } from "./handle-room/version-1";
 
 program
   .name("rosterlock-match-agent")
@@ -22,18 +22,27 @@ program
     const authCode = options.authCode || await getDefaultAuthCode(DEFAULT_MATCH_CONIFG);
     await saveAuthCode(DEFAULT_MATCH_CONIFG, authCode)
 
-    const server = new MatchAgentServer();
-    server.wsRouter.mount("/v1/sync-dl", authMiddleware(authCode), wsHandler);
-    server.httpRouter.post("/v1/sync-dl", authMiddleware(authCode), httpHandler);
-    server.httpRouter.get("/", ({ res })=>{
-      res.writeHead(200, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ "hello": "world" }));
-    });
-    server.httpRouter.post("/validate-authcode", validateAuthCode(authCode))
+    startServer(port, authCode);
 
-    server.listen(port, () => {
-      console.log(`match-agent listening on port ${port}`);
-    });
   });
 
-program.parse();
+if (require.main === module) {
+  program.parse();
+}
+
+export function startServer(port: number, authCode: string){
+  const server = new MatchAgentServer();
+  server.httpRouter.get("/", ({ res })=>{
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ "hello": "world" }));
+  });
+  server.httpRouter.post("/validate-authcode", validateAuthCode(authCode))
+
+  const { httpRouter: v1HttpRouter, wsRouter: v1WsRouter } = createV1Routers();
+  server.httpRouter.use("/v1", authMiddleware(authCode), v1HttpRouter);
+  server.wsRouter.use("/v1", authMiddleware(authCode), v1WsRouter);
+
+  server.listen(port, () => {
+    console.log(`match-agent listening on port ${port}`);
+  });
+}

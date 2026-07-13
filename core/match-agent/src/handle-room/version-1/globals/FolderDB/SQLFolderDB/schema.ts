@@ -144,11 +144,11 @@ export function prepareDatabase(dbLocation: string){
     },
 
     getPiece(
-      lockConfig: RosterLockV1Config,
+      engineConfig: RosterLockV1Config["engine"],
       pieceInfo: { pieceType: string, logic: string, media: string }
     ){
       const item = statements.getPiece.get({
-        engineName: lockConfig.engine.name,
+        engineName: engineConfig.name,
         pieceType: pieceInfo.pieceType,
         logic: pieceInfo.logic,
         media: pieceInfo.media,
@@ -161,13 +161,13 @@ export function prepareDatabase(dbLocation: string){
     },
 
     insertNewPiece(
-      lockConfig: RosterLockV1Config,
+      engineConfig: RosterLockV1Config["engine"],
       pieceInfo: PieceInfo,
       downloadSource: string,
       folderName: string,
     ){
       return statements.insertNewPiece.run({
-        engineName: lockConfig.engine.name,
+        engineName: engineConfig.name,
         pieceType: pieceInfo.pieceType,
         logic: pieceInfo.logic,
         media: pieceInfo.media,
@@ -177,12 +177,12 @@ export function prepareDatabase(dbLocation: string){
       });
     },
     updateDownloadSource(
-      lockConfig: RosterLockV1Config,
+      engineConfig: RosterLockV1Config["engine"],
       pieceInfo: PieceInfo,
       downloadSource: string,
     ){
       return statements.updateDownloadSource.run({
-        engineName: lockConfig.engine.name,
+        engineName: engineConfig.name,
         pieceType: pieceInfo.pieceType,
         logic: pieceInfo.logic,
         media: pieceInfo.media,
@@ -190,12 +190,12 @@ export function prepareDatabase(dbLocation: string){
       });
     },
     resetPieceStatus(
-      lockConfig: RosterLockV1Config,
+      engineConfig: RosterLockV1Config["engine"],
       pieceInfo: { pieceType: string, logic: string, media: string }
     ){
       // Mark as error so we can retry
       statements.resetPieceStatus.run({
-        engineName: lockConfig.engine.name,
+        engineName: engineConfig.name,
         pieceType: pieceInfo.pieceType,
         logic: pieceInfo.logic,
         media: pieceInfo.media,
@@ -203,11 +203,11 @@ export function prepareDatabase(dbLocation: string){
     },
 
     pieceSuccessfullyDownloaded(
-      lockConfig: RosterLockV1Config, 
+      engineConfig: RosterLockV1Config["engine"],
       pieceInfo: { pieceType: string, logic: string, media: string }
     ){
       return statements.pieceSuccessfullyDownloaded.run({
-        engineName: lockConfig.engine.name,
+        engineName: engineConfig.name,
         pieceType: pieceInfo.pieceType,
         logic: pieceInfo.logic,
         media: pieceInfo.media,
@@ -215,20 +215,20 @@ export function prepareDatabase(dbLocation: string){
     },
 
     pieceFailedToDownload(
-      lockConfig: RosterLockV1Config,
+      engineConfig: RosterLockV1Config["engine"],
       pieceInfo: { pieceType: string, logic: string, media: string },
       downloadSource: string,
       error: string,
     ){
       statements.pieceFailedToDownload.run({
-        engineName: lockConfig.engine.name,
+        engineName: engineConfig.name,
         pieceType: pieceInfo.pieceType,
         logic: pieceInfo.logic,
         media: pieceInfo.media,
       }
       );
       statements.insertDownloadError.run({
-        engineName: lockConfig.engine.name,
+        engineName: engineConfig.name,
         pieceType: pieceInfo.pieceType,
         logic: pieceInfo.logic,
         media: pieceInfo.media,
