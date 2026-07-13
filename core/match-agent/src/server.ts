@@ -12,7 +12,7 @@ export class MatchAgentServer {
   public httpRouter = new HTTPRouter();
   constructor(){
     this.httpServer = new Server();
-    this.wss = new WebSocketServer({ server: this.httpServer });
+    this.wss = new WebSocketServer({ noServer: true });
     this.httpServer.on('upgrade', async (request, socket, head)=>{
       const context = await (async ()=>{
         try {
