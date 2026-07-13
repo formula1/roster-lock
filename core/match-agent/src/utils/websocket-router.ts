@@ -11,7 +11,7 @@ export type WebSocketHandlerCallback = GenericHandlerCallback<WSRequest>;
 export class WebSocketRouter extends GenericRouter<WSRequest> {
   constructor(config: RouterConfig  = {}){
     super(
-      ({ req })=>new URL(req.url || "", "ws://localhost:80"),
+      ({ req })=>new URL(req.url || "/", "ws://localhost:80"),
       (request)=>WEBSOCKET_METHOD,
       config
     );
