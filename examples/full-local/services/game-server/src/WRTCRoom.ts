@@ -102,6 +102,7 @@ const IceMessageSchema: ZodType<{ ice: { candidate: string, mid: string }, user:
 const CONNECT_TIMEOUT = 10 * 1000;
 async function singleHostConect(users: WebRTCRoom["users"]){
   const host = await selectHost(users)
+  host.bridge.sendEvent("host", true);
   for(const user of Object.values(users)){
     addIceListener(user)
   }
