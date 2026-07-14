@@ -12,7 +12,7 @@ program
   .name("rosterlock-match-agent")
   .description("Runs the match-agent server")
   .option("-p, --port <port>", "port to listen on", "8080")
-  .option("-ac, --auth-code <string>", "Authentication code required for access")
+  .option("-a, --auth-code <string>", "Authentication code required for access")
   .action(async (options: { port: string, authCode?: string }) => {
     const port = Number(options.port);
     if (!Number.isInteger(port) || port < 0 || port > 65535) {
