@@ -203,17 +203,20 @@ export class MatchmakingQueue {
 
 
 import { CreateRoomBody } from './types';
-import { signMessage } from './utils/crypto';
+import { SIGNATURE } from '@roster-lock/utils';
 import { getSignatureKeys } from './globals/signature-keys';
+
+type PrivateKey = Parameters<typeof SIGNATURE.ASYMMETRIC.createSignature>[0];
+
 async function createMatch(match: MatchInfo){
   const { publicKey, secretKey } = await getSignatureKeys();
-  const signiture = await signMessage({
+  const signiture = await SIGNATURE.ASYMMETRIC.createSignature(secretKey as PrivateKey, {
     service: 'create-room',
     publicKey: publicKey,
     rosterConfigHash: match.rosterConfigHash,
     users: match.users,
     coordinatorId: GAME_COORDINATOR_ID,
-  }, secretKey);
+  });
 
 
   const relayRoomResponse = await fetch(`${RELAY_SERVER_URL}/api/v1/room`, {

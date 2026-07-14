@@ -1,8 +1,10 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import { z, ZodType } from 'zod';
-import { createSha, verifySignature } from './utils/crypto';
+import { createShaFromJSON, SIGNATURE } from '@roster-lock/utils';
 import { MatchmakingQueue, QueuedUser } from './queue';
+
+type PublicKey = Parameters<typeof SIGNATURE.ASYMMETRIC.verifySignature>[0];
 
 const app = express();
 const PORT = process.env.PORT;
@@ -51,9 +53,9 @@ app.post('/join', async (req: Request, res: Response) => {
   if(Date.now() - casted.data.timestamp > 1000){
     return res.status(400).json({ error: 'Timestamp is too old' });
   }
-  const rosterHash = await createSha(casted.data.rosterConfig);
+  const rosterHash = await createShaFromJSON(casted.data.rosterConfig);
 
-  if(!await verifySignature(casted.data.publicKey, casted.data.signature, {
+  if(!await SIGNATURE.ASYMMETRIC.verifySignature(casted.data.publicKey as PublicKey, casted.data.signature, {
     service: 'join-queue',
     userId: casted.data.userId,
     displayName: casted.data.displayName,
@@ -99,7 +101,7 @@ app.get("/status/:roster-hash", async (req: Request, res: Response) => {
     return res.status(400).json({ error: 'Timestamp is too old' });
   }
 
-  if(!await verifySignature(publicKey, signature, {
+  if(!await SIGNATURE.ASYMMETRIC.verifySignature(publicKey as PublicKey, signature, {
     service: 'queue-status',
     rosterConfigHash: rosterHash,
     timestamp: timestamp,
@@ -131,7 +133,7 @@ app.post('/leave', (req: Request, res: Response) => {
     return res.status(400).json({ error: 'Invalid body' });
   }
 
-  if(!verifySignature(casted.data.publicKey, casted.data.signature, {
+  if(!await SIGNATURE.ASYMMETRIC.verifySignature(casted.data.publicKey as PublicKey, casted.data.signature, {
     service: 'leave-queue',
     rosterConfigHash: casted.data.rosterConfigHash,
     publicKey: casted.data.publicKey,
