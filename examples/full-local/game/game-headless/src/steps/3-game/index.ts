@@ -1,5 +1,5 @@
 
-import { prepareWebRTCRoom } from "./webrtc-room";
+import { prepareWebRTCRoom } from "./datachannel-room";
 import { loadAssetsIntoMemory } from "./assets";
 import { playGame } from "./play";
 import { CurrentUser, RelayRoomConfig, Users, } from "../types";
