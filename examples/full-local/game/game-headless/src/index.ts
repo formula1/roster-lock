@@ -28,8 +28,11 @@ async function main() {
   console.log(`Using roster config from: ${configPath}`);
 
   try {
-    await runSteps(user, rosterConfig);
+    const result = await runSteps(user, rosterConfig);
     console.log("Game finished successfully.");
+    // Marker line an orchestrator (e.g. integration/src/run-game.ts) can grep out of this
+    // process's stdout to cross-check winners/turnCount/randomSeed against other players.
+    console.log("GAME_RESULT " + JSON.stringify(result));
   } catch (err) {
     console.error("Game failed:", err);
     process.exit(1);
