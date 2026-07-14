@@ -7,7 +7,7 @@ import {
 export type { MessageBridgeMessage } from "./types";
 import { EventHandler } from "./event";
 import { RequestHandler } from "./request";
-import { SimpleStream, StreamHandler } from "./stream";
+import { SimpleStream, StreamHandler, StreamRequest } from "./stream";
 
 export class MessageBridge {
   private eventHandler: EventHandler
@@ -30,7 +30,7 @@ export class MessageBridge {
     if(this.streamHandler.handleMessage(message)) return;
   }
 
-  sendStream(path: string): Promise<SimpleStream>{
+  sendStream(path: string): StreamRequest {
     return this.streamHandler.sendStream(path)
   }
 
