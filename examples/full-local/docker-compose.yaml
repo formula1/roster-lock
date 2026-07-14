@@ -10,8 +10,8 @@ services:
   # ========================================================================
   download-provider:
     build:
-      context: ./services/download-provider
-      dockerfile: Dockerfile
+      context: ../..
+      dockerfile: examples/full-local/services/download-provider/Dockerfile
     ports:
       - "7342:80"
     environment:
@@ -26,8 +26,6 @@ services:
       timeout: 5s
       retries: 3
     volumes:
-      - ./services/download-provider:/app
-      - /app/node_modules
       - ./pieces:/pieces:ro
 
 
@@ -36,10 +34,10 @@ services:
   # ========================================================================
   relay-room:
     build:
-      context: ../../core/relay-server
-      dockerfile: Dockerfile
+      context: ../..
+      dockerfile: core/relay-server/Dockerfile
     ports:
-      - "8081:80"  # Main server port
+      - "7343:80"  # Main server port
     environment:
       - NODE_ENV=development
       - PORT=80
@@ -50,26 +48,22 @@ services:
     networks:
       - match-lock-network
     depends_on:
-      - game-server
+      - game-coordinator
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80/api/v1/"]
+      test: ["CMD", "curl", "-f", "http://localhost:80/api/v1"]
       interval: 10s
       timeout: 5s
       retries: 3
-    volumes:
-      - ../../core/relay-server:/app
-      - /app/node_modules
-      - /app/client/node_modules
 
   # ========================================================================
   # MATCHMAKING SERVER - Simple queue-based matchmaking
   # ========================================================================
   match-maker:
     build:
-      context: ./services/matchmaking
-      dockerfile: Dockerfile
+      context: ../..
+      dockerfile: examples/full-local/services/matchmaking/Dockerfile
     ports:
-      - "8082:80"
+      - "7344:80"
     environment:
       - NODE_ENV=development
       - PORT=80
@@ -79,28 +73,25 @@ services:
     networks:
       - match-lock-network
     depends_on:
-      relay-server:
+      relay-room:
         condition: service_healthy
-      game-server:
+      game-coordinator:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:80/health"]
       interval: 10s
       timeout: 5s
       retries: 3
-    volumes:
-      - ./services/matchmaking:/app
-      - /app/node_modules
 
   # ========================================================================
   # GAME SERVER - WebRTC signaling and game coordination
   # ========================================================================
   game-coordinator:
     build:
-      context: ./services/game-server
-      dockerfile: Dockerfile
+      context: ../..
+      dockerfile: examples/full-local/services/game-server/Dockerfile
     ports:
-      - "8083:80"
+      - "7345:80"
     environment:
       - NODE_ENV=development
       - PORT=80
@@ -114,7 +105,4 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
-    volumes:
-      - ./services/game-server:/app
-      - /app/node_modules
 
