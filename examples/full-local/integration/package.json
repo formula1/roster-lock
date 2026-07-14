@@ -1,0 +1,24 @@
+{
+  "name": "@roster-lock/full-local-integration",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Orchestrates the full-local example: docker services, match-agent, and headless game clients",
+  "license": "JSON",
+  "author": "",
+  "type": "commonjs",
+  "scripts": {
+    "cli": "tsx src/index.ts",
+    "start": "tsx src/index.ts run",
+    "run-game": "tsx src/index.ts run-game",
+    "server-setup": "tsx src/index.ts server-setup",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "commander": "^14.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.1",
+    "tsx": "^4.19.2",
+    "typescript": "^7.0.2"
+  }
+}
