@@ -317,7 +317,7 @@ class HostPeerRoom implements PeerRoom {
     this.clientPeers = {};
     for(const [userId, peer] of Object.entries(peers)){
       if(userId === self) continue;
-      const bridge = new WebRTCBridge(peer); 
+      const bridge = new WebRTCBridge(peer);
       this.clientPeers[userId] = { ...peer, bridge };
       bridge.onEvent("action", (body: any)=>{
         this.broadcastExternalMessage({ userId, body });
