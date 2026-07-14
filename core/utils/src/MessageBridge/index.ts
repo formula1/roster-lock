@@ -48,6 +48,19 @@ export class MessageBridge {
     this.streamHandler.active = {};
   }
 
+  sendBridge(path: string): BridgeRequest {
+    if(this._destroyed) throw new Error('Bridge destroyed');
+    return new BridgeRequest(this.sendStream(path), this.debug);
+  }
+
+  onBridge(path: string, handler: (session: BridgedSession)=>any){
+    if(this._destroyed) throw new Error('Bridge destroyed');
+    return this.onStream(path, (stream)=>{
+      const session = new BridgedSession(stream, this.debug);
+      return handler(session);
+    });
+  }
+
   sendStream(path: string): StreamRequest {
     if(this._destroyed) throw new Error('Bridge destroyed');
     return this.streamHandler.sendStream(path)
@@ -78,3 +91,32 @@ export class MessageBridge {
     return this.eventHandler.onEvent(path, handler);
   }
 }
+
+export class BridgedSession extends MessageBridge {
+  protected _stream: SimpleStream;
+
+  constructor(stream: SimpleStream, debug?: boolean){
+    super((msg)=>stream.sendData(msg), debug);
+    this._stream = stream;
+    stream.onData((data)=>this.handleMessage(data));
+    stream.onEnd(()=>this.destroy());
+  }
+
+  get onEnd(){ return this._stream.onEnd; }
+  sendEnd(){ this._stream.sendEnd(); }
+}
+
+export class BridgeRequest extends BridgedSession {
+  private _request: StreamRequest;
+
+  constructor(stream: StreamRequest, debug?: boolean){
+    super(stream, debug);
+    this._request = stream;
+    stream.waitForOpen.catch(()=>{
+      this.destroy();
+    })
+  }
+
+  get waitForOpen(){ return this._request.waitForOpen; }
+}
+
