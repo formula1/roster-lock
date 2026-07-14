@@ -33,5 +33,5 @@ export async function runSteps(
     MATCH_AGENT_AUTH,
     MATCH_AGENT_URL,
   );
-  await runGame(user, match, users, gameResult);
+  return runGame(user, match, users, gameResult);
 }
