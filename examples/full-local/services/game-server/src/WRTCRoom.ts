@@ -50,7 +50,10 @@ export class WebRTCRoom {
     this.heartBeat(userPublicKey)
 
     ws.on("close", ()=>{
-      if(this.state === "finished") return;
+      // removeRoom() closes every user's socket, which re-fires this handler
+      // for sockets that are still registered - only a still-active room
+      // (not already failed/finished) should ever call removeRoom here.
+      if(this.state !== "waiting" && this.state !== "connecting") return;
       this.removeRoom("failed", "user disconnected early")
     })
 
