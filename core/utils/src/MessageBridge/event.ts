@@ -42,6 +42,9 @@ export class EventHandler {
     const listeners = this.listeners[path] || [];
     listeners.push(handler);
     this.listeners[path] = listeners;
+    return () => {
+      this.listeners[path] = (this.listeners[path] || []).filter(l => l !== handler);
+    };
   }
 
 }

@@ -133,6 +133,9 @@ export class StreamHandler {
       throw new Error(`Duplicate Path: ${path}`);
     }
     this.listeners[path] = handler;
+    return () => {
+      if(this.listeners[path] === handler) delete this.listeners[path];
+    };
   }
 }
 
