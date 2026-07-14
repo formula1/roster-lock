@@ -36,10 +36,9 @@ export class WebRTCRoom {
     const bridge = new MessageBridge((message)=>(ws.send(JSON.stringify(message))));
     ws.on("message", (message)=>{
       this.heartBeat(userPublicKey);
-      if(typeof message !== "string"){
-        throw new Error("Invalid message");
-      }
-      bridge.handleMessage(JSON.parse(message))
+      // The `ws` library always delivers frames (text or binary) as a Buffer/ArrayBuffer,
+      // never a JS string - `typeof message === "string"` is never true here.
+      bridge.handleMessage(JSON.parse(message.toString()));
     })
     this.users[userPublicKey] = {
       publicKey: userPublicKey,
