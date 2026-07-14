@@ -39,7 +39,7 @@
     "wrangler": "^4.110.0"
   },
   "dependencies": {
-    "@roster-lock/utils": "link:../utils",
+    "@roster-lock/utils": "workspace:*",
     "hono": "^4.11.3",
     "zod": "^4.3.5"
   }

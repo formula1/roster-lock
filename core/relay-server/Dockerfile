@@ -2,7 +2,7 @@
 # Uses Node.js to run a local version of the Cloudflare Workers relay server
 #
 # Build context must be the repo root: this package depends on the local
-# @roster-lock/utils workspace package via "file:../utils", resolved through
+# @roster-lock/utils workspace package via "workspace:*", resolved through
 # the pnpm workspace, so the workspace metadata and core/utils need to be
 # present alongside it inside the image too.
 #
