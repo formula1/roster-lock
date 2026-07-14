@@ -1,5 +1,5 @@
 import { WebSocket } from "ws";
-import { MessageBridge, waitForBridgeEvent } from "./utils/MessageBridge"
+import { MessageBridge, waitForBridgeEvent } from "@roster-lock/utils";
 import { HTTPError } from "./utils/errors";
 import { z, ZodType } from "zod";
 
