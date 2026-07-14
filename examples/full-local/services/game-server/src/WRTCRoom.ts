@@ -115,8 +115,8 @@ async function singleHostConect(users: WebRTCRoom["users"]){
     const hostConnected = waitForBridgeEvent(host.bridge, "connect-" + other.publicKey, CONNECT_TIMEOUT);
     const userConnected = waitForBridgeEvent(other.bridge, "connect-" + host.publicKey, CONNECT_TIMEOUT);
     const offer = await other.bridge.sendRequest("get-offer", { user: host.publicKey });
-    const accept = await host.bridge.sendRequest("offer-for-answer", { user: other.publicKey, offer });
-    await other.bridge.sendRequest("finish-answer", { user: host.publicKey, accept });
+    const answer = await host.bridge.sendRequest("offer-for-answer", { user: other.publicKey, offer });
+    await other.bridge.sendRequest("finish-answer", { user: host.publicKey, answer });
 
     await Promise.all([hostConnected, userConnected])
   }))
