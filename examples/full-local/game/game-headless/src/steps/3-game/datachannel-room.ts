@@ -59,6 +59,12 @@ export async function prepareWebRTCRoom(
     bridge.handleMessage(JSON.parse(data.toString()));
   });
 
+  // If the socket closes/errors before negotiation finishes, any peer
+  // connections setupWebRTCPeers has already half-negotiated would otherwise
+  // be abandoned rather than closed. Give it an abort signal so it can tear
+  // those down instead of leaking them.
+  const abortController = new AbortController();
+
   // setupWebRTCPeers registers the bridge.onEvent/onRequest listeners that
   // must see every real signaling message - including the very first one,
   // since the coordinator can send "host"/"get-offer" the instant both users
@@ -67,7 +73,7 @@ export async function prepareWebRTCRoom(
   // grace period to "confirm" the connection first) creates a window where
   // a fast-arriving message finds no listener and is silently dropped,
   // permanently stalling the negotiation with no error.
-  const negotiation = setupWebRTCPeers(bridge, users, user.keys.publicKey);
+  const negotiation = setupWebRTCPeers(bridge, users, user.keys.publicKey, abortController.signal);
 
   // If this attempt landed before the room existed on the coordinator (the
   // room-complete webhook hadn't arrived yet - or the connection just dies
@@ -76,9 +82,13 @@ export async function prepareWebRTCRoom(
   // negotiation instead of hanging forever on a dead socket.
   const closedEarly = new Promise<never>((_, reject) => {
     ws.on("close", (code, reason) => {
+      abortController.abort();
       reject(new Error(`WebSocket closed before negotiation finished: code=${code} reason=${reason}`));
     });
-    ws.on("error", (e) => reject(e));
+    ws.on("error", (e) => {
+      abortController.abort();
+      reject(e);
+    });
   });
 
   const { isHost, peers } = await Promise.race([negotiation, closedEarly]);
@@ -108,9 +118,9 @@ type WebRTCResult = {
 // synchronously, so this must wait for the signaling to actually resolve a
 // role and its full peer set before HostPeerRoom/ClientPeerRoom is built.
 function setupWebRTCPeers(
-  bridge: MessageBridge, allowedUsers: Array<string>, self: string
+  bridge: MessageBridge, allowedUsers: Array<string>, self: string, signal: AbortSignal
 ): Promise<WebRTCResult> {
-  const { promise, resolve } = promiseWithResolvers<WebRTCResult>();
+  const { promise, resolve, reject } = promiseWithResolvers<WebRTCResult>();
   let isHost = false;
   let resolved = false;
   const expectedOtherUsers = allowedUsers.filter(u => u !== self).length;
@@ -130,6 +140,21 @@ function setupWebRTCPeers(
   // channel could accept messages. Only count peers whose channel is open.
   const openedUsers = new Set<string>();
 
+  const pendingPeers: Record<string, {
+    pc: PeerConnection,
+    getLocalDescription: ()=>Promise<string>,
+    hasRemoteDescription: ()=>boolean,
+  }> = {};
+
+  // Once negotiation settles (resolved or aborted) these signaling listeners
+  // have nothing left to do - drop them so a lingering signaling socket
+  // can't keep driving peer creation/ICE handling after the room has moved
+  // on to actually playing the game.
+  const unsubs: Array<() => void> = [];
+  function cleanupListeners(){
+    for(const unsub of unsubs) unsub();
+  }
+
   function maybeResolve(){
     if(resolved) return;
     // Host needs a peer for every other user; a client only ever gets one
@@ -137,15 +162,37 @@ function setupWebRTCPeers(
     const needed = isHost ? expectedOtherUsers : 1;
     if(openedUsers.size < needed) return;
     resolved = true;
+    cleanupListeners();
     resolve({ isHost, peers: connections });
   }
 
-  bridge.onEvent("host", () => {
+  // Tears down whatever peer connections got created before negotiation
+  // finished - otherwise a signaling failure mid-negotiation would leak
+  // them (and their native ICE/DTLS threads) forever, since nothing else
+  // ever gets a reference to them.
+  function abortPeers(){
+    if(resolved) return;
+    resolved = true;
+    cleanupListeners();
+    for(const pending of Object.values(pendingPeers)) pending.pc.close();
+    for(const conn of Object.values(connections)){
+      conn.datachannel.close();
+      conn.conn.close();
+    }
+    reject(new Error("WebRTC negotiation aborted"));
+  }
+  if(signal.aborted){
+    abortPeers();
+  } else {
+    signal.addEventListener("abort", abortPeers, { once: true });
+  }
+
+  unsubs.push(bridge.onEvent("host", () => {
     isHost = true;
     maybeResolve();
-  });
+  }));
 
-  bridge.onEvent("ice", (message) => {
+  unsubs.push(bridge.onEvent("ice", (message) => {
     const peer = connections[message.user];
     if (!peer || !peer.hasRemoteDescription()) {
       bufferedIce[message.user] = bufferedIce[message.user] || [];
@@ -153,18 +200,18 @@ function setupWebRTCPeers(
       return;
     }
     peer.conn.addRemoteCandidate(message.ice.candidate, message.ice.mid);
-  });
+  }));
 
-  bridge.onRequest("get-offer", async (message: { user: string }) => {
+  unsubs.push(bridge.onRequest("get-offer", async (message: { user: string }) => {
     const pc = createPeerConnection(message.user);
     // No remote description yet, so creating the data channel here is what
     // triggers auto-negotiation to generate our local *offer*.
     const peer = attachDataChannel(message.user, pc);
     // In node-datachannel, this returns the string directly
     return peer.getLocalDescription();
-  });
+  }));
 
-  bridge.onRequest("offer-for-answer", async (message: { user: string, offer: string }) => {
+  unsubs.push(bridge.onRequest("offer-for-answer", async (message: { user: string, offer: string }) => {
     const pc = createPeerConnection(message.user);
     // Must set the remote offer *before* creating the data channel: node-datachannel
     // auto-negotiates as soon as a channel is added, and does so as a fresh offer
@@ -177,21 +224,15 @@ function setupWebRTCPeers(
     const peer = attachDataChannel(message.user, pc);
     flushIce(message.user);
     return peer.getLocalDescription();
-  });
+  }));
 
-  bridge.onRequest("finish-answer", async (message: { user: string, answer: string }) => {
+  unsubs.push(bridge.onRequest("finish-answer", async (message: { user: string, answer: string }) => {
     const peer = connections[message.user];
     if (!peer) throw new Error("Connection doesn't exist");
     peer.conn.setRemoteDescription(message.answer, "answer");
     flushIce(message.user);
     return true;
-  });
-
-  const pendingPeers: Record<string, {
-    pc: PeerConnection,
-    getLocalDescription: ()=>Promise<string>,
-    hasRemoteDescription: ()=>boolean,
-  }> = {};
+  }));
 
   return promise;
 
