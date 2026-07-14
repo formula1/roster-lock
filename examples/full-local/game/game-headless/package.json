@@ -1,6 +1,7 @@
 {
   "name": "@roster-lock/headless-game-example",
   "version": "1.0.0",
+  "private": true,
   "description": "Game without a UI to run quick tests",
   "license": "JSON",
   "author": "",

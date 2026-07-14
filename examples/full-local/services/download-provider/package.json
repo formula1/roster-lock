@@ -1,6 +1,7 @@
 {
   "name": "@match-lock/download-provider",
   "version": "1.0.0",
+  "private": true,
   "description": "Serves piece tarballs and file listings for the match-lock full-local example",
   "main": "dist/index.js",
   "scripts": {

@@ -1,6 +1,7 @@
 {
   "name": "match-lock-game",
   "version": "0.1.0",
+  "private": true,
   "description": "Turn-based game client for match-lock",
   "type": "module",
   "scripts": {
