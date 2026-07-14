@@ -66,7 +66,11 @@ export class WebRTCRoom {
       this.removeRoom("finished", "success");
 
     }catch(e){
-      this.removeRoom("failed", (e as Error).message)
+      // Rejections here aren't always Error instances (e.g. a request's error
+      // response is relayed as a raw string) - keep the real reason instead
+      // of silently collapsing it to "undefined".
+      const reason = typeof e === "string" ? e : e instanceof Error ? e.message : "Unknown Error";
+      this.removeRoom("failed", reason)
     }
   }
 
