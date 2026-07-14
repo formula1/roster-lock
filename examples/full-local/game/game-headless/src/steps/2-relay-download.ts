@@ -5,11 +5,13 @@ import {
 
 export async function relayAndDownload(
   request: RosterLockV1SyncDLRequestUserToClient,
+  matchAgentAuth: string,
+  matchAgentUrl: string,
 ){
 
   const [users, gameResult] = await Promise.all([
     getUsers(request),
-    syncDownloadOverHTTP(request),
+    syncDownloadOverHTTP(request, matchAgentAuth, matchAgentUrl),
   ]);
 
   return { users, gameResult };

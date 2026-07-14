@@ -8,6 +8,8 @@ import { runGame } from "./3-game";
 import { CurrentUser } from "./types";
 
 const PUBLIC_RELAY_SERVER_URL = requireEnv("PUBLIC_RELAY_SERVER_URL");
+const MATCH_AGENT_AUTH = requireEnv("MATCH_AGENT_AUTH");
+const MATCH_AGENT_URL = requireEnv("MATCH_AGENT_URL");
 
 export async function runSteps(
   user: CurrentUser,
@@ -27,6 +29,8 @@ export async function runSteps(
       rosterConfig,
       userSelection: selection,
     },
+    MATCH_AGENT_AUTH,
+    MATCH_AGENT_URL,
   );
   await runGame(user, match, users, gameResult);
 }
