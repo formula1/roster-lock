@@ -86,8 +86,8 @@ app.post('/join', async (req: Request, res: Response) => {
   });
 });
 
-app.get("/status/:roster-hash", async (req: Request, res: Response) => {
-  const rosterHash = req.params["roster-hash"];
+app.get("/status/:rosterHash", async (req: Request, res: Response) => {
+  const rosterHash = req.params.rosterHash;
   const publicKey = req.query.publicKey as string;
   const signature = req.query.signature as string;
   const timestamp = Number.parseInt(req.query.timestamp as string);
