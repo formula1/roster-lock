@@ -3,7 +3,7 @@ import { ISimpleEventEmitter, createSimpleEmitter } from "@roster-lock/utils";
 import { RelayRoomConfig, CurrentUser, Users } from "../types";
 import { WebSocket } from "ws";
 
-import { PeerConnection, DataChannel } from "node-datachannel";
+import { PeerConnection, DataChannel, cleanup as cleanupDataChannelLib } from "node-datachannel";
 // Note: node-datachannel handles its own internal types, no .d.ts needed!
 
 export type WebRTCPeer = {
@@ -16,6 +16,11 @@ export interface PeerRoom {
   users: Array<string>
   onAction: ISimpleEventEmitter<[userId: string, body: any]>
   broadcastAction(body: any): void
+  // Releases the signaling socket and every WebRTC peer/datachannel, and shuts
+  // down node-datachannel's native thread pool. Without this the process never
+  // exits after the game ends - the open ws connection and the library's
+  // background threads keep the event loop alive indefinitely.
+  close(): void
 }
 
 const GAME_SERVER = (()=>{
@@ -78,9 +83,9 @@ export async function prepareWebRTCRoom(
 
   const { isHost, peers } = await Promise.race([negotiation, closedEarly]);
   if(isHost){
-    return new HostPeerRoom(user.keys.publicKey, users, peers);
+    return new HostPeerRoom(user.keys.publicKey, users, peers, ws);
   } else {
-    return new ClientPeerRoom(user.keys.publicKey, users, peers);
+    return new ClientPeerRoom(user.keys.publicKey, users, peers, ws);
   }
 }
 
@@ -279,7 +284,8 @@ class ClientPeerRoom implements PeerRoom {
   constructor(
     public self: string,
     public users: Array<string>,
-    peers: Record<string, Omit<WebRTCPeer, "bridge">>
+    peers: Record<string, Omit<WebRTCPeer, "bridge">>,
+    private ws: WebSocket,
   ){
     const hostPeer = Object.values(peers)[0];
     if(!hostPeer) throw new Error("Host not found");
@@ -293,6 +299,11 @@ class ClientPeerRoom implements PeerRoom {
   broadcastAction(body: any){
     this.hostPeer.bridge.sendEvent("action", body);
   }
+  close(){
+    closePeer(this.hostPeer);
+    closeSignalingSocket(this.ws);
+    cleanupDataChannelLib();
+  }
 }
 
 class HostPeerRoom implements PeerRoom {
@@ -300,7 +311,8 @@ class HostPeerRoom implements PeerRoom {
   constructor(
     public self: string,
     public users: Array<string>,
-    peers: Record<string, Omit<WebRTCPeer, "bridge">>
+    peers: Record<string, Omit<WebRTCPeer, "bridge">>,
+    private ws: WebSocket,
   ){
     this.clientPeers = {};
     for(const [userId, peer] of Object.entries(peers)){
@@ -321,6 +333,24 @@ class HostPeerRoom implements PeerRoom {
     for(const peer of Object.values(this.clientPeers)){
       peer.bridge.sendEvent("action", message);
     }
+  }
+  close(){
+    for(const peer of Object.values(this.clientPeers)){
+      closePeer(peer);
+    }
+    closeSignalingSocket(this.ws);
+    cleanupDataChannelLib();
+  }
+}
+
+function closePeer(peer: Omit<WebRTCPeer, "bridge">){
+  peer.datachannel.close();
+  peer.conn.close();
+}
+
+function closeSignalingSocket(ws: WebSocket){
+  if(ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING){
+    ws.close();
   }
 }
 
