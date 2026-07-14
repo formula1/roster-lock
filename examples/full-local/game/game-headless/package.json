@@ -13,9 +13,10 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@noble/ed25519": "^3.0.0",
-    "@roster-lock/ts-client": "file:../../../../client/typescript",
-    "@roster-lock/types": "file:../../../../core/types",
+    "@roster-lock/example-game-engine": "workspace:*",
+    "@roster-lock/ts-client": "workspace:*",
+    "@roster-lock/types": "workspace:*",
+    "@roster-lock/utils": "workspace:*",
     "node-datachannel": "^0.32.1",
     "ws": "^8.19.0",
     "zod": "^4.3.5"
