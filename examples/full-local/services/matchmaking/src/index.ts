@@ -126,7 +126,7 @@ const leaveBodySchema: ZodType<{ rosterConfigHash: string; publicKey: string; si
   publicKey: z.string(),
   signature: z.string(),
 }).strict();
-app.post('/leave', (req: Request, res: Response) => {
+app.post('/leave', async (req: Request, res: Response) => {
   const bodyUncasted = req.body;
   const casted = leaveBodySchema.safeParse(bodyUncasted);
   if(!casted.success){
