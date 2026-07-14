@@ -51,10 +51,9 @@ export async function prepareWebRTCRoom(
   const ws = new WebSocket(wsURL);
   const bridge = new MessageBridge((message)=>(ws.send(JSON.stringify(message))))
   ws.on("message", (data)=>{
-    if(typeof data === "string"){
-      bridge.handleMessage(JSON.parse(data))
-    }
-  })
+    bridge.handleMessage(JSON.parse(data.toString()));
+  });
+
 
   const { isHost, peers } = await setupWebRTCPeers(bridge, users);
   if(isHost){
