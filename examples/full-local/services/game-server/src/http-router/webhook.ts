@@ -28,8 +28,7 @@ const roomCompleteCaster: ZodType<RoomConfig & { timestamp: number }> = z.object
 
 router.post('/room-complete', json(), async (req, res, next) => {
   try {
-    if(!req.headers.get) throw new HTTPError(400, 'Missing headers');
-    const signature = req.headers['X-Signature'];
+    const signature = req.headers['x-signature'];
     if(typeof signature !== "string"){
       throw new HTTPError(400, 'Invalid signature');
     }
@@ -81,8 +80,7 @@ const roomFailureCaster: ZodType<(
 }).strict();
 router.post("/room-failure", json(), async (req, res, next)=>{
   try {
-    if(!req.headers.get) throw new HTTPError(400, 'Missing headers');
-    const signature = req.headers['X-Signature'];
+    const signature = req.headers['x-signature'];
     if(typeof signature !== "string"){
       throw new HTTPError(400, 'Invalid signature');
     }
