@@ -15,5 +15,11 @@ export async function runGame(
     prepareWebRTCRoom(relayRoomConfig, users, user),
     loadAssetsIntoMemory(relayRoomConfig, gameResult),
   ]);
-  await playGame(room);
+  // The signaling socket and WebRTC peers/datachannel threads keep the
+  // process alive after the game ends unless explicitly torn down here.
+  try {
+    return await playGame(room, user, gameResult);
+  } finally {
+    room.close();
+  }
 }
