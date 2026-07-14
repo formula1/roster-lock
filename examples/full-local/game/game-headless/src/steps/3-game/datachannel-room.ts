@@ -1,7 +1,5 @@
-import { signMessage } from "../../utils/crypto";
-import { MessageBridge } from "../../utils/MessageBridge";
-import { ISimpleEventEmitter } from "../../utils/SimpleEvent";
-import { createSimpleEmitter } from "../../utils/SimpleEvent";
+import { SIGNATURE, MessageBridge } from "@roster-lock/utils";
+import { ISimpleEventEmitter, createSimpleEmitter } from "@roster-lock/utils";
 import { RelayRoomConfig, CurrentUser, Users } from "../types";
 import { WebSocket } from "ws";
 
@@ -28,6 +26,8 @@ const GAME_SERVER = (()=>{
   return url;
 })();
 
+type PrivateKey = Parameters<typeof SIGNATURE.ASYMMETRIC.createSignature>[0];
+
 export async function prepareWebRTCRoom(
   relayRoomConfig: RelayRoomConfig,
   fullUsers: Users,
@@ -35,7 +35,7 @@ export async function prepareWebRTCRoom(
 ){
   const users = fullUsers.map(u => u.publicKey);
   const timestamp = Date.now();
-  const signature = await signMessage(user.keys.privateKey, {
+  const signature = await SIGNATURE.ASYMMETRIC.createSignature(user.keys.privateKey as PrivateKey, {
     service: "webrtc",
     roomId: relayRoomConfig.roomId,
     publicKey: user.keys.publicKey,

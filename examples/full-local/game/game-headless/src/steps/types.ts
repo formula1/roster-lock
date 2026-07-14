@@ -1,5 +1,4 @@
-import { KeyPair } from "../utils/crypto";
-import { 
+import {
   RosterLockV1SyncDLRequestUserToClient,
   RosterLockV1SyncDLResult,
 } from "@roster-lock/types";

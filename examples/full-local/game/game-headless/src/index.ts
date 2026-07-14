@@ -1,8 +1,8 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as crypto from "crypto";
-import { RosterLockV1Config } from "@match-lock/shared";
-import { generateKeyPair } from "./utils/crypto";
+import { RosterLockV1Config } from "@roster-lock/types";
+import { generateKeyPair } from "@roster-lock/ts-client";
 import { runSteps } from "./steps";
 
 async function main() {
