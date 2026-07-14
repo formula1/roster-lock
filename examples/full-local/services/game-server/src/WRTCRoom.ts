@@ -114,6 +114,14 @@ async function singleHostConect(users: WebRTCRoom["users"]){
     if(host.publicKey === other.publicKey) return;
     const hostConnected = waitForBridgeEvent(host.bridge, "connect-" + other.publicKey, CONNECT_TIMEOUT);
     const userConnected = waitForBridgeEvent(other.bridge, "connect-" + host.publicKey, CONNECT_TIMEOUT);
+    // Both promises can time out and reject well before the `await
+    // Promise.all([hostConnected, userConnected])` below ever attaches a
+    // handler to them - and an unhandled rejection crashes the whole
+    // process (killing every concurrent room), not just this one. Attaching
+    // a no-op catch here just marks them "handled" for Node's tracker; the
+    // real rejection still propagates through the awaited Promise.all.
+    hostConnected.catch(()=>{});
+    userConnected.catch(()=>{});
     const offer = await other.bridge.sendRequest("get-offer", { user: host.publicKey });
     const answer = await host.bridge.sendRequest("offer-for-answer", { user: other.publicKey, offer });
     await other.bridge.sendRequest("finish-answer", { user: host.publicKey, answer });
