@@ -1,28 +1,35 @@
 # Download Provider Dockerfile
 # Serves piece file listings and tarballs
+#
+# Build context must be the repo root: this package is a pnpm workspace
+# member, so its dependencies are pinned via the workspace's pnpm-lock.yaml.
 
 FROM node:20-alpine
 
-WORKDIR /app
-
 # Install curl for healthcheck + tar for creating archives
 RUN apk add --no-cache curl tar
+RUN corepack enable
 
-# Copy package files
-COPY package*.json ./
+WORKDIR /app
 
-# Install dependencies
-RUN npm install
+# Workspace metadata + just the package.json needed to resolve this
+# service's dependencies, so the install layer caches independently of
+# unrelated source changes elsewhere in the monorepo.
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY examples/full-local/services/download-provider/package.json examples/full-local/services/download-provider/
+
+RUN pnpm install --filter @match-lock/download-provider --frozen-lockfile --ignore-scripts
 
 # Copy source code
-COPY . .
+COPY examples/full-local/services/download-provider/ examples/full-local/services/download-provider/
 
 # Build TypeScript
-RUN npm run build
+RUN pnpm --filter @match-lock/download-provider run build
+
+WORKDIR /app/examples/full-local/services/download-provider
 
 # Expose port
 EXPOSE 80
 
 # Start the server
-CMD ["npm", "start"]
-
+CMD ["node", "dist/index.js"]
