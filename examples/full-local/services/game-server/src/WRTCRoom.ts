@@ -95,8 +95,8 @@ export class WebRTCRoom {
   }
 }
 
-const IceMessageSchema: ZodType<{ ice: string, user: string }> = z.object({
-  ice: z.string(), user: z.string()
+const IceMessageSchema: ZodType<{ ice: { candidate: string, mid: string }, user: string }> = z.object({
+  ice: z.object({ candidate: z.string(), mid: z.string() }), user: z.string()
 })
 
 const CONNECT_TIMEOUT = 10 * 1000;
