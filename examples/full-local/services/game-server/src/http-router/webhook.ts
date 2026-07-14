@@ -3,10 +3,11 @@ import { z, ZodType } from 'zod';
 import { RoomConfig } from '../types';
 import { WebRTCRoom } from '../WRTCRoom';
 import { HTTPError } from '../utils/errors';
-import { canonicalJSONStringify } from '../utils/json';
-import { verifyHMAC } from '../utils/crypto';
+import { canonicalJSONStringify, SIGNATURE } from '@roster-lock/utils';
 
-const COORDINATOR_API_KEY = process.env.COORDINATOR_API_KEY;
+type SymmetricKey = Parameters<typeof SIGNATURE.SYMMETRIC.verifySignature>[0];
+
+const COORDINATOR_API_KEY = process.env.COORDINATOR_API_KEY as SymmetricKey | undefined;
 if(!COORDINATOR_API_KEY) throw new Error("Missing COORDINATOR_API_KEY");
 const MAX_AGE = 60 * 1000; // 1 minute
 
@@ -43,7 +44,7 @@ router.post('/room-complete', json(), async (req, res, next) => {
 
     const bodyAsString = canonicalJSONStringify(req.body)
 
-    const isValid = await verifyHMAC(COORDINATOR_API_KEY, bodyAsString, signature);
+    const isValid = await SIGNATURE.SYMMETRIC.verifySignature(COORDINATOR_API_KEY, bodyAsString, signature);
     if(!isValid) throw new HTTPError(401, 'Invalid signature');
 
     const parsed = roomCompleteCaster.safeParse(req.body);
@@ -87,7 +88,7 @@ router.post("/room-failure", json(), async (req, res, next)=>{
     }
     const bodyAsString = canonicalJSONStringify(req.body)
 
-    const isValid = await verifyHMAC(COORDINATOR_API_KEY, bodyAsString, signature);
+    const isValid = await SIGNATURE.SYMMETRIC.verifySignature(COORDINATOR_API_KEY, bodyAsString, signature);
     if(!isValid) throw new HTTPError(401, 'Invalid signature');
 
     const parsed = roomFailureCaster.safeParse(req.body);
