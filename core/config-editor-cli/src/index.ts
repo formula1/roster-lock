@@ -14,6 +14,7 @@ import {
 import {
   addPieceCommand,
   editPieceCommand,
+  rescanCommand,
   testDownloadCommand,
   rosterListCommand,
   removePieceCommand,
@@ -57,6 +58,7 @@ program.addCommand(engineCommand);
 const rosterCommand = new Command("roster").description("Edit the staged lock's rosters (pieces)");
 rosterCommand.addCommand(addPieceCommand);
 rosterCommand.addCommand(editPieceCommand);
+rosterCommand.addCommand(rescanCommand);
 rosterCommand.addCommand(testDownloadCommand);
 rosterCommand.addCommand(rosterListCommand);
 rosterCommand.addCommand(removePieceCommand);

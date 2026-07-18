@@ -75,6 +75,7 @@ $ROSTERLOCK engine show [pieceType] [-d <draft>]
 
 $ROSTERLOCK roster add-piece <pieceType> <folder> [--path-variables <k=v,..>] [--download-source <url>] [--json <file|->]
 $ROSTERLOCK roster edit-piece <pieceType> <pieceId> [--name/--author/--url/--image <v>] [--add-download-source <url>] [--remove-download-source <url>] [--path-variables <k=v,..>] [--remove-path-variable <name>] [--json <file|->]
+$ROSTERLOCK roster rescan <pieceType> <pieceId> [folder] [--path-variables <k=v,..>]  # recompute hashes in place after asset/file changes; keeps id, humanInfo, downloadSources, requiredPieces
 $ROSTERLOCK roster test-download <pieceType> <pieceId> <sourceUrl>   # downloads and verifies a source's hash matches
 $ROSTERLOCK roster remove-piece <pieceType> <pieceId>
 $ROSTERLOCK roster list [pieceType] [-d <draft>]
@@ -103,7 +104,13 @@ the draft's directory.
    folder against the piece type's asset definitions and computes content hashes.
    It needs at least one download source, from `--download-source`, a
    `rosterlock.piece-meta.json` in the folder, or `--json`. Use `roster edit-piece`
-   to fix up humanInfo/sources/path-variables afterward.
+   to fix up humanInfo/sources/path-variables afterward. Its id is derived from
+   `humanInfo` (`@author/name`, or `#logicHash/mediaHash` if unnamed) - there's no
+   flag to set it directly. To update an **existing** piece's files (e.g. after
+   adding a new asset type or editing media) without changing its id or losing its
+   `requiredPieces`, use `roster rescan <type> <pieceId> [folder]` instead of
+   removing and re-adding it - `add-piece` always resets `requiredPieces` to empty
+   stubs, which `roster edit-piece` cannot restore.
 4. **Configure selection** per piece type: `selection set <type> --type <kind>`.
    `normal` needs `validation` (count/unique/banList/customValidation); `preselected`
    needs `pieces`; `unselectable`/`game-controlled` need neither - just `pieceMeta`
