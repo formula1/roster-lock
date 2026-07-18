@@ -64,7 +64,7 @@ export const testDownloadCommand = withDraftOption(new Command("test-download"))
       );
       pieceInfo.testedDownloadSources.push({
         source: sourceUrl,
-        testedAt: new Date().toISOString(),
+        testedAt: Date.now(),
         version,
       });
 

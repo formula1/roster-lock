@@ -8,7 +8,7 @@ type RosterLockDraftPieceInfo = {
   referenceFolder?: string,
   testedDownloadSources: Array<{
     source: DownloadableSource,
-    testedAt: string,
+    testedAt: number,
     version: { logic: string, media: string, docs: string }
   }>,
 };

@@ -53,7 +53,7 @@ export function DownloadSources({ value, onChange, piece, pieceDefinition, draft
                           ...draftInfo,
                           testedDownloadSources: [
                             ...draftInfo.testedDownloadSources.filter(t => t.source !== source),
-                            { source, testedAt: new Date().toISOString(), version }
+                            { source, testedAt: Date.now(), version }
                           ]
                         });
                       } finally {

@@ -16,7 +16,7 @@ export const rosterPieceInfoSchema: JSONSchemaType<RosterLockDraftPieceInfo> = {
         additionalProperties: false,
         properties: {
           source: { type: "string" },
-          testedAt: { type: "string" },
+          testedAt: { type: "number" },
           version: {
             type: "object", additionalProperties: false,
             required: ["logic", "media", "docs"],
