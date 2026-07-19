@@ -14,7 +14,7 @@ export const storage = {
   },
 
   keys: async (): Promise<string[]> => {
-    return await invoke('native_storage_clear');
+    return await invoke('native_storage_keys');
   },
 
   clear: async (): Promise<void> => {
