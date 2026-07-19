@@ -1,6 +1,7 @@
 
 import { CSSProperties } from "react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { open } from '@tauri-apps/plugin-shell';
 import "./markdown.css";
 
@@ -14,6 +15,7 @@ export function Markdown(
   return (
     <div className={"markdown" + (!className ? "" : " " + className)} style={style}>
       <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
         components={{
           a: ({ href, children }) => (
             <a
