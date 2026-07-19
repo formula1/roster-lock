@@ -8,7 +8,10 @@ type GetPieceInfo = {
   folder: string,
   engine: RosterLockV1Config["engine"]
   pieceType: string
-  piece: RosterLockPiece
+  // These two routes only resolve a piece's on-disk folder (by content hash +
+  // pathVariables) - they never need humanInfo/downloadSources/requiredPieces,
+  // so callers don't have to carry a full RosterLockPiece around just to read a file.
+  piece: Pick<RosterLockPiece, "version" | "pathVariables">
 }
 
 export function getPiece(
@@ -95,6 +98,6 @@ export async function getPieceFileContents(
       url, "POST", response, null
     );
   }
-  
+
   return response.body;
 }

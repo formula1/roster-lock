@@ -4,7 +4,7 @@ import { jsonBody, HTTPRequestHandler, HTTPError } from "../../utils/http-router
 import { getSQLite3FolderDB } from "./globals/FolderDB";
 import z, { ZodType } from "zod";
 
-import { engineCaster, pieceCaster } from "./schema/lock";
+import { engineCaster, pieceFileInfoCaster } from "./schema/lock";
 import { pipeline } from "node:stream/promises";
 import { mimeTypeFor } from "../../utils/fs";
 
@@ -12,7 +12,7 @@ type GetPieceInfo = {
   folder: string,
   engine: RosterLockV1Config["engine"]
   pieceType: string
-  piece: RosterLockPiece
+  piece: Pick<RosterLockPiece, "version" | "pathVariables">
 }
 
 const getAssetSchema: ZodType<(
@@ -22,7 +22,7 @@ const getAssetSchema: ZodType<(
   folder: z.string(),
   engine: engineCaster,
   pieceType: z.string(),
-  piece: pieceCaster,
+  piece: pieceFileInfoCaster,
   assetName: z.string(),
 })
 
@@ -52,7 +52,7 @@ const getContentsSchema: ZodType<(
   folder: z.string(),
   engine: engineCaster,
   pieceType: z.string(),
-  piece: pieceCaster,
+  piece: pieceFileInfoCaster,
   filePath: z.string(),
 })
 export const getPieceFileContents: HTTPRequestHandler = async function ({ req, res }){

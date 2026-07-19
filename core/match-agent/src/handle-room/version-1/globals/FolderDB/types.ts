@@ -4,7 +4,7 @@ import { Readable } from "node:stream";
 
 export interface IFolderDB {
   ensurePieceExists(
-    lockConfig: RosterLockV1Config,
+    lockConfig: RosterLockV1Config["engine"],
     pieceType: string,
     selectedPiece: RosterLockPiece,
     progressHandlers: ProgressHandlers,
@@ -12,13 +12,13 @@ export interface IFolderDB {
   getFilesofAsset(
     engineConfig: RosterLockV1Config["engine"],
     pieceType: string,
-    selectedPiece: RosterLockPiece,
+    selectedPiece: Pick<RosterLockPiece, "version" | "pathVariables">,
     assetName: string
   ): AsyncIterable<string>
   getPieceFileContents(
     engineConfig: RosterLockV1Config["engine"],
     pieceType: string,
-    selectedPiece: RosterLockPiece,
+    selectedPiece: Pick<RosterLockPiece, "version" | "pathVariables">,
     filePath: string
   ): Promise<Readable>
   listPieces(

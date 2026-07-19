@@ -87,7 +87,7 @@ async function tryToDownloadAnySource(
     pieceVersions,
   });
   const folder = await db.ensurePieceExists(
-    lockconfig, pieceType, piece, progressHandlers
+    lockconfig.engine, pieceType, piece, progressHandlers
   );
   progressHandlers.onProgress({
     type: ROSTERLOCK_DOWNLOAD_STATE.downloadFinished,
