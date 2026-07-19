@@ -19,7 +19,7 @@ export const engineCaster: ZodType<RosterLockV1Config["engine"]> = z.object({
   })),
 })
 
-export const pieceCaster: ZodType<RosterLockPiece> = z.object({
+const pieceObjectCaster = z.object({
   id: z.string(),
   version: z.object({
     logic: z.string(),
@@ -39,3 +39,9 @@ export const pieceCaster: ZodType<RosterLockPiece> = z.object({
       selectable: z.boolean(),
   })),
 })
+
+export const pieceCaster: ZodType<RosterLockPiece> = pieceObjectCaster;
+
+// Piece file routes only resolve a piece's on-disk folder (by content hash +
+// pathVariables), so they don't need the rest of RosterLockPiece.
+export const pieceFileInfoCaster = pieceObjectCaster.pick({ version: true, pathVariables: true });

@@ -21,4 +21,11 @@ export interface IFolderDB {
     selectedPiece: RosterLockPiece,
     filePath: string
   ): Promise<Readable>
+  listPieces(
+    engineName: string,
+    pieceType: string,
+    logicIds: Array<string>,
+    pagination: { page: number, limit: number, }
+  ): Promise<Array<Pick<RosterLockPiece, "version" | "pathVariables">>>
 }
+

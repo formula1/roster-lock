@@ -235,6 +235,41 @@ export function prepareDatabase(dbLocation: string){
         downloadSource,
         errorMessage: error,
       });
+    },
+
+    listPieces(
+      engineName: string,
+      pieceType: string,
+      logicIds: Array<string>,
+      { page, limit }: { page: number, limit: number }
+    ){
+      if(logicIds.length === 0) return [];
+      const logicParams = logicIds.map((_, i)=>`@logic${i}`).join(", ");
+      const stmt = db.prepare(
+        `
+        SELECT * FROM pieces
+        WHERE engine_name = @engineName
+          AND piece_type = @pieceType
+          AND status = 'complete'
+          AND logic_hash IN (${logicParams})
+        ORDER BY completed_at ASC
+        LIMIT @limit OFFSET @offset
+        `
+      );
+      const params: Record<string, string | number> = {
+        engineName,
+        pieceType,
+        limit,
+        offset: page * limit,
+      };
+      logicIds.forEach((logicId, i)=>{ params[`logic${i}`] = logicId; });
+      const items = stmt.all(params) as Array<
+        Omit<RosterPiece, "path_variables"> & { path_variables: string }
+      >;
+      return items.map(item=>({
+        ...item,
+        path_variables: JSON.parse(item.path_variables),
+      }));
     }
   }
 }

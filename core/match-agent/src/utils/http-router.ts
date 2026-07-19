@@ -27,6 +27,9 @@ export class HTTPRouter extends GenericRouter<HTTPRequest> {
   get(path: string, ...callbacks: Array<GenericRouterCallbackArg<HTTPRequest>>){
     return this.addHandler("GET", path, false, ...callbacks);
   }
+  query(path: string, ...callbacks: Array<GenericRouterCallbackArg<HTTPRequest>>){
+    return this.addHandler("QUERY", path, false, ...callbacks);
+  }
   post(path: string, ...callbacks: Array<GenericRouterCallbackArg<HTTPRequest>>){
     return this.addHandler("POST", path, false, ...callbacks);
   }

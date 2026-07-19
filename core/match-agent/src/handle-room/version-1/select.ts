@@ -1,0 +1,90 @@
+
+import { RosterLockPiece, RosterLockV1Config, DownloadResult } from "@roster-lock/types";
+import { jsonBody, HTTPRequestHandler, HTTPError } from "../../utils/http-router";
+import { handlePagination } from "../../utils/pagination"
+import z, { ZodType } from "zod";
+import { engineCaster, pieceCaster } from "./schema/lock";
+import { getSQLite3FolderDB } from "./globals/FolderDB";
+
+type GetPieceInfo = {
+  folder: string,
+  engine: RosterLockV1Config["engine"]
+  pieceType: string
+  piece: RosterLockPiece
+}
+
+const ensurePieceSchema: ZodType<GetPieceInfo> = z.object({
+  folder: z.string(),
+  engine: engineCaster,
+  pieceType: z.string(),
+  piece: pieceCaster,
+})
+
+export const ensurePieceDownloaded: HTTPRequestHandler = async function(
+  { req, res }
+){
+  const body = await jsonBody(req)
+  const parseResult = ensurePieceSchema.safeParse(body);
+  if(!parseResult.success){
+    throw new HTTPError(400, "Bad Form", parseResult.error);
+  }
+  const { folder, engine, pieceType, piece } = parseResult.data;
+  const fileDB = getSQLite3FolderDB(folder);
+
+  const abortController = new AbortController();
+  req.on("close", ()=>abortController.abort());
+
+  const pieceFolder = await fileDB.ensurePieceExists(
+    engine, pieceType, piece, {
+      onProgress: ()=>{},
+      abortSignal: abortController.signal,
+    }
+  );
+
+  const dlResult: DownloadResult = {
+    pieceType,
+    pieceId: piece.id,
+    pieceVersions: { logic: piece.version.logic, media: piece.version.media },
+    folder: pieceFolder,
+  }
+
+  res.writeHead(200, { "Content-Type": "application/json" });
+  res.end(JSON.stringify(dlResult));
+}
+
+
+type ListDownloadedPiecesDirect = {
+  folder: string,
+  engineName: string,
+  pieceType: string,
+  logicIds: Array<string>,
+}
+
+const listPiecesDirectSchema: ZodType<ListDownloadedPiecesDirect> = z.object({
+  folder: z.string(),
+  engineName: z.string(),
+  pieceType: z.string(),
+  logicIds: z.array(z.string()),
+})
+
+export const listDownloadedPiecesDirect: HTTPRequestHandler = async function(
+  { req, res }, routeInfo
+){
+  const { page, limit } = handlePagination(routeInfo.url.searchParams);
+
+  const body = await jsonBody(req)
+  const parseResult = listPiecesDirectSchema.safeParse(body);
+  if(!parseResult.success) throw new HTTPError(400, "Bad Form", parseResult.error);
+  const config = parseResult.data;
+
+  const fileDB = getSQLite3FolderDB(config.folder);
+  const pieces = await fileDB.listPieces(
+    config.engineName,
+    config.pieceType,
+    config.logicIds,
+    { page, limit }
+  );
+  res.writeHead(200, { "content-type": "application/json"});
+  res.end(JSON.stringify(pieces));
+}
+

@@ -53,6 +53,26 @@ export class SQLite3FolderDB implements IFolderDB {
     return pathJoin(this.folder, engine.name, pieceType, folderName);
   }
 
+  async listPieces(
+    enginename: string,
+    pieceType: string,
+    logicIds: Array<string>,
+    pagination: { page: number, limit: number }
+  ){
+    const pieces = this.db.listPieces(
+      enginename,
+      pieceType,
+      logicIds,
+      pagination,
+    )
+    return pieces.map((piece)=>(
+      {
+        version: { logic: piece.logic_hash, media: piece.media_hash, docs: "" },
+        pathVariables: piece.path_variables,
+      }
+    ))
+  }
+
   async* getFilesofAsset(
     engineConfig: RosterLockV1Config["engine"],
     pieceType: string,
