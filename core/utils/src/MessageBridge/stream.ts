@@ -83,18 +83,20 @@ export class StreamHandler {
           if(!handler)
             throw new Error(`no request listener at ${message.path}`);
 
+          // handler runs now so it can attach listeners (onData/onEnd)
+          // before the peer is told it's safe to send anything.
           const stream = this.createStream(message.id);
+          const result = handler(stream);
+          stream.state = "active";
           this.active[message.id] = stream;
           this.sendMessage({
             id: message.id,
             messageType: "stream-response",
             value: "start"
           });
-          Promise.resolve().then(async ()=>{
-            try { await handler(stream); } catch(e){
-              this.debug && console.warn("stream error handling suppressed", e);
-            }
-          })
+          Promise.resolve(result).catch((e)=>{
+            this.debug && console.warn("stream error handling suppressed", e);
+          });
         }catch(e) {
           this.sendMessage({
             id: message.id,
