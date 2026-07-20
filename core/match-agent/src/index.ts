@@ -14,7 +14,7 @@ import { getSQLite3FolderDB, IFolderDB } from "./handle-room/version-1/globals/F
 program
   .name("rosterlock-match-agent")
   .description("Runs the match-agent server")
-  .option("-p, --port <port>", "port to listen on", "8080")
+  .option("-p, --port <port>", "port to listen on", "58732")
   .option("-a, --auth-code <string>", "Authentication code required for access")
   .option(
     "-f, --folder <path>",
