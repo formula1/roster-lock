@@ -13,7 +13,6 @@
     "prepare": "pnpm run build"
   },
   "dependencies": {
-    "@noble/ed25519": "^3.0.1",
     "@roster-lock/types": "workspace:*",
     "@roster-lock/utils": "workspace:*",
     "isomorphic-ws": "^5.0.0"
