@@ -1,4 +1,4 @@
-import { execSync } from "node:child_process";
+import type Arborist from "@npmcli/arborist";
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -54,6 +54,15 @@ function validatePluginShape(plugin: unknown, type: PluginType, packageName: str
   }
 }
 
+// @npmcli/arborist takes ~250ms just to require() - loaded only by the
+// three functions below (install/update/uninstall), so every other consumer
+// of plugin-management (running scripts, downloading, listing plugins)
+// doesn't pay that cost on every process start.
+async function newArborist(pluginDir: string): Promise<Arborist> {
+  const { default: ArboristCtor } = await import("@npmcli/arborist");
+  return new ArboristCtor({ path: pluginDir });
+}
+
 function normalizePackagePath(packagePath: string): string {
   if (packagePath.startsWith("file:"))
     packagePath = packagePath.slice(5);
@@ -78,7 +87,8 @@ export async function installPlugin(
   packagePath = normalizePackagePath(packagePath);
   const packageName = resolvePackageName(packagePath);
 
-  execSync(`npm install "${packagePath}" --prefix "${pluginDir}"`, { stdio: "inherit" });
+  const arborist = await newArborist(pluginDir);
+  await arborist.reify({ add: [packagePath] });
 
   const installedPkgJson = await importPluginPackage(pluginDir, packageName);
   const version = installedPkgJson.version;
@@ -113,17 +123,13 @@ export async function updatePlugin(
   const specifier = pluginDirPkgJson.dependencies?.[packageName];
   if (!specifier) throw new Error(`No install specifier found for ${packageName} in ${pluginDir}/package.json`);
 
-
-  const npmCommand = (()=>{
-    if(specifier.startsWith("file:")){
-      const specifierPath = path.resolve(pluginDir, specifier.slice(5));
-      return `npm install "${specifierPath}" --prefix "${pluginDir}"`
-    } else {
-      return `npm update "${packageName}" --prefix "${pluginDir}"`;
-    }
-  })();
-
-  execSync(npmCommand, { stdio: "inherit" });
+  const arborist = await newArborist(pluginDir);
+  if(specifier.startsWith("file:")){
+    const specifierPath = path.resolve(pluginDir, specifier.slice(5));
+    await arborist.reify({ add: [specifierPath] });
+  } else {
+    await arborist.reify({ update: { names: [packageName] } });
+  }
 
   const installedPkgJson = await importPluginPackage(pluginDir, packageName);
   const pluginModule = await importPluginModule(pluginDir, packageName, installedPkgJson);
@@ -133,8 +139,9 @@ export async function updatePlugin(
   writeManifest(pluginDir, manifest);
 }
 
-export function uninstallPlugin(pluginDir: string, packageName: string): void {
-  execSync(`npm uninstall "${packageName}" --prefix "${pluginDir}"`, { stdio: "inherit" });
+export async function uninstallPlugin(pluginDir: string, packageName: string): Promise<void> {
+  const arborist = await newArborist(pluginDir);
+  await arborist.reify({ rm: [packageName] });
 
   const manifest = readManifest(pluginDir);
   manifest.plugins = manifest.plugins.filter((p) => p.package !== packageName);
