@@ -1,13 +1,9 @@
-import path from "node:path";
-
 import { Character, GaugeType } from "../../src/types/character";
 import { RunnableMove } from "../../src/types/move";
 import { WeatherType } from "../../src/types/stage";
 import { loadPieceModule, loadPieceStats } from "../../src/game/assets/loadPieceFile";
-import { nodeGetFileContents } from "./nodeGetFileContents";
+import { fixturePieceFiles } from "./pieceFiles";
 
-// examples/full-local/game/game-engine/test/fixtures -> examples/full-local/pieces
-const PIECES_DIR = path.resolve(__dirname, "../../../../pieces");
 const HP_SCALE = 10;
 
 type CharacterStatsPiece = {
@@ -25,19 +21,17 @@ type MovePieceData = {
 };
 
 export async function loadCharacterStats(pieceId: string): Promise<CharacterStatsPiece> {
-  return loadPieceStats(nodeGetFileContents, path.join(PIECES_DIR, "character", pieceId), "stats.json5");
+  return loadPieceStats(fixturePieceFiles, "character", pieceId, "stats.json5");
 }
 
 export async function loadMoveData(pieceId: string): Promise<MovePieceData> {
-  return (
-    await loadPieceModule(nodeGetFileContents, path.join(PIECES_DIR, "move", pieceId), "logic.js")
-  ).moveData;
+  return (await loadPieceModule(fixturePieceFiles, "move", pieceId, "logic.js")).moveData;
 }
 
 export async function loadStageInitialWeather(
   pieceId: string
 ): Promise<{ type: WeatherType, turnsLeft: number }> {
-  const stage = await loadPieceModule(nodeGetFileContents, path.join(PIECES_DIR, "stage", pieceId), "logic.js");
+  const stage = await loadPieceModule(fixturePieceFiles, "stage", pieceId, "logic.js");
   const { weather } = (stage.onLoad as () => { weather: { type: WeatherType, turnsLeft: number } })();
   return weather;
 }

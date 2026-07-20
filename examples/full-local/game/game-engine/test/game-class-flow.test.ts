@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
 
 import { Game } from "../src/index";
 import { Room } from "../src/room";
@@ -7,7 +7,11 @@ import { MoveDescription } from "../src/types";
 import {
   buildSelectionResult, characterIdsBySpec, moveSetsWeather, CharacterSpec,
 } from "./fixtures/rosterLockResult";
-import { nodeGetFileContents } from "./fixtures/nodeGetFileContents";
+import { fixturePieceFiles } from "./fixtures/pieceFiles";
+import { stubPieceFileFetch } from "./fixtures/fetchStub";
+
+beforeAll(stubPieceFileFetch);
+afterAll(() => vi.unstubAllGlobals());
 
 const CHARACTER_SPECS: Array<CharacterSpec> = [
   { userId: "p1", pieceId: "blue", moveIds: ["basic", "rain"] },
@@ -65,8 +69,8 @@ describe("Game class end-to-end over a simulated two-player room", () => {
     let gameP1: Game;
     let gameP2: Game;
     [gameP1, gameP2] = await Promise.all([
-      Game.create(rooms.p1!, selectionResult, () => buildMovesForTurn(gameP1, "p1"), nodeGetFileContents),
-      Game.create(rooms.p2!, selectionResult, () => buildMovesForTurn(gameP2, "p2"), nodeGetFileContents),
+      Game.create(rooms.p1!, selectionResult, () => buildMovesForTurn(gameP1, "p1"), fixturePieceFiles),
+      Game.create(rooms.p2!, selectionResult, () => buildMovesForTurn(gameP2, "p2"), fixturePieceFiles),
     ]);
 
     const [winnersP1, winnersP2] = await Promise.all([gameP1.gameLoop(), gameP2.gameLoop()]);

@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
 
 import { createRandom } from "../src/utils/Random";
 import { prepareTurn } from "../src/game/prepare-turn";
@@ -6,8 +6,12 @@ import { runTurn } from "../src/game/run-turn";
 import { GameState, MoveDescription } from "../src/types";
 import { WeatherType } from "../src/types/stage";
 import { loadStageInitialWeather, makeCharacter } from "./fixtures/pieces";
+import { stubPieceFileFetch } from "./fixtures/fetchStub";
 
 const MAX_TURNS = 50;
+
+beforeAll(stubPieceFileFetch);
+afterAll(() => vi.unstubAllGlobals());
 
 describe("full game using examples/full-local/pieces", () => {
   it("plays a full match against real piece content to a decisive winner", async () => {

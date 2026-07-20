@@ -1,20 +1,15 @@
-import path from "node:path";
 import { RosterLockV1SyncDLResult } from "@roster-lock/types";
 
 import { loadPieceModule } from "../../src/game/assets/loadPieceFile";
-import { nodeGetFileContents } from "./nodeGetFileContents";
-
-// examples/full-local/game/game-engine/test/fixtures -> examples/full-local/pieces
-export const PIECES_DIR = path.resolve(__dirname, "../../../../pieces");
+import { fixturePieceFiles } from "./pieceFiles";
 
 const DUMMY_VERSIONS = { logic: "test", media: "test" };
 
-function pieceFolder(pieceType: string, pieceId: string){
-  return path.join(PIECES_DIR, pieceType, pieceId);
-}
-
 function downloadResultFor(pieceType: string, pieceId: string){
-  return { pieceType, pieceId, pieceVersions: DUMMY_VERSIONS, folder: pieceFolder(pieceType, pieceId) };
+  // `folder` is unused now that piece files are fetched by identity rather
+  // than a pre-resolved on-disk path - kept only because DownloadResult
+  // still declares it.
+  return { pieceType, pieceId, pieceVersions: DUMMY_VERSIONS, folder: "" };
 }
 
 export type CharacterSpec = { userId: string, pieceId: string, moveIds: Array<string> };
@@ -34,7 +29,7 @@ export function characterIdsBySpec(specs: Array<CharacterSpec>): Record<string, 
 
 export async function moveSetsWeather(moveId: string): Promise<boolean> {
   return Boolean(
-    (await loadPieceModule(nodeGetFileContents, pieceFolder("move", moveId), "logic.js")).moveData.weather
+    (await loadPieceModule(fixturePieceFiles, "move", moveId, "logic.js")).moveData.weather
   );
 }
 
