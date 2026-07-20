@@ -67,7 +67,7 @@ describe("roster rescan", () => {
       "character-blue": {
         referenceFolder: pieceFolder,
         testedDownloadSources: [
-          { source: "https://example.com/blue.tar", testedAt: new Date().toISOString(), version: existingPiece.version },
+          { source: "https://example.com/blue.tar", testedAt: Date.now(), version: existingPiece.version },
         ],
       },
     };
