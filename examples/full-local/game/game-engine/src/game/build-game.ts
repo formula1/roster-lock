@@ -4,7 +4,7 @@ import { GameState } from "../types";
 import { Character, GaugeType } from "../types/character";
 import { RunnableMove } from "../types/move";
 import { WeatherType } from "../types/stage";
-import { GetFileContents, loadPieceModule, loadPieceStats } from "./assets/loadPieceFile";
+import { PieceFilesConfig, loadPieceModule, loadPieceStats } from "./assets/loadPieceFile";
 
 type LoadedCache = {
   character: Record<string, Promise<{ stats: { hp: number, attack: number, speed: number } }>>
@@ -44,7 +44,7 @@ function movePieceToRunnable(moveData: MovePieceData): RunnableMove {
 
 export async function buildGameFromSelection(
   selectionDownloadResult: RosterLockV1SyncDLResult,
-  getFileContents: GetFileContents,
+  pieceFiles: PieceFilesConfig,
 ): Promise<{ gameState: GameState }> {
   const { finalSelection, downloadResults } = selectionDownloadResult;
 
@@ -74,14 +74,14 @@ export async function buildGameFromSelection(
     players[userId] = { id: userId };
     selectedCharacters.forEach((characterPiece, index) => {
       characterLoads.push(
-        loadCharacter(userId, characterPiece, index, downloadResults, loadedCache, getFileContents)
+        loadCharacter(userId, characterPiece, index, downloadResults, loadedCache, pieceFiles)
       );
     });
   }
 
   const [characterEntries, weather] = await Promise.all([
     Promise.all(characterLoads),
-    loadStage(stagePiece, downloadResults, loadedCache, getFileContents),
+    loadStage(stagePiece, downloadResults, loadedCache, pieceFiles),
   ]);
 
   await Promise.all([
@@ -105,11 +105,11 @@ async function loadStage(
   stagePiece: SelectedPiece,
   downloadResults: RosterLockV1SyncDLResult["downloadResults"],
   loadedCache: LoadedCache,
-  getFileContents: GetFileContents,
+  pieceFiles: PieceFilesConfig,
 ){
   const stageDownload = downloadResults.stage[stagePiece.id];
   if(!stageDownload) throw new Error(`Missing download for stage "${stagePiece.id}"`);
-  const { onLoad } = await loadPieceModule(getFileContents, stageDownload.folder, "logic.js");
+  const { onLoad } = await loadPieceModule(pieceFiles, "stage", stagePiece.id, "logic.js");
 
   const weatherSelections = [
     ...stagePiece.required.weather.mandatory,
@@ -129,7 +129,7 @@ async function loadCharacter(
   index: number,
   downloadResults: RosterLockV1SyncDLResult["downloadResults"],
   loadedCache: LoadedCache,
-  getFileContents: GetFileContents,
+  pieceFiles: PieceFilesConfig,
 ): Promise<[string, Character]>{
   const download = downloadResults.character[characterPiece.id];
   if(!download) throw new Error(`Missing download for character "${characterPiece.id}"`);
@@ -140,9 +140,9 @@ async function loadCharacter(
   ];
 
   const [{ stats }, moves] = await Promise.all([
-    loadStats(characterPiece, downloadResults, loadedCache, getFileContents),
+    loadStats(characterPiece, downloadResults, loadedCache, pieceFiles),
     Promise.all(moveSelections.map(async (movePiece)=>(
-      [movePiece.id, await loadMove(movePiece, downloadResults, loadedCache, getFileContents)] as const
+      [movePiece.id, await loadMove(movePiece, downloadResults, loadedCache, pieceFiles)] as const
     ))),
   ]);
 
@@ -163,13 +163,13 @@ async function loadStats(
   characterPiece: SelectedPiece,
   downloadResults: RosterLockV1SyncDLResult["downloadResults"],
   loadedCache: LoadedCache,
-  getFileContents: GetFileContents,
+  pieceFiles: PieceFilesConfig,
 ): LoadedCache["character"][string]{
   return loadedCache.character[characterPiece.id] ??= (async ()=>{
     const download = downloadResults.character[characterPiece.id];
     if(!download) throw new Error(`Missing download for character "${characterPiece.id}"`);
     return loadPieceStats<{ stats: { hp: number, attack: number, speed: number } }>(
-      getFileContents, download.folder, "stats.json5"
+      pieceFiles, "character", characterPiece.id, "stats.json5"
     );
   })()
 }
@@ -178,12 +178,12 @@ async function loadMove(
   movePiece: SelectedPiece,
   downloadResults: RosterLockV1SyncDLResult["downloadResults"],
   loadedCache: LoadedCache,
-  getFileContents: GetFileContents,
+  pieceFiles: PieceFilesConfig,
 ): LoadedCache["move"][string]{
   return loadedCache.move[movePiece.id] ??= (async () => {
     const moveDownload = downloadResults.move[movePiece.id];
     if(!moveDownload) throw new Error(`Missing download for move "${movePiece.id}"`);
-    const { moveData } = await loadPieceModule(getFileContents, moveDownload.folder, "logic.js");
+    const { moveData } = await loadPieceModule(pieceFiles, "move", movePiece.id, "logic.js");
 
     const weatherSelections = [
       ...movePiece.required.weather.mandatory,

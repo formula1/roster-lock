@@ -8,11 +8,11 @@ import { GameState, MoveDescription, TurnState, ModifierState } from "./types";
 // and a moveRequest callback around this class.
 export type { Room } from "./room";
 export type { MoveDescription, GameState } from "./types";
-export type { GetFileContents } from "./game/assets/loadPieceFile";
+export type { PieceFilesConfig } from "./game/assets/loadPieceFile";
 
 import { prepareGlobalRandom } from "./game/prepare-random";
 import { buildGameFromSelection } from "./game/build-game";
-import { GetFileContents } from "./game/assets/loadPieceFile";
+import { PieceFilesConfig } from "./game/assets/loadPieceFile";
 import { MoveSharer } from "./game/MoveSharer";
 import { prepareTurn } from "./game/prepare-turn";
 import { runTurn } from "./game/run-turn";
@@ -51,9 +51,9 @@ export class Game {
     room: Room,
     selectionDownloadResult: RosterLockV1SyncDLResult,
     moveRequest: ()=>Promise<Array<Omit<MoveDescription, "player">>>,
-    getFileContents: GetFileContents,
+    pieceFiles: PieceFilesConfig,
   ): Promise<Game> {
-    const { gameState } = await buildGameFromSelection(selectionDownloadResult, getFileContents);
+    const { gameState } = await buildGameFromSelection(selectionDownloadResult, pieceFiles);
     const game = new Game(room, gameState, moveRequest);
     game.randomSeed = await prepareGlobalRandom(room, game.random);
     return game;
