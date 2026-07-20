@@ -1,7 +1,7 @@
 
 import { RosterLockPiece, RosterLockV1Config } from "@roster-lock/types";
 import { ROSTERLOCK_MATCH_AGENT_URL } from "../constants/match-agent";
-import { HTTPError } from "../utils/fetch";
+import { runFetch } from "../utils/fetch";
 
 type GetPieceInfo = {
   version: 1,
@@ -36,29 +36,14 @@ export async function getPieceAssetFiles(
 ){
   if(version !== 1) throw new Error(`Unsupported Version ${version}`);
   const url = new URL("/v1/piece/asset-files", matchAgentUrl);
-  if(!["http:", "https:"].includes(url.protocol)){
-    throw new Error("Expecting The match agent url to be http or https");
-  }
-  const response = await fetch(url.href, {
+  const response = await runFetch(matchAgentAuth, url, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer " + matchAgentAuth
-    },
-    body: JSON.stringify({
+    body: {
       engine, pieceType, piece, assetName
-    })
+    }
   });
 
-  const json = await response.json();
-
-  if(!response.ok){
-    throw new HTTPError(
-      url, "POST", response, json
-    );
-  }
-
-  return json as Array<string>;
+  return await response.json() as Array<string>;
 }
 
 
@@ -76,25 +61,12 @@ export async function getPieceFileContents(
 ){
   if(version !== 1) throw new Error(`Unsupported Version ${version}`);
   const url = new URL("/v1/piece/file-contents", matchAgentUrl);
-  if(!["http:", "https:"].includes(url.protocol)){
-    throw new Error("Expecting The match agent url to be http or https");
-  }
-  const response = await fetch(url.href, {
+  const response = await runFetch(matchAgentAuth, url.href, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer " + matchAgentAuth
-    },
-    body: JSON.stringify({
+    body: {
       engine, pieceType, piece, filePath
-    })
+    }
   });
-
-  if(!response.ok){
-    throw new HTTPError(
-      url, "POST", response, null
-    );
-  }
 
   return response.body;
 }

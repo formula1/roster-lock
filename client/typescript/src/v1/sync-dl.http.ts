@@ -5,7 +5,7 @@ import {
   RosterLockV1SyncDLResult,
 } from "@roster-lock/types";
 import { SIGNATURE } from "@roster-lock/utils";
-import { HTTPError } from "../utils/fetch";
+import { runFetch } from "../utils/fetch";
 
 import { ROSTERLOCK_MATCH_AGENT_URL } from "../constants/match-agent";
 
@@ -24,9 +24,6 @@ export async function syncDownloadOverHTTP(
 ): Promise<RosterLockV1SyncDLResult>{
   if(version !== 1) throw new Error(`Unsupported Version ${version}`);
   const syncDLURL = new URL("/v1/sync-dl", matchAgentUrl);
-  if(!["http:", "https:"].includes(syncDLURL.protocol)){
-    throw new Error("Expecting The match agent url to be http or https");
-  }
   const timestamp = Date.now();
   const signature = await SIGNATURE.ASYMMETRIC.createSignature(
     user.keys.privateKey as PrivateKey,
@@ -39,29 +36,17 @@ export async function syncDownloadOverHTTP(
   );
 
 
-  const response = await fetch(syncDLURL.href, {
+  const response = await runFetch(matchAgentAuth, syncDLURL.href, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer " + matchAgentAuth
-    },
-    body: JSON.stringify({
+    body: {
       relay: relay,
       user: { timestamp, publicKey: user.keys.publicKey, signature },
       rosterConfig,
       userSelection: selection,
-    } satisfies RosterLockV1SyncDLRequestClientToAgent)
+    } satisfies RosterLockV1SyncDLRequestClientToAgent
   });
 
-  const json = await response.json();
-
-  if(!response.ok){
-    throw new HTTPError(
-      syncDLURL, "POST", response, json
-    );
-  }
-
-  return json as RosterLockV1SyncDLResult;
+  return await response.json() as RosterLockV1SyncDLResult;
 }
 
 

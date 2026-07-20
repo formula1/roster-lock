@@ -1,6 +1,6 @@
 import { DownloadResult, RosterLockPiece, RosterLockV1Config } from "@roster-lock/types";
 import { ROSTERLOCK_MATCH_AGENT_URL } from "../constants/match-agent";
-import { HTTPError } from "../utils/fetch";
+import { runFetch } from "../utils/fetch";
 
 type GetPieceInfo = {
   version: 1,
@@ -21,29 +21,14 @@ export async function ensurePieceDownloaded(
 ){
   if(version !== 1) throw new Error(`Unsupported Version ${version}`);
   const url = new URL("/v1/piece", matchAgentUrl);
-  if(!["http:", "https:"].includes(url.protocol)){
-    throw new Error("Expecting The match agent url to be http or https");
-  }
-  const response = await fetch(url.href, {
+  const response = await runFetch(matchAgentAuth, url, {
     method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer " + matchAgentAuth
-    },
-    body: JSON.stringify({
+    body: {
       engine, pieceType, piece
-    })
-  });
-
-  const json = await response.json();
-
-  if(!response.ok){
-    throw new HTTPError(
-      url, "POST", response, json
-    );
-  }
+    }
+  })
   
-  return json as DownloadResult;
+  return await response.json() as DownloadResult;
 }
 
 type ListPiecesConfig = {
@@ -94,30 +79,15 @@ export async function listDownloadedPiecesDirect(
 ){
   if(version !== 1) throw new Error(`Unsupported Version ${version}`);
   const url = new URL(`/v1/piece/list-downloaded/direct`, matchAgentUrl);
-  if(!["http:", "https:"].includes(url.protocol)){
-    throw new Error("Expecting The match agent url to be http or https");
-  }
   url.searchParams.set("page", page.toString());
   url.searchParams.set("limit", limit.toString());
 
-  const response = await fetch(url.href, {
+  const response = await runFetch(matchAgentAuth, url, {
     method: "QUERY",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer " + matchAgentAuth
-    },
-    body: JSON.stringify({
+    body: {
       engineName, pieceType, logicIds
-    })
-  });
-
-  const json = await response.json();
-
-  if(!response.ok){
-    throw new HTTPError(
-      url, "POST", response, json
-    );
-  }
+    }
+  })
   
-  return json as Array<Pick<RosterLockPiece, "version" | "pathVariables">>;
+  return await response.json() as Array<Pick<RosterLockPiece, "version" | "pathVariables">>;
 }
