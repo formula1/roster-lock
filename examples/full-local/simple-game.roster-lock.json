@@ -6,7 +6,7 @@
   },
   "author": "match-lock",
   "title": "Full Local Battle",
-  "version": "5.0.0",
+  "version": "8.0.0",
   "engine": {
     "name": "full-local-battle",
     "version": "1.0.0",
@@ -52,6 +52,22 @@
             "glob": [
               "logic.js"
             ]
+          },
+          {
+            "name": "select-portrait",
+            "classification": "media",
+            "count": 1,
+            "glob": [
+              "portrait.svg"
+            ]
+          },
+          {
+            "name": "select-sound",
+            "classification": "media",
+            "count": 1,
+            "glob": [
+              "select.mp3"
+            ]
           }
         ]
       },
@@ -77,6 +93,22 @@
             "count": 1,
             "glob": [
               "stats.json5"
+            ]
+          },
+          {
+            "name": "select-portrait",
+            "classification": "media",
+            "count": 1,
+            "glob": [
+              "portrait.svg"
+            ]
+          },
+          {
+            "name": "select-sound",
+            "classification": "media",
+            "count": 1,
+            "glob": [
+              "select.mp3"
             ]
           }
         ]
@@ -149,7 +181,7 @@
         "id": "stage-beach",
         "version": {
           "logic": "ddea3db1b5b2b42264d01aa7ca0d17fb9d8799ccf255da27786c532bb5b10970",
-          "media": "2c1ebf49a2518ea078a5b651dd15fce36efe7c0eb5b14348ef98a5292a91dfd5",
+          "media": "07382af4789603ca7d8ae35f42bea222a1c703b6698885ddc70ed7893f1eeb4b",
           "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "humanInfo": {
@@ -174,7 +206,7 @@
         "id": "stage-mountain",
         "version": {
           "logic": "dc7ead3ba69d574ca1b7b329f8bc96e32fec1a41daf1ce034bf22d15325fc4ac",
-          "media": "a7b8c297ae28f7899c03b7e10aa12e8d88d56cb76fae3a7041fa7b698a14a806",
+          "media": "058da7ac9abed48af74fde20d7fced42da2cfc31da6bd2c117da3c14e1aa6768",
           "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "humanInfo": {
@@ -199,7 +231,7 @@
         "id": "stage-rain-forest",
         "version": {
           "logic": "13d3a74484e891f5898cff1686bcf4f064ff26d3157e412af71475af42697585",
-          "media": "f3cbeb483c60bbc21b3de8d2f419830c35713ef3c9b5cff3beeaa69bf8178140",
+          "media": "3ce985a9b8504dcaacdaaa6e754b2ac3199c3529427edbb016447457d3f72bd8",
           "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "humanInfo": {
@@ -226,7 +258,7 @@
         "id": "character-yellow",
         "version": {
           "logic": "e2573d3d0af0316f03d47ab0bd19a498349db1bbd01047607a05ac0a572a7980",
-          "media": "369b4d0da62e0e864f4d9e402ae4f45adac83a0e8d808b1ac02ba1ea8f9ddae4",
+          "media": "d62c1c4572d44877b8efa43f2094988e2f29e4f46d16b6ac34b3e4d9fab5f48d",
           "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "humanInfo": {
@@ -255,7 +287,7 @@
         "id": "character-red",
         "version": {
           "logic": "a22cc54921bf0e3f688fd1e84658883fe5d1029408a85158c8392cbf876c3f40",
-          "media": "764f30fa82ac67350b63c0ff4591abac16d1376ffd15e565a6b3ff82b6255330",
+          "media": "d8381e9baf5e35fbb0dcd7279e9de5a3e50eb0498078d855204f80a4f52a0cc1",
           "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "humanInfo": {
@@ -284,7 +316,7 @@
         "id": "character-blue",
         "version": {
           "logic": "376f976aadffcde7ef89596b9a6db5f5bf184b35d870604924f708a6daf9080c",
-          "media": "05f61d8ba9bcb86622b764b29940b8b52c0528f46a6b51f22db403cc70118a85",
+          "media": "298f575a2d973c3aec16a494052b84608d98c0d8923b14bcdcaeb1c787c7dca9",
           "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "humanInfo": {

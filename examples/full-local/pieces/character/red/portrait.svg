@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Background -->
+  <rect width="200" height="200" fill="#fde2e1"/>
+  <!-- Head -->
+  <circle cx="100" cy="112" r="64" fill="#ef4444"/>
+  <!-- Eyes (intense) -->
+  <circle cx="80" cy="102" r="10" fill="#1a0000"/>
+  <circle cx="120" cy="102" r="10" fill="#1a0000"/>
+  <circle cx="83" cy="99" r="4" fill="white"/>
+  <circle cx="123" cy="99" r="4" fill="white"/>
+  <!-- Determined frown -->
+  <path d="M76 132 Q100 122 124 132" stroke="#1a0000" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <!-- Cheeks -->
+  <circle cx="64" cy="120" r="10" fill="#ff6b6b" opacity="0.5"/>
+  <circle cx="136" cy="120" r="10" fill="#ff6b6b" opacity="0.5"/>
+  <!-- Outline -->
+  <circle cx="100" cy="112" r="64" fill="none" stroke="#9b2335" stroke-width="4"/>
+</svg>

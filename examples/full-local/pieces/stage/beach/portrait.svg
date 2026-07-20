@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Sky -->
+  <rect width="200" height="120" fill="#87ceeb"/>
+  <!-- Sun -->
+  <circle cx="150" cy="45" r="26" fill="#ffe066"/>
+  <!-- Ocean -->
+  <rect y="110" width="200" height="40" fill="#1e90ff" opacity="0.8"/>
+  <!-- Sand -->
+  <rect y="150" width="200" height="50" fill="#f5deb3"/>
+  <!-- Palm tree -->
+  <rect x="34" y="80" width="6" height="60" fill="#8b6340"/>
+  <ellipse cx="37" cy="80" rx="24" ry="11" fill="#228b22"/>
+</svg>
