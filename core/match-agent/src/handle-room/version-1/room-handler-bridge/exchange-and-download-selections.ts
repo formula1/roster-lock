@@ -84,9 +84,25 @@ export async function exchangeAndDownloadSelections(
     gameControlledSelections: {},
   }, progressListeners);
 
+  // The relay closes the room websocket with a close reason as soon as it fails
+  // a room (e.g. a download failure on the other user's leg), but never sends a
+  // bridge-level "error" event - so without this, bindStepsToBridge's onEvent("error")
+  // handler never fires and the room hangs until its own 30s heartbeat times out,
+  // surfacing a misleading "Heartbeat Timeout" instead of the real failure reason.
+  const closedEarly = new Promise<never>((_, reject)=>{
+    roomWebSocket.on("close", (code, reason)=>{
+      const reasonText = reason.toString();
+      reject(new Error(reasonText || `Room websocket closed unexpectedly (code ${code})`));
+    });
+  });
+  // roomPromise usually wins the race (success or a bridge-level "error" event),
+  // in which case this rejection is never observed - swallow it here so that
+  // doesn't crash the process as an unhandled rejection.
+  closedEarly.catch(()=>{});
+
   try {
     await once(roomWebSocket, 'open')
-    return await roomPromise;
+    return await Promise.race([roomPromise, closedEarly]);
   } finally {
     roomWebSocket.close();
   }
