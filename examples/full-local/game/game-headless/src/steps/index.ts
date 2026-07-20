@@ -8,7 +8,6 @@ import { runGame } from "./3-game";
 import { CurrentUser } from "./types";
 
 const PUBLIC_RELAY_SERVER_URL = requireEnv("PUBLIC_RELAY_SERVER_URL");
-const PIECES_FOLDER = requireEnv("PIECES_FOLDER");
 const MATCH_AGENT_AUTH = requireEnv("MATCH_AGENT_AUTH");
 const MATCH_AGENT_URL = requireEnv("MATCH_AGENT_URL");
 
@@ -21,7 +20,6 @@ export async function runSteps(
   const { users, gameResult } = await relayAndDownload(
     {
       version: 1,
-      folder: PIECES_FOLDER,
       relay: {
         url: PUBLIC_RELAY_SERVER_URL,
         roomId: match.roomId,
@@ -33,5 +31,9 @@ export async function runSteps(
     MATCH_AGENT_AUTH,
     MATCH_AGENT_URL,
   );
-  return runGame(user, match, users, gameResult);
+  return runGame(user, match, users, gameResult, {
+    rosterConfig,
+    matchAgentAuth: MATCH_AGENT_AUTH,
+    matchAgentUrl: MATCH_AGENT_URL,
+  });
 }

@@ -38,7 +38,8 @@ export async function runGame(numPlayers: number){
   try {
     const envVars = loadEnvVars(ENV_VARS_DIR);
 
-    await startMatchAgent(processes, MATCH_AGENT_CONFIG);
+    const piecesFolder = processes.mkTempDir(path.join(os.tmpdir(), "roster-lock-pieces-"));
+    await startMatchAgent(processes, { ...MATCH_AGENT_CONFIG, folder: piecesFolder });
 
     await runPlayers(processes, numPlayers, MATCH_AGENT_CONFIG, {
       matchmaker: envVars.PUBLIC_MATCHMAKER_URL,
@@ -55,7 +56,7 @@ export async function runGame(numPlayers: number){
 }
 
 export async function startMatchAgent(
-  processes: ProcessGroup, { port, authCode }: { port: string, authCode: string }
+  processes: ProcessGroup, { port, authCode, folder }: { port: string, authCode: string, folder: string }
 ){
   console.log("Building match-agent...");
   const matchAgentUrl = `http://localhost:${port}`;
@@ -70,7 +71,8 @@ export async function startMatchAgent(
     [
       path.join(REPO_ROOT, "core/match-agent/dist/index.js"),
       "--port", port,
-      "--auth-code", authCode
+      "--auth-code", authCode,
+      "--folder", folder,
     ]
   );
   await waitForHttpOk(matchAgentUrl, 15_000);
@@ -96,7 +98,6 @@ export async function runPlayers(
   const playerProcesses = [];
   const resultPromises: Array<Promise<GameResult>> = [];
   for(let i = 1; i <= numPlayers; i++){
-    const tempDir = processes.mkTempDir(path.join(os.tmpdir(), `match-lock-player-${i}-`));
     const child = processes.spawnBackground(`player-${i}`, "node", [gameHeadlessEntry], {
       env: {
         ...process.env,
@@ -105,7 +106,6 @@ export async function runPlayers(
         GAME_SERVER: gameServerWsUrl,
         MATCH_AGENT_AUTH: matchAgentConfig.authCode,
         MATCH_AGENT_URL: `http://localhost:${matchAgentConfig.port}`,
-        PIECES_FOLDER: tempDir,
         MATCH_LOCK_CONFIG_PATH: ROSTER_LOCK_CONFIG_PATH,
         DISPLAY_NAME: `Player-${i}`,
       },

@@ -1,3 +1,4 @@
+import * as os from "os";
 import * as path from "path";
 import { ProcessGroup, runToCompletion } from "./lib/process-utils";
 import { loadEnvVars } from "./lib/env";
@@ -29,7 +30,8 @@ export async function runIntegration(numPlayers: number){
     );
     if(composeExit !== 0) throw new Error("docker compose up failed");
 
-    await startMatchAgent(processes, MATCH_AGENT_CONFIG);
+    const piecesFolder = processes.mkTempDir(path.join(os.tmpdir(), "roster-lock-pieces-"));
+    await startMatchAgent(processes, { ...MATCH_AGENT_CONFIG, folder: piecesFolder });
 
     console.log("Registering matchmaker and game coordinator with the relay...");
     await setupServers({

@@ -1,9 +1,8 @@
 import { RosterLockV1SyncDLResult } from "@roster-lock/types";
-import { Game } from "@roster-lock/example-game-engine";
+import { Game, PieceFilesConfig } from "@roster-lock/example-game-engine";
 import { PeerRoom } from "./datachannel-room";
 import { CurrentUser } from "../types";
 import { toGameRoom } from "./room-adapter";
-import { getFileContents } from "./getFileContents";
 import { buildMovesForTurn } from "./moves";
 
 export type GameSummary = {
@@ -16,13 +15,14 @@ export async function playGame(
   room: PeerRoom,
   user: CurrentUser,
   gameResult: RosterLockV1SyncDLResult,
+  pieceFiles: PieceFilesConfig,
 ): Promise<GameSummary> {
   const gameRoom = toGameRoom(room);
   const ownerPlayer = user.keys.publicKey;
 
   let game: Game;
   game = await Game.create(
-    gameRoom, gameResult, () => buildMovesForTurn(game, ownerPlayer), getFileContents
+    gameRoom, gameResult, () => buildMovesForTurn(game, ownerPlayer), pieceFiles
   );
 
   const winners = await game.gameLoop();
