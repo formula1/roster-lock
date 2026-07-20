@@ -3,7 +3,6 @@ import { RosterLockV1Config } from "../../lock";
 import { UserSelection } from "../shared";
 
 export type RosterLockV1SyncDLRequestClientToAgent = {
-  folder: string,
   relay: {
     url: string,
     roomId: string,

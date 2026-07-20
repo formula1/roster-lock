@@ -4,7 +4,6 @@ import { UserSelection } from "../shared";
 
 export type RosterLockV1SyncDLRequestUserToClient = {
   version: 1,
-  folder: string,
   relay: {
     url: string,
     roomId: string,

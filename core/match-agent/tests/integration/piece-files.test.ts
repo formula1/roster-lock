@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { startTestServer, TestServer, errorBody } from "./helpers/server";
 import {
   makeEngine, makePiece, makeTempFolder, seedCompletePiece, cleanupFolder, TEST_PIECE_TYPE,
@@ -8,11 +8,14 @@ describe("/v1/piece/asset-files and /v1/piece/file-contents", () => {
   let server: TestServer;
   let folder: string;
 
-  beforeAll(async () => { server = await startTestServer(); });
-  afterAll(() => server.close());
-
-  beforeEach(async () => { folder = await makeTempFolder(); });
-  afterEach(() => cleanupFolder(folder));
+  beforeEach(async () => {
+    folder = await makeTempFolder();
+    server = await startTestServer(folder);
+  });
+  afterEach(async () => {
+    await server.close();
+    await cleanupFolder(folder);
+  });
 
   const engine = makeEngine();
   const piece = makePiece();
@@ -30,14 +33,14 @@ describe("/v1/piece/asset-files and /v1/piece/file-contents", () => {
 
   describe("POST /v1/piece/asset-files", () => {
     it("400s on a malformed body", async () => {
-      const res = await post("/piece/asset-files", { folder });
+      const res = await post("/piece/asset-files", {});
       expect(res.status).toBe(400);
       expect((await errorBody(res)).error).toBe("Bad Form");
     });
 
     it("404s when the piece has never been seen", async () => {
       const res = await post("/piece/asset-files", {
-        folder, engine, pieceType: TEST_PIECE_TYPE, piece, assetName: "sprite",
+        engine, pieceType: TEST_PIECE_TYPE, piece, assetName: "sprite",
       });
       expect(res.status).toBe(404);
       expect((await errorBody(res)).error).toBe("Piece Doesn't exist");
@@ -49,7 +52,7 @@ describe("/v1/piece/asset-files and /v1/piece/file-contents", () => {
         folderName: "pending-folder", files: {}, complete: false,
       });
       const res = await post("/piece/asset-files", {
-        folder, engine, pieceType: TEST_PIECE_TYPE, piece, assetName: "sprite",
+        engine, pieceType: TEST_PIECE_TYPE, piece, assetName: "sprite",
       });
       expect(res.status).toBe(409);
       expect((await errorBody(res)).error).toBe("Piece not finished");
@@ -62,7 +65,7 @@ describe("/v1/piece/asset-files and /v1/piece/file-contents", () => {
         files: { "sprite.png": "fake-png-bytes", "unrelated.txt": "not an asset" },
       });
       const res = await post("/piece/asset-files", {
-        folder, engine, pieceType: TEST_PIECE_TYPE, piece, assetName: "sprite",
+        engine, pieceType: TEST_PIECE_TYPE, piece, assetName: "sprite",
       });
       expect(res.status).toBe(200);
       expect(await res.json()).toEqual(["sprite.png"]);
@@ -71,14 +74,14 @@ describe("/v1/piece/asset-files and /v1/piece/file-contents", () => {
 
   describe("POST /v1/piece/file-contents", () => {
     it("400s on a malformed body", async () => {
-      const res = await post("/piece/file-contents", { folder });
+      const res = await post("/piece/file-contents", {});
       expect(res.status).toBe(400);
       expect((await errorBody(res)).error).toBe("Bad Form");
     });
 
     it("404s when the piece has never been seen", async () => {
       const res = await post("/piece/file-contents", {
-        folder, engine, pieceType: TEST_PIECE_TYPE, piece, filePath: "sprite.png",
+        engine, pieceType: TEST_PIECE_TYPE, piece, filePath: "sprite.png",
       });
       expect(res.status).toBe(404);
       expect((await errorBody(res)).error).toBe("Piece doesn't exist");
@@ -90,7 +93,7 @@ describe("/v1/piece/asset-files and /v1/piece/file-contents", () => {
         folderName: "pending-folder", files: {}, complete: false,
       });
       const res = await post("/piece/file-contents", {
-        folder, engine, pieceType: TEST_PIECE_TYPE, piece, filePath: "sprite.png",
+        engine, pieceType: TEST_PIECE_TYPE, piece, filePath: "sprite.png",
       });
       expect(res.status).toBe(409);
       expect((await errorBody(res)).error).toBe("Piece not finished");
@@ -102,7 +105,7 @@ describe("/v1/piece/asset-files and /v1/piece/file-contents", () => {
         folderName: "complete-folder", files: { "sprite.png": "fake-png-bytes" },
       });
       const res = await post("/piece/file-contents", {
-        folder, engine, pieceType: TEST_PIECE_TYPE, piece, filePath: "../../etc/passwd",
+        engine, pieceType: TEST_PIECE_TYPE, piece, filePath: "../../etc/passwd",
       });
       expect(res.status).toBe(400);
       expect((await errorBody(res)).error).toBe("Can't back out of folder");
@@ -114,7 +117,7 @@ describe("/v1/piece/asset-files and /v1/piece/file-contents", () => {
         folderName: "complete-folder", files: { "sprite.png": "fake-png-bytes" },
       });
       const res = await post("/piece/file-contents", {
-        folder, engine, pieceType: TEST_PIECE_TYPE, piece, filePath: "missing.png",
+        engine, pieceType: TEST_PIECE_TYPE, piece, filePath: "missing.png",
       });
       expect(res.status).toBe(404);
       expect((await errorBody(res)).error).toBe("File doesn't exist");
@@ -126,7 +129,7 @@ describe("/v1/piece/asset-files and /v1/piece/file-contents", () => {
         folderName: "complete-folder", files: { "sprite.png": "fake-png-bytes" },
       });
       const res = await post("/piece/file-contents", {
-        folder, engine, pieceType: TEST_PIECE_TYPE, piece, filePath: "sprite.png",
+        engine, pieceType: TEST_PIECE_TYPE, piece, filePath: "sprite.png",
       });
       expect(res.status).toBe(200);
       expect(res.headers.get("content-type")).toBe("image/png");

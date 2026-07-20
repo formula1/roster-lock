@@ -5,7 +5,7 @@ import { bindStepsToBridge, ProgressListeners } from "./steps";
 import { RosterLockV1Config, RosterLockV1SyncDLRequestClientToAgent } from "@roster-lock/types";
 import { ROSTERLOCK_V1_CASTER_JSONSCHEMA } from "@roster-lock/shared";
 import { UserSelectionSchema } from "../schema/selected";
-import { getSQLite3FolderDB } from "../globals/FolderDB";
+import { IFolderDB } from "../globals/FolderDB";
 import { once } from "events";
 import z, { ZodType } from "zod";
 
@@ -13,7 +13,6 @@ const RequestCaster: ZodType<(
   & RosterLockV1SyncDLRequestClientToAgent
   & { rosterConfig: any }
 )> = z.object({
-  folder: z.string(),
   relay: z.object({
     url: z.string(),
     roomId: z.string(),
@@ -46,10 +45,10 @@ type User = {
 };
 
 export async function exchangeAndDownloadSelections(
+  fileDB: IFolderDB,
   roomRequest: RosterLockV1SyncDLRequestClientToAgent,
   progressListeners: ProgressListeners = {}
 ){
-  const fileDB = getSQLite3FolderDB(roomRequest.folder);
   const roomURL = prepareRelayURL(roomRequest);
 
   const httpURL = new URL(roomURL);

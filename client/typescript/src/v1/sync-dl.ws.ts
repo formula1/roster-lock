@@ -20,7 +20,6 @@ type ProgressListeners = Partial<{
 export async function syncDownloadOverWebSocket(
   {
     version,
-    folder,
     relay,
     user,
     rosterConfig,
@@ -66,7 +65,6 @@ export async function syncDownloadOverWebSocket(
 
     return await bridge.sendRequest(
       "connect-to-relay", {
-        folder: folder,
         relay: relay,
         user: { timestamp, publicKey: user.keys.publicKey, signature },
         rosterConfig,

@@ -1,10 +1,12 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { startTestServer, TestServer, errorBody } from "./helpers/server";
+import { makeTempFolder, cleanupFolder } from "./helpers/piece";
 
 describe("GET /", () => {
   let server: TestServer;
-  beforeAll(async () => { server = await startTestServer(); });
-  afterAll(() => server.close());
+  let folder: string;
+  beforeAll(async () => { folder = await makeTempFolder(); server = await startTestServer(folder); });
+  afterAll(async () => { await server.close(); await cleanupFolder(folder); });
 
   it("responds with hello world and requires no auth", async () => {
     const res = await fetch(`${server.httpUrl}/`);
@@ -15,8 +17,9 @@ describe("GET /", () => {
 
 describe("POST /validate-authcode", () => {
   let server: TestServer;
-  beforeAll(async () => { server = await startTestServer(); });
-  afterAll(() => server.close());
+  let folder: string;
+  beforeAll(async () => { folder = await makeTempFolder(); server = await startTestServer(folder); });
+  afterAll(async () => { await server.close(); await cleanupFolder(folder); });
 
   it("returns true for the real auth code, no auth header required", async () => {
     const res = await fetch(`${server.httpUrl}/validate-authcode`, {
@@ -51,8 +54,9 @@ describe("POST /validate-authcode", () => {
 
 describe("/v1 auth gate", () => {
   let server: TestServer;
-  beforeAll(async () => { server = await startTestServer(); });
-  afterAll(() => server.close());
+  let folder: string;
+  beforeAll(async () => { folder = await makeTempFolder(); server = await startTestServer(folder); });
+  afterAll(async () => { await server.close(); await cleanupFolder(folder); });
 
   const v1Url = () => `${server.httpUrl}/v1/piece/asset-files`;
 

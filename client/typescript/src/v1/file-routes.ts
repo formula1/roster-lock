@@ -5,7 +5,6 @@ import { HTTPError } from "../utils/fetch";
 
 type GetPieceInfo = {
   version: 1,
-  folder: string,
   engine: RosterLockV1Config["engine"]
   pieceType: string
   // These two routes only resolve a piece's on-disk folder (by content hash +
@@ -27,7 +26,6 @@ export function getPiece(
 export async function getPieceAssetFiles(
   {
     version,
-    folder,
     engine,
     pieceType,
     piece,
@@ -48,7 +46,7 @@ export async function getPieceAssetFiles(
       "Authorization": "Bearer " + matchAgentAuth
     },
     body: JSON.stringify({
-      folder, engine, pieceType, piece, assetName
+      engine, pieceType, piece, assetName
     })
   });
 
@@ -68,7 +66,6 @@ export async function getPieceAssetFiles(
 export async function getPieceFileContents(
   {
     version,
-    folder,
     engine,
     pieceType,
     piece,
@@ -89,7 +86,7 @@ export async function getPieceFileContents(
       "Authorization": "Bearer " + matchAgentAuth
     },
     body: JSON.stringify({
-      folder, engine, pieceType, piece, filePath
+      engine, pieceType, piece, filePath
     })
   });
 

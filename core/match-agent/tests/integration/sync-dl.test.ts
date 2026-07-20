@@ -3,11 +3,13 @@ import { once } from "node:events";
 import { WebSocket } from "ws";
 import { MessageBridge } from "@roster-lock/utils";
 import { startTestServer, TestServer, errorBody } from "./helpers/server";
+import { makeTempFolder, cleanupFolder } from "./helpers/piece";
 
 describe("POST /v1/sync-dl", () => {
   let server: TestServer;
-  beforeAll(async () => { server = await startTestServer(); });
-  afterAll(() => server.close());
+  let folder: string;
+  beforeAll(async () => { folder = await makeTempFolder(); server = await startTestServer(folder); });
+  afterAll(async () => { await server.close(); await cleanupFolder(folder); });
 
   it("500s on a malformed body (castRoomRequest throws a plain Error)", async () => {
     const res = await fetch(`${server.httpUrl}/v1/sync-dl`, {
@@ -25,8 +27,9 @@ describe("POST /v1/sync-dl", () => {
 
 describe("WS /v1/sync-dl", () => {
   let server: TestServer;
-  beforeAll(async () => { server = await startTestServer(); });
-  afterAll(() => server.close());
+  let folder: string;
+  beforeAll(async () => { folder = await makeTempFolder(); server = await startTestServer(folder); });
+  afterAll(async () => { await server.close(); await cleanupFolder(folder); });
 
   it("terminates the connection with no auth, without ever sending a ready event", async () => {
     const ws = new WebSocket(`${server.wsUrl}/v1/sync-dl`);

@@ -4,7 +4,6 @@ import { HTTPError } from "../utils/fetch";
 
 type GetPieceInfo = {
   version: 1,
-  folder: string,
   engine: RosterLockV1Config["engine"]
   pieceType: string
   piece: RosterLockPiece
@@ -13,7 +12,6 @@ type GetPieceInfo = {
 export async function ensurePieceDownloaded(
   {
     version,
-    folder,
     engine,
     pieceType,
     piece,
@@ -33,7 +31,7 @@ export async function ensurePieceDownloaded(
       "Authorization": "Bearer " + matchAgentAuth
     },
     body: JSON.stringify({
-      folder, engine, pieceType, piece
+      engine, pieceType, piece
     })
   });
 
@@ -50,14 +48,13 @@ export async function ensurePieceDownloaded(
 
 type ListPiecesConfig = {
   version: 1,
-  folder: string,
   rosterConfig: RosterLockV1Config,
   pieceType: string,
 }
 
 export async function listDownloadedPiecesFromConfig(
   {
-    version, rosterConfig, pieceType, folder
+    version, rosterConfig, pieceType
   }: ListPiecesConfig,
   pagination: { page: number, limit: number },
   matchAgentAuth: string,
@@ -70,7 +67,6 @@ export async function listDownloadedPiecesFromConfig(
   return listDownloadedPiecesDirect(
     {
       version,
-      folder,
       engineName: rosterConfig.engine.name,
       pieceType,
       logicIds: roster.map((piece)=>(piece.version.logic)),
@@ -83,7 +79,6 @@ export async function listDownloadedPiecesFromConfig(
 
 type ListPiecesDirect = {
   version: 1,
-  folder: string,
   engineName: string,
   pieceType: string,
   logicIds: Array<string>
@@ -91,7 +86,7 @@ type ListPiecesDirect = {
 
 export async function listDownloadedPiecesDirect(
   {
-    version, folder, engineName, pieceType, logicIds
+    version, engineName, pieceType, logicIds
   }: ListPiecesDirect,
   { page, limit }: { page: number, limit: number },
   matchAgentAuth: string,
@@ -112,7 +107,7 @@ export async function listDownloadedPiecesDirect(
       "Authorization": "Bearer " + matchAgentAuth
     },
     body: JSON.stringify({
-      folder, engineName, pieceType, logicIds
+      engineName, pieceType, logicIds
     })
   });
 

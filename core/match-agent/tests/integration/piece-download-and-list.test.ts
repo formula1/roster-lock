@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { join as pathJoin } from "node:path";
 import { startTestServer, TestServer, errorBody } from "./helpers/server";
 import {
@@ -11,11 +11,14 @@ describe("PUT /v1/piece", () => {
   let server: TestServer;
   let folder: string;
 
-  beforeAll(async () => { server = await startTestServer(); });
-  afterAll(() => server.close());
-
-  beforeEach(async () => { folder = await makeTempFolder(); });
-  afterEach(() => cleanupFolder(folder));
+  beforeEach(async () => {
+    folder = await makeTempFolder();
+    server = await startTestServer(folder);
+  });
+  afterEach(async () => {
+    await server.close();
+    await cleanupFolder(folder);
+  });
 
   const engine = makeEngine();
   const piece = makePiece();
@@ -32,7 +35,7 @@ describe("PUT /v1/piece", () => {
   }
 
   it("400s on a malformed body", async () => {
-    const res = await put("/piece", { folder });
+    const res = await put("/piece", {});
     expect(res.status).toBe(400);
     expect((await errorBody(res)).error).toBe("Bad Form");
   });
@@ -42,7 +45,7 @@ describe("PUT /v1/piece", () => {
   // package's test setup - only the request-shape validation is covered here.
   it("400s when the piece fails the piece schema", async () => {
     const res = await put("/piece", {
-      folder, engine, pieceType: TEST_PIECE_TYPE, piece: { ...piece, id: undefined },
+      engine, pieceType: TEST_PIECE_TYPE, piece: { ...piece, id: undefined },
     });
     expect(res.status).toBe(400);
     expect((await errorBody(res)).error).toBe("Bad Form");
@@ -53,11 +56,14 @@ describe("QUERY /v1/piece/list-downloaded", () => {
   let server: TestServer;
   let folder: string;
 
-  beforeAll(async () => { server = await startTestServer(); });
-  afterAll(() => server.close());
-
-  beforeEach(async () => { folder = await makeTempFolder(); });
-  afterEach(() => cleanupFolder(folder));
+  beforeEach(async () => {
+    folder = await makeTempFolder();
+    server = await startTestServer(folder);
+  });
+  afterEach(async () => {
+    await server.close();
+    await cleanupFolder(folder);
+  });
 
   const engine = makeEngine();
 
@@ -101,14 +107,14 @@ describe("QUERY /v1/piece/list-downloaded", () => {
 
   describe("/piece/list-downloaded/direct", () => {
     it("400s on a malformed body", async () => {
-      const res = await query("/piece/list-downloaded/direct", { folder });
+      const res = await query("/piece/list-downloaded/direct", {});
       expect(res.status).toBe(400);
       expect((await errorBody(res)).error).toBe("Bad Form");
     });
 
     it("returns [] without touching the DB when logicIds is empty", async () => {
       const res = await query("/piece/list-downloaded/direct", {
-        folder, engineName: engine.name, pieceType: TEST_PIECE_TYPE, logicIds: [],
+        engineName: engine.name, pieceType: TEST_PIECE_TYPE, logicIds: [],
       });
       expect(res.status).toBe(200);
       expect(await res.json()).toEqual([]);
@@ -126,7 +132,7 @@ describe("QUERY /v1/piece/list-downloaded", () => {
       });
 
       const res = await query("/piece/list-downloaded/direct", {
-        folder, engineName: engine.name, pieceType: TEST_PIECE_TYPE, logicIds: ["1.0.0", "2.0.0"],
+        engineName: engine.name, pieceType: TEST_PIECE_TYPE, logicIds: ["1.0.0", "2.0.0"],
       });
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -147,14 +153,14 @@ describe("QUERY /v1/piece/list-downloaded", () => {
 
       const page0 = await query(
         "/piece/list-downloaded/direct",
-        { folder, engineName: engine.name, pieceType: TEST_PIECE_TYPE, logicIds },
+        { engineName: engine.name, pieceType: TEST_PIECE_TYPE, logicIds },
         { page: "0", limit: "2" },
       );
       expect((await page0.json()).map((p: any) => p.version.logic)).toEqual(["3.0.0", "2.0.0"]);
 
       const page1 = await query(
         "/piece/list-downloaded/direct",
-        { folder, engineName: engine.name, pieceType: TEST_PIECE_TYPE, logicIds },
+        { engineName: engine.name, pieceType: TEST_PIECE_TYPE, logicIds },
         { page: "1", limit: "2" },
       );
       expect((await page1.json()).map((p: any) => p.version.logic)).toEqual(["1.0.0"]);

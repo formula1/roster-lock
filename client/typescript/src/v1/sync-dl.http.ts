@@ -14,7 +14,6 @@ type PrivateKey = Parameters<typeof SIGNATURE.ASYMMETRIC.createSignature>[0];
 export async function syncDownloadOverHTTP(
   {
     version,
-    folder,
     relay,
     user,
     rosterConfig,
@@ -47,7 +46,6 @@ export async function syncDownloadOverHTTP(
       "Authorization": "Bearer " + matchAgentAuth
     },
     body: JSON.stringify({
-      folder: folder,
       relay: relay,
       user: { timestamp, publicKey: user.keys.publicKey, signature },
       rosterConfig,

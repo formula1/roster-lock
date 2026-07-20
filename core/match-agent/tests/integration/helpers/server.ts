@@ -5,11 +5,12 @@ import { randomUUID } from "node:crypto";
 import { MatchAgentServer } from "../../../src/server";
 import { authMiddleware, validateAuthCode } from "../../../src/authentication";
 import { createV1Routers } from "../../../src/handle-room/version-1";
+import { getSQLite3FolderDB } from "../../../src/handle-room/version-1/globals/FolderDB";
 
 // Mirrors the wiring in src/index.ts#startServer, but keeps a handle to the
 // underlying MatchAgentServer/http.Server so tests can bind an ephemeral
 // port and shut the server down - startServer() itself returns void.
-export async function startTestServer(authCode: string = randomUUID()) {
+export async function startTestServer(folder: string, authCode: string = randomUUID()) {
   const server = new MatchAgentServer();
   server.httpRouter.get("/", ({ res }) => {
     res.writeHead(200, { "Content-Type": "application/json" });
@@ -17,7 +18,8 @@ export async function startTestServer(authCode: string = randomUUID()) {
   });
   server.httpRouter.post("/validate-authcode", validateAuthCode(authCode));
 
-  const { httpRouter: v1HttpRouter, wsRouter: v1WsRouter } = createV1Routers();
+  const fileDB = getSQLite3FolderDB(folder);
+  const { httpRouter: v1HttpRouter, wsRouter: v1WsRouter } = createV1Routers(fileDB);
   server.httpRouter.use("/v1", authMiddleware(authCode), v1HttpRouter);
   server.wsRouter.use("/v1", authMiddleware(authCode), v1WsRouter);
 
