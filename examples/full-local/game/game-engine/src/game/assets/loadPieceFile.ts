@@ -1,5 +1,4 @@
 import JSON5 from "json5";
-import { transpileModule, ModuleKind, ScriptTarget } from "typescript";
 import { RosterLockV1Config } from "@roster-lock/types";
 import { getPiece, getPieceFileContents } from "@roster-lock/ts-client";
 
@@ -43,16 +42,17 @@ export async function loadPieceStats<T = any>(
 // Piece "logic" files ship as plain ESM data modules (see docs/issues/untrusted-code.md —
 // there's no sandboxed executor for piece code yet). We only ever read their declarative
 // exports (moveData/stageData/onLoad), never anything a piece author intended as code to
-// run against player input, so transpiling and evaluating here is a data load, not
-// execution of untrusted logic.
+// run against player input, so loading and evaluating here is a data load, not execution
+// of untrusted logic.
+//
+// Loaded via a data: URL dynamic import rather than a transpiler: these files are already
+// plain ESM JS (no TS syntax to strip), so the runtime's own module loader can parse them
+// directly - no need to pull in a transpiler (e.g. the full typescript compiler, which
+// previously added several MB to the browser bundle for a plain syntax passthrough).
 export async function loadPieceModule(
   pieceFiles: PieceFilesConfig, pieceType: string, pieceId: string, fileName: string
 ): Promise<Record<string, any>> {
   const source = await fetchPieceFileText(pieceFiles, pieceType, pieceId, fileName);
-  const { outputText } = transpileModule(source, {
-    compilerOptions: { module: ModuleKind.CommonJS, target: ScriptTarget.ES2020 },
-  });
-  const moduleObj: { exports: Record<string, any> } = { exports: {} };
-  new Function("module", "exports", outputText)(moduleObj, moduleObj.exports);
-  return moduleObj.exports;
+  const dataUrl = `data:text/javascript,${encodeURIComponent(source)}`;
+  return import(/* @vite-ignore */ dataUrl);
 }
