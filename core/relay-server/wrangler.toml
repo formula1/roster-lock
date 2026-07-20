@@ -13,6 +13,11 @@ name = "ROOM"
 class_name = "Room"
 script_name = "roster-lock-relay"
 
+# Required the first time a Durable Object class is deployed.
+[[migrations]]
+tag = "v1"
+new_classes = ["Room"]
+
 # D1 Database (optional, for stats)
 [[d1_databases]]
 binding = "DB"
