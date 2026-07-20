@@ -1,10 +1,20 @@
 {
-  "name": "match-lock",
+  "name": "roster-lock",
   "private": true,
+  "packageManager": "pnpm@10.7.0",
+  "scripts": {
+    "test:core": "pnpm --filter \"./core/**\" test"
+  },
   "devDependencies": {
     "@stylistic/eslint-plugin": "^4.4.1",
     "@typescript-eslint/eslint-plugin": "^8.59.1",
     "@typescript-eslint/parser": "^8.59.1",
     "globals": "^16.0.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "node-datachannel",
+      "better-sqlite3"
+    ]
   }
 }
