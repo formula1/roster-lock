@@ -8,7 +8,7 @@ export type SymmetricSignatureKey = string & { readonly __brand: "SignatureKey" 
 export const SIGNATURE_SYMMETRIC = {
   generateKey: generateSymmetricSignatureKey,
   createSignature: createSymmetricMessageSignature,
-  verifySignature:   verifySymmetricMessageSignature,
+  verifySignature: verifySymmetricMessageSignature,
 }
 
 export function generateSymmetricSignatureKey(): SymmetricSignatureKey {
