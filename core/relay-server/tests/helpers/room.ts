@@ -1,6 +1,7 @@
 import { MessageBridge } from "@roster-lock/utils";
 import { Room } from "../../server/src/version-1/durable-objects/Room";
 import { startRoom as startBridgeRoom, CONVO_STATE_KEY } from "../../server/src/version-1/durable-objects/bridge";
+import { TIMEOUT_CONTROLLER, TimeoutInput } from "../../server/src/version-1/durable-objects/TimeoutController";
 import { RoomConfig } from "../../server/src/version-1/types";
 import { FakeDurableObjectState, FakeWebSocket } from "./fakes";
 import { makeFakeEnv, FakeCoordinatorRow } from "./env";
@@ -29,18 +30,21 @@ export type TestRoom = Awaited<ReturnType<typeof makeTestRoom>>;
 // what's under test, not a fake standing in for it.
 export type TestRoomOptions = {
   coordinatorOverrides?: Partial<FakeCoordinatorRow>;
-  // Room's real default is 5s (DEFAULT_TIMEOUT_LENGTH in Room.ts) - way too
-  // slow to actually wait out in a test. Room's constructor takes this as an
-  // optional third param real Cloudflare instantiation never supplies, so
-  // tests can use a fast one instead.
-  timeoutLength?: number;
+  // Room's real defaults are 5s user / 5min total - way too slow to wait out
+  // in a test. Room's constructor takes these as an optional third param
+  // real Cloudflare instantiation never supplies, so tests can use fast ones
+  // instead. totalTimeoutLength defaults comfortably above every other
+  // timing in these tests so it never fires by accident - override it low in
+  // a test that specifically wants to exercise the total-timeout path.
+  userTimeoutLength?: number;
+  totalTimeoutLength?: number;
 };
 
 export async function makeTestRoom(userCount = 2, options: TestRoomOptions = {}){
-  const { coordinatorOverrides = {}, timeoutLength = 50 } = options;
+  const { coordinatorOverrides = {}, userTimeoutLength = 50, totalTimeoutLength = 10_000 } = options;
   const { env, coordinator, statements } = await makeFakeEnv(coordinatorOverrides);
   const state = new FakeDurableObjectState();
-  const room = new Room(state as any, env, timeoutLength);
+  const room = new Room(state as any, env, { user: userTimeoutLength, total: totalTimeoutLength });
   // Mirrors Cloudflare actually invoking the DO's alarm() method when the
   // scheduled time elapses - without this, setAlarm would just be recorded
   // and nothing would ever fire it.
@@ -65,10 +69,20 @@ export async function makeTestRoom(userCount = 2, options: TestRoomOptions = {})
   // seeded here too, not left absent (which now means "already finished").
   await state.storage.put(CONVO_STATE_KEY, "wait-for-connections");
   // Mirrors what Room's (private) startTimeouts does on room creation - seeds
-  // everyone's clock so refreshTimeout (called every webSocketMessage) has an
-  // entry to update instead of crashing on a missing key.
-  const now = Date.now();
-  await state.storage.put("timeouts", Object.fromEntries(userIds.map(u => [u.userId, now])));
+  // the total-timeout plus one user-timeout per user via the real
+  // TimeoutController, so refreshTimeout/alarm() have real entries to work
+  // with instead of a hand-rolled storage shape that'd drift from Room.ts's.
+  await state.storage.transaction(async (txc) => {
+    const timeouts: Array<TimeoutInput> = [
+      { id: "total-timeout", offset: totalTimeoutLength, fn: { id: "total-timeout", args: {} } },
+      ...userIds.map(({ userId }) => ({
+        id: "user-timeout-" + userId,
+        offset: userTimeoutLength,
+        fn: { id: "user-timeout", args: { userId } },
+      })),
+    ];
+    await TIMEOUT_CONTROLLER.addTimeouts(txc, timeouts);
+  });
 
   const users: Array<TestUser> = userIds.map(({ userId, publicKey }) => {
     const socket = new FakeWebSocket({ userId, publicKey, connectedAt: new Date().toISOString() });

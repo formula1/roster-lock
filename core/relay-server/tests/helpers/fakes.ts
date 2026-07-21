@@ -5,15 +5,51 @@
 // boundary, run the real protocol code against it).
 
 export class FakeTxn {
-  constructor(private data: Map<string, any>){}
-  async get<T>(key: string): Promise<T | undefined> {
-    return this.data.get(key);
+  // Real DurableObjectTransaction exposes its own getAlarm/setAlarm/deleteAlarm
+  // (see TimeoutController.ts, which relies on setting the alarm as part of
+  // the same transaction as its storage writes) - delegating straight to the
+  // parent FakeStorage's alarm bookkeeping is a reasonable-fidelity stand-in,
+  // since every write here already goes through that same serialized queue.
+  constructor(private data: Map<string, any>, private storage: FakeStorage){}
+  async get<T>(key: string): Promise<T | undefined>;
+  async get<T>(keys: Array<string>): Promise<Map<string, T>>;
+  async get<T>(keyOrKeys: string | Array<string>): Promise<T | undefined | Map<string, T>> {
+    if(Array.isArray(keyOrKeys)){
+      return new Map(keyOrKeys.filter(k => this.data.has(k)).map(k => [k, this.data.get(k)]));
+    }
+    return this.data.get(keyOrKeys);
   }
-  async put<T>(key: string, value: T): Promise<void> {
-    this.data.set(key, value);
+  async put<T>(key: string, value: T): Promise<void>;
+  async put<T>(entries: Record<string, T>): Promise<void>;
+  async put<T>(keyOrEntries: string | Record<string, T>, value?: T): Promise<void> {
+    if(typeof keyOrEntries === "string"){
+      this.data.set(keyOrEntries, value);
+      return;
+    }
+    for(const [key, entryValue] of Object.entries(keyOrEntries)) this.data.set(key, entryValue);
   }
-  async delete(key: string): Promise<boolean> {
-    return this.data.delete(key);
+  async delete(key: string): Promise<boolean>;
+  async delete(keys: Array<string>): Promise<number>;
+  async delete(keyOrKeys: string | Array<string>): Promise<boolean | number> {
+    if(Array.isArray(keyOrKeys)){
+      return keyOrKeys.filter(k => this.data.delete(k)).length;
+    }
+    return this.data.delete(keyOrKeys);
+  }
+  async setAlarm(time: number | Date): Promise<void> {
+    return this.storage.setAlarm(time);
+  }
+  async deleteAlarm(): Promise<void> {
+    return this.storage.deleteAlarm();
+  }
+  async getAlarm(): Promise<number | null> {
+    return this.storage.getAlarm();
+  }
+  async list<T>(): Promise<Map<string, T>> {
+    return new Map(this.data) as Map<string, T>;
+  }
+  rollback(): void {
+    // No-op stand-in - nothing in this codebase calls rollback() yet.
   }
 }
 
@@ -42,7 +78,7 @@ export class FakeStorage {
     this.data.clear();
   }
   transaction<T>(cb: (txn: FakeTxn) => Promise<T>): Promise<T> {
-    const run = this.queue.then(() => cb(new FakeTxn(this.data)));
+    const run = this.queue.then(() => cb(new FakeTxn(this.data, this)));
     this.queue = run.then(() => undefined, () => undefined);
     return run;
   }
