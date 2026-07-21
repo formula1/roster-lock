@@ -10,6 +10,7 @@ import { failWebhook } from './webhook';
 import {
   startRoom as startBridgeRoom, handleMessage as handleBridgeMessage,
   isRoomFinished as isBridgeRoomFinished, broadcastError as broadcastBridgeError,
+  CONVO_STATE_KEY,
 } from './bridge';
 
 
@@ -59,6 +60,12 @@ export class Room {
       const body = casted.data;
 
       await this.state.storage.put('config', body);
+      // Explicit placeholder state for "created, but not everyone's connected
+      // yet" - startRoom only ever transitions out of this exact state, and
+      // isRoomFinished treats CONVO_STATE_KEY being absent entirely as
+      // "already finished and wiped" (see bridge/index.ts), so this can't be
+      // left unset without those two becoming ambiguous with each other.
+      await this.state.storage.put(CONVO_STATE_KEY, "wait-for-connections");
       await this.startTimeouts(body.users);
 
       return c.json({ status: 'created' });
@@ -66,9 +73,11 @@ export class Room {
 
     // Get room info
     this.app.get('/', async (c) => {
-      const isClosed = await this.state.storage.get<boolean>('isClosed');
-      if(isClosed) return c.json({ error: 'Room is closed' }, 400);
+      // A finished room's storage is wiped entirely (see cleanupRoom) - config
+      // missing means "this room doesn't exist right now", whether it was
+      // never created or already cleaned up after finishing.
       const config = await this.state.storage.get<RoomConfig>('config');
+      if(!config) return c.json({ error: 'Room not found' }, 404);
       const sockets = this.state.getWebSockets();
       const messageCount = await this.state.storage.get<number>('messageCount') || 0;
       return c.json({
@@ -80,8 +89,6 @@ export class Room {
 
     // Get users
     this.app.get('/users', async (c) => {
-      const isClosed = await this.state.storage.get<boolean>('isClosed');
-      if(isClosed) return c.json({ error: 'Room is closed' }, 400);
       const config = await this.state.storage.get<RoomConfig>('config');
       if(!config) return c.json([], 404);
       const url = new URL(c.req.url);
@@ -116,8 +123,6 @@ export class Room {
 
     // WebSocket upgrade
     this.app.get('/room-ws', async (c) => {
-      const isClosed = await this.state.storage.get<boolean>('isClosed');
-      if(isClosed) return c.json({ error: 'Room is closed' }, 400);
       if (c.req.header('upgrade') !== 'websocket') {
         return c.json({ error: 'Expected WebSocket' }, 400);
       }
@@ -252,16 +257,28 @@ export class Room {
   }
 
 
-  private async cleanupRoom(reason: string){
-    await this.state.storage.deleteAlarm()
-    const alreadyClosed = await this.state.storage.transaction(async (txn) => {
-      const isClosed = await txn.get<boolean>('isClosed') || false;
-      if(isClosed) return true;
-      await txn.put('isClosed', true);
-      return false;
+  // A finished room's storage is wiped entirely (deleteAll()) rather than
+  // just flagged with an "isClosed" marker, so we're not paying to store a
+  // dead room's data forever. That means "config" itself - read and deleted
+  // in the same transaction - is now the only available compare-and-swap
+  // signal for "has someone already claimed this room's cleanup": whoever's
+  // transaction actually sees and deletes it is the sole winner, and every
+  // other (including later, on an already-wiped room) caller sees it already
+  // gone. Whatever the winner needs afterward (config, messageCount) has to
+  // be read out *inside* that same claiming transaction, since a plain
+  // storage.get() call after this returns would otherwise race deleteAll().
+  private async cleanupRoom(
+    reason: string
+  ): Promise<{ alreadyClosed: true } | { alreadyClosed: false, config: RoomConfig, messageCount: number }> {
+    const claim = await this.state.storage.transaction(async (txn) => {
+      const config = await txn.get<RoomConfig>('config');
+      if(!config) return null;
+      const messageCount = await txn.get<number>('messageCount') || 0;
+      await txn.delete('config');
+      return { config, messageCount };
     });
-    if(alreadyClosed) return true;
-    await this.state.storage.put("closeReason", reason);
+    if(!claim) return { alreadyClosed: true };
+
     // WebSocket close frames are hard-capped at 125 bytes total (2-byte
     // status code + reason); an untruncated reason here can produce a
     // close frame the wire protocol rejects as malformed.
@@ -276,17 +293,18 @@ export class Room {
         console.error(`Failed to close socket:`, error);
       }
     }
-    return false;
+
+    await this.state.storage.deleteAll();
+    // deleteAll() clears stored data, not necessarily a pending alarm - call
+    // this explicitly rather than assume that's implied.
+    await this.state.storage.deleteAlarm();
+
+    return { alreadyClosed: false, config: claim.config, messageCount: claim.messageCount };
   }
 
   private async completeRoom() {
-    const alreadyClosed = await this.cleanupRoom("completed");
-    if(alreadyClosed) return;
-
-    const config = await this.state.storage.get<RoomConfig>('config');
-    if (!config) return;
-
-    const messageCount = await this.state.storage.get<number>('messageCount') || 0;
+    const result = await this.cleanupRoom("completed");
+    if(result.alreadyClosed) return;
 
     await this.env.DB.prepare(`
       UPDATE room_stats
@@ -295,8 +313,8 @@ export class Room {
     `).bind(
       new Date().toISOString(),
       'completed',
-      messageCount,
-      config.roomId
+      result.messageCount,
+      result.config.roomId
     ).run();
   }
 
@@ -305,13 +323,8 @@ export class Room {
     // best-effort/safe to call even on a race with a second failRoom, since
     // sending to an already-closed socket is caught and logged, not thrown.
     await broadcastBridgeError({ state: this.state, env: this.env }, failReason);
-    const alreadyClosed = await this.cleanupRoom(failReason);
-    if(alreadyClosed) return;
-
-    const config = await this.state.storage.get<RoomConfig>('config');
-    if (!config) return;
-
-    const messageCount = await this.state.storage.get<number>('messageCount') || 0;
+    const result = await this.cleanupRoom(failReason);
+    if(result.alreadyClosed) return;
 
     await this.env.DB.prepare(`
       UPDATE room_stats
@@ -319,11 +332,11 @@ export class Room {
           failed_reason = ?, failed_user = ?
       WHERE room_id = ?
     `).bind(
-      new Date().toISOString(), 'failed', messageCount,
+      new Date().toISOString(), 'failed', result.messageCount,
       failReason, failedUser,
-      config.roomId
+      result.config.roomId
     ).run();
-    await failWebhook(this.env, config, failReason, failedUser);
+    await failWebhook(this.env, result.config, failReason, failedUser);
   }
 
   private async startTimeouts(users: RoomConfig["users"]){

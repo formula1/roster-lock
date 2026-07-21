@@ -1,5 +1,6 @@
 import { DurableObjectState } from "@cloudflare/workers-types";
 import { WebSocket, CONVO_STATE_KEY } from "./utils";
+export { CONVO_STATE_KEY } from "./utils";
 
 import { handleSelection, handleReveal, handleFinal, handleDownload } from "./response-handlers";
 const RESPONSE_HANDLERS: Record<string, (room: RoomType, user: WebSocket, value: any)=>Promise<any>> = {
@@ -36,7 +37,9 @@ export function handleMessage(room: RoomType, user: WebSocket, messageRaw: strin
 export async function startRoom(room: RoomType){
   await room.state.storage.transaction(async (txn) => {
     const currentState = await txn.get<string>(CONVO_STATE_KEY);
-    if(currentState) throw new Error(`Expected No State but got ${currentState}`);
+    if(currentState !== "wait-for-connections"){
+      throw new Error(`Expected wait-for-connections but got ${currentState}`);
+    }
     await txn.put(CONVO_STATE_KEY, "user-selection");
   });
   for(const user of room.state.getWebSockets()){
@@ -46,7 +49,11 @@ export async function startRoom(room: RoomType){
 
 export async function isRoomFinished(doState: DurableObjectState){
   const state = await doState.storage.get<string>(CONVO_STATE_KEY);
-  return state === "all-download";
+  // undefined means cleanupRoom's deleteAll() already wiped this room's
+  // storage entirely (see Room.ts) - that's only reachable after the room
+  // actually finished, since "created but not yet started" is its own
+  // explicit "wait-for-connections" state, not an absent key.
+  return state === "all-download" || state === undefined;
 }
 
 // Match-agent's bindStepsToBridge (see room-handler-bridge/steps.ts) only ever
