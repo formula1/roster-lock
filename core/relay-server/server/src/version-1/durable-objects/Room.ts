@@ -26,16 +26,21 @@ const newRoomCaster: ZodType<RoomConfig> = z.object({
   }).strict()),
 }).strict();
 
-
+const DEFAULT_TIMEOUT_LENGTH = 5 * 1000;
 
 export class Room {
   private state: DurableObjectState;
   private env: Env;
   private app: Hono;
+  // Cloudflare always constructs a DO with exactly (state, env) - this third
+  // param is only ever supplied by tests, letting them use a fast timeout
+  // instead of waiting out the real 5s default.
+  private timeoutLength: number;
 
-  constructor(state: DurableObjectState, env: Env) {
+  constructor(state: DurableObjectState, env: Env, timeoutLength: number = DEFAULT_TIMEOUT_LENGTH) {
     this.state = state;
     this.env = env;
+    this.timeoutLength = timeoutLength;
 
     // Initialize Hono router for this DO
     this.app = new Hono();
@@ -54,6 +59,7 @@ export class Room {
       const body = casted.data;
 
       await this.state.storage.put('config', body);
+      await this.startTimeouts(body.users);
 
       return c.json({ status: 'created' });
     });
@@ -147,6 +153,7 @@ export class Room {
       // Accept the WebSocket with hibernation API
       // Tags allow you to get specific sockets later via state.getWebSockets(tag)
       this.state.acceptWebSocket(server as any, [user.userId]);
+      await this.refreshTimeout(user.userId);
 
       // There is no hibernatable "open" callback (only webSocketMessage/
       // webSocketClose/webSocketError), so check here - right as each
@@ -206,6 +213,8 @@ export class Room {
         // completeRoom deletes the alarm and closes every socket right after
         // this - refreshing the timeout first would just be a wasted write.
         await this.completeRoom();
+      } else {
+        await this.refreshTimeout(attachment.userId)
       }
 
     } catch (error) {
@@ -244,6 +253,7 @@ export class Room {
 
 
   private async cleanupRoom(reason: string){
+    await this.state.storage.deleteAlarm()
     const alreadyClosed = await this.state.storage.transaction(async (txn) => {
       const isClosed = await txn.get<boolean>('isClosed') || false;
       if(isClosed) return true;
@@ -314,5 +324,58 @@ export class Room {
       config.roomId
     ).run();
     await failWebhook(this.env, config, failReason, failedUser);
+  }
+
+  private async startTimeouts(users: RoomConfig["users"]){
+    const now = Date.now();
+    const timeouts: Record<string, number> = {};
+    for(const user of users){
+      timeouts[user.userId] = now;
+    }
+    await this.state.storage.put("timeouts", timeouts)
+    await this.state.storage.setAlarm(Date.now() + this.timeoutLength)
+  }
+
+  private async refreshTimeout(userId: string){
+    await this.state.storage.transaction(async (txc)=>{
+      const timeouts = await txc.get("timeouts") as Record<string, number>;
+      const userTO = timeouts[userId];
+      let isOldest = true;
+      let newOldest = Number.POSITIVE_INFINITY;
+      for(const [otherUser, otherTimeout] of Object.entries(timeouts)){
+        if(otherUser === userId) continue;
+        if(newOldest > otherTimeout){
+          newOldest = otherTimeout
+        }
+        if(userTO > otherTimeout){
+          isOldest = false;
+        }
+      }
+      timeouts[userId] = Date.now();
+      await txc.put("timeouts", timeouts)
+      if(!isOldest) return;
+      if(newOldest === Number.POSITIVE_INFINITY) newOldest = timeouts[userId];
+      await this.state.storage.setAlarm(newOldest + this.timeoutLength)
+    })
+  }
+
+  private async alarm(){
+    // We are assuming the alarm only triggers if
+    const userId = await this.state.storage.transaction(async (txc)=>{
+      const timeouts = await txc.get("timeouts") as Record<string, number>;
+      let oldestTO: null | { user: string, timeout: number } = null;
+      for(const [user, timeout] of Object.entries(timeouts)){
+        if(oldestTO === null){
+          oldestTO = { user, timeout };
+          continue;
+        }
+        if(oldestTO.timeout > timeout){
+          oldestTO = { user, timeout };
+        }
+      }
+      return oldestTO?.user
+    })
+    if(userId === void 0) return;
+    return this.failRoom("User timed out", userId);
   }
 }
