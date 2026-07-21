@@ -2,12 +2,14 @@ import { DurableObjectState } from "@cloudflare/workers-types";
 import { WebSocket, CONVO_STATE_KEY } from "./utils";
 export { CONVO_STATE_KEY } from "./utils";
 
+import { recievePong } from "./ping-pong";
 import { handleSelection, handleReveal, handleFinal, handleDownload } from "./response-handlers";
 const RESPONSE_HANDLERS: Record<string, (room: RoomType, user: WebSocket, value: any)=>Promise<any>> = {
   "user-selection": handleSelection,
   "all-selection-for-user-decryption": handleReveal,
   "all-decryption-for-user-final": handleFinal,
   "user-download": handleDownload,
+  "ping": recievePong,
 };
 
 import { handleDownloadProgress } from "./event-handlers";

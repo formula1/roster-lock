@@ -12,6 +12,8 @@ import {
   isRoomFinished as isBridgeRoomFinished, broadcastError as broadcastBridgeError,
   CONVO_STATE_KEY,
 } from './bridge';
+import { TIMEOUT_CONTROLLER, TimeoutInput } from "./TimeoutController";
+import { sendPing } from './bridge/ping-pong';
 
 
 import { z, ZodType } from 'zod';
@@ -27,7 +29,8 @@ const newRoomCaster: ZodType<RoomConfig> = z.object({
   }).strict()),
 }).strict();
 
-const DEFAULT_TIMEOUT_LENGTH = 5 * 1000;
+const DEFAULT_TOTAL_TIMEOUT_LENGTH = 5 * 60 * 1000;
+const DEFAULT_USER_TIMEOUT_LENGTH = 5 * 1000;
 
 export class Room {
   private state: DurableObjectState;
@@ -36,12 +39,16 @@ export class Room {
   // Cloudflare always constructs a DO with exactly (state, env) - this third
   // param is only ever supplied by tests, letting them use a fast timeout
   // instead of waiting out the real 5s default.
-  private timeoutLength: number;
+  private userTimeoutLength = DEFAULT_USER_TIMEOUT_LENGTH;
+  private totalTimeoutLength = DEFAULT_TOTAL_TIMEOUT_LENGTH;
 
-  constructor(state: DurableObjectState, env: Env, timeoutLength: number = DEFAULT_TIMEOUT_LENGTH) {
+  constructor(state: DurableObjectState, env: Env, timeouts?: { user : number, total: number }) {
     this.state = state;
     this.env = env;
-    this.timeoutLength = timeoutLength;
+    if(timeouts){
+      this.userTimeoutLength = timeouts.user;
+      this.totalTimeoutLength = timeouts.total;
+    }
 
     // Initialize Hono router for this DO
     this.app = new Hono();
@@ -159,6 +166,7 @@ export class Room {
       // Tags allow you to get specific sockets later via state.getWebSockets(tag)
       this.state.acceptWebSocket(server as any, [user.userId]);
       await this.refreshTimeout(user.userId);
+      await sendPing({ state: this.state, env: this.env }, user.userId)
 
       // There is no hibernatable "open" callback (only webSocketMessage/
       // webSocketClose/webSocketError), so check here - right as each
@@ -340,55 +348,51 @@ export class Room {
   }
 
   private async startTimeouts(users: RoomConfig["users"]){
-    const now = Date.now();
-    const timeouts: Record<string, number> = {};
-    for(const user of users){
-      timeouts[user.userId] = now;
-    }
-    await this.state.storage.put("timeouts", timeouts)
-    await this.state.storage.setAlarm(Date.now() + this.timeoutLength)
+    return this.state.storage.transaction(async (txc)=>{
+      const timeouts: Array<TimeoutInput> = []
+      timeouts.push({
+        id: "total-timeout",
+        offset: this.totalTimeoutLength,
+        fn: { id: "total-timeout", args: {} }
+      })
+      for(const user of users){
+        timeouts.push({
+          id: "user-timeout-" + user.userId,
+          offset: this.userTimeoutLength,
+          fn: { id: "user-timeout", args: { userId: user.userId } }
+        })
+      }
+      await TIMEOUT_CONTROLLER.addTimeouts(txc, timeouts);
+    })
   }
 
   private async refreshTimeout(userId: string){
     await this.state.storage.transaction(async (txc)=>{
-      const timeouts = await txc.get("timeouts") as Record<string, number>;
-      const userTO = timeouts[userId];
-      let isOldest = true;
-      let newOldest = Number.POSITIVE_INFINITY;
-      for(const [otherUser, otherTimeout] of Object.entries(timeouts)){
-        if(otherUser === userId) continue;
-        if(newOldest > otherTimeout){
-          newOldest = otherTimeout
+      await TIMEOUT_CONTROLLER.cancelTimeout(txc, "user-timeout-" + userId)
+      await TIMEOUT_CONTROLLER.addTimeouts(txc, [
+        {
+          id: "user-timeout-" + userId,
+          offset: this.userTimeoutLength,
+          fn: { id: "user-timeout", args: { userId: userId } }
         }
-        if(userTO > otherTimeout){
-          isOldest = false;
-        }
-      }
-      timeouts[userId] = Date.now();
-      await txc.put("timeouts", timeouts)
-      if(!isOldest) return;
-      if(newOldest === Number.POSITIVE_INFINITY) newOldest = timeouts[userId];
-      await this.state.storage.setAlarm(newOldest + this.timeoutLength)
+      ]);
     })
   }
 
   private async alarm(){
-    // We are assuming the alarm only triggers if
-    const userId = await this.state.storage.transaction(async (txc)=>{
-      const timeouts = await txc.get("timeouts") as Record<string, number>;
-      let oldestTO: null | { user: string, timeout: number } = null;
-      for(const [user, timeout] of Object.entries(timeouts)){
-        if(oldestTO === null){
-          oldestTO = { user, timeout };
-          continue;
-        }
-        if(oldestTO.timeout > timeout){
-          oldestTO = { user, timeout };
-        }
+    const fns =  await this.state.storage.transaction(async (txc)=>{
+      return TIMEOUT_CONTROLLER.handleTimeout(txc);
+    });
+    for(const fn of fns){
+      if(fn.id === "user-timeout"){
+        return this.failRoom("User timed out", fn.args.userId);
       }
-      return oldestTO?.user
-    })
-    if(userId === void 0) return;
-    return this.failRoom("User timed out", userId);
+      if(fn.id === "total-timeout"){
+        return this.failRoom("Total timed out", "");
+      }
+      if(fn.id === "ping"){
+        await sendPing({ state: this.state, env: this.env }, fn.args.userId);
+      }
+    }
   }
 }
