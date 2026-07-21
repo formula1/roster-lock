@@ -3,14 +3,20 @@ import { getPublicKey, WaitingRequest, WebSocket } from "./utils";
 import { RoomType } from "../types";
 
 type Handlers = {
-  response: Record<string, (room: RoomType, user: WebSocket, value: any)=>Promise<void>>,
+  // Only a response handler can ever finish the room (only "download"'s does,
+  // by returning true once every user's in) - the return value is threaded
+  // all the way back to Room.webSocketMessage so *that specific call* decides
+  // whether to complete the room, instead of every call independently
+  // re-querying "is it finished yet" (see handleBridgeMessage below for why
+  // that independent-query version was a real race).
+  response: Record<string, (room: RoomType, user: WebSocket, value: any)=>Promise<boolean | void>>,
   event: Record<string, (room: RoomType, user: WebSocket, value: any)=>Promise<void>>,
   request: Record<string, (room: RoomType, user: WebSocket, value: any)=>Promise<any>>,
 };
 
 export async function handleBridgeMessage(
   room: RoomType, handlers: Handlers, user: WebSocket, messageRaw: string
-){
+): Promise<boolean> {
   const message = JSON.parse(messageRaw);
   const publicKey = getPublicKey(user);
   const parsed = MessageBridgeMessageCaster.safeParse(message);
@@ -19,7 +25,7 @@ export async function handleBridgeMessage(
     const handler = handlers.event[message.path];
     if(!handler) throw new Error("Invalid event path");
     await handler(room, user, message.value);
-    return;
+    return false;
   }
 
   if(message.messageType === "request"){
@@ -41,7 +47,7 @@ export async function handleBridgeMessage(
         value: (e as Error).message,
       }));
     }
-    return;
+    return false;
   }
 
   if(message.messageType === "response"){
@@ -56,8 +62,8 @@ export async function handleBridgeMessage(
     });
     const handler = handlers.response[request.path];
     if(!handler) throw new Error("Invalid request path");
-    await handler(room, user, value);
-    return;
+    const finished = await handler(room, user, value);
+    return !!finished;
   }
 
   throw new Error("Invalid message type");

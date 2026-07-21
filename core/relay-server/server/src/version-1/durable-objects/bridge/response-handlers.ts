@@ -81,13 +81,18 @@ export async function handleDownload(room: RoomType, user: WebSocket, value: any
     "all-download",
   );
 
-  if(!download) return;
+  if(!download) return false;
 
   const config = await room.state.storage.get<RoomConfig>("config");
-  if (!config) return;
+  if (!config) return false;
   await successWebhook(room.env, config);
 
   await Promise.all(room.state.getWebSockets().map((user)=>{
     return makeBridgeEvent(room, user, "all-download", {});
   }));
+  // Signals to Room.webSocketMessage that *this specific call* is the one
+  // that just finished the room (see bridge-compatability.ts) - only after
+  // the broadcast above has actually gone out, so completeRoom can't close
+  // every socket before the users it's for have been told.
+  return true;
 }

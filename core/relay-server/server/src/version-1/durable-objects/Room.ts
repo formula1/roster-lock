@@ -7,7 +7,10 @@ import { validateAuthFromSearch } from "./auth";
 
 import { failWebhook } from './webhook';
 
-import { startRoom as startBridgeRoom, handleMessage as handleBridgeMessage, isRoomFinished as isBridgeRoomFinished } from './bridge';
+import {
+  startRoom as startBridgeRoom, handleMessage as handleBridgeMessage,
+  isRoomFinished as isBridgeRoomFinished, broadcastError as broadcastBridgeError,
+} from './bridge';
 
 
 import { z, ZodType } from 'zod';
@@ -192,8 +195,16 @@ export class Room {
     if (!attachment) return console.error('WebSocket has no attachment');
     try {
       if(message instanceof ArrayBuffer) throw new Error("Invalid message");
-      await handleBridgeMessage({ state: this.state, env: this.env }, ws, message);
-      if(await isBridgeRoomFinished(this.state)){
+      // finished reflects whether *this* message was the one that completed
+      // the room (see bridge/index.ts's handleMessage) - re-querying convo
+      // state independently here would race against the other user's own
+      // in-flight webSocketMessage call and could close every socket before
+      // handleDownload's own "all-download" broadcast (triggered by whichever
+      // call actually finished it) has gone out.
+      const finished = await handleBridgeMessage({ state: this.state, env: this.env }, ws, message);
+      if(finished){
+        // completeRoom deletes the alarm and closes every socket right after
+        // this - refreshing the timeout first would just be a wasted write.
         await this.completeRoom();
       }
 
@@ -280,6 +291,10 @@ export class Room {
   }
 
   private async failRoom(failReason: string, failedUser: string){
+    // Must happen before cleanupRoom (which closes every socket) - and is
+    // best-effort/safe to call even on a race with a second failRoom, since
+    // sending to an already-closed socket is caught and logged, not thrown.
+    await broadcastBridgeError({ state: this.state, env: this.env }, failReason);
     const alreadyClosed = await this.cleanupRoom(failReason);
     if(alreadyClosed) return;
 
