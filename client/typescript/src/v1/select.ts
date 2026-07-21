@@ -1,6 +1,8 @@
-import { DownloadResult, RosterLockPiece, RosterLockV1Config } from "@roster-lock/types";
+import { DownloadResult, RosterLockPiece, RosterLockV1Config, RosterLockDownloadUpdate } from "@roster-lock/types";
 import { ROSTERLOCK_MATCH_AGENT_URL } from "../constants/match-agent";
 import { runFetch } from "../utils/fetch";
+import WebSocket from "isomorphic-ws";
+import { MessageBridge, waitForBridgeEvent } from "@roster-lock/utils";
 
 type GetPieceInfo = {
   version: 1,
@@ -29,6 +31,47 @@ export async function ensurePieceDownloaded(
   })
   
   return await response.json() as DownloadResult;
+}
+
+export async function ensurePieceDownloadedOverWebSocket(
+  {
+    version,
+    engine,
+    pieceType,
+    piece,
+  }: GetPieceInfo,
+  matchAgentAuth: string,
+  onProgress?: (update: RosterLockDownloadUpdate) => void,
+  matchAgentUrl: string | URL = ROSTERLOCK_MATCH_AGENT_URL,
+){
+  if(version !== 1) throw new Error(`Unsupported Version ${version}`);
+  const url = new URL("/v1/piece/ensure", matchAgentUrl);
+  if(!["http:", "https:"].includes(url.protocol)){
+    throw new Error("Expecting The match agent url to be http or https");
+  }
+  url.protocol = url.protocol === "https:" ? "wss:" : "ws";
+  url.searchParams.set("authorization", matchAgentAuth);
+
+  const ws = new WebSocket(url.href);
+  const bridge = new MessageBridge((message)=>ws.send(JSON.stringify(message)));
+  ws.on("message", (message)=>{
+    bridge.handleMessage(JSON.parse(message.toString()));
+  });
+
+  bridge.onEvent("download-progress", (update)=>{
+    onProgress?.(update);
+  });
+
+  try {
+    await waitForBridgeEvent(bridge, "ready", 10_000);
+
+    return await bridge.sendRequest(
+      "ensure-piece", { engine, pieceType, piece }
+    ) as DownloadResult;
+
+  }finally{
+    ws.close();
+  }
 }
 
 type ListPiecesConfig = {

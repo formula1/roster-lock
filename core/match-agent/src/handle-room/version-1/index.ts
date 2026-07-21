@@ -5,7 +5,7 @@ import { wsHandler } from "./room-handler-bridge/ws-handler";
 import { httpHandler } from "./room-handler-bridge/http-handler";
 
 import { getFilesOfAsset, getPieceFileContents } from "./file-routes";
-import { ensurePieceDownloaded, listDownloadedPiecesDirect } from "./select";
+import { ensurePieceDownloaded, ensurePieceDownloadedWs, listDownloadedPiecesDirect } from "./select";
 import { IFolderDB, V1Env } from "./globals";
 
 export const createV1Routers = (fileDB: IFolderDB)=>{
@@ -21,6 +21,7 @@ export const createV1Routers = (fileDB: IFolderDB)=>{
 
 
   wsRouter.mount("/sync-dl", wsHandler.bind(env));
+  wsRouter.mount("/piece/ensure", ensurePieceDownloadedWs.bind(env));
 
   return { httpRouter, wsRouter };
 }

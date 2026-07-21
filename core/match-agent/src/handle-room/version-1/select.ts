@@ -1,7 +1,9 @@
 
 import { RosterLockPiece, RosterLockV1Config, DownloadResult } from "@roster-lock/types";
 import { jsonBody, HTTPRequestHandler, HTTPError } from "../../utils/http-router";
+import { WebSocketHandlerCallback } from "../../utils/websocket-router";
 import { handlePagination } from "../../utils/pagination"
+import { MessageBridge } from "@roster-lock/utils";
 import z, { ZodType } from "zod";
 import { engineCaster, pieceCaster } from "./schema/lock";
 import { V1Env } from "./globals/types";
@@ -48,6 +50,48 @@ export const ensurePieceDownloaded: HTTPRequestHandler = async function(
 
   res.writeHead(200, { "Content-Type": "application/json" });
   res.end(JSON.stringify(dlResult));
+}
+
+export const ensurePieceDownloadedWs: WebSocketHandlerCallback = async function(
+  this: V1Env, { ws }, params, next
+){
+  const { fileDB } = this;
+  try {
+    const bridge = new MessageBridge((message)=>ws.send(JSON.stringify(message)));
+    ws.on("message", (message)=>{
+      bridge.handleMessage(JSON.parse(message.toString()));
+    });
+
+    const abortController = new AbortController();
+    ws.on("close", ()=>abortController.abort());
+
+    bridge.onRequest("ensure-piece", async (body)=>{
+      const parseResult = ensurePieceSchema.safeParse(body);
+      if(!parseResult.success){
+        throw new Error("Bad Form: " + parseResult.error.message);
+      }
+      const { engine, pieceType, piece } = parseResult.data;
+
+      const pieceFolder = await fileDB.ensurePieceExists(
+        engine, pieceType, piece, {
+          onProgress: (update)=>{bridge.sendEvent("download-progress", update)},
+          abortSignal: abortController.signal,
+        }
+      );
+
+      const dlResult: DownloadResult = {
+        pieceType,
+        pieceId: piece.id,
+        pieceVersions: { logic: piece.version.logic, media: piece.version.media },
+        folder: pieceFolder,
+      }
+      return dlResult;
+    });
+    bridge.sendEvent("ready", {});
+  }catch(e){
+    ws.terminate();
+    next(e);
+  }
 }
 
 
