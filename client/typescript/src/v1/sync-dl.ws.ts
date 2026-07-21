@@ -6,7 +6,7 @@ import {
   RosterLockDownloadUpdate,
 } from "@roster-lock/types";
 import WebSocket from "isomorphic-ws";
-import { MessageBridge, SIGNATURE } from "@roster-lock/utils";
+import { MessageBridge, SIGNATURE, waitForBridgeEvent } from "@roster-lock/utils";
 
 type PrivateKey = Parameters<typeof SIGNATURE.ASYMMETRIC.createSignature>[0];
 
@@ -72,26 +72,7 @@ export async function syncDownloadOverWebSocket(
       } satisfies RosterLockV1SyncDLRequestClientToAgent
     ) as RosterLockV1SyncDLResult;
 
-  }finally{ 
+  }finally{
     ws.close();
   }
-}
-
-
-function waitForBridgeEvent<T>(bridge: MessageBridge, event: string, timeout: number){
-  const { promise, resolve, reject } = Promise.withResolvers<T>();
-
-  const to = setTimeout(()=>{
-    reject(new Error("Timeout"));
-  }, timeout);
-
-  bridge.onEvent(event, (data)=>{
-    resolve(data as T);
-  });
-
-  promise.finally(()=>{
-    clearTimeout(to);
-  });
-
-  return promise;
 }
