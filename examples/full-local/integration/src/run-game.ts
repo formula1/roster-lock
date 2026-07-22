@@ -70,9 +70,10 @@ export async function startMatchAgent(
     "match-agent", "node",
     [
       path.join(REPO_ROOT, "core/match-agent/dist/index.js"),
+      "run",
       "--port", port,
       "--auth-code", authCode,
-      "--folder", folder,
+      "--piece-folder", folder,
     ]
   );
   await waitForHttpOk(matchAgentUrl, 15_000);
