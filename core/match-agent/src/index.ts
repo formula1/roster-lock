@@ -9,14 +9,18 @@ import {
 } from "./config";
 import { generateAuthCode, authMiddleware, validateAuthCode } from "./authentication";
 import { MatchAgentServer } from "./server";
-import { program, Command } from "commander";
+import { program } from "commander";
 import { createV1Routers } from "./handle-room/version-1";
 import { getSQLite3FolderDB } from "./handle-room/version-1/globals/FolderDB";
-import { PluginManager } from "@roster-lock/plugin-runtime";
+import { PluginManager, createPluginCommands } from "@roster-lock/plugin-runtime";
 
 
 program
   .name("rosterlock-match-agent")
+  .description("Runs the match-agent server");
+
+program
+  .command("run")
   .description("Runs the match-agent server")
   .option("--port <port>", "port to listen on", "58732")
   .option("--auth-code <string>", "authentication code required for access (overrides the config file)")
@@ -98,13 +102,12 @@ program
 program
   .command("set-auth-code <authCode>")
   .description("Update the auth code stored in a config file (defaults to the same discovery rules as running the server)")
-  .action(async (authCode: string, _options: unknown, command: Command) => {
-    // --config-file is declared once, on the root program, and inherited
-    // here via optsWithGlobals() - a same-named option declared separately
-    // on this subcommand shadows the root's parsed value instead of merging
-    // with it, silently falling back to the default discovery path.
-    const configFile = (command.optsWithGlobals() as { configFile?: string }).configFile;
-    const configFilePath = await findConfigFile(configFile);
+  .option(
+    "--config-file <path>",
+    "config file to update (defaults to a config next to this executable, falling back to the home directory)"
+  )
+  .action(async (authCode: string, options: { configFile?: string }) => {
+    const configFilePath = await findConfigFile(options.configFile);
     const existingConfig = (await configExists(configFilePath)) ? await getConfig(configFilePath) : null;
     await setConfig(configFilePath, {
       authCode,
