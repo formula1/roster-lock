@@ -1,20 +1,34 @@
-import { ProtocolHandler } from "@roster-lock/types";
-import WebTorrent from 'webtorrent';
+import { ProtocolHandler, ProcessHandlers } from "@roster-lock/types";
+import type WebTorrent from 'webtorrent';
 
 import { handleSingleFileTorrent } from "./singleFile";
 import { handleMultipleFileTorrent } from "./multiFile";
 
 type DownloadResult = Awaited<ReturnType<ProtocolHandler["download"]>>;
 
-export const runTorrentDownload: ProtocolHandler["download"] = async function(
-  magnetUri, folderDestination, processHandlers
-) {
+export type TorrentDiscoveryOptions = {
+  dht?: boolean;
+  tracker?: boolean;
+  lsd?: boolean;
+};
+
+export async function runTorrentDownload(
+  magnetUri: string,
+  folderDestination: string,
+  processHandlers: ProcessHandlers,
+  extra: TorrentDiscoveryOptions = {}
+): Promise<DownloadResult> {
   const { onProgress, abortSignal } = processHandlers;
  if (abortSignal?.aborted) {
     throw new TorrentError(magnetUri, 'Download aborted');
   }
 
-  const client = new WebTorrent();
+  const { default: WebTorrent } = await import('webtorrent');
+  const client = new WebTorrent({
+    dht: extra.dht ?? true,
+    tracker: extra.tracker ?? true,
+    lsd: extra.lsd ?? true,
+  });
 
   const { resolve, reject, promise } = Promise.withResolvers<DownloadResult>();
 
@@ -23,10 +37,10 @@ export const runTorrentDownload: ProtocolHandler["download"] = async function(
     client.destroy();
     reject(new TorrentError(magnetUri, 'Download aborted'));
   };
-  
+
   abortSignal.addEventListener('abort', abortHandler);
 
-  
+
   client.add(magnetUri, { destroyStoreOnDestroy: true }, (torrent) => {
     // Handle errors
     torrent.on('error', (err) => {
@@ -68,10 +82,10 @@ export const runTorrentDownload: ProtocolHandler["download"] = async function(
       client.destroy();
       abortSignal.removeEventListener('abort', abortHandler);
     });
-    
+
     resolve(multiFile);
   });
-  
+
   // Handle client-level errors
   client.on('error', (err) => {
     abortSignal.removeEventListener('abort', abortHandler);
