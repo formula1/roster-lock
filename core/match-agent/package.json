@@ -28,6 +28,9 @@
     "prepare": "pnpm run build"
   },
   "devDependencies": {
+    "@roster-lock/dl-archive-tar": "workspace:*",
+    "@roster-lock/dl-compression-gzip": "workspace:*",
+    "@roster-lock/dl-protocol-http": "workspace:*",
     "@types/async": "^3.2.25",
     "@types/mime-types": "^2.1.4",
     "@types/node": "^22.14.1",

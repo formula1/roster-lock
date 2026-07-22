@@ -7,6 +7,8 @@ import {
 import { prepareDatabase } from "../../src/handle-room/version-1/globals/FolderDB/SQLFolderDB/schema";
 import { RosterLockPiece, RosterLockV1Config } from "@roster-lock/types";
 
+type ListedPiece = Pick<RosterLockPiece, "version" | "pathVariables">;
+
 describe("PUT /v1/piece", () => {
   let server: TestServer;
   let folder: string;
@@ -49,6 +51,29 @@ describe("PUT /v1/piece", () => {
     });
     expect(res.status).toBe(400);
     expect((await errorBody(res)).error).toBe("Bad Form");
+  });
+
+  // ensurePieceExists (SQLite3FolderDB) short-circuits to the existing folder
+  // when the DB already has the piece marked complete, without touching the
+  // download pipeline - so this is reachable without a real dl-protocol
+  // plugin, unlike the two tests above.
+  it("returns the existing folder when the piece is already downloaded", async () => {
+    const downloaded = makePiece({
+      id: "already-downloaded",
+      version: { logic: "already-downloaded-1.0.0", media: "1.0.0", docs: "1.0.0" },
+    });
+    const expectedFolder = await seedCompletePiece({
+      folder, engine, pieceType: TEST_PIECE_TYPE, piece: downloaded, folderName: "already-downloaded-folder", files: {},
+    });
+
+    const res = await put("/piece", { engine, pieceType: TEST_PIECE_TYPE, piece: downloaded });
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({
+      pieceType: TEST_PIECE_TYPE,
+      pieceId: downloaded.id,
+      pieceVersions: { logic: downloaded.version.logic, media: downloaded.version.media },
+      folder: expectedFolder,
+    });
   });
 });
 
@@ -135,7 +160,7 @@ describe("QUERY /v1/piece/list-downloaded", () => {
         engineName: engine.name, pieceType: TEST_PIECE_TYPE, logicIds: ["1.0.0", "2.0.0"],
       });
       expect(res.status).toBe(200);
-      const body = await res.json();
+      const body = await res.json() as ListedPiece[];
       expect(body).toHaveLength(1);
       expect(body[0].version.logic).toBe("1.0.0");
     });
@@ -156,14 +181,14 @@ describe("QUERY /v1/piece/list-downloaded", () => {
         { engineName: engine.name, pieceType: TEST_PIECE_TYPE, logicIds },
         { page: "0", limit: "2" },
       );
-      expect((await page0.json()).map((p: any) => p.version.logic)).toEqual(["3.0.0", "2.0.0"]);
+      expect((await page0.json() as ListedPiece[]).map((p) => p.version.logic)).toEqual(["3.0.0", "2.0.0"]);
 
       const page1 = await query(
         "/piece/list-downloaded/direct",
         { engineName: engine.name, pieceType: TEST_PIECE_TYPE, logicIds },
         { page: "1", limit: "2" },
       );
-      expect((await page1.json()).map((p: any) => p.version.logic)).toEqual(["1.0.0"]);
+      expect((await page1.json() as ListedPiece[]).map((p) => p.version.logic)).toEqual(["1.0.0"]);
     });
   });
 });

@@ -2,6 +2,7 @@ import { AddressInfo } from "node:net";
 import { once } from "node:events";
 import { randomUUID } from "node:crypto";
 
+import { PluginManager } from "@roster-lock/plugin-runtime";
 import { MatchAgentServer } from "../../../src/server";
 import { authMiddleware, validateAuthCode } from "../../../src/authentication";
 import { createV1Routers } from "../../../src/handle-room/version-1";
@@ -10,7 +11,7 @@ import { getSQLite3FolderDB } from "../../../src/handle-room/version-1/globals/F
 // Mirrors the wiring in src/index.ts#startServer, but keeps a handle to the
 // underlying MatchAgentServer/http.Server so tests can bind an ephemeral
 // port and shut the server down - startServer() itself returns void.
-export async function startTestServer(folder: string, authCode: string = randomUUID()) {
+export async function startTestServer(folder: string, authCode: string = randomUUID(), pluginDir?: string) {
   const server = new MatchAgentServer();
   server.httpRouter.get("/", ({ res }) => {
     res.writeHead(200, { "Content-Type": "application/json" });
@@ -18,8 +19,9 @@ export async function startTestServer(folder: string, authCode: string = randomU
   });
   server.httpRouter.post("/validate-authcode", validateAuthCode(authCode));
 
-  const fileDB = getSQLite3FolderDB(folder);
-  const { httpRouter: v1HttpRouter, wsRouter: v1WsRouter } = createV1Routers(fileDB);
+  const pluginRuntime = await PluginManager.create(pluginDir ?? folder);
+  const fileDB = getSQLite3FolderDB(folder, pluginRuntime);
+  const { httpRouter: v1HttpRouter, wsRouter: v1WsRouter } = createV1Routers(fileDB, pluginRuntime);
   server.httpRouter.use("/v1", authMiddleware(authCode), v1HttpRouter);
   server.wsRouter.use("/v1", authMiddleware(authCode), v1WsRouter);
 

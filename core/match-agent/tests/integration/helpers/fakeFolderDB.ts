@@ -12,7 +12,7 @@ export class FakeFolderDB implements IFolderDB {
   public calls: Array<{ pieceType: string, pieceId: string }> = [];
 
   async ensurePieceExists(
-    _lockConfig: RosterLockV1Config,
+    _lockConfig: RosterLockV1Config["engine"],
     pieceType: string,
     selectedPiece: RosterLockPiece,
     _progressHandlers: ProgressHandlers,
@@ -24,6 +24,10 @@ export class FakeFolderDB implements IFolderDB {
   async *getFilesofAsset(): AsyncIterable<string> {}
 
   async getPieceFileContents(): Promise<Readable> {
+    throw new Error("not implemented in FakeFolderDB");
+  }
+
+  async listPieces(): Promise<Array<Pick<RosterLockPiece, "version" | "pathVariables">>> {
     throw new Error("not implemented in FakeFolderDB");
   }
 }
