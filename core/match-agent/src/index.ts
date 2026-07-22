@@ -57,7 +57,61 @@ program
     await mkdir(pluginFolder, { recursive: true });
 
     startServer(port, authCode, pluginFolder, pieceFolder);
+  });
 
+program
+  .command("mount-usb <path>")
+  .description(
+    "Scaffold a portable config at <path>: creates pieces/plugins folders and a " +
+    CONFIG_FILE_NAME + " next to where the match-agent executable will run from " +
+    "(e.g. a mounted USB drive), addressing the folders by relative path."
+  )
+  .option("--piece-folder <name>", "name of the pieces folder to create, relative to <path>", "pieces")
+  .option("--plugin-folder <name>", "name of the plugins folder to create, relative to <path>", "plugins")
+  .option("--auth-code <string>", "auth code to store in the config (a random one is generated if omitted)")
+  .option("--force", "overwrite an existing config at <path>, generating a new auth code unless --auth-code is given", false)
+  .action(async (targetPath: string, options: {
+    pieceFolder: string, pluginFolder: string, authCode?: string, force: boolean,
+  }) => {
+    const mountFolder = pathResolve(targetPath);
+    await mkdir(mountFolder, { recursive: true });
+
+    const configFilePath = pathJoin(mountFolder, CONFIG_FILE_NAME);
+    const existingConfig = (await configExists(configFilePath)) ? await getConfig(configFilePath) : null;
+    if(existingConfig && !options.force){
+      throw new Error(`${configFilePath} already exists - pass --force to overwrite it`);
+    }
+
+    await mkdir(pathJoin(mountFolder, options.pieceFolder), { recursive: true });
+    await mkdir(pathJoin(mountFolder, options.pluginFolder), { recursive: true });
+
+    const authCode = options.authCode || existingConfig?.authCode || generateAuthCode();
+    await setConfig(configFilePath, {
+      authCode,
+      pieceFolder: options.pieceFolder,
+      pluginFolder: options.pluginFolder,
+    });
+
+    console.log(`Wrote ${configFilePath}`);
+  });
+
+program
+  .command("set-auth-code <authCode>")
+  .description("Update the auth code stored in a config file (defaults to the same discovery rules as running the server)")
+  .action(async (authCode: string, _options: unknown, command: Command) => {
+    // --config-file is declared once, on the root program, and inherited
+    // here via optsWithGlobals() - a same-named option declared separately
+    // on this subcommand shadows the root's parsed value instead of merging
+    // with it, silently falling back to the default discovery path.
+    const configFile = (command.optsWithGlobals() as { configFile?: string }).configFile;
+    const configFilePath = await findConfigFile(configFile);
+    const existingConfig = (await configExists(configFilePath)) ? await getConfig(configFilePath) : null;
+    await setConfig(configFilePath, {
+      authCode,
+      pieceFolder: existingConfig?.pieceFolder,
+      pluginFolder: existingConfig?.pluginFolder,
+    });
+    console.log(`Updated auth code in ${configFilePath}`);
   });
 
 if (require.main === module) {
