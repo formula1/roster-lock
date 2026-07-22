@@ -5,6 +5,7 @@ import { fileExtension } from "@roster-lock/utils";
 
 import { getPluginModulesOfType } from "../plugin-management"
 
+export { ScriptStarter };
 export async function runUntrustedScript(
   pluginDir: string,
   scriptStarter: ScriptStarter,

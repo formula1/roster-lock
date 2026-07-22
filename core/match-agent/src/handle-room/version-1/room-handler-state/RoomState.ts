@@ -13,6 +13,7 @@ import { validateUnknown } from "../validateUnknown";
 
 import { decryptJSON, encryptJSON, encryptedSchema } from "../handleRoomSelections/encryption";
 import { userInputSchema, finalizeSelection, finalSelectionSchema } from "./user-selection";
+import { PluginHandler } from "@roster-lock/plugin-runtime";
 
 const STATE_ORDER = [
   MATCHLOCK_SELECTION_STATE.hello,
@@ -35,6 +36,7 @@ export class RoomState {
     public room: IRoom,
     public lockConfig: RosterLockV1Config,
     public ownEncrypted: Awaited<ReturnType<typeof encryptJSON>>,
+    public pluginRuntime: PluginHandler
   ){}
 
   validateMessageState(
@@ -107,7 +109,7 @@ export class RoomState {
       },
       finished: async ()=>{
         const ownFinalSelection = await finalizeSelection(
-          this.lockConfig, {}, Object.fromEntries(this.userSelections)
+          this.lockConfig, {}, Object.fromEntries(this.userSelections), this.pluginRuntime
         );
         this.agreedSelection = ownFinalSelection;
         this.room.broadcast(MATCHLOCK_SELECTION_STATE.selectionFinal, ownFinalSelection)

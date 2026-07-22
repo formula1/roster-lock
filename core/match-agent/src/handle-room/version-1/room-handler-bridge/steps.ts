@@ -9,7 +9,7 @@ import { encryptJSON, decryptJSON } from "../handleRoomSelections/encryption";
 import { createRandomSeed } from "../handleRoomSelections/random";
 import { z, ZodType } from "zod";
 import { UserSelectionSchema } from "../schema/selected";
-import { runUntrustedScript, DEFAULT_PLUGIN_DIR } from "@roster-lock/plugin-runtime";
+import { PluginManager } from "@roster-lock/plugin-runtime";
 import { handleDownloads } from "../handleDownloads";
 import { IFolderDB } from "../globals/FolderDB";
 import { RosterLockDownloadUpdate } from "@roster-lock/types";
@@ -30,10 +30,10 @@ type RoomState = (
 type RoomArgs = {
   bridge: MessageBridge,
   fileDB: IFolderDB,
+  pluginRuntime: PluginManager,
   users: Array<{ publicKey: UserPublicKey }>,
   ownSelection: UserSelection,
   lockConfig: RosterLockV1Config,
-  scriptsByPath: Record<string, string>,
   gameControlledSelections: Record<string, Array<SelectedPiece> | Record<UserPublicKey, Array<SelectedPiece>>>,
 }
 
@@ -51,10 +51,10 @@ export function bindStepsToBridge(
   {
     bridge,
     fileDB,
+    pluginRuntime,
     users,
     ownSelection,
     lockConfig,
-    scriptsByPath,
     gameControlledSelections,
   }: RoomArgs,
   progressListeners: ProgressListeners = {}
@@ -120,7 +120,7 @@ export function bindStepsToBridge(
       decryptedSelections[user.publicKey] = casted.data;
     }))
     const finalSelection = await runSelection(
-      lockConfig, gameControlledSelections, decryptedSelections, (script)=>(runUntrustedScript(DEFAULT_PLUGIN_DIR, script))
+      lockConfig, gameControlledSelections, decryptedSelections, (script)=>(pluginRuntime.runUntrustedScript(script))
     );
     stateTracker.set({ state: "user-download", finalSelection: finalSelection });
 

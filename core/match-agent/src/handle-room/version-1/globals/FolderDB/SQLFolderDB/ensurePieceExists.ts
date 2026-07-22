@@ -6,7 +6,7 @@ import { rm as fsRm, mkdir } from "node:fs/promises";
 import { join as pathJoin, isAbsolute as isAbsolutePath, relative as pathRelative } from "node:path";
 import { ProgressHandlers } from "../../../handleDownloads/types";
 
-import { downloadToFolder, DEFAULT_PLUGIN_DIR } from "@roster-lock/plugin-runtime";
+import { PluginManager } from "@roster-lock/plugin-runtime";
 import { getDownloadSourceVersion } from "./getVersions";
 import { prepareDatabase } from "./schema";
 import { MultiAbortSignal, raceWithAbort } from "./MultiAbort";
@@ -32,14 +32,14 @@ export class SQLite3FolderDB implements IFolderDB {
     result: Promise<string>
   }>();
 
-  constructor(public folder: string){
+  constructor(public folder: string, private pluginRuntime: PluginManager){
     if(!isAbsolutePath(folder)){
       throw new Error("Folder must be an absolute path");
     }
     if(!fsExists(folder)){
       throw new Error("Folder does not exist");
     }
-    
+
     this.db = prepareDatabase(pathJoin(folder, "rosterlock.sqlite3.db"));
   }
 
@@ -222,8 +222,8 @@ export class SQLite3FolderDB implements IFolderDB {
       try {
         await mkdir(fullPath, { recursive: true });
         this.db.updateDownloadSource(lockConfigEngine, pieceInfo, downloadLocation);
-        const { finishPromise } = await downloadToFolder(
-          DEFAULT_PLUGIN_DIR, {
+        const { finishPromise } = await this.pluginRuntime.downloadToFolder(
+          {
             url: downloadLocation,
             destinationFolder: fullPath,
             processHandlers: {

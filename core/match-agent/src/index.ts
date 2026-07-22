@@ -4,12 +4,13 @@ export * from "./handle-room/version-1";
 
 import { resolve as pathResolve } from "node:path";
 import { mkdir } from "node:fs/promises";
-import { DEFAULT_MATCH_CONIFG, DEFAULT_MATCH_FOLDER } from "./config";
+import { DEFAULT_MATCH_CONIFG, DEFAULT_PIECE_DIR } from "./config";
 import { getDefaultAuthCode, saveAuthCode, authMiddleware, validateAuthCode } from "./authentication";
 import { MatchAgentServer } from "./server";
 import { program } from "commander";
 import { createV1Routers } from "./handle-room/version-1";
-import { getSQLite3FolderDB, IFolderDB } from "./handle-room/version-1/globals/FolderDB";
+import { getSQLite3FolderDB } from "./handle-room/version-1/globals/FolderDB";
+import { DEFAULT_PLUGIN_DIR, PluginManager } from "@roster-lock/plugin-runtime";
 
 program
   .name("rosterlock-match-agent")
@@ -21,7 +22,12 @@ program
     "folder to store downloaded pieces and plugins in (e.g. a mounted USB drive)",
     DEFAULT_MATCH_FOLDER
   )
-  .action(async (options: { port: string, authCode?: string, folder: string }) => {
+  .option(
+    "--plugin-folder <path>",
+    "folder to load plugins from (e.g. a mounted USB drive)",
+    DEFAULT_PLUGIN_DIR
+  )
+  .action(async (options: { port: string, authCode?: string, folder: string, pluginFolder: string }) => {
     const port = Number(options.port);
     if (!Number.isInteger(port) || port < 0 || port > 65535) {
       throw new Error(`Invalid port: ${options.port}`);
@@ -30,11 +36,12 @@ program
     const authCode = options.authCode || await getDefaultAuthCode(DEFAULT_MATCH_CONIFG);
     await saveAuthCode(DEFAULT_MATCH_CONIFG, authCode)
 
-    const folder = pathResolve(options.folder);
-    await mkdir(folder, { recursive: true });
-    const fileDB = getSQLite3FolderDB(folder);
+    const piecesFolder = pathResolve(options.folder);
+    await mkdir(piecesFolder, { recursive: true });
+    const pluginFolder = pathResolve(options.pluginFolder);
+    await mkdir(pluginFolder, { recursive: true });
 
-    startServer(port, authCode, fileDB);
+    startServer(port, authCode, pluginFolder, piecesFolder);
 
   });
 
@@ -42,7 +49,10 @@ if (require.main === module) {
   program.parse();
 }
 
-export function startServer(port: number, authCode: string, fileDB: IFolderDB){
+export async function startServer(port: number, authCode: string, pluginFolder: string, piecesFolder: string){
+  const pluginRuntime = await PluginManager.create(pluginFolder);
+  const fileDB = getSQLite3FolderDB(piecesFolder, pluginRuntime);
+
   const server = new MatchAgentServer();
   server.httpRouter.get("/", ({ res })=>{
     res.writeHead(200, { "Content-Type": "application/json" });
@@ -50,7 +60,7 @@ export function startServer(port: number, authCode: string, fileDB: IFolderDB){
   });
   server.httpRouter.post("/validate-authcode", validateAuthCode(authCode))
 
-  const { httpRouter: v1HttpRouter, wsRouter: v1WsRouter } = createV1Routers(fileDB);
+  const { httpRouter: v1HttpRouter, wsRouter: v1WsRouter } = createV1Routers(fileDB, pluginRuntime);
   server.httpRouter.use("/v1", authMiddleware(authCode), v1HttpRouter);
   server.wsRouter.use("/v1", authMiddleware(authCode), v1WsRouter);
 

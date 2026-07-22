@@ -7,7 +7,7 @@ export const httpHandler: HTTPRequestHandler = async function(this: V1Env, { req
   try {
     const body = await jsonBody(req);
     const roomRequest = castRoomRequest(body);
-    const results = await exchangeAndDownloadSelections(this.fileDB, roomRequest);
+    const results = await exchangeAndDownloadSelections(this.fileDB, this.pluginRuntime, roomRequest);
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify(results));
   }catch(e){

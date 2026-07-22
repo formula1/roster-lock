@@ -8,6 +8,7 @@ import { UserSelectionSchema } from "../schema/selected";
 import { IFolderDB } from "../globals/FolderDB";
 import { once } from "events";
 import z, { ZodType } from "zod";
+import { PluginManager } from "@roster-lock/plugin-runtime";
 
 const RequestCaster: ZodType<(
   & RosterLockV1SyncDLRequestClientToAgent
@@ -46,6 +47,7 @@ type User = {
 
 export async function exchangeAndDownloadSelections(
   fileDB: IFolderDB,
+  pluginRuntime: PluginManager,
   roomRequest: RosterLockV1SyncDLRequestClientToAgent,
   progressListeners: ProgressListeners = {}
 ){
@@ -76,11 +78,11 @@ export async function exchangeAndDownloadSelections(
 
   const roomPromise = bindStepsToBridge({
     bridge: roomBridge,
-    fileDB: fileDB,
+    fileDB,
+    pluginRuntime,
     users: users.map(user=>({ publicKey: user.publicKey })),
     ownSelection: roomRequest.userSelection,
     lockConfig: roomRequest.rosterConfig,
-    scriptsByPath: {},
     gameControlledSelections: {},
   }, progressListeners);
 

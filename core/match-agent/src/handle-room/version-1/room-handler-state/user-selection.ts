@@ -44,18 +44,19 @@ export const userInputSchema: JSONSchemaType<UserInput> = {
   },
 }
 
-import { runUntrustedScript, DEFAULT_PLUGIN_DIR } from "@roster-lock/plugin-runtime";
+import { PluginHandler } from "@roster-lock/plugin-runtime";
 export function finalizeSelection(
   config: RosterLockV1Config,
   gameControlledSelections: Record<PieceType, Array<SelectedPiece> | Record<UserId, Array<SelectedPiece>>>,
   userInputs: Record<UserId, UserInput>,
+  pluginRuntime: PluginHandler
 ): Promise<FinalSelection> {
 
   return runSelection(
     config,
     gameControlledSelections,
     userInputs,
-    (script)=>(runUntrustedScript(DEFAULT_PLUGIN_DIR, script))
+    (script)=>(pluginRuntime.runUntrustedScript(script))
   )
 }
 

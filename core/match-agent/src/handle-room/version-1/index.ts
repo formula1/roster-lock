@@ -7,9 +7,10 @@ import { httpHandler } from "./room-handler-bridge/http-handler";
 import { getFilesOfAsset, getPieceFileContents } from "./file-routes";
 import { ensurePieceDownloaded, ensurePieceDownloadedWs, listDownloadedPiecesDirect } from "./select";
 import { IFolderDB, V1Env } from "./globals";
+import { PluginManager } from "@roster-lock/plugin-runtime";
 
-export const createV1Routers = (fileDB: IFolderDB)=>{
-  const env: V1Env = { fileDB };
+export const createV1Routers = (fileDB: IFolderDB, pluginRuntime: PluginManager)=>{
+  const env: V1Env = { fileDB, pluginRuntime };
   const httpRouter = new HTTPRouter();
   const wsRouter = new WebSocketRouter()
 
