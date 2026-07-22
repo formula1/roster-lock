@@ -58,84 +58,11 @@ CREATE TABLE IF NOT EXISTS download_errors (
 
 import { RosterLockV1Config } from "@roster-lock/types";
 import { PieceInfo } from "./types";
-import Database from "better-sqlite3";
+import { DatabaseSync } from "node:sqlite";
 export function prepareDatabase(dbLocation: string){
-  const db = new Database(dbLocation);
-  db.pragma('journal_mode = WAL');
+  const db = new DatabaseSync(dbLocation);
+  db.exec("PRAGMA journal_mode = WAL;");
   db.exec(SCHEMA);
-  const statements = {
-    getPiece: db.prepare(
-      `
-      SELECT * FROM pieces
-      WHERE engine_name = @engineName
-        AND piece_type = @pieceType
-        AND logic_hash = @logic
-        AND media_hash = @media
-      `
-    ),
-    insertNewPiece: db.prepare(
-      `INSERT INTO pieces (
-        engine_name, piece_type, logic_hash, media_hash,
-        path_variables,
-        download_source,
-        folder_name,
-        status
-      ) VALUES (
-        @engineName, @pieceType, @logic, @media,
-        @pathVariables,
-        @downloadSource,
-        @folderName,
-        'pending'
-      )`
-    ),
-
-    updateDownloadSource: db.prepare(
-      `
-      UPDATE pieces SET download_source = @downloadSource
-      WHERE engine_name = @engineName
-        AND piece_type = @pieceType
-        AND logic_hash = @logic
-        AND media_hash = @media
-      `
-    ),
-
-    resetPieceStatus: db.prepare(
-      `
-      UPDATE pieces SET status = 'error' 
-      WHERE engine_name = @engineName
-        AND piece_type = @pieceType
-        AND logic_hash = @logic
-        AND media_hash = @media
-      `
-    ),
-    pieceSuccessfullyDownloaded: db.prepare(
-      `
-      UPDATE pieces SET status = 'complete', completed_at = unixepoch()
-      WHERE engine_name = @engineName
-        AND piece_type = @pieceType
-        AND logic_hash = @logic
-        AND media_hash = @media
-      `
-    ),
-    pieceFailedToDownload: db.prepare(
-      `
-      UPDATE pieces SET status = 'error'
-      WHERE engine_name = @engineName
-        AND piece_type = @pieceType
-        AND logic_hash = @logic
-        AND media_hash = @media
-      `
-    ),
-    insertDownloadError: db.prepare(
-      `INSERT INTO download_errors (
-        engine_name, piece_type, logic_hash, media_hash,
-        download_source, error_message
-      ) VALUES (
-        @engineName, @pieceType, @logic, @media,
-        @downloadSource, @errorMessage
-      )`
-    ),
-  };
   return {
     db,
 
@@ -147,7 +74,15 @@ export function prepareDatabase(dbLocation: string){
       engineConfig: RosterLockV1Config["engine"],
       pieceInfo: { pieceType: string, logic: string, media: string }
     ){
-      const item = statements.getPiece.get({
+      const item = db.prepare(
+        `
+        SELECT * FROM pieces
+        WHERE engine_name = @engineName
+          AND piece_type = @pieceType
+          AND logic_hash = @logic
+          AND media_hash = @media
+        `
+      ).get({
         engineName: engineConfig.name,
         pieceType: pieceInfo.pieceType,
         logic: pieceInfo.logic,
@@ -166,7 +101,21 @@ export function prepareDatabase(dbLocation: string){
       downloadSource: string,
       folderName: string,
     ){
-      return statements.insertNewPiece.run({
+      return db.prepare(
+        `INSERT INTO pieces (
+          engine_name, piece_type, logic_hash, media_hash,
+          path_variables,
+          download_source,
+          folder_name,
+          status
+        ) VALUES (
+          @engineName, @pieceType, @logic, @media,
+          @pathVariables,
+          @downloadSource,
+          @folderName,
+          'pending'
+        )`
+      ).run({
         engineName: engineConfig.name,
         pieceType: pieceInfo.pieceType,
         logic: pieceInfo.logic,
@@ -181,7 +130,15 @@ export function prepareDatabase(dbLocation: string){
       pieceInfo: PieceInfo,
       downloadSource: string,
     ){
-      return statements.updateDownloadSource.run({
+      return db.prepare(
+        `
+        UPDATE pieces SET download_source = @downloadSource
+        WHERE engine_name = @engineName
+          AND piece_type = @pieceType
+          AND logic_hash = @logic
+          AND media_hash = @media
+        `
+      ).run({
         engineName: engineConfig.name,
         pieceType: pieceInfo.pieceType,
         logic: pieceInfo.logic,
@@ -194,7 +151,15 @@ export function prepareDatabase(dbLocation: string){
       pieceInfo: { pieceType: string, logic: string, media: string }
     ){
       // Mark as error so we can retry
-      statements.resetPieceStatus.run({
+      return db.prepare(
+        `
+        UPDATE pieces SET status = 'error'
+        WHERE engine_name = @engineName
+          AND piece_type = @pieceType
+          AND logic_hash = @logic
+          AND media_hash = @media
+        `
+      ).run({
         engineName: engineConfig.name,
         pieceType: pieceInfo.pieceType,
         logic: pieceInfo.logic,
@@ -206,7 +171,15 @@ export function prepareDatabase(dbLocation: string){
       engineConfig: RosterLockV1Config["engine"],
       pieceInfo: { pieceType: string, logic: string, media: string }
     ){
-      return statements.pieceSuccessfullyDownloaded.run({
+      return db.prepare(
+        `
+        UPDATE pieces SET status = 'complete', completed_at = unixepoch()
+        WHERE engine_name = @engineName
+          AND piece_type = @pieceType
+          AND logic_hash = @logic
+          AND media_hash = @media
+        `
+      ).run({
         engineName: engineConfig.name,
         pieceType: pieceInfo.pieceType,
         logic: pieceInfo.logic,
@@ -220,14 +193,29 @@ export function prepareDatabase(dbLocation: string){
       downloadSource: string,
       error: string,
     ){
-      statements.pieceFailedToDownload.run({
+      db.prepare(
+        `
+        UPDATE pieces SET status = 'error'
+        WHERE engine_name = @engineName
+          AND piece_type = @pieceType
+          AND logic_hash = @logic
+          AND media_hash = @media
+        `
+      ).run({
         engineName: engineConfig.name,
         pieceType: pieceInfo.pieceType,
         logic: pieceInfo.logic,
         media: pieceInfo.media,
-      }
-      );
-      statements.insertDownloadError.run({
+      });
+      db.prepare(
+        `INSERT INTO download_errors (
+          engine_name, piece_type, logic_hash, media_hash,
+          download_source, error_message
+        ) VALUES (
+          @engineName, @pieceType, @logic, @media,
+          @downloadSource, @errorMessage
+        )`
+      ).run({
         engineName: engineConfig.name,
         pieceType: pieceInfo.pieceType,
         logic: pieceInfo.logic,

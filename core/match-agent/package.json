@@ -29,7 +29,6 @@
   },
   "devDependencies": {
     "@types/async": "^3.2.25",
-    "@types/better-sqlite3": "^7.6.13",
     "@types/mime-types": "^2.1.4",
     "@types/node": "^22.14.1",
     "@types/webtorrent": "^0.110.0",
@@ -45,7 +44,6 @@
     "@roster-lock/utils": "workspace:*",
     "ajv": "^8.17.1",
     "async": "^3.2.6",
-    "better-sqlite3": "^12.5.0",
     "commander": "14.0.3",
     "mime-types": "^2.1.35",
     "node-fetch-commonjs": "^3.3.2",
