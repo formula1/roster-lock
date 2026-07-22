@@ -2,46 +2,61 @@
 
 export * from "./handle-room/version-1";
 
-import { resolve as pathResolve } from "node:path";
+import { join as pathJoin, resolve as pathResolve } from "node:path";
 import { mkdir } from "node:fs/promises";
-import { DEFAULT_MATCH_CONIFG, DEFAULT_PIECE_DIR } from "./config";
-import { getDefaultAuthCode, saveAuthCode, authMiddleware, validateAuthCode } from "./authentication";
+import {
+  CONFIG_FILE_NAME, getConfig, setConfig, configExists, resolveConfigFolders, findConfigFile,
+} from "./config";
+import { generateAuthCode, authMiddleware, validateAuthCode } from "./authentication";
 import { MatchAgentServer } from "./server";
-import { program } from "commander";
+import { program, Command } from "commander";
 import { createV1Routers } from "./handle-room/version-1";
 import { getSQLite3FolderDB } from "./handle-room/version-1/globals/FolderDB";
-import { DEFAULT_PLUGIN_DIR, PluginManager } from "@roster-lock/plugin-runtime";
+import { PluginManager } from "@roster-lock/plugin-runtime";
+
 
 program
   .name("rosterlock-match-agent")
   .description("Runs the match-agent server")
   .option("--port <port>", "port to listen on", "58732")
-  .option("--auth-code <string>", "Authentication code required for access")
+  .option("--auth-code <string>", "authentication code required for access (overrides the config file)")
+  .option("--piece-folder <path>", "folder to store downloaded pieces in (overrides the config file)")
+  .option("--plugin-folder <path>", "folder to load plugins from (overrides the config file)")
   .option(
-    "--piece-folder <path>",
-    "folder to store downloaded pieces in (e.g. a mounted USB drive)",
-    DEFAULT_PIECE_DIR
+    "--config-file <path>",
+    "config file to read/persist the auth code and folders from " +
+    "(defaults to a config next to this executable, falling back to the home directory)"
   )
-  .option(
-    "--plugin-folder <path>",
-    "folder to load plugins from (e.g. a mounted USB drive)",
-    DEFAULT_PLUGIN_DIR
-  )
-  .action(async (options: { port: string, authCode?: string, pieceFolder: string, pluginFolder: string }) => {
+  .action(async (options: {
+    port: string, authCode?: string, pieceFolder?: string, pluginFolder?: string, configFile?: string,
+  }) => {
     const port = Number(options.port);
     if (!Number.isInteger(port) || port < 0 || port > 65535) {
       throw new Error(`Invalid port: ${options.port}`);
     }
 
-    const authCode = options.authCode || await getDefaultAuthCode(DEFAULT_MATCH_CONIFG);
-    await saveAuthCode(DEFAULT_MATCH_CONIFG, authCode)
+    const configFilePath = await findConfigFile(options.configFile);
+    const existingConfig = (await configExists(configFilePath)) ? await getConfig(configFilePath) : null;
 
-    const piecesFolder = pathResolve(options.pieceFolder);
-    await mkdir(piecesFolder, { recursive: true });
-    const pluginFolder = pathResolve(options.pluginFolder);
+    const authCode = options.authCode || existingConfig?.authCode || generateAuthCode();
+    const resolvedFolders = resolveConfigFolders(configFilePath, existingConfig ?? {});
+    const pieceFolder = options.pieceFolder ? pathResolve(options.pieceFolder) : resolvedFolders.pieceFolder;
+    const pluginFolder = options.pluginFolder ? pathResolve(options.pluginFolder) : resolvedFolders.pluginFolder;
+
+    // Persist so the auth code stays stable across runs (and a first run
+    // against a fresh config writes one out) - keep the config's own
+    // relative pieceFolder/pluginFolder untouched so a CLI override on this
+    // run doesn't get baked in as this config's permanent setting.
+    await setConfig(configFilePath, {
+      authCode,
+      pieceFolder: existingConfig?.pieceFolder,
+      pluginFolder: existingConfig?.pluginFolder,
+    });
+
+    await mkdir(pieceFolder, { recursive: true });
     await mkdir(pluginFolder, { recursive: true });
 
-    startServer(port, authCode, pluginFolder, piecesFolder);
+    startServer(port, authCode, pluginFolder, pieceFolder);
 
   });
 

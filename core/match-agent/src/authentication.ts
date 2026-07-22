@@ -1,34 +1,11 @@
 import { uint8ArrayToHex } from "@roster-lock/utils";
-import { stat } from "fs/promises"
-import { getConfig, setConfig } from "./config";
 import { GenericHandlerCallback } from "@roster-lock/utils"
 import { IncomingMessage } from "http";
 import { HTTPError } from "./utils/http-router";
 
-function generateAuthCode(length = 32){
+export function generateAuthCode(length = 32){
   const bytes = crypto.getRandomValues(new Uint8Array(length));
   return uint8ArrayToHex(bytes);
-}
-
-export async function getDefaultAuthCode(matchAgentConfigFile: string){
-  const statInfo = await fileExists(matchAgentConfigFile);
-  if(!statInfo) return generateAuthCode();
-  if(statInfo.isDirectory()){
-    throw new Error("Match Agent config is a directory")
-  }
-  return (await getConfig(matchAgentConfigFile)).authCode
-}
-
-export async function saveAuthCode(matchAgentConfigFile: string, authCode: string){
-  await setConfig(matchAgentConfigFile, { authCode })
-}
-
-async function fileExists(filePath: string){
-  try {
-    return await stat(filePath);
-  }catch(e){
-    return null;
-  }
 }
 
 export function authMiddleware(authCode: string): GenericHandlerCallback<{ req: IncomingMessage }>{
