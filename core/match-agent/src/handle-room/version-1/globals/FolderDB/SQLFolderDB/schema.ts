@@ -151,7 +151,7 @@ export function prepareDatabase(dbLocation: string){
       pieceInfo: { pieceType: string, logic: string, media: string }
     ){
       // Mark as error so we can retry
-      return db.prepare(
+      db.prepare(
         `
         UPDATE pieces SET status = 'error'
         WHERE engine_name = @engineName
