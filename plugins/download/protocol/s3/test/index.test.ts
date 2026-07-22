@@ -9,11 +9,11 @@ vi.mock('@roster-lock/dl-shared', () => ({
   saveStreamToFilesystem: vi.fn(),
 }));
 vi.mock('@aws-sdk/client-s3', () => ({
-  S3Client: vi.fn().mockImplementation((config) => {
+  S3Client: vi.fn().mockImplementation(function (config) {
     s3ClientMock(config);
     return { send: sendMock };
   }),
-  GetObjectCommand: vi.fn().mockImplementation((input) => ({ input })),
+  GetObjectCommand: vi.fn().mockImplementation(function (input) { return { input }; }),
 }));
 
 import S3_Handler from '../src/index';

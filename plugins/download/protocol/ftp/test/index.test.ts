@@ -69,7 +69,7 @@ describe('download', () => {
   it('routes to single-file handler when path is a file', async () => {
     const client = makeMockClient([]);
     client.list.mockRejectedValueOnce(new Error('Not a directory'));
-    FTPClient.mockImplementation(() => client);
+    FTPClient.mockImplementation(function () { return client; });
 
     const result = await FTP_Handler.download(
       'ftps://ftp.example.com/archive.tar.gz', '/dest', makeProcessHandlers() as any
@@ -87,7 +87,7 @@ describe('download', () => {
       [],
       [{ name: 'readme.txt', isFile: true, isDirectory: false, size: 512 }],
     ]);
-    FTPClient.mockImplementation(() => client);
+    FTPClient.mockImplementation(function () { return client; });
 
     const result = await FTP_Handler.download(
       'ftps://ftp.example.com/files/', '/dest', makeProcessHandlers() as any
@@ -101,7 +101,7 @@ describe('download', () => {
   it('closes the client after download completes', async () => {
     const client = makeMockClient([]);
     client.list.mockRejectedValueOnce(new Error('Not a directory'));
-    FTPClient.mockImplementation(() => client);
+    FTPClient.mockImplementation(function () { return client; });
 
     const result = await FTP_Handler.download(
       'ftps://ftp.example.com/file.tar.gz', '/dest', makeProcessHandlers() as any
@@ -112,7 +112,7 @@ describe('download', () => {
   });
 
   it('rejects immediately when already aborted', async () => {
-    FTPClient.mockImplementation(() => makeMockClient([]));
+    FTPClient.mockImplementation(function () { return makeMockClient([]); });
     const ac = new AbortController();
     ac.abort();
 
