@@ -3,7 +3,7 @@ import os from "node:os";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 
 export const DEFAULT_MATCH_CONIFG = pathJoin(os.homedir(), "roster-lock", "match-agent.json");
-export const DEFAULT_MATCH_FOLDER = pathJoin(os.homedir(), "roster-lock", "pieces");
+export const DEFAULT_PIECE_DIR = pathJoin(os.homedir(), "roster-lock", "pieces");
 const initializeConfig = Promise.resolve().then(()=>{
   return mkdir(dirname(DEFAULT_MATCH_CONIFG), { recursive: true })
 })

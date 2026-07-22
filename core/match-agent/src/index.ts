@@ -15,19 +15,19 @@ import { DEFAULT_PLUGIN_DIR, PluginManager } from "@roster-lock/plugin-runtime";
 program
   .name("rosterlock-match-agent")
   .description("Runs the match-agent server")
-  .option("-p, --port <port>", "port to listen on", "58732")
-  .option("-a, --auth-code <string>", "Authentication code required for access")
+  .option("--port <port>", "port to listen on", "58732")
+  .option("--auth-code <string>", "Authentication code required for access")
   .option(
-    "-f, --folder <path>",
-    "folder to store downloaded pieces and plugins in (e.g. a mounted USB drive)",
-    DEFAULT_MATCH_FOLDER
+    "--piece-folder <path>",
+    "folder to store downloaded pieces in (e.g. a mounted USB drive)",
+    DEFAULT_PIECE_DIR
   )
   .option(
     "--plugin-folder <path>",
     "folder to load plugins from (e.g. a mounted USB drive)",
     DEFAULT_PLUGIN_DIR
   )
-  .action(async (options: { port: string, authCode?: string, folder: string, pluginFolder: string }) => {
+  .action(async (options: { port: string, authCode?: string, pieceFolder: string, pluginFolder: string }) => {
     const port = Number(options.port);
     if (!Number.isInteger(port) || port < 0 || port > 65535) {
       throw new Error(`Invalid port: ${options.port}`);
@@ -36,7 +36,7 @@ program
     const authCode = options.authCode || await getDefaultAuthCode(DEFAULT_MATCH_CONIFG);
     await saveAuthCode(DEFAULT_MATCH_CONIFG, authCode)
 
-    const piecesFolder = pathResolve(options.folder);
+    const piecesFolder = pathResolve(options.pieceFolder);
     await mkdir(piecesFolder, { recursive: true });
     const pluginFolder = pathResolve(options.pluginFolder);
     await mkdir(pluginFolder, { recursive: true });
