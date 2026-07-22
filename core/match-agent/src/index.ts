@@ -19,6 +19,15 @@ program
   .name("rosterlock-match-agent")
   .description("Runs the match-agent server");
 
+// Plugin management (install/update/uninstall/list/priority), reused as-is
+// from plugin-runtime under its own `plugin` group - kept plain (own
+// -d/--plugin-dir, no config-file discovery) since this is mainly here for
+// testing convenience, not meant to be the primary way plugins get managed.
+const pluginCommand = program
+  .command("plugin")
+  .description("Manage plugins (install/update/uninstall/list/priority)");
+for(const command of createPluginCommands()) pluginCommand.addCommand(command);
+
 program
   .command("run")
   .description("Runs the match-agent server")
