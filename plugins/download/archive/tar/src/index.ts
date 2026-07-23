@@ -12,7 +12,12 @@ const tar: ArchiveHandler = {
       const parser = new Parser();
       (async () => {
         try {
-          for await (const chunk of input) parser.write(chunk);
+          for await (const chunk of input) {
+            // tar's Parser silently drops writes that aren't real Buffer
+            // instances (a plain Uint8Array — e.g. from webtorrent's piece
+            // stream — writes without error but never emits 'entry').
+            parser.write(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk.buffer, chunk.byteOffset, chunk.byteLength));
+          }
           parser.end();
         } catch (err) {
           parser.emit('error', err);
