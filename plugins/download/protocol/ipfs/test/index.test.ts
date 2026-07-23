@@ -73,11 +73,20 @@ describe('download', () => {
     const client = makeIpfsClient('file');
     createIpfsClient.mockReturnValue(client);
 
-    const result = await IPFS_Handler.download(`ipfs://${VALID_CID}`, '/dest', makeProcessHandlers() as any);
+    const result = await IPFS_Handler.download(`ipfs://${VALID_CID}/archive.zip`, '/dest', makeProcessHandlers() as any);
     await result.finishPromise;
 
     expect(result.metaData).toMatchObject({ cid: VALID_CID, type: 'file' });
-    expect(storeFile).toHaveBeenCalledWith('/dest', VALID_CID, expect.any(Object), expect.any(Object));
+    expect(storeFile).toHaveBeenCalledWith('/dest', 'archive.zip', expect.any(Object), expect.any(Object));
+  });
+
+  it('throws when a file CID has no filename path segment', async () => {
+    const client = makeIpfsClient('file');
+    createIpfsClient.mockReturnValue(client);
+
+    await expect(
+      IPFS_Handler.download(`ipfs://${VALID_CID}`, '/dest', makeProcessHandlers() as any)
+    ).rejects.toThrow('must include a filename');
   });
 
   it('downloads a directory and saves each file', async () => {

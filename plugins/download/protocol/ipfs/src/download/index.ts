@@ -11,7 +11,14 @@ export const download: ProtocolHandler["download"] = async function(
     throw new IPFSError(url, 'Download aborted');
   }
 
-  const cid = url.startsWith('ipfs://') ? url.slice(7) : url;
+  // ipfs://<CID> or ipfs://<CID>/path/to/file.ext — a bare file CID (from an
+  // un-wrapped `ipfs add`) has no filename anywhere in its DAG, so a file
+  // reference must carry its name as a path segment, the same way gateway
+  // URLs do (https://ipfs.io/ipfs/<dirCID>/file.ext).
+  const raw = url.startsWith('ipfs://') ? url.slice(7) : url;
+  const [cid, ...pathParts] = raw.split('/').filter(Boolean);
+  const subPath = pathParts.join('/');
+  const ipfsPath = subPath ? `${cid}/${subPath}` : cid;
 
   const ipfs = createIpfsClient({
     url: 'http://127.0.0.1:5001',
@@ -25,12 +32,16 @@ export const download: ProtocolHandler["download"] = async function(
   }
 
   try {
-    const stat = await ipfs.files.stat(`/ipfs/${cid}`);
+    const stat = await ipfs.files.stat(`/ipfs/${ipfsPath}`);
 
     if (stat.type === 'file') {
-      return handleSingleFile(ipfs, cid, folderDestination, processHandlers);
+      if (!subPath) {
+        throw new Error('IPFS file URLs must include a filename, e.g. ipfs://CID/archive.tar.gz');
+      }
+      const fileName = pathParts[pathParts.length - 1];
+      return handleSingleFile(ipfs, ipfsPath, cid, fileName, folderDestination, processHandlers);
     } else {
-      return handleDirectory(ipfs, cid, folderDestination, processHandlers);
+      return handleDirectory(ipfs, ipfsPath, folderDestination, processHandlers);
     }
   } catch (error) {
     throw new IPFSError(url, error);
