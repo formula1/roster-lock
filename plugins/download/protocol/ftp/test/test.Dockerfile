@@ -40,6 +40,7 @@ rsa_private_key_file=/etc/ssl/vsftpd.key\n\
 force_local_data_ssl=NO\n\
 force_local_logins_ssl=NO\n\
 require_ssl_reuse=NO\n\
+seccomp_sandbox=NO\n\
 ' > /etc/vsftpd/vsftpd.conf
 
 EXPOSE 21 21000-21010
