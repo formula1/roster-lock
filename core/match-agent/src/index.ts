@@ -12,21 +12,32 @@ import { MatchAgentServer } from "./server";
 import { program } from "commander";
 import { createV1Routers } from "./handle-room/version-1";
 import { getSQLite3FolderDB } from "./handle-room/version-1/globals/FolderDB";
-import { PluginManager, createPluginCommands } from "@roster-lock/plugin-runtime";
+import { PluginManager, createPluginCommands, syncPluginsToOfficialManifest } from "@roster-lock/plugin-runtime";
 
 
 program
   .name("rosterlock-match-agent")
   .description("Runs the match-agent server");
 
+// Resolves the same way `run` does (sibling config next to the executable,
+// falling back to home), so `plugin install` without -d/--plugin-dir lands
+// in the folder a mounted USB's config actually points at, instead of
+// silently defaulting to plugin-runtime's own ~/roster-lock/plugins.
+async function defaultPluginDirFromConfig(): Promise<string> {
+  const configFilePath = await findConfigFile();
+  const existingConfig = (await configExists(configFilePath)) ? await getConfig(configFilePath) : null;
+  return resolveConfigFolders(configFilePath, existingConfig ?? {}).pluginFolder;
+}
+
 // Plugin management (install/update/uninstall/list/priority), reused as-is
-// from plugin-runtime under its own `plugin` group - kept plain (own
-// -d/--plugin-dir, no config-file discovery) since this is mainly here for
-// testing convenience, not meant to be the primary way plugins get managed.
+// from plugin-runtime under its own `plugin` group - mainly here for testing
+// convenience, not meant to be the primary way plugins get managed.
 const pluginCommand = program
   .command("plugin")
   .description("Manage plugins (install/update/uninstall/list/priority)");
-for(const command of createPluginCommands()) pluginCommand.addCommand(command);
+for(const command of createPluginCommands({ getDefaultPluginDir: defaultPluginDirFromConfig })){
+  pluginCommand.addCommand(command);
+}
 
 program
   .command("run")
