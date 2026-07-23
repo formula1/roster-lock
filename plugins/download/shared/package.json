@@ -19,6 +19,8 @@
     "@roster-lock/types": "workspace:*"
   },
   "devDependencies": {
+    "@roster-lock/dl-archive-tar": "workspace:*",
+    "@roster-lock/dl-compression-gzip": "workspace:*",
     "@types/node": "^25.9.1",
     "rimraf": "^6.1.3",
     "typescript": "^7.0.2"
