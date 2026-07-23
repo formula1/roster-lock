@@ -1,7 +1,8 @@
 import {
   DEFAULT_PLUGIN_DIR,
   installPlugin, updatePlugin, uninstallPlugin, setPluginPriority, getPluginPackagesOfType,
-  PLUGIN_TYPES, PluginType,
+  PLUGIN_TYPES, PluginType, getInstalledPlugins, fetchOfficialManifest, diffAgainstOfficial,
+  syncPluginsToOfficialManifest,
 } from "./plugin-management";
 import { mkdir, stat as fsStat } from "node:fs/promises";
 import { resolve as pathResolve } from "node:path";
@@ -104,7 +105,58 @@ export function createPluginCommands(options: CreatePluginCommandsOptions = {}):
       }
     });
 
-  return [initializeDefault, install, update, uninstall, updatePriority, list];
+  const status = new Command("status")
+    .description(
+      "Compare installed plugins against the official plugin manifest. Read-only - " +
+      "safe to run anywhere, including machines you don't otherwise trust to install plugins."
+    )
+    .option('-d, --plugin-dir <dir>', 'folder where the plugins are')
+    .requiredOption('--manifest-url <url>', 'URL of the official plugin manifest to check against')
+    .action(async (options) => {
+      const pluginDir = await resolvePluginDir(options.pluginDir);
+      const official = await fetchOfficialManifest(options.manifestUrl);
+      const installed = getInstalledPlugins(pluginDir);
+      const diff = diffAgainstOfficial(installed, official);
+
+      for(const p of diff.missing) console.log(`MISSING   ${p.package}@${p.version}`);
+      for(const p of diff.outdated) {
+        console.log(`OUTDATED  ${p.package}: installed ${p.installedVersion}, official ${p.officialVersion}`);
+      }
+      for(const p of diff.priorityMismatch) {
+        console.log(`PRIORITY  ${p.package}: installed ${p.installedPriority}, official ${p.officialPriority}`);
+      }
+      for(const name of diff.upToDate) console.log(`OK        ${name}`);
+      for(const name of diff.unlisted) console.log(`UNLISTED  ${name} (not part of the official list)`);
+
+      const outOfSyncCount = diff.missing.length + diff.outdated.length + diff.priorityMismatch.length;
+      if(outOfSyncCount > 0){
+        console.log(`\n${outOfSyncCount} plugin(s) out of sync with the official list. Run "sync" on a trusted machine to update.`);
+        process.exitCode = 1;
+      } else {
+        console.log("\nAll official plugins are up to date.");
+      }
+    });
+
+  const sync = new Command("sync")
+    .description(
+      "Install/update plugins to match the official manifest exactly. This installs npm " +
+      "packages (via Arborist) - only run this on a machine you trust, not an untrusted/shared one."
+    )
+    .option('-d, --plugin-dir <dir>', 'folder where the plugins are')
+    .requiredOption('--manifest-url <url>', 'URL of the official plugin manifest to sync against')
+    .action(async (options) => {
+      const pluginDir = await resolvePluginDir(options.pluginDir);
+      const { installed, priorityChanges } = await syncPluginsToOfficialManifest(pluginDir, options.manifestUrl);
+      if(installed.length === 0 && priorityChanges.length === 0){
+        console.log("Already in sync with the official list.");
+        return;
+      }
+      for(const p of installed) console.log(`Installed ${p.package}@${p.version}`);
+      for(const p of priorityChanges) console.log(`Set priority of ${p.package} to ${p.priority}`);
+      console.log(`Sync complete - ${installed.length} plugin(s) installed/updated, ${priorityChanges.length} priority change(s) applied.`);
+    });
+
+  return [initializeDefault, install, update, uninstall, updatePriority, list, status, sync];
 }
 
 export function runCommand(){

@@ -5,11 +5,13 @@ import path from "node:path";
 import { importPluginPackage, PluginPackageType } from "./package";
 import { importPluginModule } from "./module";
 import { PluginType, PluginTypeMap, PLUGIN_TYPE_VALIDATORS } from "./plugin-types";
+import { fetchOfficialManifest, diffAgainstOfficial } from "./official-manifest";
 
 export { DEFAULT_PLUGIN_DIR } from "./constants";
 export * from "./plugin-types";
+export * from "./official-manifest";
 
-type PluginEntry = {
+export type PluginEntry = {
   package: string;
   version: string;
   type: PluginType;
@@ -19,6 +21,10 @@ type PluginEntry = {
 type PluginManifest = {
   plugins: PluginEntry[];
 };
+
+export function getInstalledPlugins(pluginDir: string): Array<PluginEntry> {
+  return readManifest(pluginDir).plugins;
+}
 
 const manifestPath = (pluginDir: string) => path.join(pluginDir, "plugins.json");
 
@@ -187,6 +193,36 @@ export function getPluginModulesOfType<T extends PluginType>(
     const packageJson = await importPluginPackage(pluginDir, plugin.package);
     return await importPluginModule(pluginDir, plugin.package, packageJson) as PluginTypeMap[T]
   }));
+}
+
+// Shared by the `plugin sync` CLI command and match-agent's `mount-usb`, so
+// there's one place that decides what "in sync with the official manifest"
+// means to actually install/update/re-prioritize.
+export async function syncPluginsToOfficialManifest(pluginDir: string, manifestUrl: string): Promise<{
+  installed: Array<{ package: string, version: string }>,
+  priorityChanges: Array<{ package: string, priority: number }>,
+}> {
+  const official = await fetchOfficialManifest(manifestUrl);
+  const installed = getInstalledPlugins(pluginDir);
+  const diff = diffAgainstOfficial(installed, official);
+
+  const toInstall = [
+    ...diff.missing,
+    ...diff.outdated.map((o) => ({ package: o.package, version: o.officialVersion })),
+  ];
+  for(const p of toInstall){
+    await installPlugin(pluginDir, `${p.package}@${p.version}`);
+  }
+
+  const priorityChanges: Array<{ package: string, priority: number }> = [];
+  for(const [packageName, p] of Object.entries(official.plugins)){
+    if(typeof p.priority === "number"){
+      await setPluginPriority(pluginDir, packageName, p.priority);
+      priorityChanges.push({ package: packageName, priority: p.priority });
+    }
+  }
+
+  return { installed: toInstall, priorityChanges };
 }
 
 export function getPluginFullOfType<T extends PluginType>(
