@@ -18,6 +18,7 @@
     "test:integration": "vitest run --config vitest.integration.config.ts"
   },
   "devDependencies": {
+    "@roster-lock/dl-shared": "workspace:*",
     "@roster-lock/types": "workspace:*",
     "@types/node": "^25.9.1",
     "rimraf": "^6.1.3",
