@@ -94,8 +94,12 @@ program
   .option("--plugin-folder <name>", "name of the plugins folder to create, relative to <path>", "plugins")
   .option("--auth-code <string>", "auth code to store in the config (a random one is generated if omitted)")
   .option("--force", "overwrite an existing config at <path>, generating a new auth code unless --auth-code is given", false)
+  .option(
+    "--manifest-url <url>",
+    "if given, sync plugins to match the official manifest at this URL right after mounting"
+  )
   .action(async (targetPath: string, options: {
-    pieceFolder: string, pluginFolder: string, authCode?: string, force: boolean,
+    pieceFolder: string, pluginFolder: string, authCode?: string, force: boolean, manifestUrl?: string,
   }) => {
     const mountFolder = pathResolve(targetPath);
     await mkdir(mountFolder, { recursive: true });
@@ -106,8 +110,9 @@ program
       throw new Error(`${configFilePath} already exists - pass --force to overwrite it`);
     }
 
+    const pluginFolder = pathJoin(mountFolder, options.pluginFolder);
     await mkdir(pathJoin(mountFolder, options.pieceFolder), { recursive: true });
-    await mkdir(pathJoin(mountFolder, options.pluginFolder), { recursive: true });
+    await mkdir(pluginFolder, { recursive: true });
 
     const authCode = options.authCode || existingConfig?.authCode || generateAuthCode();
     await setConfig(configFilePath, {
@@ -117,6 +122,13 @@ program
     });
 
     console.log(`Wrote ${configFilePath}`);
+
+    if(options.manifestUrl){
+      const { installed, priorityChanges } = await syncPluginsToOfficialManifest(pluginFolder, options.manifestUrl);
+      for(const p of installed) console.log(`Installed ${p.package}@${p.version}`);
+      for(const p of priorityChanges) console.log(`Set priority of ${p.package} to ${p.priority}`);
+      console.log(`Plugin sync complete - ${installed.length} plugin(s) installed/updated, ${priorityChanges.length} priority change(s) applied.`);
+    }
   });
 
 program
