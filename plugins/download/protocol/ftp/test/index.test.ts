@@ -68,7 +68,6 @@ describe('validateURL', () => {
 describe('download', () => {
   it('routes to single-file handler when path is a file', async () => {
     const client = makeMockClient([]);
-    client.list.mockRejectedValueOnce(new Error('Not a directory'));
     FTPClient.mockImplementation(function () { return client; });
 
     const result = await FTP_Handler.download(
@@ -84,9 +83,9 @@ describe('download', () => {
 
   it('routes to directory handler when path is a directory', async () => {
     const client = makeMockClient([
-      [],
       [{ name: 'readme.txt', isFile: true, isDirectory: false, size: 512 }],
     ]);
+    client.size.mockRejectedValueOnce(new Error('Not a file'));
     FTPClient.mockImplementation(function () { return client; });
 
     const result = await FTP_Handler.download(
@@ -100,7 +99,6 @@ describe('download', () => {
 
   it('closes the client after download completes', async () => {
     const client = makeMockClient([]);
-    client.list.mockRejectedValueOnce(new Error('Not a directory'));
     FTPClient.mockImplementation(function () { return client; });
 
     const result = await FTP_Handler.download(
