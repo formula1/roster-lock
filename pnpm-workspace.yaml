@@ -13,4 +13,3 @@ packages:
   - 'plugins/download/shared'
   - 'plugins/untrusted/config/*'
   - 'plugins/untrusted/script/*'
-  - 'tests/integration'
