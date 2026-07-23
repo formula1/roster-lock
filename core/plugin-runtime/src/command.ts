@@ -8,14 +8,40 @@ import { resolve as pathResolve } from "node:path";
 
 import { Command } from 'commander';
 
+export type CreatePluginCommandsOptions = {
+  // Resolves the plugin dir to use when -d/--plugin-dir is omitted. Defaults
+  // to DEFAULT_PLUGIN_DIR (~/roster-lock/plugins) - callers that have their
+  // own config/discovery story (e.g. match-agent's sibling-config-or-home
+  // lookup) can override this instead of always falling back to the home dir.
+  getDefaultPluginDir?: () => Promise<string>,
+};
+
 // Returns fresh, parentless Command instances every call, so any CLI
 // (this package's own bin, or another package's `program.addCommand(cmd)`)
 // can attach its own copies without the two sharing or fighting over state.
-export function createPluginCommands(): Array<Command> {
+export function createPluginCommands(options: CreatePluginCommandsOptions = {}): Array<Command> {
+  const getDefaultPluginDir = options.getDefaultPluginDir ?? (async () => DEFAULT_PLUGIN_DIR);
+
+  async function resolvePluginDir(value: string | undefined): Promise<string> {
+    if(typeof value === "undefined") return getDefaultPluginDir();
+    const dir = pathResolve(process.cwd(), value);
+    const statResult = await (async ()=>{
+      try {
+        return await fsStat(dir)
+      }catch(e){
+        throw new Error("Plugin folder doesn't exist");
+      }
+    })();
+    if(!statResult.isDirectory()){
+      throw new Error("Plugin folder is a file, expects a folder");
+    }
+    return dir;
+  }
+
   const initializeDefault = new Command("initialize-default")
     .description("Create default roster-lock folders")
     .action(async ()=>{
-      await mkdir(DEFAULT_PLUGIN_DIR, { recursive: true })
+      await mkdir(await getDefaultPluginDir(), { recursive: true })
     });
 
   const install = new Command('install')
@@ -23,7 +49,7 @@ export function createPluginCommands(): Array<Command> {
     .argument('<package>', 'npm package which the plugin is available in')
     .option('-d, --plugin-dir <dir>', 'folder where the plugins are')
     .action(async (pluginPackage, options) => {
-      const pluginDir = await getPluginDir(options.pluginDir);
+      const pluginDir = await resolvePluginDir(options.pluginDir);
       await installPlugin(pluginDir, pluginPackage);
     });
 
@@ -32,7 +58,7 @@ export function createPluginCommands(): Array<Command> {
     .argument('<package>', 'name of the installed plugin package to update')
     .option('-d, --plugin-dir <dir>', 'folder where the plugins are')
     .action(async (pluginPackage, options) => {
-      const pluginDir = await getPluginDir(options.pluginDir);
+      const pluginDir = await resolvePluginDir(options.pluginDir);
       await updatePlugin(pluginDir, pluginPackage);
     });
 
@@ -41,7 +67,7 @@ export function createPluginCommands(): Array<Command> {
     .argument('<package>', 'npm package which the plugin is available in')
     .option('-d, --plugin-dir <dir>', 'folder where the plugins are')
     .action(async (pluginPackage, options) => {
-      const pluginDir = await getPluginDir(options.pluginDir);
+      const pluginDir = await resolvePluginDir(options.pluginDir);
       await uninstallPlugin(pluginDir, pluginPackage)
     });
 
@@ -51,7 +77,7 @@ export function createPluginCommands(): Array<Command> {
     .argument('<priority>', 'The number the new priority the package will be. Decimals (such as 1.5) are supported')
     .option('-d, --plugin-dir <dir>', 'folder where the plugins are')
     .action(async (pluginPackage, priorityStr, options) => {
-      const pluginDir = await getPluginDir(options.pluginDir);
+      const pluginDir = await resolvePluginDir(options.pluginDir);
       const priority = Number.parseFloat(priorityStr);
       if(Number.isNaN(priority)){
         throw new Error("Priority should be a number. Decimals are supported")
@@ -64,7 +90,7 @@ export function createPluginCommands(): Array<Command> {
     .argument('<purpose>', `Purpose the plugin is expected to be. Should be one of ${JSON.stringify(Array.from(PLUGIN_TYPES))}`)
     .option('-d, --plugin-dir <dir>', 'folder where the plugins are')
     .action(async (pluginPurpose, options) => {
-      const pluginDir = await getPluginDir(options.pluginDir);
+      const pluginDir = await resolvePluginDir(options.pluginDir);
       if(!PLUGIN_TYPES.has(pluginPurpose)){
         throw new Error("Plugins should be one of " + JSON.stringify(Array.from(PLUGIN_TYPES)))
       }
@@ -88,20 +114,4 @@ export function runCommand(){
     .version(require("../package.json").version);
   for(const command of createPluginCommands()) program.addCommand(command);
   program.parse();
-}
-
-async function getPluginDir(value: string | undefined){
-  if(typeof value === "undefined") return DEFAULT_PLUGIN_DIR;
-  const dir = pathResolve(process.cwd(), value);
-  const statResult = await (async ()=>{
-    try {
-      return await fsStat(dir)
-    }catch(e){
-      throw new Error("Plugin folder doesn't exist");
-    }
-  })();
-  if(!statResult.isDirectory()){
-    throw new Error("Plugin folder is a file, expects a folder");
-  }
-  return dir;
 }
