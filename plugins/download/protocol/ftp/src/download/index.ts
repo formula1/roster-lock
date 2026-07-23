@@ -27,9 +27,16 @@ export const runFtpDownload: ProtocolHandler["download"] = async function(
     // Determine if FTPS
     const secure = urlObj.protocol === 'ftps:';
     
-    // Connect to FTP server
+    // Connect to FTP server.
+    // "localhost" is special-cased to allow plain (non-TLS) ftp:// above, but
+    // Node's DNS resolution for that hostname can return the IPv6 loopback
+    // (::1) first. Passive-mode FTP servers commonly only bind their data
+    // channel on IPv4, so a control connection over ::1 leaves the data
+    // connection unable to reach it. Force IPv4 loopback here to keep both
+    // connections on the same address family.
+    const host = urlObj.hostname === 'localhost' ? '127.0.0.1' : urlObj.hostname;
     await client.access({
-      host: urlObj.hostname,
+      host,
       port: urlObj.port ? parseInt(urlObj.port) : (secure ? 990 : 21),
       user: urlObj.username || 'anonymous',
       password: urlObj.password || 'anonymous@',
