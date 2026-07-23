@@ -18,23 +18,34 @@ RUN corepack enable
 WORKDIR /app
 
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
-COPY core/utils/ core/utils/
-COPY core/relay-server/ core/relay-server/
 
-# Installs @roster-lock/utils (builds it via its own "prepare" script) and
-# core/relay-server's own deps, including wrangler's postinstall fetch of
-# the workerd binary it needs to run.
-RUN pnpm install --filter @roster-lock/server... --frozen-lockfile
+# Copy only what's needed to resolve the workspace graph and run install-time
+# scripts (@roster-lock/utils builds itself via its "prepare" script, which
+# needs its actual source, not just its package.json). Keeping this separate
+# from the full source COPY below means editing server/client source doesn't
+# bust the install layer's cache, so `pnpm install` doesn't re-run on every
+# rebuild.
+COPY core/utils/package.json core/utils/tsconfig.json core/utils/
+COPY core/utils/src/ core/utils/src/
+COPY core/relay-server/package.json core/relay-server/
+COPY core/relay-server/client/package.json core/relay-server/client/
+
+# Installs @roster-lock/utils (builds it via its own "prepare" script),
+# core/relay-server's own deps (including wrangler's postinstall fetch of
+# the workerd binary it needs to run), and the admin client's deps.
+RUN pnpm install --filter @roster-lock/server... --filter @roster-lock/relay-client... --frozen-lockfile
+
+# Now bring in the rest of the relay-server source (tests, client, etc).
+# core/utils doesn't need a second copy: package.json/tsconfig/src are already
+# in place from above and dist/ was already built by the install step's
+# "prepare" script; nothing here runs its tests.
+COPY core/relay-server/ core/relay-server/
 
 WORKDIR /app/core/relay-server
 
-# The admin React client (client/) currently fails to build due to a
-# pre-existing @types/react version conflict in the workspace, unrelated
-# to the relay API this integration test exercises. Skip building it for
-# now and serve a placeholder so wrangler's static asset binding (which
-# points at client/dist) has a directory to read from.
-RUN mkdir -p client/dist && \
-    echo '<!doctype html><html><body>Admin client build skipped</body></html>' > client/dist/index.html
+# Build the admin React client so wrangler's static asset binding (which
+# points at client/dist) has something real to serve.
+RUN pnpm run build:client
 
 # Expose port
 EXPOSE 80
