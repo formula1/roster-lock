@@ -13,8 +13,7 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "node-datachannel",
-      "better-sqlite3"
+      "node-datachannel"
     ]
   }
 }
