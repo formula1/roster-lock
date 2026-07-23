@@ -6,8 +6,6 @@ import type { Processors } from '@roster-lock/types';
 import tar from '@roster-lock/dl-archive-tar';
 import gzip from '@roster-lock/dl-compression-gzip';
 
-export { FIXTURE_FILES } from './constants';
-
 export function getProcessors(pathname: string): Processors {
   const decompressors = [];
   let remaining = pathname;

@@ -1,10 +1,9 @@
-import { execSync }        from 'node:child_process';
-import { createConnection } from 'node:net';
+import { execSync } from 'node:child_process';
 import path from 'node:path';
-import os   from 'node:os';
-import fs   from 'node:fs';
+import os from 'node:os';
+import fs from 'node:fs';
 import { S3Client, CreateBucketCommand, PutObjectCommand } from '@aws-sdk/client-s3';
-import { FIXTURE_FILES } from './constants';
+import { FIXTURE_FILES } from '@roster-lock/dl-shared/test';
 
 const S3_ENDPOINT = 'http://localhost:19100';
 const S3_BUCKET = 'roster-lock-test';
@@ -33,47 +32,8 @@ function waitForHttp(url: string, timeoutMs: number): Promise<void> {
   });
 }
 
-function waitForTcp(host: string, port: number, timeoutMs: number): Promise<void> {
-  const start = Date.now();
-  return new Promise((resolve, reject) => {
-    const attempt = () => {
-      const sock = createConnection({ host, port }, () => { sock.destroy(); resolve(); });
-      sock.on('error', () => {
-        sock.destroy();
-        if (Date.now() - start > timeoutMs) {
-          reject(new Error(`Timed out waiting for ${host}:${port}`));
-          return;
-        }
-        setTimeout(attempt, 1500);
-      });
-    };
-    attempt();
-  });
-}
-
-async function addFileToIpfs(filePath: string): Promise<string> {
-  const formData = new FormData();
-  formData.append('file', new Blob([fs.readFileSync(filePath)]), path.basename(filePath));
-  const res = await fetch('http://127.0.0.1:5001/api/v0/add?quieter=true', { method: 'POST', body: formData });
-  return JSON.parse((await res.text()).trim()).Hash;
-}
-
-async function addDirToIpfs(files: Record<string, string>): Promise<string> {
-  const formData = new FormData();
-  for (const [rel, content] of Object.entries(files)) {
-    formData.append('file', new Blob([content]), `fixtures/${rel}`);
-  }
-  const res = await fetch(
-    'http://127.0.0.1:5001/api/v0/add?recursive=true',
-    { method: 'POST', body: formData },
-  );
-  const lines = (await res.text()).trim().split('\n').map(l => JSON.parse(l));
-  const dir = lines.find((l: any) => l.Name === 'fixtures') ?? lines[lines.length - 1];
-  return dir.Hash;
-}
-
 function buildArchive(files: Record<string, string>, destPath: string, flags: string) {
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rl-ipfs-'));
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rl-s3-'));
   try {
     for (const [rel, content] of Object.entries(files)) {
       const full = path.join(tmpDir, rel);
@@ -113,36 +73,16 @@ async function seedS3(tmpArchiveGz: string, tmpArchiveTar: string): Promise<void
 
 export async function setup() {
   compose('up -d --build');
+  await waitForHttp('http://localhost:19100/minio/health/live', 30_000);
 
-  await Promise.all([
-    waitForHttp('http://localhost:18080/archive.tar.gz', 30_000),
-    waitForTcp('localhost', 12021, 30_000),
-    waitForHttp('http://localhost:13000/repo.git/info/refs?service=git-upload-pack', 30_000),
-    waitForHttp('http://localhost:19000/magnet/file', 90_000),
-    waitForHttp('http://127.0.0.1:5001/api/v0/id', 120_000),
-    waitForHttp('http://localhost:19100/minio/health/live', 30_000),
-  ]);
-
-  const tmpArchiveGz  = path.join(os.tmpdir(), 'rl-ipfs-archive.tar.gz');
-  const tmpArchiveTar = path.join(os.tmpdir(), 'rl-ipfs-archive.tar');
+  const tmpArchiveGz  = path.join(os.tmpdir(), 'rl-s3-archive.tar.gz');
+  const tmpArchiveTar = path.join(os.tmpdir(), 'rl-s3-archive.tar');
   buildTarGz(FIXTURE_FILES, tmpArchiveGz);
   buildTar(FIXTURE_FILES, tmpArchiveTar);
 
-  const [fileCid, fileTarCid] = await Promise.all([
-    addFileToIpfs(tmpArchiveGz),
-    addFileToIpfs(tmpArchiveTar),
-    seedS3(tmpArchiveGz, tmpArchiveTar),
-  ]);
+  await seedS3(tmpArchiveGz, tmpArchiveTar);
   fs.unlinkSync(tmpArchiveGz);
   fs.unlinkSync(tmpArchiveTar);
-  process.env.IPFS_FILE_CID     = fileCid;
-  process.env.IPFS_FILE_TAR_CID = fileTarCid;
-  console.log(`IPFS file CID:     ${fileCid}`);
-  console.log(`IPFS file-tar CID: ${fileTarCid}`);
-
-  const dirCid = await addDirToIpfs(FIXTURE_FILES);
-  process.env.IPFS_DIR_CID = dirCid;
-  console.log(`IPFS dir CID:  ${dirCid}`);
 }
 
 export async function teardown() {

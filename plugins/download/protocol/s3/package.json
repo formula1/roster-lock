@@ -13,7 +13,8 @@
   "scripts": {
     "build": "rimraf ./dist && tsc",
     "prepare": "pnpm run build",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:integration": "vitest run --config vitest.integration.config.ts"
   },
   "devDependencies": {
     "@roster-lock/types": "workspace:*",

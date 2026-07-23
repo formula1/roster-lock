@@ -1,0 +1,9 @@
+services:
+  minio:
+    image: minio/minio:latest
+    environment:
+      - MINIO_ROOT_USER=roster-lock-test
+      - MINIO_ROOT_PASSWORD=roster-lock-test-secret
+    command: server /data
+    ports:
+      - "19100:9000"

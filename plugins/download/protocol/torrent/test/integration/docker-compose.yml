@@ -1,0 +1,11 @@
+services:
+  torrent:
+    build:
+      context: ..
+      dockerfile: test.Dockerfile
+    environment:
+      - WEBSEED_BASE_URL=http://localhost:19001
+    ports:
+      - "19000:19000"
+      - "19001:19001"
+      - "19002:19002"
