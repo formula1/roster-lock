@@ -16,7 +16,11 @@ RUN git clone /repo /tmp/work \
  && git add . \
  && git commit -m "fixtures" \
  && git push origin HEAD:main \
- && rm -rf /tmp/work
+ && rm -rf /tmp/work \
+ # git init --bare defaults HEAD to refs/heads/master, which never receives
+ # a commit here (everything is pushed to main) — leaving HEAD unresolvable
+ # and breaking ref advertisement for clients that need to dereference it.
+ && git -C /repo symbolic-ref HEAD refs/heads/main
 
 COPY server.js /server.js
 
