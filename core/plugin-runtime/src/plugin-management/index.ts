@@ -181,6 +181,19 @@ export function getPluginPackagesOfType(
   }))
 }
 
+export async function getPluginModuleByName<T extends PluginType>(
+  pluginDir: string,
+  packageName: string,
+  type: T
+): Promise<PluginTypeMap[T]> {
+  const entry = readManifest(pluginDir).plugins.find((p) => p.package === packageName);
+  if(!entry) throw new Error(`Plugin not installed: ${packageName}`);
+  if(entry.type !== type) throw new Error(`Plugin ${packageName} is a "${entry.type}" plugin, not "${type}"`);
+
+  const packageJson = await importPluginPackage(pluginDir, packageName);
+  return await importPluginModule(pluginDir, packageName, packageJson) as PluginTypeMap[T];
+}
+
 export function getPluginModulesOfType<T extends PluginType>(
   pluginDir: string,
   type: T

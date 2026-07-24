@@ -1,13 +1,17 @@
-import { UntrustedScript, UntrustedConfig, ArchiveHandler, Decompressor, ProtocolHandler } from "@roster-lock/types";
+import {
+  UntrustedScript, UntrustedConfig, ArchiveHandler, Decompressor, ProtocolHandler, PieceSelectionSortPlugin,
+} from "@roster-lock/types";
 
 export type PluginType = (
   | "dl-protocol" | "dl-compression" | "dl-archive"
   | "untrusted-script" | "untrusted-config"
+  | "piece-selection-sort"
 );
 
 export const PLUGIN_TYPES = new Set<PluginType>([
   "dl-protocol", "dl-compression", "dl-archive",
-  "untrusted-script", "untrusted-config"
+  "untrusted-script", "untrusted-config",
+  "piece-selection-sort"
 ]);
 
 export type PluginTypeMap = {
@@ -16,6 +20,7 @@ export type PluginTypeMap = {
   "dl-archive": ArchiveHandler;
   "untrusted-script": UntrustedScript<any>;
   "untrusted-config": UntrustedConfig
+  "piece-selection-sort": PieceSelectionSortPlugin;
 };
 
 export const PLUGIN_TYPE_VALIDATORS: Record<PluginType, (p: Record<string, unknown>) => boolean> = {
@@ -49,6 +54,17 @@ export const PLUGIN_TYPE_VALIDATORS: Record<PluginType, (p: Record<string, unkno
     if(typeof p.name !== "string") throw new Error("\"name\" should be a string");
     if(!isStringArray(p.extensions)) throw new Error("\"extensions\" should be a string[]");
     if(typeof p.runConfig !== "function") throw new Error("\"runConfig\" should be a function");
+    return true;
+  },
+  "piece-selection-sort": (p) =>{
+    if(typeof p.name !== "string") throw new Error("\"name\" should be a string");
+    if(typeof p.publicInfo !== "object" || p.publicInfo === null) throw new Error("\"publicInfo\" should be an object");
+    const publicInfo = p.publicInfo as Record<string, unknown>;
+    if(typeof publicInfo.title !== "string") throw new Error("\"publicInfo.title\" should be a string");
+    if(typeof publicInfo.description !== "string") throw new Error("\"publicInfo.description\" should be a string");
+    if(typeof p.sortPieces !== "function") throw new Error("\"sortPieces\" should be a function");
+    if(typeof p.handleFullSelection !== "function") throw new Error("\"handleFullSelection\" should be a function");
+    if(typeof p.handleGameComplete !== "function") throw new Error("\"handleGameComplete\" should be a function");
     return true;
   },
 };

@@ -35,6 +35,10 @@ type RoomArgs = {
   ownSelection: UserSelection,
   lockConfig: RosterLockV1Config,
   gameControlledSelections: Record<string, Array<SelectedPiece> | Record<UserPublicKey, Array<SelectedPiece>>>,
+  // The user(s) local to this match-agent instance driving this room (as opposed
+  // to the other players in `users`, whose selections we only see encrypted/merged).
+  // Expected to grow past one entry once local multiplayer lands.
+  localUsers: Array<UserPublicKey>,
 }
 
 export type ProgressListeners = Partial<{
@@ -56,6 +60,7 @@ export function bindStepsToBridge(
     ownSelection,
     lockConfig,
     gameControlledSelections,
+    localUsers,
   }: RoomArgs,
   progressListeners: ProgressListeners = {}
 ): Promise<RosterLockV1SyncDLResult>{
@@ -66,6 +71,9 @@ export function bindStepsToBridge(
 
   const rngSeed = createRandomSeed();
   const ownEncrypted = encryptJSON({ userSelection: ownSelection, randomSeed: rngSeed });
+  // Filled in by "all-decryption-for-user-final" below, read back by the
+  // handleFullSelection hook once the whole room promise settles.
+  let decryptedSelections: Record<UserPublicKey, UserInput> = {};
 
   bridge.onRequest("ping", ()=>{
     heartbeat.heartBeat();
@@ -108,7 +116,6 @@ export function bindStepsToBridge(
     if(!casted.success) throw new Error("Invalid Decryption Keys");
     if(Object.keys(casted.data).length !== users.length) throw new Error("Invalid User Count");
     const keys = casted.data;
-    const decryptedSelections: Record<UserPublicKey, UserInput> = {}
     await Promise.all(users.map(async (user)=>{
       const encrypted = allEncrypted[user.publicKey];
       if(!encrypted) throw new Error("Missing Encrypted Selections");
@@ -168,6 +175,18 @@ export function bindStepsToBridge(
     heartbeat.stop();
     stateTracker.set({ state: "ended" });
   }).catch(()=>{});
+
+  // Only fires once the whole room succeeds (selection + downloads) - doesn't
+  // block "all-decryption-for-user-final"'s response, and a broken/misbehaving
+  // indexing plugin can't stop the room, so failures here are only logged.
+  promise.then(()=>{
+    const userSelections = Object.fromEntries(
+      Object.entries(decryptedSelections).map(([userId, input])=>[userId, input.userSelection])
+    );
+    return pluginRuntime.pieceSort.handleFullSelection({ lockConfig, localUsers, userSelections });
+  }).catch((e)=>{
+    console.error("piece-selection-sort handleFullSelection failed", e);
+  });
 
   return Promise.race([
     promise,

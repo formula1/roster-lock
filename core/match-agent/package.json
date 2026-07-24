@@ -31,6 +31,8 @@
     "@roster-lock/dl-archive-tar": "workspace:*",
     "@roster-lock/dl-compression-gzip": "workspace:*",
     "@roster-lock/dl-protocol-http": "workspace:*",
+    "@roster-lock/piece-selection-sort-most-used-locally": "workspace:*",
+    "@roster-lock/piece-selection-sort-highest-winrate-locally": "workspace:*",
     "@types/async": "^3.2.25",
     "@types/mime-types": "^2.1.4",
     "@types/node": "^22.14.1",

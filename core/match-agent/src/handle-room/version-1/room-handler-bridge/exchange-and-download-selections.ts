@@ -84,6 +84,7 @@ export async function exchangeAndDownloadSelections(
     ownSelection: roomRequest.userSelection,
     lockConfig: roomRequest.rosterConfig,
     gameControlledSelections: {},
+    localUsers: [roomRequest.user.publicKey],
   }, progressListeners);
 
   // The relay closes the room websocket with a close reason as soon as it fails

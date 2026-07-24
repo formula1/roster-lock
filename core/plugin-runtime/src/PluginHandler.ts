@@ -7,9 +7,11 @@ import { stat } from "fs/promises"
 
 import { runUntrustedScript, ScriptStarter } from "./run-untrusted";
 import { downloadToFolder, DownloadToFolderArg } from "./download";
+import { PieceSort } from "./PieceSort";
 
 export class PluginManager {
-  private constructor(private pluginDir: string){}
+  public pieceSort: PieceSort = new PieceSort(this);
+  private constructor(public readonly pluginDir: string){}
   static async create(pluginDir: string){
     const statInfo = await tryStat(pluginDir)
     if(!statInfo.isDirectory()) throw new Error("Plugin directory must be a directory")
