@@ -1,7 +1,6 @@
 
-import { PieceId } from "../shared";
+import { PieceId, Sha256 } from "../shared";
 
-type Sha256 = string;
 type URLType = string;
 type DownloadableSource = string;
 

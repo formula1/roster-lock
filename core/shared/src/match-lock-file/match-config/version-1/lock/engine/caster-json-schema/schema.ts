@@ -6,6 +6,7 @@ type RosterLockEngineConfig = RosterLockV1Config["engine"];
 import { assetsSchema, assetKeywords } from "./asset";
 import { requirementsSchema, requirementKeywords } from "./requirements";
 import { pathVariablesSchema, pathVariableKeywords } from "./variables";
+import { officialSelectionsSchema, officialSelectionsKeywords } from "./officialSelections";
 
 const pieceDefinitionSchema: JSONSchemaType<
   RosterLockEngineConfig["pieceDefinitions"][string]
@@ -32,7 +33,8 @@ export const engineSchema: JSONSchemaType<RosterLockEngineConfig> = {
       type: "object",
       required: [],
       additionalProperties: pieceDefinitionSchema
-    }
+    },
+    officialSelections: { ...officialSelectionsSchema, nullable: true },
   }
 }
 
@@ -40,5 +42,6 @@ export const engineKeywords = [
   ...pathVariableKeywords,
   ...requirementKeywords,
   ...assetKeywords,
+  ...officialSelectionsKeywords,
 ]
 
