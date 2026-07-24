@@ -55,12 +55,14 @@ const jsonShallowValueSchema = z.union([
 ]);
 const jsonShallowObjectSchema = z.record(z.string(), jsonShallowValueSchema);
 
-const selectionPieceMetaSchema = z.object({
-  schema: z.record(z.string(), z.enum(["boolean", "number", "string", "boolean[]", "number[]", "string[]"])),
-  defaultMeta: jsonShallowObjectSchema,
+// Used by "piece-meta set" --json: the top-level per-piece-type custom fields
+// (kept separate from the selection config so a selection config stays roster-agnostic).
+export const pieceMetaOverridesSchema = z.object({
+  schema: z.record(z.string(), z.enum(["boolean", "number", "string", "boolean[]", "number[]", "string[]"])).optional(),
+  defaultMeta: jsonShallowObjectSchema.optional(),
   // Record<PieceId, Partial<Config>> - a record's values are already independently
   // optional per key, so this is the same shape as the record itself.
-  pieceMeta: z.record(z.string(), jsonShallowObjectSchema),
+  values: z.record(z.string(), jsonShallowObjectSchema).optional(),
 }).strict();
 
 type SelectedPieceInput = {
@@ -84,21 +86,15 @@ const userSelectionValidationSchema = z.object({
 
 // Keyed by the `--type` option on "selection set"; each schema covers the fields
 // mergeable on top of that type's template (its own template already supplies
-// `type` and default `pieceMeta`, so both stay optional here).
+// `type`, so it stays optional here).
 export const selectionOverridesSchemas = {
   normal: z.object({
-    pieceMeta: selectionPieceMetaSchema.optional(),
     validation: userSelectionValidationSchema.optional(),
     mergeAlgorithm: untrustedScriptRefSchema.optional(),
   }).strict(),
   preselected: z.object({
-    pieceMeta: selectionPieceMetaSchema.optional(),
     pieces: z.array(selectedPieceSchema).optional(),
   }).strict(),
-  unselectable: z.object({
-    pieceMeta: selectionPieceMetaSchema.optional(),
-  }).strict(),
-  "game-controlled": z.object({
-    pieceMeta: selectionPieceMetaSchema.optional(),
-  }).strict(),
+  unselectable: z.object({}).strict(),
+  "game-controlled": z.object({}).strict(),
 } as const;

@@ -27,15 +27,11 @@ export function useEnsureCorrectSelection(){
         continue;
       }
       if(isUnselectable && selectionConfig.type !== "unselectable"){
-        const newConfig = cloneJSON(EMPTY_ROSTER_UNSELECTABLE_SELECTION);
-        newConfig.pieceMeta = selectionConfig.pieceMeta;
-        updates.push([pieceType, newConfig]);
+        updates.push([pieceType, cloneJSON(EMPTY_ROSTER_UNSELECTABLE_SELECTION)]);
         continue;
       }
       if(!isUnselectable && selectionConfig.type === "unselectable"){
-        const newConfig = cloneJSON(EMPTY_ROSTER_NORMAL_SELECTION);
-        newConfig.pieceMeta = selectionConfig.pieceMeta;
-        updates.push([pieceType, newConfig]);
+        updates.push([pieceType, cloneJSON(EMPTY_ROSTER_NORMAL_SELECTION)]);
         continue;
       }
     }

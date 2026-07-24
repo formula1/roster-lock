@@ -37,7 +37,6 @@ function buildLockWithRoster(): RosterLockV1Config {
   }];
   lock.selection.piece["character"] = {
     type: "unselectable",
-    pieceMeta: { schema: {}, defaultMeta: {}, pieceMeta: {} },
   };
   return lock;
 }

@@ -1,11 +1,18 @@
-
 import Ajv, { JSONSchemaType } from "ajv";
 import {
   RosterLockV1Config, PieceType, JSONShallowObject, SelectionPieceMeta
 } from "@roster-lock/types";
 import { cloneJSON } from "@roster-lock/utils";
 
-export function validateSelectionPieceMeta(
+export function validatePieceMeta(
+  config: RosterLockV1Config
+){
+  for(const [pieceType, meta] of Object.entries(config.pieceMeta)){
+    validatePieceMetaConfig(meta, pieceType, config);
+  }
+}
+
+export function validatePieceMetaConfig(
   meta: SelectionPieceMeta<any>,
   pieceType: PieceType,
   { engine, rosters }: RosterLockV1Config
@@ -21,8 +28,8 @@ export function validateSelectionPieceMeta(
 
   validateMetaDefaultValue(meta.schema, meta.defaultMeta);
 
-  for(const [pieceId, pieceMeta] of Object.entries(meta.pieceMeta)){
-    validateMetaForPiece(meta.schema, pieceId, pieceMeta, roster);
+  for(const [pieceId, pieceValue] of Object.entries(meta.values)){
+    validateMetaForPiece(meta.schema, pieceId, pieceValue, roster);
   }
 }
 
@@ -89,7 +96,7 @@ export function validateMetaDefaultValue(
 export function validateMetaForPiece(
   simpleSchema: SelectionPieceMeta<any>["schema"],
   pieceId: string,
-  meta: SelectionPieceMeta<any>["pieceMeta"][string],
+  meta: SelectionPieceMeta<any>["values"][string],
   roster: RosterLockV1Config["rosters"][string]
 ){
   const metaSchema = simpleSchemaToJSONSchemaType(simpleSchema);

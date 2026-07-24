@@ -6,10 +6,10 @@ export function createPieceMetaGetter(
 ){
   return function (pieceType: string, pieceId: string){
     if(!lockedTypes.has(pieceType)) return {};
-    const pieceMeta = config.selection.piece[pieceType].pieceMeta;
+    const pieceMeta = config.pieceMeta[pieceType];
     if(!pieceMeta) return {};
     const defaultMeta = pieceMeta.defaultMeta;
-    const pieceSpecificMeta = pieceMeta.pieceMeta[pieceId] || {};
+    const pieceSpecificMeta = pieceMeta.values[pieceId] || {};
     return cloneJSON({
       ...defaultMeta,
       ...pieceSpecificMeta,

@@ -15,6 +15,7 @@ import {
   EMPTY_ROSTER_NORMAL_SELECTION,
   EMPTY_ROSTER_GAME_SELECTION,
   EMPTY_ROSTER_PRESELECTED_SELECTION,
+  EMPTY_PIECE_META,
 } from "@roster-lock/shared"
 import { cloneJSON } from "@roster-lock/utils";
 import { Link, useParams } from "react-router";
@@ -22,6 +23,7 @@ import { Link, useParams } from "react-router";
 import { RosterLockPaths } from "../../../paths";
 import { replaceParams } from "../../../../../utils/router";
 import { updatePiece } from "../utils/update-piece";
+import { updatePieceMeta } from "../utils/update-piece-meta";
 import { ToolTipSpan } from "../../../../../components/ToolTip";
 
 type SelectionConfig = (
@@ -67,7 +69,7 @@ export function PieceSelectionConfig(
     & { pieceType: string }
   )
 ) {
-  const { value: lock } = useRosterLock();
+  const { value: lock, onChange: onLockChange } = useRosterLock();
   const defintion = lock.engine.pieceDefinitions[pieceType]
   if(!defintion) return (
     <h4 className="error">{pieceType} has no engine defintiion</h4>
@@ -76,6 +78,7 @@ export function PieceSelectionConfig(
   if(!pieces) return (
     <h4 className="error">{pieceType} has no roster list</h4>
   );
+  const pieceMeta = lock.pieceMeta[pieceType] ?? EMPTY_PIECE_META;
 
   return (
     <div className="section">
@@ -95,9 +98,7 @@ export function PieceSelectionConfig(
             onChange={(e)=>{
               const config = SELECTION_FORMS[e.target.value];
               if(!config) throw new Error("Missing Selection Type")
-              const cloned = cloneJSON(config.empty);
-              cloned.pieceMeta = value.pieceMeta;
-              onChange(cloned);
+              onChange(cloneJSON(config.empty));
             }}
           >
             {Object.entries(SELECTION_FORMS).map(([k, { title }])=>(
@@ -112,8 +113,8 @@ export function PieceSelectionConfig(
           <ToolTipSpan tip={pieceMetaTT} >Piece Meta</ToolTipSpan>
         </h3>
         <PieceMetaEditor
-          value={value.pieceMeta}
-          onChange={(pieceMeta)=>(onChange({ ...value, pieceMeta }))}
+          value={pieceMeta}
+          onChange={(newPieceMeta)=>onLockChange(old => updatePieceMeta(old, pieceType, newPieceMeta))}
           pieces={pieces}
         />
       </div>

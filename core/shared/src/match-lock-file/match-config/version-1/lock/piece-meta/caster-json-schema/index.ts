@@ -3,16 +3,16 @@ import { JSONSchemaType } from "ajv";
 import { defineKeyword } from "../../../../../util-types/json-schema";
 import { RosterLockV1Config, SelectionPieceMeta, JSONShallowObject } from "@roster-lock/types";
 
-import { validateMetaDefaultValue, validateMetaForPiece } from "../validate/meta";
+import { validateMetaDefaultValue, validateMetaForPiece } from "../validate";
 
 export const metaDefaultValueSchemaValidator = defineKeyword({
   keyword: "metaDefaultValue",
   type: "object",
-  validate: (defaultMeta: JSONShallowObject, { selection }: RosterLockV1Config, path)=>{
+  validate: (defaultMeta: JSONShallowObject, { pieceMeta }: RosterLockV1Config, path)=>{
     const pathParts = path.split("/");
-    // /selection/piece/pieceType/pieceMeta/defaultMeta
-    const pieceType = pathParts[3];
-    const sharedPieceMeta = selection.piece[pieceType].pieceMeta;
+    // /pieceMeta/pieceType/defaultMeta
+    const pieceType = pathParts[2];
+    const sharedPieceMeta = pieceMeta[pieceType];
     if(!sharedPieceMeta){
       throw new Error(`Piece type ${pieceType} does not have shared piece meta`);
     }
@@ -24,12 +24,12 @@ export const metaDefaultValueSchemaValidator = defineKeyword({
 export const metaPieceValueSchemaValidator = defineKeyword({
   keyword: "metaPieceValue",
   type: "object",
-  validate: (pieceMeta: JSONShallowObject, { selection, rosters }: RosterLockV1Config, path)=>{
+  validate: (pieceValue: JSONShallowObject, { pieceMeta, rosters }: RosterLockV1Config, path)=>{
     const pathParts = path.split("/");
-    // /selection/piece/pieceType/pieceMeta/pieceMeta/pieceId
-    const pieceType = pathParts[3];
-    const pieceId = pathParts[6]?.replace(/~1/g, "/").replace(/~0/g, "~");
-    const sharedPieceMeta = selection.piece[pieceType].pieceMeta;
+    // /pieceMeta/pieceType/values/pieceId
+    const pieceType = pathParts[2];
+    const pieceId = pathParts[4]?.replace(/~1/g, "/").replace(/~0/g, "~");
+    const sharedPieceMeta = pieceMeta[pieceType];
     if(!sharedPieceMeta){
       throw new Error(`Piece type ${pieceType} does not have shared piece meta`);
     }
@@ -37,7 +37,7 @@ export const metaPieceValueSchemaValidator = defineKeyword({
     if(!roster){
       throw new Error(`Piece type ${pieceType} does not have a roster`);
     }
-    validateMetaForPiece(sharedPieceMeta.schema, pieceId, pieceMeta, roster);
+    validateMetaForPiece(sharedPieceMeta.schema, pieceId, pieceValue, roster);
   },
 });
 
@@ -59,7 +59,7 @@ const shallowObjectSchema = {
 
 export const selectionPieceMetaSchema: JSONSchemaType<SelectionPieceMeta<JSONShallowObject>> = {
   type: "object",
-  required: ["schema","defaultMeta", "pieceMeta"],
+  required: ["schema","defaultMeta", "values"],
   additionalProperties: false,
   properties: {
     schema: {
@@ -74,7 +74,7 @@ export const selectionPieceMetaSchema: JSONSchemaType<SelectionPieceMeta<JSONSha
       ...shallowObjectSchema,
       [metaDefaultValueSchemaValidator.keyword]: true,
     },
-    pieceMeta: {
+    values: {
       type: "object",
       required: [],
       additionalProperties: {
@@ -84,3 +84,14 @@ export const selectionPieceMetaSchema: JSONSchemaType<SelectionPieceMeta<JSONSha
     },
   },
 };
+
+export const pieceMetaSchema: JSONSchemaType<RosterLockV1Config["pieceMeta"]> = {
+  type: "object",
+  required: [],
+  additionalProperties: selectionPieceMetaSchema,
+};
+
+export const pieceMetaKeywords = [
+  metaDefaultValueSchemaValidator,
+  metaPieceValueSchemaValidator,
+];

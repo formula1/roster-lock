@@ -24,8 +24,8 @@ export function buildDts(lock: RosterLockV1Config): string {
   lines.push("");
 
   const metaInterfaces: Array<{ pieceType: string; name: string }> = [];
-  for (const pieceType of Object.keys(lock.selection.piece)) {
-    const schema = lock.selection.piece[pieceType]?.pieceMeta?.schema;
+  for (const pieceType of Object.keys(lock.pieceMeta)) {
+    const schema = lock.pieceMeta[pieceType]?.schema;
     if (!schema || Object.keys(schema).length === 0) continue;
     const name = toPascalCase(pieceType) + "Meta";
     metaInterfaces.push({ pieceType, name });

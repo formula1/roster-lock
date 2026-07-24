@@ -1,4 +1,5 @@
 import { Command } from "commander";
+import { ZodType } from "zod";
 import {
   ROSTERLOCK_V1_CASTER_JSONSCHEMA,
   EMPTY_ROSTER_NORMAL_SELECTION,
@@ -41,7 +42,9 @@ export const selectionSetCommand = withDraftOption(new Command("set"))
     const template = TEMPLATES[opts.type as keyof typeof TEMPLATES];
     if(!template) throw new Error(`Invalid --type "${opts.type}" (expected normal|preselected|unselectable|game-controlled)`);
 
-    const overridesSchema = selectionOverridesSchemas[opts.type as keyof typeof selectionOverridesSchemas];
+    const overridesSchema = selectionOverridesSchemas[opts.type as keyof typeof selectionOverridesSchemas] as (
+      ZodType<Record<string, unknown>>
+    );
     const overrides = opts.json ? await readJsonInput(opts.json, overridesSchema) : {};
     draft.stagedLock.selection.piece[pieceType] = { ...cloneJSON(template), ...overrides };
 

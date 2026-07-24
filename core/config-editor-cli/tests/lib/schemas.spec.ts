@@ -74,7 +74,7 @@ describe("selectionOverridesSchemas", () => {
     expect(() => selectionOverridesSchemas.preselected.parse(input)).not.toThrow();
   });
 
-  it("unselectable and game-controlled only accept pieceMeta", () => {
+  it("unselectable and game-controlled accept no override fields", () => {
     expect(() => selectionOverridesSchemas.unselectable.parse({})).not.toThrow();
     expect(() => selectionOverridesSchemas.unselectable.parse({ pieces: [] })).toThrow();
     expect(() => selectionOverridesSchemas["game-controlled"].parse({})).not.toThrow();

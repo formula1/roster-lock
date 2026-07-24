@@ -118,7 +118,7 @@ export function PieceMetaEditor({ value, onChange, pieces }: Props) {
 
   const schema = value.schema;
   const defaultMeta = value.defaultMeta;
-  const pieceMeta = value.pieceMeta;
+  const pieceMeta = value.values;
 
   const fields = Object.keys(schema);
 
@@ -149,7 +149,7 @@ export function PieceMetaEditor({ value, onChange, pieces }: Props) {
       const { [name]: _p, ...rest } = overrides as Record<string, JSONShallowObject[string]>;
       newPieceMeta[pieceId] = rest;
     }
-    update({ schema: newSchema, defaultMeta: newDefault, pieceMeta: newPieceMeta });
+    update({ schema: newSchema, defaultMeta: newDefault, values: newPieceMeta });
   }
 
   function setDefaultField(name: string, v: JSONShallowObject[string]) {
@@ -160,9 +160,9 @@ export function PieceMetaEditor({ value, onChange, pieces }: Props) {
     const current = pieceMeta[pieceId] ?? {};
     if (v === undefined) {
       const { [name]: _, ...rest } = current as Record<string, JSONShallowObject[string]>;
-      update({ pieceMeta: { ...pieceMeta, [pieceId]: rest } });
+      update({ values: { ...pieceMeta, [pieceId]: rest } });
     } else {
-      update({ pieceMeta: { ...pieceMeta, [pieceId]: { ...current, [name]: v } } });
+      update({ values: { ...pieceMeta, [pieceId]: { ...current, [name]: v } } });
     }
   }
 

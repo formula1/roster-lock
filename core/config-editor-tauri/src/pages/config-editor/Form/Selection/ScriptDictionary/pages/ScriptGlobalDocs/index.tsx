@@ -45,7 +45,7 @@ export function ScriptGlobalDocsPage() {
 
   const pieceMeta = useMemo(() => {
     if (purpose === "global-validation" || !selectedPiece.type) return null;
-    return lock.selection.piece[selectedPiece.type]?.pieceMeta ?? null;
+    return lock.pieceMeta[selectedPiece.type] ?? null;
   }, [purpose, selectedPiece, lock]);
 
   const isPieceSpecific = purpose !== "global-validation";

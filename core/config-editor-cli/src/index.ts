@@ -14,6 +14,7 @@ import {
 import {
   addPieceCommand,
   editPieceCommand,
+  importPieceCommand,
   rescanCommand,
   testDownloadCommand,
   rosterListCommand,
@@ -25,6 +26,10 @@ import {
   runScriptCommand,
   selectionShowCommand,
 } from "./commands/selection";
+import {
+  pieceMetaSetCommand,
+  pieceMetaShowCommand,
+} from "./commands/piece-meta";
 import { validateCommand } from "./commands/validate";
 import { showCommand } from "./commands/show";
 import { VERSION } from "./version";
@@ -58,6 +63,7 @@ program.addCommand(engineCommand);
 const rosterCommand = new Command("roster").description("Edit the staged lock's rosters (pieces)");
 rosterCommand.addCommand(addPieceCommand);
 rosterCommand.addCommand(editPieceCommand);
+rosterCommand.addCommand(importPieceCommand);
 rosterCommand.addCommand(rescanCommand);
 rosterCommand.addCommand(testDownloadCommand);
 rosterCommand.addCommand(rosterListCommand);
@@ -70,5 +76,10 @@ selectionCommand.addCommand(selectionSetCommand);
 selectionCommand.addCommand(runScriptCommand);
 selectionCommand.addCommand(selectionShowCommand);
 program.addCommand(selectionCommand);
+
+const pieceMetaCommand = new Command("piece-meta").description("Edit the staged lock's piece meta (custom per-piece fields)");
+pieceMetaCommand.addCommand(pieceMetaSetCommand);
+pieceMetaCommand.addCommand(pieceMetaShowCommand);
+program.addCommand(pieceMetaCommand);
 
 program.parse();
