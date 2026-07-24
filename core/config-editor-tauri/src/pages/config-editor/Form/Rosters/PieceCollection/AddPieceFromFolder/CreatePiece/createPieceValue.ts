@@ -2,8 +2,8 @@
 
 import { join as pathJoin } from "@tauri-apps/api/path";
 import {
-  PATH_ROSTERLOCK_PIECE_META,
-  ROSTERLOCK_V1_PIECEMETADATA_CASTER_JSONSCHEMA,
+  PATH_ROSTERLOCK_PIECE_INFO,
+  ROSTERLOCK_V1_PIECEINFO_CASTER_JSONSCHEMA,
   calculatePieceVersion,
   getAssetsOfFiles
 } from "@roster-lock/shared";
@@ -53,10 +53,10 @@ export async function createPieceValue(
     }),
     Promise.resolve().then(async ()=>{
       try {
-        const path = await pathJoin(folderPath, PATH_ROSTERLOCK_PIECE_META);
+        const path = await pathJoin(folderPath, PATH_ROSTERLOCK_PIECE_INFO);
         if(!await fs.exists(path)) return;
         const json = await fs.readJSON(path);
-        const metaData = ROSTERLOCK_V1_PIECEMETADATA_CASTER_JSONSCHEMA.cast(json, true);
+        const metaData = ROSTERLOCK_V1_PIECEINFO_CASTER_JSONSCHEMA.cast(json, true);
         piece.downloadSources = metaData.downloadSources;
         piece.humanInfo = metaData.humanInfo;
         return metaData.humanInfo;

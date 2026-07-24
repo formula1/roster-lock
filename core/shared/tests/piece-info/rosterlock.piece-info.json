@@ -1,7 +1,7 @@
 {
   "configIdentity": {
     "namespace": "roster-lock",
-    "purpose": "piece-meta",
+    "purpose": "piece-info",
     "version": 1
   },
   "humanInfo": {

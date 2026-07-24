@@ -1,6 +1,6 @@
 
-import { PATH_ROSTERLOCK_PIECE_META } from "../../piece-meta"
+import { PATH_ROSTERLOCK_PIECE_INFO } from "../../piece-info"
 
 export const FILES_TO_IGNORE = [
-  PATH_ROSTERLOCK_PIECE_META
+  PATH_ROSTERLOCK_PIECE_INFO
 ];

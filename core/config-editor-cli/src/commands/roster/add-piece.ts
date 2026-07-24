@@ -3,8 +3,8 @@ import { existsSync, readFileSync } from "node:fs";
 import { join as pathJoin } from "node:path";
 import {
   ROSTERLOCK_V1_CASTER_JSONSCHEMA,
-  ROSTERLOCK_V1_PIECEMETADATA_CASTER_JSONSCHEMA,
-  PATH_ROSTERLOCK_PIECE_META,
+  ROSTERLOCK_V1_PIECEINFO_CASTER_JSONSCHEMA,
+  PATH_ROSTERLOCK_PIECE_INFO,
 } from "@roster-lock/shared";
 import { RosterLockPiece } from "@roster-lock/types";
 import { resolveDraftPath, readDraft, writeDraft } from "../../lib/draft-io";
@@ -31,7 +31,7 @@ export const addPieceCommand = withDraftOption(new Command("add-piece"))
   .option(
     "--json <file>",
     "set humanInfo/downloadSources/pathVariables from a JSON file (or \"-\" for stdin), applied on top of a " +
-    `rosterlock.piece-meta.json in the folder if present. Shape: ${describeSchemaShape(pieceOverridesSchema)}`
+    `rosterlock.piece-info.json in the folder if present. Shape: ${describeSchemaShape(pieceOverridesSchema)}`
   )
   .action(withErrorHandling(async (pieceType: string, folder: string, opts: {
     draft?: string, pathVariables?: string, downloadSource: Array<string>, json?: string
@@ -60,10 +60,10 @@ export const addPieceCommand = withDraftOption(new Command("add-piece"))
       ),
     };
 
-    const metaPath = pathJoin(folder, PATH_ROSTERLOCK_PIECE_META);
+    const metaPath = pathJoin(folder, PATH_ROSTERLOCK_PIECE_INFO);
     if(existsSync(metaPath)){
       const metaJson = JSON.parse(readFileSync(metaPath, "utf-8"));
-      const meta = ROSTERLOCK_V1_PIECEMETADATA_CASTER_JSONSCHEMA.cast(metaJson, true);
+      const meta = ROSTERLOCK_V1_PIECEINFO_CASTER_JSONSCHEMA.cast(metaJson, true);
       piece.humanInfo = meta.humanInfo;
       for(const source of meta.downloadSources){
         if(!piece.downloadSources.includes(source)) piece.downloadSources.push(source);
@@ -83,7 +83,7 @@ export const addPieceCommand = withDraftOption(new Command("add-piece"))
 
     if(piece.downloadSources.length === 0){
       throw new Error(
-        "At least one download source is required; pass --download-source or provide a rosterlock.piece-meta.json with downloadSources"
+        "At least one download source is required; pass --download-source or provide a rosterlock.piece-info.json with downloadSources"
       );
     }
 

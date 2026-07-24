@@ -16,7 +16,7 @@ import { defineKeyword } from "../../../util-types/json-schema";
 
 function ignore(){ return true; }
 
-export const rosterLockPieceMetadataKeywords = [
+export const rosterLockPieceInfoKeywords = [
   urlSchemaValidator,
   friendlyStringSchemaValidator,
 

@@ -9,17 +9,17 @@ import {
 
 import { JSONSchemaType } from "ajv";
 
-import { RosterLockV1PieceMetadata } from "@roster-lock/types";
+import { RosterLockV1PieceInfo } from "@roster-lock/types";
 
 import { buildIdentity } from "../shared";
 
 
-export const rosterLockPieceMetadataSchema: JSONSchemaType<RosterLockV1PieceMetadata> = {
+export const rosterLockPieceInfoSchema: JSONSchemaType<RosterLockV1PieceInfo> = {
   type: "object",
   required: ["configIdentity", "humanInfo", "downloadSources", "pathVariables"],
   additionalProperties: false,
   properties: {
-    configIdentity: buildIdentity("piece-meta", 1),
+    configIdentity: buildIdentity("piece-info", 1),
 
     humanInfo: humanInfoSchema,
     downloadSources: downloadableSourcesSchema,
