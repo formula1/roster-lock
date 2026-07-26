@@ -19,10 +19,24 @@ import { Readable } from "node:stream";
 
 type RosterLockPiece = RosterLockV1Config["rosters"][string][number];
 
-type PieceInfo = {
+type PieceIndex = {
+  engineName: string,
   pieceType: string,
-  logic: string, media: string,
-  pathVariables: Record<string, string>
+  logic: string,
+  media: string,
+}
+
+function pieceIndexOf(
+  engine: RosterLockV1Config["engine"],
+  pieceType: string,
+  piece: Pick<RosterLockPiece, "version">,
+): PieceIndex {
+  return {
+    engineName: engine.name,
+    pieceType,
+    logic: piece.version.logic,
+    media: piece.version.media,
+  };
 }
 
 export class SQLite3FolderDB implements IFolderDB {
@@ -65,12 +79,7 @@ export class SQLite3FolderDB implements IFolderDB {
       logicIds,
       pagination,
     )
-    return pieces.map((piece)=>(
-      {
-        version: { logic: piece.logic_hash, media: piece.media_hash, docs: "" },
-        pathVariables: piece.path_variables,
-      }
-    ))
+    return pieces
   }
 
   async* getFilesofAsset(
@@ -79,18 +88,12 @@ export class SQLite3FolderDB implements IFolderDB {
     piece: Pick<RosterLockPiece, "version" | "pathVariables">,
     assetName: string
   ): AsyncIterable<string>{
-    const pieceInfo = {
-      pieceType: pieceType,
-      logic: piece.version.logic,
-      media: piece.version.media,
-      pathVariables: piece.pathVariables,
-    };
-    const item = this.db.getPiece(engineConfig, pieceInfo);
-    if(!item) throw new HTTPError(404, "Piece Doesn't exist");
-    if(item.status !== "complete")
+    const state = this.db.getPieceState(pieceIndexOf(engineConfig, pieceType, piece));
+    if(!state) throw new HTTPError(404, "Piece Doesn't exist");
+    if(state.status !== "complete")
        throw new HTTPError(409, "Piece not finished");
     const folder = this.pieceFolder(
-      engineConfig, item.piece_type, item.folder_name
+      engineConfig, pieceType, state.folderName
     );
     for await (const path of getFilesFromFolder(folder)){
       const assets = getMatchingAssetsForFile(
@@ -109,18 +112,12 @@ export class SQLite3FolderDB implements IFolderDB {
     piece: Pick<RosterLockPiece, "version" | "pathVariables">,
     filePath: string
   ): Promise<Readable> {
-    const pieceInfo = {
-      pieceType: pieceType,
-      logic: piece.version.logic,
-      media: piece.version.media,
-      pathVariables: piece.pathVariables,
-    };
-    const item = this.db.getPiece(engineConfig, pieceInfo);
-    if(!item) throw new HTTPError(404, "Piece doesn't exist");
-    if(item.status !== "complete")
+    const state = this.db.getPieceState(pieceIndexOf(engineConfig, pieceType, piece));
+    if(!state) throw new HTTPError(404, "Piece doesn't exist");
+    if(state.status !== "complete")
        throw new HTTPError(409, "Piece not finished");
     const folder = this.pieceFolder(
-      engineConfig, item.piece_type, item.folder_name
+      engineConfig, pieceType, state.folderName
     );
     const fullPath = pathJoin(folder, filePath);
     const rel = pathRelative(folder, fullPath)
@@ -138,20 +135,15 @@ export class SQLite3FolderDB implements IFolderDB {
     selectedPiece: RosterLockPiece,
     progressHandlers: ProgressHandlers,
   ){
-    const pieceInfo = {
-      pieceType,
-      logic: selectedPiece.version.logic,
-      media: selectedPiece.version.media,
-      pathVariables: selectedPiece.pathVariables,
-    };
+    const pieceIndex = pieceIndexOf(lockConfigEngine, pieceType, selectedPiece);
     // Check if already completed
-    const item = this.db.getPiece(lockConfigEngine, pieceInfo);
-    if(item && item.status === "complete") return this.pieceFolder(
-      lockConfigEngine, item.piece_type, item.folder_name
+    const state = this.db.getPieceState(pieceIndex);
+    if(state && state.status === "complete") return this.pieceFolder(
+      lockConfigEngine, pieceType, state.folderName
     );
 
     // Check if currently downloading
-    const key = pieceToKey(lockConfigEngine, pieceInfo);
+    const key = pieceToKey(pieceIndex);
     const activePromise = this.activeDownloads.get(key);
     if(activePromise){
       activePromise.multiSignal.addSignal(progressHandlers);
@@ -164,8 +156,8 @@ export class SQLite3FolderDB implements IFolderDB {
     }
 
     // Check if already exists but failed
-    if(item && item.status === "pending"){
-      this.db.resetPieceStatus(lockConfigEngine, pieceInfo);
+    if(state && state.status === "pending"){
+      this.db.resetPieceStatus(pieceIndex);
     }
 
     // Start a new download
@@ -196,23 +188,28 @@ export class SQLite3FolderDB implements IFolderDB {
     newPiece: RosterLockPiece,
     abortSignal: AbortSignal,
   ){
-    const pieceInfo = {
-      pieceType: pieceType,
-      logic: newPiece.version.logic,
-      media: newPiece.version.media,
-      pathVariables: newPiece.pathVariables,
-    };
+    const pieceIndex = pieceIndexOf(lockConfigEngine, pieceType, newPiece);
     const { folderName }: { folderName: string } = await (async ()=>{
-      const existsingItem = this.db.getPiece(lockConfigEngine, pieceInfo);
-      if(existsingItem){
+      const existingState = this.db.getPieceState(pieceIndex);
+      if(existingState){
         await fsRm(
-          this.pieceFolder(lockConfigEngine, pieceType, existsingItem.folder_name),
+          this.pieceFolder(lockConfigEngine, pieceType, existingState.folderName),
           { recursive: true, force: true }
         );
-        return { folderName: existsingItem.folder_name };
+        return { folderName: existingState.folderName };
       }
       const pieceFolder = ulid().toLowerCase();
-      this.db.insertNewPiece(lockConfigEngine, pieceInfo, "", pieceFolder);
+      this.db.insertNewPiece(
+        {
+          engineName: lockConfigEngine.name,
+          pieceType,
+          version: newPiece.version,
+          humanInfo: newPiece.humanInfo,
+          pathVariables: newPiece.pathVariables,
+          downloadSources: newPiece.downloadSources,
+        },
+        pieceFolder
+      );
       return { folderName: pieceFolder };
     })();
 
@@ -221,17 +218,16 @@ export class SQLite3FolderDB implements IFolderDB {
     for(const downloadLocation of newPiece.downloadSources){
       try {
         await mkdir(fullPath, { recursive: true });
-        this.db.updateDownloadSource(lockConfigEngine, pieceInfo, downloadLocation);
         const { finishPromise } = await this.pluginRuntime.downloadToFolder(
           {
             url: downloadLocation,
             destinationFolder: fullPath,
             processHandlers: {
               onProgress: (progress) => {
-                this.emitProgress(lockConfigEngine, pieceInfo, {
+                this.emitProgress(pieceIndex, {
                   type: ROSTERLOCK_DOWNLOAD_STATE.downloadProgress,
                   pieceType: pieceType,
-                  pieceVersions: { logic: pieceInfo.logic, media: pieceInfo.media },
+                  pieceVersions: { logic: pieceIndex.logic, media: pieceIndex.media },
                   progress,
                 });
               },
@@ -240,26 +236,26 @@ export class SQLite3FolderDB implements IFolderDB {
           }
         );
         await finishPromise;
-        this.emitProgress(lockConfigEngine, pieceInfo, {
+        this.emitProgress(pieceIndex, {
           type: ROSTERLOCK_DOWNLOAD_STATE.downloadValidation,
-          pieceType: pieceInfo.pieceType,
-          pieceVersions: { logic: pieceInfo.logic, media: pieceInfo.media },
+          pieceType: pieceIndex.pieceType,
+          pieceVersions: { logic: pieceIndex.logic, media: pieceIndex.media },
         });
         const downloadedVersions = await getDownloadSourceVersion(
           fullPath, newPiece.pathVariables, lockConfigEngine.pieceDefinitions[pieceType]
         );
-        if(downloadedVersions.logic !== pieceInfo.logic || downloadedVersions.media !== pieceInfo.media){
+        if(downloadedVersions.logic !== pieceIndex.logic || downloadedVersions.media !== pieceIndex.media){
           throw new Error("Version Mismatch");
         }
-        this.db.pieceSuccessfullyDownloaded(lockConfigEngine, pieceInfo);
+        this.db.pieceSuccessfullyDownloaded(pieceIndex, downloadLocation);
         return fullPath;
       }catch(e){
-        this.db.pieceFailedToDownload(lockConfigEngine, pieceInfo, downloadLocation, (e as Error).message);
+        this.db.pieceFailedToDownload(pieceIndex, downloadLocation, (e as Error).message);
         await fsRm(fullPath, { recursive: true, force: true });
-        this.emitProgress(lockConfigEngine, pieceInfo, {
+        this.emitProgress(pieceIndex, {
           type: ROSTERLOCK_DOWNLOAD_STATE.downloadFailure,
           pieceType,
-          pieceVersions: { logic: pieceInfo.logic, media: pieceInfo.media },
+          pieceVersions: { logic: pieceIndex.logic, media: pieceIndex.media },
           error: (e as Error).message,
         });
       }
@@ -269,11 +265,10 @@ export class SQLite3FolderDB implements IFolderDB {
 
 
   private emitProgress(
-    lockConfigEngine: RosterLockV1Config["engine"],
-    pieceInfo: PieceInfo,
+    pieceIndex: PieceIndex,
     event: Parameters<ProgressHandlers["onProgress"]>[0]
   ){
-    const key = pieceToKey(lockConfigEngine, pieceInfo);
+    const key = pieceToKey(pieceIndex);
     const multiSignal = this.activeDownloads.get(key)?.multiSignal;
     if(!multiSignal) return;
     multiSignal.emitEvent(event);
@@ -281,6 +276,6 @@ export class SQLite3FolderDB implements IFolderDB {
 }
 
 
-function pieceToKey(engine: RosterLockV1Config["engine"], piece: PieceInfo){
-  return `${engine.name}-${piece.pieceType}-${piece.logic}-${piece.media}`;
+function pieceToKey(piece: PieceIndex){
+  return `${piece.engineName}-${piece.pieceType}-${piece.logic}-${piece.media}`;
 }
