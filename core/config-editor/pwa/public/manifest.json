@@ -1,0 +1,9 @@
+{
+  "name": "Roster Lock Config Editor",
+  "short_name": "Roster Lock",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#222222",
+  "icons": []
+}

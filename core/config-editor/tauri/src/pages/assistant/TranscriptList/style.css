@@ -1,0 +1,53 @@
+.assistant-transcript-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
+.assistant-transcript-list-new {
+  align-self: flex-start;
+}
+
+.assistant-transcript-list-empty {
+  opacity: 0.6;
+  font-style: italic;
+}
+
+.assistant-transcript-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.assistant-transcript-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.75em;
+  padding: 0.5em 0.25em;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.25);
+}
+
+.assistant-transcript-list li:hover {
+  background: rgba(128, 128, 128, 0.1);
+}
+
+.assistant-transcript-list-title {
+  flex-grow: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.assistant-transcript-list-date {
+  opacity: 0.6;
+  font-size: 0.85em;
+  white-space: nowrap;
+}
+
+.assistant-transcript-list-delete {
+  line-height: 1;
+  font-size: 1.1em;
+}

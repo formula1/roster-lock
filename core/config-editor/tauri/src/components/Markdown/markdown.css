@@ -1,0 +1,7 @@
+
+.markdown * {
+  margin: revert;
+  padding: revert;
+  box-sizing: revert;
+}
+
