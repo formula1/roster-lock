@@ -134,6 +134,52 @@ program
   });
 
 program
+  .command("install <authCode>")
+  .description(
+    "Install match-agent for regular (non-USB) use: creates pieces/plugins folders and a " +
+    CONFIG_FILE_NAME + " at the default config location, stores the given auth code, and syncs " +
+    "plugins to the official manifest. Intended as the one-time setup step before `run`."
+  )
+  .option(
+    "--config-file <path>",
+    "config file to write (defaults to the standard home-directory location)"
+  )
+  .option("--piece-folder <name>", "name of the pieces folder to create, relative to the config file", "pieces")
+  .option("--plugin-folder <name>", "name of the plugins folder to create, relative to the config file", "plugins")
+  .option("--force", "overwrite an existing config at the target location", false)
+  .requiredOption("--manifest-url <url>", "URL of the official plugin manifest to sync plugins against")
+  .action(async (authCode: string, options: {
+    configFile?: string, pieceFolder: string, pluginFolder: string, force: boolean, manifestUrl: string,
+  }) => {
+    const configFilePath = options.configFile ? pathResolve(options.configFile) : DEFAULT_MATCH_CONIFG;
+    const existingConfig = (await configExists(configFilePath)) ? await getConfig(configFilePath) : null;
+    if(existingConfig && !options.force){
+      throw new Error(`${configFilePath} already exists - pass --force to overwrite it`);
+    }
+
+    const resolvedFolders = resolveConfigFolders(configFilePath, {
+      pieceFolder: options.pieceFolder, pluginFolder: options.pluginFolder,
+    });
+    await mkdir(resolvedFolders.pieceFolder, { recursive: true });
+    await mkdir(resolvedFolders.pluginFolder, { recursive: true });
+
+    await setConfig(configFilePath, {
+      authCode,
+      pieceFolder: options.pieceFolder,
+      pluginFolder: options.pluginFolder,
+    });
+
+    console.log(`Wrote ${configFilePath}`);
+
+    const { installed, priorityChanges } = await syncPluginsToOfficialManifest(
+      resolvedFolders.pluginFolder, options.manifestUrl
+    );
+    for(const p of installed) console.log(`Installed ${p.package}@${p.version}`);
+    for(const p of priorityChanges) console.log(`Set priority of ${p.package} to ${p.priority}`);
+    console.log(`Plugin sync complete - ${installed.length} plugin(s) installed/updated, ${priorityChanges.length} priority change(s) applied.`);
+  });
+
+program
   .command("set-auth-code <authCode>")
   .description("Update the auth code stored in a config file (defaults to the same discovery rules as running the server)")
   .option(
