@@ -1,5 +1,6 @@
 import {
   installPlugin, updatePlugin, uninstallPlugin, setPluginPriority, getPluginPackagesOfType,
+  getPluginFullOfType,
   PLUGIN_TYPES, PluginType,
 } from "./plugin-management";
 
@@ -35,6 +36,9 @@ export class PluginManager {
       throw new Error("Plugins should be one of " + JSON.stringify(Array.from(PLUGIN_TYPES)))
     }
     return getPluginPackagesOfType(this.pluginDir, type as PluginType)
+  }
+  getPluginFullOfType<T extends PluginType>(type: T){
+    return getPluginFullOfType(this.pluginDir, type);
   }
 
   downloadToFolder(downloadArgs: DownloadToFolderArg){
