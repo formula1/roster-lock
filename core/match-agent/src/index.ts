@@ -5,9 +5,10 @@ export * from "./handle-room/version-1";
 import { join as pathJoin, resolve as pathResolve } from "node:path";
 import { mkdir } from "node:fs/promises";
 import {
-  CONFIG_FILE_NAME, getConfig, setConfig, configExists, resolveConfigFolders, findConfigFile,
+  CONFIG_FILE_NAME, DEFAULT_MATCH_CONIFG, getConfig, setConfig, configExists, resolveConfigFolders, findConfigFile,
 } from "./config";
 import { generateAuthCode, authMiddleware, validateAuthCode } from "./authentication";
+import { createEditorV1Router } from "./editor-support";
 import { MatchAgentServer } from "./server";
 import { program } from "commander";
 import { createV1Routers } from "./handle-room/version-1";
@@ -167,6 +168,10 @@ export async function startServer(port: number, authCode: string, pluginFolder: 
   const { httpRouter: v1HttpRouter, wsRouter: v1WsRouter } = createV1Routers(fileDB, pluginRuntime);
   server.httpRouter.use("/v1", authMiddleware(authCode), v1HttpRouter);
   server.wsRouter.use("/v1", authMiddleware(authCode), v1WsRouter);
+
+  // Config-editor support lives on its own version axis (/editor/v1) so the
+  // room protocol (/v1) can move to /v2 without dragging the editor API along.
+  server.httpRouter.use("/editor/v1", authMiddleware(authCode), createEditorV1Router(pluginRuntime, fileDB));
 
   server.listen(port, () => {
     console.log(`match-agent listening on port ${port}`);

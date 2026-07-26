@@ -1,4 +1,4 @@
-import { IFolderDB } from "../types";
+import { IFolderDB, StoredPieceListing } from "../types";
 import { RosterLockV1Config, ROSTERLOCK_DOWNLOAD_STATE } from "@roster-lock/types";
 
 import { existsSync as fsExists, createReadStream } from "node:fs";
@@ -80,6 +80,42 @@ export class SQLite3FolderDB implements IFolderDB {
       pagination,
     )
     return pieces
+  }
+
+  async searchPieces(
+    query: {
+      engineName: string,
+      pieceType?: string,
+      search?: string,
+      page: number,
+      limit: number,
+    }
+  ): Promise<StoredPieceListing> {
+    const { total, items } = this.db.searchPieces(query);
+    const pieceKeys = items.map((item)=>({
+      pieceType: item.pieceType, logic: item.version.logic, media: item.version.media,
+    }));
+    const sourcesByPiece = this.db.getDownloadSourcesFor(query.engineName, pieceKeys);
+    const statesByPiece = this.db.getPieceStatesFor(query.engineName, pieceKeys);
+    return {
+      total,
+      items: items.map((item)=>{
+        const key = `${item.pieceType}\x00${item.version.logic}\x00${item.version.media}`;
+        const state = statesByPiece.get(key);
+        return {
+          piece: {
+            ...item,
+            downloadSources: (sourcesByPiece.get(key) ?? []).map((source)=>({
+              source: source.source,
+              lastTest: source.last_test === null ? null : source.last_test * 1000,
+              success: source.success === null ? null : source.success === 1,
+              ...(source.error === null ? {} : { error: source.error }),
+            })),
+          },
+          completedAt: state?.completedAt ? state.completedAt * 1000 : null,
+        };
+      }),
+    };
   }
 
   async* getFilesofAsset(
