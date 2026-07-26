@@ -8,6 +8,7 @@ import {
   CONFIG_FILE_NAME, DEFAULT_MATCH_CONIFG, getConfig, setConfig, configExists, resolveConfigFolders, findConfigFile,
 } from "./config";
 import { generateAuthCode, authMiddleware, validateAuthCode } from "./authentication";
+import { corsMiddleware } from "./cors";
 import { createEditorV1Router } from "./editor-support";
 import { MatchAgentServer } from "./server";
 import { program } from "commander";
@@ -159,6 +160,9 @@ export async function startServer(port: number, authCode: string, pluginFolder: 
   const fileDB = getSQLite3FolderDB(piecesFolder, pluginRuntime);
 
   const server = new MatchAgentServer();
+  // "{/*path}" = path-to-regexp v8 catch-all; a bare "/" only matches the
+  // root exactly, which would skip CORS on every real route.
+  server.httpRouter.use("{/*path}", corsMiddleware);
   server.httpRouter.get("/", ({ res })=>{
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ "hello": "world" }));
