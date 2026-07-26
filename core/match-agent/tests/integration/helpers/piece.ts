@@ -55,18 +55,28 @@ export async function seedCompletePiece(opts: {
   complete?: boolean,
 }) {
   const { folder, engine, pieceType, piece, folderName, files, complete = true } = opts;
-  const pieceInfo = {
+  const pieceIndex = {
+    engineName: engine.name,
     pieceType,
     logic: piece.version.logic,
     media: piece.version.media,
-    pathVariables: piece.pathVariables,
   };
 
   const db = prepareDatabase(pathJoin(folder, "rosterlock.sqlite3.db"));
   try {
-    db.insertNewPiece(engine, pieceInfo, piece.downloadSources[0] ?? "", folderName);
+    db.insertNewPiece(
+      {
+        engineName: engine.name,
+        pieceType,
+        version: piece.version,
+        humanInfo: piece.humanInfo,
+        pathVariables: piece.pathVariables,
+        downloadSources: piece.downloadSources,
+      },
+      folderName
+    );
     if (complete) {
-      db.pieceSuccessfullyDownloaded(engine, pieceInfo);
+      db.pieceSuccessfullyDownloaded(pieceIndex, piece.downloadSources[0] ?? "");
     }
   } finally {
     db.close();

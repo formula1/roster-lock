@@ -57,12 +57,15 @@ export function makeValidLockConfig(): RosterLockV1Config {
       piece: {
         character: {
           type: "normal",
-          pieceMeta: { schema: {}, defaultMeta: {}, pieceMeta: {} },
           validation: { count: "*", unique: false, banList: [], customValidation: [] },
         },
       },
       globalValidation: [],
       scriptDictionary: {},
+    },
+    pieceMeta: {
+      character: { schema: {}, defaultMeta: {}, values: {} },
+      weapon: { schema: {}, defaultMeta: {}, values: {} },
     },
   };
 }

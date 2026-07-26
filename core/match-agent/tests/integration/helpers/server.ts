@@ -6,6 +6,7 @@ import { PluginManager } from "@roster-lock/plugin-runtime";
 import { MatchAgentServer } from "../../../src/server";
 import { authMiddleware, validateAuthCode } from "../../../src/authentication";
 import { createV1Routers } from "../../../src/handle-room/version-1";
+import { createEditorV1Router } from "../../../src/editor-support";
 import { getSQLite3FolderDB } from "../../../src/handle-room/version-1/globals/FolderDB";
 
 // Mirrors the wiring in src/index.ts#startServer, but keeps a handle to the
@@ -24,6 +25,7 @@ export async function startTestServer(folder: string, authCode: string = randomU
   const { httpRouter: v1HttpRouter, wsRouter: v1WsRouter } = createV1Routers(fileDB, pluginRuntime);
   server.httpRouter.use("/v1", authMiddleware(authCode), v1HttpRouter);
   server.wsRouter.use("/v1", authMiddleware(authCode), v1WsRouter);
+  server.httpRouter.use("/editor/v1", authMiddleware(authCode), createEditorV1Router(pluginRuntime, fileDB));
 
   const nodeServer = server.listen(0);
   await once(nodeServer, "listening");
