@@ -15,7 +15,7 @@ import { makeLockConfig, makeHeroSelection } from "./helpers/lockConfig";
 describe("bindStepsToBridge: runSelection + handleDownloads", () => {
   it("runs the full protocol for two users picking the same piece, dedupes the shared nested requirement, and both agents converge on the same result", async () => {
     const lockConfig = makeLockConfig();
-    const users = [{ publicKey: "pk-a" }, { publicKey: "pk-b" }];
+    const machines = [{ publicKey: "pk-a", playerCount: 1 }, { publicKey: "pk-b", playerCount: 1 }];
 
     const pairA = wireBridgePair();
     const pairB = wireBridgePair();
@@ -26,21 +26,23 @@ describe("bindStepsToBridge: runSelection + handleDownloads", () => {
     const resultAPromise = bindStepsToBridge({
       bridge: pairA.agentSide,
       fileDB: dbA,
-      users,
-      ownSelection: makeHeroSelection(),
+      machines,
+      ownMachinePublicKey: "pk-a",
+      ownSelections: { 0: makeHeroSelection() },
       lockConfig,
       scriptsByPath: {},
       gameControlledSelections: {},
-    });
+    } as any);
     const resultBPromise = bindStepsToBridge({
       bridge: pairB.agentSide,
       fileDB: dbB,
-      users,
-      ownSelection: makeHeroSelection(),
+      machines,
+      ownMachinePublicKey: "pk-b",
+      ownSelections: { 0: makeHeroSelection() },
       lockConfig,
       scriptsByPath: {},
       gameControlledSelections: {},
-    });
+    } as any);
 
     await driveRoomProtocol([
       { bridge: pairA.roomSide, publicKey: "pk-a" },
@@ -55,8 +57,8 @@ describe("bindStepsToBridge: runSelection + handleDownloads", () => {
     expect(resultA.finalSelection.character).toEqual({
       type: "personal",
       value: {
-        "pk-a": makeHeroSelection().character,
-        "pk-b": makeHeroSelection().character,
+        "pk-a:0": makeHeroSelection().character,
+        "pk-b:0": makeHeroSelection().character,
       },
     });
 
@@ -78,7 +80,7 @@ describe("bindStepsToBridge: runSelection + handleDownloads", () => {
 
   it("rejects when a user selects a piece missing from the roster (runSelection validation)", async () => {
     const lockConfig = makeLockConfig();
-    const users = [{ publicKey: "pk-a" }, { publicKey: "pk-b" }];
+    const machines = [{ publicKey: "pk-a", playerCount: 1 }, { publicKey: "pk-b", playerCount: 1 }];
 
     const pairA = wireBridgePair();
     const pairB = wireBridgePair();
@@ -88,21 +90,23 @@ describe("bindStepsToBridge: runSelection + handleDownloads", () => {
     const resultAPromise = bindStepsToBridge({
       bridge: pairA.agentSide,
       fileDB: new FakeFolderDB(),
-      users,
-      ownSelection: badSelection,
+      machines,
+      ownMachinePublicKey: "pk-a",
+      ownSelections: { 0: badSelection },
       lockConfig,
       scriptsByPath: {},
       gameControlledSelections: {},
-    });
+    } as any);
     const resultBPromise = bindStepsToBridge({
       bridge: pairB.agentSide,
       fileDB: new FakeFolderDB(),
-      users,
-      ownSelection: makeHeroSelection(),
+      machines,
+      ownMachinePublicKey: "pk-b",
+      ownSelections: { 0: makeHeroSelection() },
       lockConfig,
       scriptsByPath: {},
       gameControlledSelections: {},
-    });
+    } as any);
     // both agents run runSelection independently over the same decrypted
     // inputs, so the bad selection fails validation on both sides.
     resultAPromise.catch(() => {});

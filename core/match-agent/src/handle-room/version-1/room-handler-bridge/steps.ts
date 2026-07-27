@@ -1,7 +1,7 @@
 
 import { MessageBridge } from "@roster-lock/utils";
 import {
-  FinalSelection, RosterLockV1Config, SelectedPiece, UserSelection,
+  FinalSelection, RosterLockV1Config, SelectedPiece, UserSelection, PlayerId,
   RosterLockV1SyncDLResult
 } from "@roster-lock/types";
 import { runSelection } from "@roster-lock/shared";
@@ -14,14 +14,14 @@ import { handleDownloads } from "../handleDownloads";
 import { IFolderDB } from "../globals/FolderDB";
 import { RosterLockDownloadUpdate } from "@roster-lock/types";
 
-type UserPublicKey = string;
+type MachinePublicKey = string;
 
 type EncryptedValue = Awaited<ReturnType<typeof encryptJSON>>;
 
 type RoomState = (
   | { state: "user-selection" }
   | { state: "all-selection-for-user-decryption" }
-  | { state: "all-decryption-for-user-final", encrypted: Record<UserPublicKey, EncryptedValue["encryptedValue"]> }
+  | { state: "all-decryption-for-user-final", encrypted: Record<MachinePublicKey, EncryptedValue["encryptedValue"]> }
   | { state: "user-download", finalSelection: FinalSelection }
   | { state: "all-download", finalSelection: FinalSelection, downloadResults: Awaited<ReturnType<typeof handleDownloads>> }
   | { state: "ended" }
@@ -31,14 +31,14 @@ type RoomArgs = {
   bridge: MessageBridge,
   fileDB: IFolderDB,
   pluginRuntime: PluginManager,
-  users: Array<{ publicKey: UserPublicKey }>,
-  ownSelection: UserSelection,
+  machines: Array<{ publicKey: MachinePublicKey, playerCount: number }>,
+  ownMachinePublicKey: MachinePublicKey,
+  // This machine's local players' selections, keyed by local player index
+  // (0-based). A machine with multiple controllers plugged in submits one
+  // entry per local player over its single relay connection.
+  ownSelections: Record<number, UserSelection>,
   lockConfig: RosterLockV1Config,
-  gameControlledSelections: Record<string, Array<SelectedPiece> | Record<UserPublicKey, Array<SelectedPiece>>>,
-  // The user(s) local to this match-agent instance driving this room (as opposed
-  // to the other players in `users`, whose selections we only see encrypted/merged).
-  // Expected to grow past one entry once local multiplayer lands.
-  localUsers: Array<UserPublicKey>,
+  gameControlledSelections: Record<string, Array<SelectedPiece> | Record<PlayerId, Array<SelectedPiece>>>,
 }
 
 export type ProgressListeners = Partial<{
@@ -51,16 +51,23 @@ type UserInput = {
   randomSeed: string,
 }
 
+// What one machine actually sends over the wire: all of its local players'
+// selections plus the one random seed it contributes to the room.
+type MachinePayload = {
+  selections: Record<number, UserSelection>,
+  randomSeed: string,
+}
+
 export function bindStepsToBridge(
   {
     bridge,
     fileDB,
     pluginRuntime,
-    users,
-    ownSelection,
+    machines,
+    ownMachinePublicKey,
+    ownSelections,
     lockConfig,
     gameControlledSelections,
-    localUsers,
   }: RoomArgs,
   progressListeners: ProgressListeners = {}
 ): Promise<RosterLockV1SyncDLResult>{
@@ -70,10 +77,10 @@ export function bindStepsToBridge(
   const stateTracker = new StateTracker({ state: "user-selection" }, progressListeners);
 
   const rngSeed = createRandomSeed();
-  const ownEncrypted = encryptJSON({ userSelection: ownSelection, randomSeed: rngSeed });
+  const ownEncrypted = encryptJSON({ selections: ownSelections, randomSeed: rngSeed });
   // Filled in by "all-decryption-for-user-final" below, read back by the
   // handleFullSelection hook once the whole room promise settles.
-  let decryptedSelections: Record<UserPublicKey, UserInput> = {};
+  let decryptedSelections: Record<PlayerId, UserInput> = {};
 
   bridge.onRequest("ping", ()=>{
     heartbeat.heartBeat();
@@ -97,9 +104,9 @@ export function bindStepsToBridge(
     if(state.state !== "all-selection-for-user-decryption") throw new Error("Invalid State");
     const casted = EncryptedSelectionSchema.safeParse(data);
     if(!casted.success) throw new Error("Invalid Selections");
-    if(Object.keys(casted.data).length !== users.length) throw new Error("Invalid User Count");
-    for(const user of users){
-      if(!casted.data[user.publicKey]) throw new Error("Missing User Selections");
+    if(Object.keys(casted.data).length !== machines.length) throw new Error("Invalid Machine Count");
+    for(const machine of machines){
+      if(!casted.data[machine.publicKey]) throw new Error("Missing Machine Selections");
     }
     const { key } = await ownEncrypted;
     stateTracker.set({ state: "all-decryption-for-user-final", encrypted: casted.data });
@@ -114,17 +121,25 @@ export function bindStepsToBridge(
     const allEncrypted = state.encrypted;
     const casted = DecryptionKeySchema.safeParse(data);
     if(!casted.success) throw new Error("Invalid Decryption Keys");
-    if(Object.keys(casted.data).length !== users.length) throw new Error("Invalid User Count");
+    if(Object.keys(casted.data).length !== machines.length) throw new Error("Invalid Machine Count");
     const keys = casted.data;
-    await Promise.all(users.map(async (user)=>{
-      const encrypted = allEncrypted[user.publicKey];
+    await Promise.all(machines.map(async (machine)=>{
+      const encrypted = allEncrypted[machine.publicKey];
       if(!encrypted) throw new Error("Missing Encrypted Selections");
-      const key = keys[user.publicKey];
+      const key = keys[machine.publicKey];
       if(!key) throw new Error("Missing Decryption Key");
       const decrypted = await decryptJSON(key, encrypted);
-      const casted = SelectionSchema.safeParse(decrypted);
+      const casted = MachinePayloadSchema.safeParse(decrypted);
       if(!casted.success) throw new Error("Invalid Selections");
-      decryptedSelections[user.publicKey] = casted.data;
+      const { selections, randomSeed } = casted.data;
+      // A machine can't submit more or fewer player selections than it
+      // declared to the matchmaker when the room was created.
+      if(Object.keys(selections).length !== machine.playerCount){
+        throw new Error("Player Count Mismatch");
+      }
+      for(const [index, userSelection] of Object.entries(selections)){
+        decryptedSelections[`${machine.publicKey}:${index}`] = { userSelection, randomSeed };
+      }
     }))
     const finalSelection = await runSelection(
       lockConfig, gameControlledSelections, decryptedSelections, (script)=>(pluginRuntime.runUntrustedScript(script))
@@ -181,9 +196,10 @@ export function bindStepsToBridge(
   // indexing plugin can't stop the room, so failures here are only logged.
   promise.then(()=>{
     const userSelections = Object.fromEntries(
-      Object.entries(decryptedSelections).map(([userId, input])=>[userId, input.userSelection])
+      Object.entries(decryptedSelections).map(([playerId, input])=>[playerId, input.userSelection])
     );
-    return pluginRuntime.pieceSort.handleFullSelection({ lockConfig, localUsers, userSelections });
+    const localPlayers = Object.keys(ownSelections).map((index)=>`${ownMachinePublicKey}:${index}`);
+    return pluginRuntime.pieceSort.handleFullSelection({ lockConfig, localUsers: localPlayers, userSelections });
   }).catch((e)=>{
     console.error("piece-selection-sort handleFullSelection failed", e);
   });
@@ -198,12 +214,12 @@ export function bindStepsToBridge(
   ]);
 }
 
-const EncryptedSelectionSchema: ZodType<Record<UserPublicKey, EncryptedValue["encryptedValue"]>> = z.record(z.string(), z.string());
+const EncryptedSelectionSchema: ZodType<Record<MachinePublicKey, EncryptedValue["encryptedValue"]>> = z.record(z.string(), z.string());
 
-const DecryptionKeySchema: ZodType<Record<UserPublicKey, string>> = z.record(z.string(), z.string());
+const DecryptionKeySchema: ZodType<Record<MachinePublicKey, string>> = z.record(z.string(), z.string());
 
-const SelectionSchema: ZodType<UserInput> = z.object({
-  userSelection: UserSelectionSchema,
+const MachinePayloadSchema: ZodType<MachinePayload> = z.object({
+  selections: z.record(z.string(), UserSelectionSchema),
   randomSeed: z.string(),
 });
 

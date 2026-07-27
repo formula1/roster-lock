@@ -21,7 +21,7 @@ describe("bindStepsToBridge: handleFullSelection hook", () => {
     const pluginRuntime = await PluginManager.create(fixture.pluginDir);
 
     const lockConfig = makeLockConfig();
-    const users = [{ publicKey: "pk-a" }, { publicKey: "pk-b" }];
+    const machines = [{ publicKey: "pk-a", playerCount: 1 }, { publicKey: "pk-b", playerCount: 1 }];
 
     const pairA = wireBridgePair();
     const pairB = wireBridgePair();
@@ -30,21 +30,21 @@ describe("bindStepsToBridge: handleFullSelection hook", () => {
       bridge: pairA.agentSide,
       fileDB: new FakeFolderDB(),
       pluginRuntime,
-      users,
-      ownSelection: makeHeroSelection(),
+      machines,
+      ownMachinePublicKey: "pk-a",
+      ownSelections: { 0: makeHeroSelection() },
       lockConfig,
       gameControlledSelections: {},
-      localUsers: ["pk-a"],
     });
     const resultBPromise = bindStepsToBridge({
       bridge: pairB.agentSide,
       fileDB: new FakeFolderDB(),
       pluginRuntime,
-      users,
-      ownSelection: makeHeroSelection(),
+      machines,
+      ownMachinePublicKey: "pk-b",
+      ownSelections: { 0: makeHeroSelection() },
       lockConfig,
       gameControlledSelections: {},
-      localUsers: ["pk-b"],
     });
 
     await driveRoomProtocol([
@@ -97,7 +97,7 @@ describe("bindStepsToBridge: handleFullSelection hook", () => {
 
     const pluginRuntime = await PluginManager.create(pluginDir);
     const lockConfig = makeLockConfig();
-    const users = [{ publicKey: "pk-a" }, { publicKey: "pk-b" }];
+    const machines = [{ publicKey: "pk-a", playerCount: 1 }, { publicKey: "pk-b", playerCount: 1 }];
 
     const pairA = wireBridgePair();
     const pairB = wireBridgePair();
@@ -106,21 +106,21 @@ describe("bindStepsToBridge: handleFullSelection hook", () => {
       bridge: pairA.agentSide,
       fileDB: new FakeFolderDB(),
       pluginRuntime,
-      users,
-      ownSelection: makeHeroSelection(),
+      machines,
+      ownMachinePublicKey: "pk-a",
+      ownSelections: { 0: makeHeroSelection() },
       lockConfig,
       gameControlledSelections: {},
-      localUsers: ["pk-a"],
     });
     const resultBPromise = bindStepsToBridge({
       bridge: pairB.agentSide,
       fileDB: new FakeFolderDB(),
       pluginRuntime,
-      users,
-      ownSelection: makeHeroSelection(),
+      machines,
+      ownMachinePublicKey: "pk-b",
+      ownSelections: { 0: makeHeroSelection() },
       lockConfig,
       gameControlledSelections: {},
-      localUsers: ["pk-b"],
     });
 
     await driveRoomProtocol([

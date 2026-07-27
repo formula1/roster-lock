@@ -18,13 +18,15 @@ const RequestCaster: ZodType<(
     url: z.string(),
     roomId: z.string(),
   }),
-  user: z.object({
+  machine: z.object({
     timestamp: z.number(),
     publicKey: z.string(),
     signature: z.string(),
   }),
   rosterConfig: z.any(),
-  userSelection: UserSelectionSchema,
+  // Record<number, UserSelection> at the type level, but JSON object keys
+  // are always strings on the wire - validate them as such.
+  playerSelections: z.record(z.string(), UserSelectionSchema),
 }).strict();
 
 export function castRoomRequest(uncasted: unknown): RosterLockV1SyncDLRequestClientToAgent {
@@ -39,10 +41,11 @@ export function castRoomRequest(uncasted: unknown): RosterLockV1SyncDLRequestCli
   return casted;
 }
 
-type User = {
+type Machine = {
   userId: string,
   publicKey: string,
   displayName: string,
+  playerCount: number,
 };
 
 export async function exchangeAndDownloadSelections(
@@ -54,8 +57,8 @@ export async function exchangeAndDownloadSelections(
   const roomURL = prepareRelayURL(roomRequest);
 
   const httpURL = new URL(roomURL);
-  httpURL.pathname = "/api/v1/room/" + roomRequest.relay.roomId + "/users";
-  const users = await handleFetch<Array<User>>(fetch(httpURL.href));
+  httpURL.pathname = "/api/v1/room/" + roomRequest.relay.roomId + "/machines";
+  const machines = await handleFetch<Array<Machine>>(fetch(httpURL.href));
 
   const wsURL = new URL(roomURL);
   wsURL.protocol = roomURL.protocol === "https:" ? "wss:" : "ws:";
@@ -80,11 +83,11 @@ export async function exchangeAndDownloadSelections(
     bridge: roomBridge,
     fileDB,
     pluginRuntime,
-    users: users.map(user=>({ publicKey: user.publicKey })),
-    ownSelection: roomRequest.userSelection,
+    machines: machines.map(machine=>({ publicKey: machine.publicKey, playerCount: machine.playerCount })),
+    ownMachinePublicKey: roomRequest.machine.publicKey,
+    ownSelections: roomRequest.playerSelections,
     lockConfig: roomRequest.rosterConfig,
     gameControlledSelections: {},
-    localUsers: [roomRequest.user.publicKey],
   }, progressListeners);
 
   // The relay closes the room websocket with a close reason as soon as it fails
@@ -111,12 +114,12 @@ export async function exchangeAndDownloadSelections(
   }
 }
 
-function prepareRelayURL({ relay, user }: RosterLockV1SyncDLRequestClientToAgent){
+function prepareRelayURL({ relay, machine }: RosterLockV1SyncDLRequestClientToAgent){
   const url = new URL(relay.url);
   url.searchParams.set("room", relay.roomId);
-  url.searchParams.set("t", user.timestamp.toString());
-  url.searchParams.set("pk", user.publicKey);
-  url.searchParams.set("sig", user.signature);
+  url.searchParams.set("t", machine.timestamp.toString());
+  url.searchParams.set("pk", machine.publicKey);
+  url.searchParams.set("sig", machine.signature);
   return url;
 }
 
