@@ -1,0 +1,16 @@
+{
+  "name": "@roster-lock/full-local-pwa-tests",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Playwright driver that clicks through the game-pwa example (Connect -> Roster -> Select -> Matchmaking -> Download -> Game) against a running full-local stack.",
+  "license": "JSON",
+  "author": "",
+  "type": "module",
+  "scripts": {
+    "drive": "node drive.mjs",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "playwright-core": "^1.62.0"
+  }
+}

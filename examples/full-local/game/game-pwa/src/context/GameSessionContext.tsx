@@ -9,11 +9,15 @@ import { generateKeyPair, UserKeyPair } from "@roster-lock/ts-client";
 export type MatchAgentConnection = {
   url: string;
   authCode: string;
-  // The matchmaking service is a separate service from the match agent
-  // (game-headless reads it from a distinct PUBLIC_MATCHMAKER_URL env var) -
-  // kept alongside the match agent fields here since there's nowhere else
-  // for a browser session to get it from.
+  // The matchmaking and game-coordinator services are separate from the match
+  // agent (game-headless reads them from distinct PUBLIC_MATCHMAKER_URL /
+  // GAME_SERVER env vars) - kept alongside the match agent fields here since
+  // there's nowhere else for a browser session to get them from.
   matchmakerUrl: string;
+  // Base http(s) URL of the game coordinator; webrtc-room.ts derives the
+  // ws(s)://.../signaling URL from it, matching how game-headless turns
+  // GAME_SERVER's http(s) base into a ws(s) URL.
+  gameCoordinatorUrl: string;
 };
 
 export type CurrentUser = {

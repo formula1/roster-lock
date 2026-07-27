@@ -49,8 +49,8 @@ export async function syncDownloadOverWebSocket(
 
   const ws = new WebSocket(syncDLURL.href);
   const bridge = new MessageBridge((message)=>ws.send(JSON.stringify(message)));
-  ws.on("message", (message)=>{
-    bridge.handleMessage(JSON.parse(message.toString()));
+  ws.addEventListener("message", (event)=>{
+    bridge.handleMessage(JSON.parse(event.data.toString()));
   });
 
   bridge.onEvent("room-state", (state)=>{

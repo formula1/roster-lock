@@ -907,6 +907,12 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
 
+  examples/full-local/tests/pwa:
+    dependencies:
+      playwright-core:
+        specifier: ^1.62.0
+        version: 1.62.0
+
   examples/full-local/tests/webrtc:
     dependencies:
       '@roster-lock/game-server-example':
@@ -6341,6 +6347,11 @@ packages:
   pify@4.0.1:
     resolution: {integrity: sha512-uB80kBFb/tfd68bVleG9T5GGsGPjJrLAUpR5PZIrhBnIaRTQRjqdJSsIKkOP6OAIFbj7GOrcudc5pNjZ+geV2g==}
     engines: {node: '>=6'}
+
+  playwright-core@1.62.0:
+    resolution: {integrity: sha512-nsNRyq0r2zsG8AcRHWknc9QRA5XCueC7gWMrs+Gx2tlZn9hcl8zudfh00lhJPY1DE7NmZ6bDsT9g2yey8mXljA==}
+    engines: {node: '>=20'}
+    hasBin: true
 
   possible-typed-array-names@1.1.0:
     resolution: {integrity: sha512-/+5VFTchJDoVj3bhoqi6UeymcD00DAwb1nJwamzPvHEszJ4FpF6SNNbUbOS8yI56qHzdV8eK0qEfOSiodkTdxg==}
@@ -13241,6 +13252,8 @@ snapshots:
   pify@3.0.0: {}
 
   pify@4.0.1: {}
+
+  playwright-core@1.62.0: {}
 
   possible-typed-array-names@1.1.0: {}
 

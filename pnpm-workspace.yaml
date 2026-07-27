@@ -7,6 +7,7 @@ packages:
   - 'examples/full-local/game/*'
   - 'examples/full-local/integration'
   - 'examples/full-local/services/*'
+  - 'examples/full-local/tests/pwa'
   - 'examples/full-local/tests/webrtc'
   - 'github-pages'
   - 'plugins/download/archive/*'
