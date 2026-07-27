@@ -1,0 +1,62 @@
+{
+  "configIdentity": {
+    "namespace": "roster-lock",
+    "purpose": "draft",
+    "version": 1
+  },
+  "previousLock": {
+    "configIdentity": {
+      "namespace": "roster-lock",
+      "purpose": "lock",
+      "version": 1
+    },
+    "author": "",
+    "title": "",
+    "version": "0.0.0",
+    "engine": {
+      "name": "",
+      "version": "",
+      "pieceDefinitions": {}
+    },
+    "rosters": {},
+    "selection": {
+      "piece": {},
+      "globalValidation": [],
+      "scriptDictionary": {}
+    }
+  },
+  "stagedLock": {
+    "configIdentity": {
+      "namespace": "roster-lock",
+      "purpose": "lock",
+      "version": 1
+    },
+    "author": "",
+    "title": "Test Game",
+    "version": "0.0.0",
+    "engine": {
+      "name": "",
+      "version": "",
+      "pieceDefinitions": {
+        "character": {
+          "selectionStrategy": "mandatory",
+          "requires": [],
+          "pathVariables": [],
+          "assets": []
+        }
+      }
+    },
+    "rosters": {
+      "character": []
+    },
+    "selection": {
+      "piece": {},
+      "globalValidation": [],
+      "scriptDictionary": {}
+    }
+  },
+  "draft": {
+    "rosterPieceInfo": {},
+    "selectionScriptInfo": {}
+  }
+}
