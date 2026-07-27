@@ -6,7 +6,7 @@
   },
   "author": "match-lock",
   "title": "Full Local Battle",
-  "version": "9.0.0",
+  "version": "10.0.0",
   "engine": {
     "name": "full-local-battle",
     "version": "1.0.0",
@@ -602,12 +602,7 @@
   "selection": {
     "piece": {
       "hud": {
-        "type": "unselectable",
-        "pieceMeta": {
-          "schema": {},
-          "defaultMeta": {},
-          "pieceMeta": {}
-        }
+        "type": "unselectable"
       },
       "stage": {
         "type": "normal",
@@ -622,11 +617,6 @@
       },
       "character": {
         "type": "normal",
-        "pieceMeta": {
-          "schema": {},
-          "defaultMeta": {},
-          "pieceMeta": {}
-        },
         "validation": {
           "count": 2,
           "unique": false,
@@ -635,26 +625,38 @@
         }
       },
       "move": {
-        "type": "unselectable",
-        "pieceMeta": {
-          "schema": {},
-          "defaultMeta": {},
-          "pieceMeta": {}
-        }
+        "type": "unselectable"
       },
       "weather": {
-        "type": "unselectable",
-        "pieceMeta": {
-          "schema": {},
-          "defaultMeta": {},
-          "pieceMeta": {}
-        }
+        "type": "unselectable"
       }
     },
     "scriptDictionary": {
       "democracy-random.js": {
         "content": "\n\nfunction main(){\n  // count each selected item\n  let maximum = 0;\n  const map = {};\n  const bySelection = {};\n  for(const user of users){\n    const chosen = selection[user][0];\n    const newValue = (map[chosen.id] || 0) + 1;\n    map[chosen.id] = newValue;\n    bySelection[chosen.id] = chosen;\n    if(newValue > maximum) maximum = newValue;\n  }\n\n  // log(\"map:\", map);\n\n  // get all maximum\n  const equalKeys = [];\n  for(const [k, v] of Object.entries(map)){\n    if(v === maximum){\n      equalKeys.push(k);\n    }\n  }\n\n  // if only one maximum, return it\n  // (return the winning user's full selection, not a synthesized one, so\n  // its required substructure - e.g. weather under stage - is preserved)\n  if(equalKeys.length === 1){\n    return [bySelection[equalKeys[0]]];\n  }\n  // if multiple, choose one at random\n  const index = randomInt(0, equalKeys.length - 1);\n  return [bySelection[equalKeys[index]]];\n}\n"
       }
+    }
+  },
+  "pieceMeta": {
+    "hud": {
+      "schema": {},
+      "defaultMeta": {},
+      "values": {}
+    },
+    "character": {
+      "schema": {},
+      "defaultMeta": {},
+      "values": {}
+    },
+    "move": {
+      "schema": {},
+      "defaultMeta": {},
+      "values": {}
+    },
+    "weather": {
+      "schema": {},
+      "defaultMeta": {},
+      "values": {}
     }
   }
 }

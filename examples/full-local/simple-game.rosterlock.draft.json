@@ -12,683 +12,7 @@
     },
     "author": "match-lock",
     "title": "Full Local Battle",
-    "version": "8.0.0",
-    "engine": {
-      "name": "full-local-battle",
-      "version": "1.0.0",
-      "pieceDefinitions": {
-        "hud": {
-          "selectionStrategy": "mandatory",
-          "requires": [],
-          "pathVariables": [],
-          "assets": [
-            {
-              "name": "component",
-              "classification": "media",
-              "count": [
-                1,
-                "*"
-              ],
-              "glob": [
-                "**/*.jsx",
-                "**/*.js"
-              ]
-            }
-          ]
-        },
-        "stage": {
-          "selectionStrategy": "shared",
-          "requires": [
-            "weather"
-          ],
-          "pathVariables": [],
-          "assets": [
-            {
-              "name": "background",
-              "classification": "media",
-              "count": 1,
-              "glob": [
-                "media/*.svg"
-              ]
-            },
-            {
-              "name": "logic",
-              "classification": "logic",
-              "count": 1,
-              "glob": [
-                "logic.js"
-              ]
-            },
-            {
-              "name": "select-portrait",
-              "classification": "media",
-              "count": 1,
-              "glob": [
-                "portrait.svg"
-              ]
-            },
-            {
-              "name": "select-sound",
-              "classification": "media",
-              "count": 1,
-              "glob": [
-                "select.mp3"
-              ]
-            }
-          ]
-        },
-        "character": {
-          "selectionStrategy": "personal",
-          "requires": [
-            "move"
-          ],
-          "pathVariables": [],
-          "assets": [
-            {
-              "name": "visuals",
-              "classification": "media",
-              "count": 2,
-              "glob": [
-                "media/front.svg",
-                "media/back.svg"
-              ]
-            },
-            {
-              "name": "stats",
-              "classification": "logic",
-              "count": 1,
-              "glob": [
-                "stats.json5"
-              ]
-            },
-            {
-              "name": "select-portrait",
-              "classification": "media",
-              "count": 1,
-              "glob": [
-                "portrait.svg"
-              ]
-            },
-            {
-              "name": "select-sound",
-              "classification": "media",
-              "count": 1,
-              "glob": [
-                "select.mp3"
-              ]
-            }
-          ]
-        },
-        "move": {
-          "selectionStrategy": "on demand",
-          "requires": [
-            "weather"
-          ],
-          "pathVariables": [],
-          "assets": [
-            {
-              "name": "animation",
-              "classification": "media",
-              "count": 1,
-              "glob": [
-                "media/animation.json"
-              ]
-            },
-            {
-              "name": "logic",
-              "classification": "logic",
-              "count": 1,
-              "glob": [
-                "logic.js"
-              ]
-            }
-          ]
-        },
-        "weather": {
-          "selectionStrategy": "on demand",
-          "requires": [],
-          "pathVariables": [],
-          "assets": [
-            {
-              "name": "particles",
-              "classification": "media",
-              "count": 1,
-              "glob": [
-                "media/particles.json"
-              ]
-            }
-          ]
-        }
-      }
-    },
-    "rosters": {
-      "hud": [
-        {
-          "id": "hud-default",
-          "version": {
-            "logic": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-            "media": "fbe302bf812544e4aa6e952885351842e971b6be31e8fa4c844f6bd2a086c7e3",
-            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-          },
-          "humanInfo": {
-            "name": "Default HUD",
-            "author": "match-lock",
-            "url": "https://example.local/pieces/hud/default"
-          },
-          "downloadSources": [
-            "http://localhost:7342/pieces/hud/default.tar"
-          ],
-          "pathVariables": {},
-          "requiredPieces": {}
-        }
-      ],
-      "stage": [
-        {
-          "id": "stage-beach",
-          "version": {
-            "logic": "ddea3db1b5b2b42264d01aa7ca0d17fb9d8799ccf255da27786c532bb5b10970",
-            "media": "07382af4789603ca7d8ae35f42bea222a1c703b6698885ddc70ed7893f1eeb4b",
-            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-          },
-          "humanInfo": {
-            "name": "Beach Stage",
-            "author": "match-lock",
-            "url": "https://example.local/pieces/stage/beach"
-          },
-          "downloadSources": [
-            "http://localhost:7342/pieces/stage/beach.tar"
-          ],
-          "pathVariables": {},
-          "requiredPieces": {
-            "weather": {
-              "expected": [
-                "weather-sun"
-              ],
-              "selectable": false
-            }
-          }
-        },
-        {
-          "id": "stage-mountain",
-          "version": {
-            "logic": "dc7ead3ba69d574ca1b7b329f8bc96e32fec1a41daf1ce034bf22d15325fc4ac",
-            "media": "058da7ac9abed48af74fde20d7fced42da2cfc31da6bd2c117da3c14e1aa6768",
-            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-          },
-          "humanInfo": {
-            "name": "Mountain Stage",
-            "author": "match-lock",
-            "url": "https://example.local/pieces/stage/mountain"
-          },
-          "downloadSources": [
-            "http://localhost:7342/pieces/stage/mountain.tar"
-          ],
-          "pathVariables": {},
-          "requiredPieces": {
-            "weather": {
-              "expected": [
-                "weather-snow"
-              ],
-              "selectable": false
-            }
-          }
-        },
-        {
-          "id": "stage-rain-forest",
-          "version": {
-            "logic": "13d3a74484e891f5898cff1686bcf4f064ff26d3157e412af71475af42697585",
-            "media": "3ce985a9b8504dcaacdaaa6e754b2ac3199c3529427edbb016447457d3f72bd8",
-            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-          },
-          "humanInfo": {
-            "name": "Rain Forest Stage",
-            "author": "match-lock",
-            "url": "https://example.local/pieces/stage/rain-forest"
-          },
-          "downloadSources": [
-            "http://localhost:7342/pieces/stage/rain-forest.tar"
-          ],
-          "pathVariables": {},
-          "requiredPieces": {
-            "weather": {
-              "expected": [
-                "weather-rain"
-              ],
-              "selectable": false
-            }
-          }
-        }
-      ],
-      "character": [
-        {
-          "id": "character-yellow",
-          "version": {
-            "logic": "e2573d3d0af0316f03d47ab0bd19a498349db1bbd01047607a05ac0a572a7980",
-            "media": "d62c1c4572d44877b8efa43f2094988e2f29e4f46d16b6ac34b3e4d9fab5f48d",
-            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-          },
-          "humanInfo": {
-            "name": "Yellow",
-            "author": "match-lock",
-            "url": "https://example.local/pieces/character/yellow"
-          },
-          "downloadSources": [
-            "http://localhost:7342/pieces/character/yellow.tar"
-          ],
-          "pathVariables": {},
-          "requiredPieces": {
-            "move": {
-              "expected": [
-                "move-weak",
-                "move-basic",
-                "move-strong",
-                "move-sun",
-                "move-remove-weather"
-              ],
-              "selectable": true
-            }
-          }
-        },
-        {
-          "id": "character-red",
-          "version": {
-            "logic": "a22cc54921bf0e3f688fd1e84658883fe5d1029408a85158c8392cbf876c3f40",
-            "media": "d8381e9baf5e35fbb0dcd7279e9de5a3e50eb0498078d855204f80a4f52a0cc1",
-            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-          },
-          "humanInfo": {
-            "name": "Red",
-            "author": "match-lock",
-            "url": "https://example.local/pieces/character/red"
-          },
-          "downloadSources": [
-            "http://localhost:7342/pieces/character/red.tar"
-          ],
-          "pathVariables": {},
-          "requiredPieces": {
-            "move": {
-              "expected": [
-                "move-basic",
-                "move-strong",
-                "move-rain",
-                "move-random-weather",
-                "move-remove-weather"
-              ],
-              "selectable": true
-            }
-          }
-        },
-        {
-          "id": "character-blue",
-          "version": {
-            "logic": "376f976aadffcde7ef89596b9a6db5f5bf184b35d870604924f708a6daf9080c",
-            "media": "298f575a2d973c3aec16a494052b84608d98c0d8923b14bcdcaeb1c787c7dca9",
-            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-          },
-          "humanInfo": {
-            "name": "Blue",
-            "author": "match-lock",
-            "url": "https://example.local/pieces/character/blue"
-          },
-          "downloadSources": [
-            "http://localhost:7342/pieces/character/blue.tar"
-          ],
-          "pathVariables": {},
-          "requiredPieces": {
-            "move": {
-              "expected": [
-                "move-weak",
-                "move-basic",
-                "move-snow",
-                "move-rain",
-                "move-random-weather"
-              ],
-              "selectable": true
-            }
-          }
-        }
-      ],
-      "move": [
-        {
-          "id": "move-weak",
-          "version": {
-            "logic": "49b6221a42af006c5f8375de9c160d55b4ead46b206da0592b8485277f1fa7f6",
-            "media": "b3884f361fc702d0559a3bf51c4c7b21a2fc89b9e6f5396584da140812019275",
-            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-          },
-          "humanInfo": {
-            "name": "Weak Attack",
-            "author": "match-lock",
-            "url": "https://example.local/pieces/move/weak"
-          },
-          "downloadSources": [
-            "http://localhost:7342/pieces/move/weak.tar"
-          ],
-          "pathVariables": {},
-          "requiredPieces": {
-            "weather": {
-              "expected": [],
-              "selectable": false
-            }
-          }
-        },
-        {
-          "id": "move-basic",
-          "version": {
-            "logic": "17f68cfbefbd644bf5a55bf0be1f3ed58c544c0f32677c63575030999abfdb09",
-            "media": "b778725bbb8440bfae91acb9f2c7976d11b8636b595c32b09a0c69c6c44bfd72",
-            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-          },
-          "humanInfo": {
-            "name": "Basic Attack",
-            "author": "match-lock",
-            "url": "https://example.local/pieces/move/basic"
-          },
-          "downloadSources": [
-            "http://localhost:7342/pieces/move/basic.tar"
-          ],
-          "pathVariables": {},
-          "requiredPieces": {
-            "weather": {
-              "expected": [],
-              "selectable": false
-            }
-          }
-        },
-        {
-          "id": "move-strong",
-          "version": {
-            "logic": "9f873287c7541b49c200aef2edd2160145ff8da7c660498c062484f87536eef0",
-            "media": "020403f20324e3759c7e8cb9007e15a6d2b16bc1b9dc916b1f1c9decf789610c",
-            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-          },
-          "humanInfo": {
-            "name": "Strong Attack",
-            "author": "match-lock",
-            "url": "https://example.local/pieces/move/strong"
-          },
-          "downloadSources": [
-            "http://localhost:7342/pieces/move/strong.tar"
-          ],
-          "pathVariables": {},
-          "requiredPieces": {
-            "weather": {
-              "expected": [],
-              "selectable": false
-            }
-          }
-        },
-        {
-          "id": "move-sun",
-          "version": {
-            "logic": "48821fcfb27a6154fbaf89e30a27f84e359df97166752811e28a699a0af4de8d",
-            "media": "b000fa533be573e7f18cac143de70c37bac9e65b13e723e08b699269872b6b97",
-            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-          },
-          "humanInfo": {
-            "name": "Summon Sun",
-            "author": "match-lock",
-            "url": "https://example.local/pieces/move/sun"
-          },
-          "downloadSources": [
-            "http://localhost:7342/pieces/move/sun.tar"
-          ],
-          "pathVariables": {},
-          "requiredPieces": {
-            "weather": {
-              "expected": [
-                "weather-sun"
-              ],
-              "selectable": false
-            }
-          }
-        },
-        {
-          "id": "move-rain",
-          "version": {
-            "logic": "67e83454bff2793ecebbb5e45c8704dc733a45d78228e20b131627873037bfab",
-            "media": "75e76817f731ac5f1017c03a79cb64378533d2f7d9ce5ca3f318427e6c1af1e7",
-            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-          },
-          "humanInfo": {
-            "name": "Call Rain",
-            "author": "match-lock",
-            "url": "https://example.local/pieces/move/rain"
-          },
-          "downloadSources": [
-            "http://localhost:7342/pieces/move/rain.tar"
-          ],
-          "pathVariables": {},
-          "requiredPieces": {
-            "weather": {
-              "expected": [
-                "weather-rain"
-              ],
-              "selectable": false
-            }
-          }
-        },
-        {
-          "id": "move-snow",
-          "version": {
-            "logic": "b6940b39274d0bc250238c631b8d54ee8fe134276f8ffeabf0f4578f73632819",
-            "media": "7ef4a3ba79b580e5324a97ab5bb6b5ad0ae706fc4cbef034e57b2be63ee88f03",
-            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-          },
-          "humanInfo": {
-            "name": "Blizzard",
-            "author": "match-lock",
-            "url": "https://example.local/pieces/move/snow"
-          },
-          "downloadSources": [
-            "http://localhost:7342/pieces/move/snow.tar"
-          ],
-          "pathVariables": {},
-          "requiredPieces": {
-            "weather": {
-              "expected": [
-                "weather-snow"
-              ],
-              "selectable": false
-            }
-          }
-        },
-        {
-          "id": "move-random-weather",
-          "version": {
-            "logic": "fe2dc29a9e6c6127aa220d55dc198a6776c31b59e47bd37b9d12b71434cf0272",
-            "media": "b0edd8e897469a6f4d674d55ef70096a496c13ca9c125e895db09a75e0003426",
-            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-          },
-          "humanInfo": {
-            "name": "Random Weather",
-            "author": "match-lock",
-            "url": "https://example.local/pieces/move/random-weather"
-          },
-          "downloadSources": [
-            "http://localhost:7342/pieces/move/random-weather.tar"
-          ],
-          "pathVariables": {},
-          "requiredPieces": {
-            "weather": {
-              "expected": [
-                "weather-sun",
-                "weather-rain",
-                "weather-snow"
-              ],
-              "selectable": false
-            }
-          }
-        },
-        {
-          "id": "move-remove-weather",
-          "version": {
-            "logic": "82f2e2b6d407675c2d276b555df9cfc6943befdcb4390246fa01d44cfffea640",
-            "media": "bbdc77ed802a8a4ec93573860e76886cd7333f577d4e831fb1a25eadf49c8a26",
-            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-          },
-          "humanInfo": {
-            "name": "Clear Skies",
-            "author": "match-lock",
-            "url": "https://example.local/pieces/move/remove-weather"
-          },
-          "downloadSources": [
-            "http://localhost:7342/pieces/move/remove-weather.tar"
-          ],
-          "pathVariables": {},
-          "requiredPieces": {
-            "weather": {
-              "expected": [
-                "weather-none"
-              ],
-              "selectable": false
-            }
-          }
-        }
-      ],
-      "weather": [
-        {
-          "id": "weather-none",
-          "version": {
-            "logic": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-            "media": "9b676f0ff5b36efe39e9f630080712009be0e235abcab12ede09c64b4707a91c",
-            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-          },
-          "humanInfo": {
-            "name": "Clear Weather",
-            "author": "match-lock",
-            "url": "https://example.local/pieces/weather/none"
-          },
-          "downloadSources": [
-            "http://localhost:7342/pieces/weather/none.tar"
-          ],
-          "pathVariables": {},
-          "requiredPieces": {}
-        },
-        {
-          "id": "weather-sun",
-          "version": {
-            "logic": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-            "media": "cea221a697ccbf9820399ebeecb654c6c5f0031aac96c27395176fcd248c5114",
-            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-          },
-          "humanInfo": {
-            "name": "Sunny Weather",
-            "author": "match-lock",
-            "url": "https://example.local/pieces/weather/sun"
-          },
-          "downloadSources": [
-            "http://localhost:7342/pieces/weather/sun.tar"
-          ],
-          "pathVariables": {},
-          "requiredPieces": {}
-        },
-        {
-          "id": "weather-rain",
-          "version": {
-            "logic": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-            "media": "6c63de049fcea17089903c98ff68eb9382179ea0e5a9f5df1fc9772595f8e9f8",
-            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-          },
-          "humanInfo": {
-            "name": "Rainy Weather",
-            "author": "match-lock",
-            "url": "https://example.local/pieces/weather/rain"
-          },
-          "downloadSources": [
-            "http://localhost:7342/pieces/weather/rain.tar"
-          ],
-          "pathVariables": {},
-          "requiredPieces": {}
-        },
-        {
-          "id": "weather-snow",
-          "version": {
-            "logic": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-            "media": "93cd2c2811ca1508f7822235c8493d50c158e95892ad286513e2e7a5bffcdc7f",
-            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-          },
-          "humanInfo": {
-            "name": "Snowy Weather",
-            "author": "match-lock",
-            "url": "https://example.local/pieces/weather/snow"
-          },
-          "downloadSources": [
-            "http://localhost:7342/pieces/weather/snow.tar"
-          ],
-          "pathVariables": {},
-          "requiredPieces": {}
-        }
-      ]
-    },
-    "selection": {
-      "piece": {
-        "hud": {
-          "type": "unselectable",
-          "pieceMeta": {
-            "schema": {},
-            "defaultMeta": {},
-            "pieceMeta": {}
-          }
-        },
-        "stage": {
-          "type": "normal",
-          "validation": {
-            "count": 1,
-            "unique": true,
-            "customValidation": []
-          },
-          "mergeAlgorithm": {
-            "src": "democracy-random.js"
-          }
-        },
-        "character": {
-          "type": "normal",
-          "pieceMeta": {
-            "schema": {},
-            "defaultMeta": {},
-            "pieceMeta": {}
-          },
-          "validation": {
-            "count": 2,
-            "unique": false,
-            "banList": [],
-            "customValidation": []
-          }
-        },
-        "move": {
-          "type": "unselectable",
-          "pieceMeta": {
-            "schema": {},
-            "defaultMeta": {},
-            "pieceMeta": {}
-          }
-        },
-        "weather": {
-          "type": "unselectable",
-          "pieceMeta": {
-            "schema": {},
-            "defaultMeta": {},
-            "pieceMeta": {}
-          }
-        }
-      },
-      "scriptDictionary": {
-        "democracy-random.js": {
-          "content": "\n\nfunction main(){\n  // count each selected item\n  let maximum = 0;\n  const map = {};\n  const bySelection = {};\n  for(const user of users){\n    const chosen = selection[user][0];\n    const newValue = (map[chosen.id] || 0) + 1;\n    map[chosen.id] = newValue;\n    bySelection[chosen.id] = chosen;\n    if(newValue > maximum) maximum = newValue;\n  }\n\n  // log(\"map:\", map);\n\n  // get all maximum\n  const equalKeys = [];\n  for(const [k, v] of Object.entries(map)){\n    if(v === maximum){\n      equalKeys.push(k);\n    }\n  }\n\n  // if only one maximum, return it\n  // (return the winning user's full selection, not a synthesized one, so\n  // its required substructure - e.g. weather under stage - is preserved)\n  if(equalKeys.length === 1){\n    return [bySelection[equalKeys[0]]];\n  }\n  // if multiple, choose one at random\n  const index = randomInt(0, equalKeys.length - 1);\n  return [bySelection[equalKeys[index]]];\n}\n"
-        }
-      }
-    }
-  },
-  "stagedLock": {
-    "configIdentity": {
-      "namespace": "roster-lock",
-      "purpose": "lock",
-      "version": 1
-    },
-    "author": "match-lock",
-    "title": "Full Local Battle",
-    "version": "8.0.0",
+    "version": "9.0.0",
     "engine": {
       "name": "full-local-battle",
       "version": "1.0.0",
@@ -1284,12 +608,7 @@
     "selection": {
       "piece": {
         "hud": {
-          "type": "unselectable",
-          "pieceMeta": {
-            "schema": {},
-            "defaultMeta": {},
-            "pieceMeta": {}
-          }
+          "type": "unselectable"
         },
         "stage": {
           "type": "normal",
@@ -1304,11 +623,6 @@
         },
         "character": {
           "type": "normal",
-          "pieceMeta": {
-            "schema": {},
-            "defaultMeta": {},
-            "pieceMeta": {}
-          },
           "validation": {
             "count": 2,
             "unique": false,
@@ -1317,26 +631,679 @@
           }
         },
         "move": {
-          "type": "unselectable",
-          "pieceMeta": {
-            "schema": {},
-            "defaultMeta": {},
-            "pieceMeta": {}
-          }
+          "type": "unselectable"
         },
         "weather": {
-          "type": "unselectable",
-          "pieceMeta": {
-            "schema": {},
-            "defaultMeta": {},
-            "pieceMeta": {}
-          }
+          "type": "unselectable"
         }
       },
       "scriptDictionary": {
         "democracy-random.js": {
           "content": "\n\nfunction main(){\n  // count each selected item\n  let maximum = 0;\n  const map = {};\n  const bySelection = {};\n  for(const user of users){\n    const chosen = selection[user][0];\n    const newValue = (map[chosen.id] || 0) + 1;\n    map[chosen.id] = newValue;\n    bySelection[chosen.id] = chosen;\n    if(newValue > maximum) maximum = newValue;\n  }\n\n  // log(\"map:\", map);\n\n  // get all maximum\n  const equalKeys = [];\n  for(const [k, v] of Object.entries(map)){\n    if(v === maximum){\n      equalKeys.push(k);\n    }\n  }\n\n  // if only one maximum, return it\n  // (return the winning user's full selection, not a synthesized one, so\n  // its required substructure - e.g. weather under stage - is preserved)\n  if(equalKeys.length === 1){\n    return [bySelection[equalKeys[0]]];\n  }\n  // if multiple, choose one at random\n  const index = randomInt(0, equalKeys.length - 1);\n  return [bySelection[equalKeys[index]]];\n}\n"
         }
+      }
+    },
+    "pieceMeta": {}
+  },
+  "stagedLock": {
+    "configIdentity": {
+      "namespace": "roster-lock",
+      "purpose": "lock",
+      "version": 1
+    },
+    "author": "match-lock",
+    "title": "Full Local Battle",
+    "version": "9.0.0",
+    "engine": {
+      "name": "full-local-battle",
+      "version": "1.0.0",
+      "pieceDefinitions": {
+        "hud": {
+          "selectionStrategy": "mandatory",
+          "requires": [],
+          "pathVariables": [],
+          "assets": [
+            {
+              "name": "component",
+              "classification": "media",
+              "count": [
+                1,
+                "*"
+              ],
+              "glob": [
+                "**/*.jsx",
+                "**/*.js"
+              ]
+            }
+          ]
+        },
+        "stage": {
+          "selectionStrategy": "shared",
+          "requires": [
+            "weather"
+          ],
+          "pathVariables": [],
+          "assets": [
+            {
+              "name": "background",
+              "classification": "media",
+              "count": 1,
+              "glob": [
+                "media/*.svg"
+              ]
+            },
+            {
+              "name": "logic",
+              "classification": "logic",
+              "count": 1,
+              "glob": [
+                "logic.js"
+              ]
+            },
+            {
+              "name": "select-portrait",
+              "classification": "media",
+              "count": 1,
+              "glob": [
+                "portrait.svg"
+              ]
+            }
+          ]
+        },
+        "character": {
+          "selectionStrategy": "personal",
+          "requires": [
+            "move"
+          ],
+          "pathVariables": [],
+          "assets": [
+            {
+              "name": "visuals",
+              "classification": "media",
+              "count": 2,
+              "glob": [
+                "media/front.svg",
+                "media/back.svg"
+              ]
+            },
+            {
+              "name": "stats",
+              "classification": "logic",
+              "count": 1,
+              "glob": [
+                "stats.json5"
+              ]
+            },
+            {
+              "name": "select-portrait",
+              "classification": "media",
+              "count": 1,
+              "glob": [
+                "portrait.svg"
+              ]
+            }
+          ]
+        },
+        "move": {
+          "selectionStrategy": "on demand",
+          "requires": [
+            "weather"
+          ],
+          "pathVariables": [],
+          "assets": [
+            {
+              "name": "animation",
+              "classification": "media",
+              "count": 1,
+              "glob": [
+                "media/animation.json"
+              ]
+            },
+            {
+              "name": "logic",
+              "classification": "logic",
+              "count": 1,
+              "glob": [
+                "logic.js"
+              ]
+            }
+          ]
+        },
+        "weather": {
+          "selectionStrategy": "on demand",
+          "requires": [],
+          "pathVariables": [],
+          "assets": [
+            {
+              "name": "particles",
+              "classification": "media",
+              "count": 1,
+              "glob": [
+                "media/particles.json"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "rosters": {
+      "hud": [
+        {
+          "id": "hud-default",
+          "version": {
+            "logic": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "media": "fbe302bf812544e4aa6e952885351842e971b6be31e8fa4c844f6bd2a086c7e3",
+            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "humanInfo": {
+            "name": "Default HUD",
+            "author": "match-lock",
+            "url": "https://example.local/pieces/hud/default"
+          },
+          "downloadSources": [
+            "http://localhost:7342/pieces/hud/default.tar"
+          ],
+          "pathVariables": {},
+          "requiredPieces": {}
+        }
+      ],
+      "stage": [
+        {
+          "id": "stage-beach",
+          "version": {
+            "logic": "ddea3db1b5b2b42264d01aa7ca0d17fb9d8799ccf255da27786c532bb5b10970",
+            "media": "494606987229a7514acfe432d57e4c0ee8aac8f04a11b5729e44ea65732873ec",
+            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "humanInfo": {
+            "name": "Beach Stage",
+            "author": "match-lock",
+            "url": "https://example.local/pieces/stage/beach"
+          },
+          "downloadSources": [
+            "http://localhost:7342/pieces/stage/beach.tar"
+          ],
+          "pathVariables": {},
+          "requiredPieces": {
+            "weather": {
+              "expected": [
+                "weather-sun"
+              ],
+              "selectable": false
+            }
+          }
+        },
+        {
+          "id": "stage-mountain",
+          "version": {
+            "logic": "dc7ead3ba69d574ca1b7b329f8bc96e32fec1a41daf1ce034bf22d15325fc4ac",
+            "media": "6644cdb04bc4697be20e4cf483013cff78dc5efd8f666878cffa15eb0ca861ab",
+            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "humanInfo": {
+            "name": "Mountain Stage",
+            "author": "match-lock",
+            "url": "https://example.local/pieces/stage/mountain"
+          },
+          "downloadSources": [
+            "http://localhost:7342/pieces/stage/mountain.tar"
+          ],
+          "pathVariables": {},
+          "requiredPieces": {
+            "weather": {
+              "expected": [
+                "weather-snow"
+              ],
+              "selectable": false
+            }
+          }
+        },
+        {
+          "id": "stage-rain-forest",
+          "version": {
+            "logic": "13d3a74484e891f5898cff1686bcf4f064ff26d3157e412af71475af42697585",
+            "media": "3b0a468517884f2234fc631a236ab3af25194aa5e22e0e553c08342375c58adb",
+            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "humanInfo": {
+            "name": "Rain Forest Stage",
+            "author": "match-lock",
+            "url": "https://example.local/pieces/stage/rain-forest"
+          },
+          "downloadSources": [
+            "http://localhost:7342/pieces/stage/rain-forest.tar"
+          ],
+          "pathVariables": {},
+          "requiredPieces": {
+            "weather": {
+              "expected": [
+                "weather-rain"
+              ],
+              "selectable": false
+            }
+          }
+        }
+      ],
+      "character": [
+        {
+          "id": "character-yellow",
+          "version": {
+            "logic": "e2573d3d0af0316f03d47ab0bd19a498349db1bbd01047607a05ac0a572a7980",
+            "media": "fb311462544b23aeff182f3de7a94d3e9b13873bd673f381062b47dd1a14934e",
+            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "humanInfo": {
+            "name": "Yellow",
+            "author": "match-lock",
+            "url": "https://example.local/pieces/character/yellow"
+          },
+          "downloadSources": [
+            "http://localhost:7342/pieces/character/yellow.tar"
+          ],
+          "pathVariables": {},
+          "requiredPieces": {
+            "move": {
+              "expected": [
+                "move-weak",
+                "move-basic",
+                "move-strong",
+                "move-sun",
+                "move-remove-weather"
+              ],
+              "selectable": true
+            }
+          }
+        },
+        {
+          "id": "character-red",
+          "version": {
+            "logic": "a22cc54921bf0e3f688fd1e84658883fe5d1029408a85158c8392cbf876c3f40",
+            "media": "9c23bb9abf4acb8db64ef87871487e17911e08b1f3ab422f58830b7eb2001de7",
+            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "humanInfo": {
+            "name": "Red",
+            "author": "match-lock",
+            "url": "https://example.local/pieces/character/red"
+          },
+          "downloadSources": [
+            "http://localhost:7342/pieces/character/red.tar"
+          ],
+          "pathVariables": {},
+          "requiredPieces": {
+            "move": {
+              "expected": [
+                "move-basic",
+                "move-strong",
+                "move-rain",
+                "move-random-weather",
+                "move-remove-weather"
+              ],
+              "selectable": true
+            }
+          }
+        },
+        {
+          "id": "character-blue",
+          "version": {
+            "logic": "376f976aadffcde7ef89596b9a6db5f5bf184b35d870604924f708a6daf9080c",
+            "media": "eb6ece83d2e2fa297360ff9ffc82587c6b6981afab07a7e7d70ffbf4c38c2398",
+            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "humanInfo": {
+            "name": "Blue",
+            "author": "match-lock",
+            "url": "https://example.local/pieces/character/blue"
+          },
+          "downloadSources": [
+            "http://localhost:7342/pieces/character/blue.tar"
+          ],
+          "pathVariables": {},
+          "requiredPieces": {
+            "move": {
+              "expected": [
+                "move-weak",
+                "move-basic",
+                "move-snow",
+                "move-rain",
+                "move-random-weather"
+              ],
+              "selectable": true
+            }
+          }
+        }
+      ],
+      "move": [
+        {
+          "id": "move-weak",
+          "version": {
+            "logic": "49b6221a42af006c5f8375de9c160d55b4ead46b206da0592b8485277f1fa7f6",
+            "media": "b3884f361fc702d0559a3bf51c4c7b21a2fc89b9e6f5396584da140812019275",
+            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "humanInfo": {
+            "name": "Weak Attack",
+            "author": "match-lock",
+            "url": "https://example.local/pieces/move/weak"
+          },
+          "downloadSources": [
+            "http://localhost:7342/pieces/move/weak.tar"
+          ],
+          "pathVariables": {},
+          "requiredPieces": {
+            "weather": {
+              "expected": [],
+              "selectable": false
+            }
+          }
+        },
+        {
+          "id": "move-basic",
+          "version": {
+            "logic": "17f68cfbefbd644bf5a55bf0be1f3ed58c544c0f32677c63575030999abfdb09",
+            "media": "b778725bbb8440bfae91acb9f2c7976d11b8636b595c32b09a0c69c6c44bfd72",
+            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "humanInfo": {
+            "name": "Basic Attack",
+            "author": "match-lock",
+            "url": "https://example.local/pieces/move/basic"
+          },
+          "downloadSources": [
+            "http://localhost:7342/pieces/move/basic.tar"
+          ],
+          "pathVariables": {},
+          "requiredPieces": {
+            "weather": {
+              "expected": [],
+              "selectable": false
+            }
+          }
+        },
+        {
+          "id": "move-strong",
+          "version": {
+            "logic": "9f873287c7541b49c200aef2edd2160145ff8da7c660498c062484f87536eef0",
+            "media": "020403f20324e3759c7e8cb9007e15a6d2b16bc1b9dc916b1f1c9decf789610c",
+            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "humanInfo": {
+            "name": "Strong Attack",
+            "author": "match-lock",
+            "url": "https://example.local/pieces/move/strong"
+          },
+          "downloadSources": [
+            "http://localhost:7342/pieces/move/strong.tar"
+          ],
+          "pathVariables": {},
+          "requiredPieces": {
+            "weather": {
+              "expected": [],
+              "selectable": false
+            }
+          }
+        },
+        {
+          "id": "move-sun",
+          "version": {
+            "logic": "48821fcfb27a6154fbaf89e30a27f84e359df97166752811e28a699a0af4de8d",
+            "media": "b000fa533be573e7f18cac143de70c37bac9e65b13e723e08b699269872b6b97",
+            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "humanInfo": {
+            "name": "Summon Sun",
+            "author": "match-lock",
+            "url": "https://example.local/pieces/move/sun"
+          },
+          "downloadSources": [
+            "http://localhost:7342/pieces/move/sun.tar"
+          ],
+          "pathVariables": {},
+          "requiredPieces": {
+            "weather": {
+              "expected": [
+                "weather-sun"
+              ],
+              "selectable": false
+            }
+          }
+        },
+        {
+          "id": "move-rain",
+          "version": {
+            "logic": "67e83454bff2793ecebbb5e45c8704dc733a45d78228e20b131627873037bfab",
+            "media": "75e76817f731ac5f1017c03a79cb64378533d2f7d9ce5ca3f318427e6c1af1e7",
+            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "humanInfo": {
+            "name": "Call Rain",
+            "author": "match-lock",
+            "url": "https://example.local/pieces/move/rain"
+          },
+          "downloadSources": [
+            "http://localhost:7342/pieces/move/rain.tar"
+          ],
+          "pathVariables": {},
+          "requiredPieces": {
+            "weather": {
+              "expected": [
+                "weather-rain"
+              ],
+              "selectable": false
+            }
+          }
+        },
+        {
+          "id": "move-snow",
+          "version": {
+            "logic": "b6940b39274d0bc250238c631b8d54ee8fe134276f8ffeabf0f4578f73632819",
+            "media": "7ef4a3ba79b580e5324a97ab5bb6b5ad0ae706fc4cbef034e57b2be63ee88f03",
+            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "humanInfo": {
+            "name": "Blizzard",
+            "author": "match-lock",
+            "url": "https://example.local/pieces/move/snow"
+          },
+          "downloadSources": [
+            "http://localhost:7342/pieces/move/snow.tar"
+          ],
+          "pathVariables": {},
+          "requiredPieces": {
+            "weather": {
+              "expected": [
+                "weather-snow"
+              ],
+              "selectable": false
+            }
+          }
+        },
+        {
+          "id": "move-random-weather",
+          "version": {
+            "logic": "fe2dc29a9e6c6127aa220d55dc198a6776c31b59e47bd37b9d12b71434cf0272",
+            "media": "b0edd8e897469a6f4d674d55ef70096a496c13ca9c125e895db09a75e0003426",
+            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "humanInfo": {
+            "name": "Random Weather",
+            "author": "match-lock",
+            "url": "https://example.local/pieces/move/random-weather"
+          },
+          "downloadSources": [
+            "http://localhost:7342/pieces/move/random-weather.tar"
+          ],
+          "pathVariables": {},
+          "requiredPieces": {
+            "weather": {
+              "expected": [
+                "weather-sun",
+                "weather-rain",
+                "weather-snow"
+              ],
+              "selectable": false
+            }
+          }
+        },
+        {
+          "id": "move-remove-weather",
+          "version": {
+            "logic": "82f2e2b6d407675c2d276b555df9cfc6943befdcb4390246fa01d44cfffea640",
+            "media": "bbdc77ed802a8a4ec93573860e76886cd7333f577d4e831fb1a25eadf49c8a26",
+            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "humanInfo": {
+            "name": "Clear Skies",
+            "author": "match-lock",
+            "url": "https://example.local/pieces/move/remove-weather"
+          },
+          "downloadSources": [
+            "http://localhost:7342/pieces/move/remove-weather.tar"
+          ],
+          "pathVariables": {},
+          "requiredPieces": {
+            "weather": {
+              "expected": [
+                "weather-none"
+              ],
+              "selectable": false
+            }
+          }
+        }
+      ],
+      "weather": [
+        {
+          "id": "weather-none",
+          "version": {
+            "logic": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "media": "9b676f0ff5b36efe39e9f630080712009be0e235abcab12ede09c64b4707a91c",
+            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "humanInfo": {
+            "name": "Clear Weather",
+            "author": "match-lock",
+            "url": "https://example.local/pieces/weather/none"
+          },
+          "downloadSources": [
+            "http://localhost:7342/pieces/weather/none.tar"
+          ],
+          "pathVariables": {},
+          "requiredPieces": {}
+        },
+        {
+          "id": "weather-sun",
+          "version": {
+            "logic": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "media": "cea221a697ccbf9820399ebeecb654c6c5f0031aac96c27395176fcd248c5114",
+            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "humanInfo": {
+            "name": "Sunny Weather",
+            "author": "match-lock",
+            "url": "https://example.local/pieces/weather/sun"
+          },
+          "downloadSources": [
+            "http://localhost:7342/pieces/weather/sun.tar"
+          ],
+          "pathVariables": {},
+          "requiredPieces": {}
+        },
+        {
+          "id": "weather-rain",
+          "version": {
+            "logic": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "media": "6c63de049fcea17089903c98ff68eb9382179ea0e5a9f5df1fc9772595f8e9f8",
+            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "humanInfo": {
+            "name": "Rainy Weather",
+            "author": "match-lock",
+            "url": "https://example.local/pieces/weather/rain"
+          },
+          "downloadSources": [
+            "http://localhost:7342/pieces/weather/rain.tar"
+          ],
+          "pathVariables": {},
+          "requiredPieces": {}
+        },
+        {
+          "id": "weather-snow",
+          "version": {
+            "logic": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "media": "93cd2c2811ca1508f7822235c8493d50c158e95892ad286513e2e7a5bffcdc7f",
+            "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "humanInfo": {
+            "name": "Snowy Weather",
+            "author": "match-lock",
+            "url": "https://example.local/pieces/weather/snow"
+          },
+          "downloadSources": [
+            "http://localhost:7342/pieces/weather/snow.tar"
+          ],
+          "pathVariables": {},
+          "requiredPieces": {}
+        }
+      ]
+    },
+    "selection": {
+      "piece": {
+        "hud": {
+          "type": "unselectable"
+        },
+        "stage": {
+          "type": "normal",
+          "validation": {
+            "count": 1,
+            "unique": true,
+            "customValidation": []
+          },
+          "mergeAlgorithm": {
+            "src": "democracy-random.js"
+          }
+        },
+        "character": {
+          "type": "normal",
+          "validation": {
+            "count": 2,
+            "unique": false,
+            "banList": [],
+            "customValidation": []
+          }
+        },
+        "move": {
+          "type": "unselectable"
+        },
+        "weather": {
+          "type": "unselectable"
+        }
+      },
+      "scriptDictionary": {
+        "democracy-random.js": {
+          "content": "\n\nfunction main(){\n  // count each selected item\n  let maximum = 0;\n  const map = {};\n  const bySelection = {};\n  for(const user of users){\n    const chosen = selection[user][0];\n    const newValue = (map[chosen.id] || 0) + 1;\n    map[chosen.id] = newValue;\n    bySelection[chosen.id] = chosen;\n    if(newValue > maximum) maximum = newValue;\n  }\n\n  // log(\"map:\", map);\n\n  // get all maximum\n  const equalKeys = [];\n  for(const [k, v] of Object.entries(map)){\n    if(v === maximum){\n      equalKeys.push(k);\n    }\n  }\n\n  // if only one maximum, return it\n  // (return the winning user's full selection, not a synthesized one, so\n  // its required substructure - e.g. weather under stage - is preserved)\n  if(equalKeys.length === 1){\n    return [bySelection[equalKeys[0]]];\n  }\n  // if multiple, choose one at random\n  const index = randomInt(0, equalKeys.length - 1);\n  return [bySelection[equalKeys[index]]];\n}\n"
+        }
+      }
+    },
+    "pieceMeta": {
+      "hud": {
+        "schema": {},
+        "defaultMeta": {},
+        "values": {}
+      },
+      "character": {
+        "schema": {},
+        "defaultMeta": {},
+        "values": {}
+      },
+      "move": {
+        "schema": {},
+        "defaultMeta": {},
+        "values": {}
+      },
+      "weather": {
+        "schema": {},
+        "defaultMeta": {},
+        "values": {}
       }
     }
   },
