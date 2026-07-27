@@ -1,13 +1,13 @@
 import {
   RosterLockV1Config, SelectionPreselectedConfig,
-  FinalSelection, PieceType, SelectedPiece, UserId
+  FinalSelection, PieceType, SelectedPiece, PlayerId
 } from "@roster-lock/types";
 import { ensurePiecesAreInRoster } from "../ensure-pieces-are-in-roster";
 
 
 export async function handlePreselectedSelection(
   config: RosterLockV1Config,
-  users: Array<UserId>,
+  users: Array<PlayerId>,
   pieceType: PieceType,
   selectionConfig: SelectionPreselectedConfig,
 ): Promise<FinalSelection[PieceType]>{
@@ -28,7 +28,7 @@ export async function handlePreselectedSelection(
     return { type: "shared", value: selectionConfig.pieces };
   }
 
-  const userSelections: Record<UserId, Array<SelectedPiece>> = {};
+  const userSelections: Record<PlayerId, Array<SelectedPiece>> = {};
   for(const userId of users){
     userSelections[userId] = selectionConfig.pieces;
   }

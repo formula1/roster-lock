@@ -1,14 +1,14 @@
 import {
-  RosterLockV1Config, FinalSelection, PieceType, SelectedPiece, UserId
+  RosterLockV1Config, FinalSelection, PieceType, SelectedPiece, PlayerId
 } from "@roster-lock/types";
 import { ensurePiecesAreInRoster } from "../ensure-pieces-are-in-roster";
 
 
 export async function handleGameControlledSelection(
   config: RosterLockV1Config,
-  users: Array<UserId>,
+  users: Array<PlayerId>,
   pieceType: PieceType,
-  gameControlledSelections: Record<PieceType, Array<SelectedPiece> | Record<UserId, Array<SelectedPiece>>>,
+  gameControlledSelections: Record<PieceType, Array<SelectedPiece> | Record<PlayerId, Array<SelectedPiece>>>,
 ): Promise<FinalSelection[PieceType]>{
   const pieceDefinition = config.engine.pieceDefinitions[pieceType];
   if(!pieceDefinition){

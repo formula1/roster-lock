@@ -8,13 +8,14 @@ export type RosterLockV1SyncDLRequestUserToClient = {
     url: string,
     roomId: string,
   },
-  user: {
-    userId: string;
+  machine: {
+    machineId: string;
     keys: {
       publicKey: string,
       privateKey: string,
     }
   },
   rosterConfig: RosterLockV1Config,
-  userSelection: UserSelection,
+  // Keyed by local player index on this machine (0-based).
+  playerSelections: Record<number, UserSelection>,
 };

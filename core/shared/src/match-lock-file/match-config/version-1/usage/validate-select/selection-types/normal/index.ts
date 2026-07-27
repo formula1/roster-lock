@@ -1,5 +1,5 @@
 import {
-  RosterLockV1Config, SelectionNormalConfig, PieceType, SelectedPiece, UserId, FinalSelection
+  RosterLockV1Config, SelectionNormalConfig, PieceType, SelectedPiece, PlayerId, FinalSelection
 } from "@roster-lock/types";
 import { ensurePiecesAreInRoster } from "../../ensure-pieces-are-in-roster";
 import { ScriptStarter } from "@roster-lock/types";
@@ -12,10 +12,10 @@ import { castSharedResult, castPersonalResult } from "./cast-result";
 export async function handleNormalSelection(
   config: RosterLockV1Config,
   randomSeeds: string[],
-  users: Array<UserId>,
+  users: Array<PlayerId>,
   pieceType: PieceType,
   selectionConfig: SelectionNormalConfig,
-  allSelections: Record<UserId, Record<PieceType, Array<SelectedPiece>>>,
+  allSelections: Record<PlayerId, Record<PieceType, Array<SelectedPiece>>>,
   runScript: (input: ScriptStarter)=>Promise<any>
 ): Promise<FinalSelection[PieceType]>{
   const pieceConfig = config.engine.pieceDefinitions[pieceType];
@@ -59,7 +59,7 @@ export async function handleNormalSelection(
     throw new Error(`Shared piece ${pieceType} is missing merge algorithm`);
   }
 
-  const usersSelections: Record<UserId, Array<SelectedPiece>> = {};
+  const usersSelections: Record<PlayerId, Array<SelectedPiece>> = {};
   for(const userId of users){
     usersSelections[userId] = allSelections[userId][pieceType];
   }

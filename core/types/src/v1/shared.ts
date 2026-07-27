@@ -1,5 +1,5 @@
 
-export type UserId = string;
+export type PlayerId = string;
 export type PieceType = string;
 export type PieceId = string;
 // RosterLockPiece["version"]["logic"] - the piece's real identity. A media/docs
