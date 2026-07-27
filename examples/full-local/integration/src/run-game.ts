@@ -66,7 +66,7 @@ export async function startMatchAgent(
 
   console.log(`Starting match-agent on port ${matchAgentUrl}...`);
   processes.spawnBackground(
-    "match-agent", "node",
+    "match-agent", process.execPath,
     [
       path.join(REPO_ROOT, "core/match-agent/dist/index.js"),
       "run",
@@ -98,9 +98,8 @@ export async function runPlayers(
   const playerProcesses = [];
   const resultPromises: Array<Promise<GameResult>> = [];
   for(let i = 1; i <= numPlayers; i++){
-    const child = processes.spawnBackground(`player-${i}`, "node", [gameHeadlessEntry], {
+    const child = processes.spawnBackground(`player-${i}`, process.execPath, [gameHeadlessEntry], {
       env: {
-        ...process.env,
         PUBLIC_RELAY_SERVER_URL: urls.relayRoom,
         PUBLIC_MATCHMAKER_URL: urls.matchmaker,
         GAME_SERVER: gameServerWsUrl,
