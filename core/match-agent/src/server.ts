@@ -10,7 +10,7 @@ export class MatchAgentServer {
   private wss: WebSocketServer;
   public wsRouter = new WebSocketRouter();
   public httpRouter = new HTTPRouter();
-  constructor(){
+  constructor(debug = true){
     this.httpServer = new Server();
     this.wss = new WebSocketServer({ noServer: true });
     this.httpServer.on('upgrade', async (request, socket, head)=>{
@@ -27,18 +27,19 @@ export class MatchAgentServer {
         }
       })()
       this.wsRouter.handleRequest(context, (err)=>{
-        console.log("Failed to route request", err);
+        debug && console.log("WS Error:", err);
         context.ws.terminate();
       });
     });
     this.httpServer.on('request', (req, res)=>{
       this.httpRouter.handleRequest({ req, res }, (err: unknown)=>{
+        debug && console.log("HTTP Error:", err);
         if(res.writableEnded){
-          console.warn("Router threw error and response ended")
+          debug && console.warn("Router threw error and response ended")
           return;
         }
         if(res.headersSent){
-          console.warn("Router threw error and headers already sent")
+          debug && console.warn("Router threw error and headers already sent")
           res.destroy();
           return;
         }
