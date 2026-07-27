@@ -18,13 +18,13 @@ WORKDIR /app
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY examples/full-local/services/download-provider/package.json examples/full-local/services/download-provider/
 
-RUN pnpm install --filter @match-lock/download-provider --frozen-lockfile --ignore-scripts
+RUN pnpm install --filter @roster-lock/download-provider --frozen-lockfile --ignore-scripts
 
 # Copy source code
 COPY examples/full-local/services/download-provider/ examples/full-local/services/download-provider/
 
 # Build TypeScript
-RUN pnpm --filter @match-lock/download-provider run build
+RUN pnpm --filter @roster-lock/download-provider run build
 
 WORKDIR /app/examples/full-local/services/download-provider
 

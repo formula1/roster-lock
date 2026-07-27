@@ -20,14 +20,14 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY core/utils/package.json core/utils/
 COPY examples/full-local/services/matchmaking/package.json examples/full-local/services/matchmaking/
 
-RUN pnpm install --filter @match-lock/matchmaking-example... --frozen-lockfile --ignore-scripts
+RUN pnpm install --filter @roster-lock/matchmaking-example... --frozen-lockfile --ignore-scripts
 
 # Copy source code
 COPY core/utils/ core/utils/
 COPY examples/full-local/services/matchmaking/ examples/full-local/services/matchmaking/
 
 # Build @roster-lock/utils and the service itself, in dependency order
-RUN pnpm --filter @match-lock/matchmaking-example... run build
+RUN pnpm --filter @roster-lock/matchmaking-example... run build
 
 WORKDIR /app/examples/full-local/services/matchmaking
 

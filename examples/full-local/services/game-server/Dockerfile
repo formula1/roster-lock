@@ -17,17 +17,19 @@ WORKDIR /app
 # service's dependency subset, so the install layer caches independently
 # of unrelated source changes elsewhere in the monorepo.
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY core/types/package.json core/types/
 COPY core/utils/package.json core/utils/
 COPY examples/full-local/services/game-server/package.json examples/full-local/services/game-server/
 
-RUN pnpm install --filter @match-lock/game-server-example... --frozen-lockfile --ignore-scripts
+RUN pnpm install --filter @roster-lock/game-server-example... --frozen-lockfile --ignore-scripts
 
 # Copy source code
+COPY core/types/ core/types/
 COPY core/utils/ core/utils/
 COPY examples/full-local/services/game-server/ examples/full-local/services/game-server/
 
 # Build @roster-lock/utils and the service itself, in dependency order
-RUN pnpm --filter @match-lock/game-server-example... run build
+RUN pnpm --filter @roster-lock/game-server-example... run build
 
 WORKDIR /app/examples/full-local/services/game-server
 
