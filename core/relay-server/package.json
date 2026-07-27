@@ -1,18 +1,18 @@
 {
-  "name": "@roster-lock/server",
+  "name": "@roster-lock/relay-server",
   "version": "0.0.0",
   "description": "To be used to connect multiple clients",
   "keywords": [
-    "match-lock",
+    "roster-lock",
     "game"
   ],
-  "homepage": "https://github.com/formula1/match-lock#readme",
+  "homepage": "https://github.com/formula1/roster-lock#readme",
   "bugs": {
-    "url": "https://github.com/formula1/match-lock/issues"
+    "url": "https://github.com/formula1/roster-lock/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/formula1/match-lock.git"
+    "url": "git+https://github.com/formula1/roster-lock.git"
   },
   "license": "JSON",
   "author": "Sam Tobia",

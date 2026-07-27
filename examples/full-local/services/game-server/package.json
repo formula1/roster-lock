@@ -2,7 +2,7 @@
   "name": "@roster-lock/game-server-example",
   "version": "1.0.0",
   "private": true,
-  "description": "Simple WebRTC game server for match-lock",
+  "description": "Simple WebRTC game server for roster-lock",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",

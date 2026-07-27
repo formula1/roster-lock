@@ -9,7 +9,7 @@ function toPascalCase(s: string) {
 export function buildDts(lock: RosterLockV1Config): string {
   const lines: string[] = [];
 
-  lines.push("// match-lock script globals");
+  lines.push("// roster-lock script globals");
   lines.push("");
   lines.push("type PieceId = string;");
   lines.push("type PieceType = string;");

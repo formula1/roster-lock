@@ -1,7 +1,7 @@
 {
   "name": "@roster-lock/dl-archive-rar",
   "version": "1.0.0",
-  "description": "RAR archive extraction plugin for match-lock downloads",
+  "description": "RAR archive extraction plugin for roster-lock downloads",
   "license": "JSON",
   "author": "Sam Tobia",
   "type": "commonjs",

@@ -42,7 +42,7 @@ export async function initializeUserDirectories(): Promise<{ shouldShowDialog: b
     const homeDir = await nativeAPI.fs.homeDir();
     const rosterLockDir = await join(homeDir, 'roster-lock');
     
-    // Check if the match-lock directory already exists
+    // Check if the roster-lock directory already exists
     if (await nativeAPI.fs.exists(rosterLockDir)) {
       return { shouldShowDialog: false, rosterLockDir };
     }
@@ -52,13 +52,13 @@ export async function initializeUserDirectories(): Promise<{ shouldShowDialog: b
     // If user previously chose to create, create it automatically
     if (settings.rosterLockDirChoice === 'create') {
       await nativeAPI.fs.mkdirAll(rosterLockDir);
-      console.log('✅ Created match-lock directory automatically:', rosterLockDir);
+      console.log('✅ Created roster-lock directory automatically:', rosterLockDir);
       return { shouldShowDialog: false, rosterLockDir };
     }
 
     // If user chose don't ask, skip
     if (settings.rosterLockDirChoice === 'dontAsk') {
-      console.log('ℹ️ User chose not to be asked again, skipping match-lock directory creation');
+      console.log('ℹ️ User chose not to be asked again, skipping roster-lock directory creation');
       return { shouldShowDialog: false, rosterLockDir };
     }
 
@@ -81,7 +81,7 @@ export async function handleUserChoice(
       case 'create':
         await nativeAPI.fs.mkdirAll(rosterLockDir);
         await updateUserSettings({ rosterLockDirChoice: 'create' });
-        console.log('✅ Created match-lock directory:', rosterLockDir);
+        console.log('✅ Created roster-lock directory:', rosterLockDir);
         return true;
       case 'askLater':
         return true;

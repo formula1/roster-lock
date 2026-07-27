@@ -1,7 +1,7 @@
 {
   "name": "@roster-lock/dl-compression-brotli",
   "version": "1.0.0",
-  "description": "Brotli decompression plugin for match-lock downloads",
+  "description": "Brotli decompression plugin for roster-lock downloads",
   "license": "JSON",
   "author": "Sam Tobia",
   "type": "commonjs",

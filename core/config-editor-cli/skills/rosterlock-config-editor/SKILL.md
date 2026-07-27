@@ -10,7 +10,7 @@ argument-hint: e.g. "create a draft for a new game called Foo" or "add a charact
 engine's piece-type definitions, the roster of actual pieces per type, and the
 per-type selection config. This skill ships inside the `@roster-lock/config-editor-cli`
 package itself (this file lives at `skills/rosterlock-config-editor/SKILL.md`
-relative to that package's root, `core/config-editor-cli/` in the match-lock
+relative to that package's root, `core/config-editor-cli/` in the roster-lock
 monorepo) so it travels with the CLI - installing or cloning just this package is
 enough to have it.
 
@@ -45,7 +45,7 @@ test -x bin/rosterlock-config-editor || pnpm run package
 ```
 
 If you only need to run something once and don't want to package a binary, and
-you're working inside the match-lock monorepo (this package's dependencies are
+you're working inside the roster-lock monorepo (this package's dependencies are
 workspace-linked there), `pnpm dev -- <args>` runs the CLI directly from source
 via `tsx` (no build/package step, slightly slower startup).
 

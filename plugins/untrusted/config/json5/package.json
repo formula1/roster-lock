@@ -1,7 +1,7 @@
 {
   "name": "@roster-lock/untrusted-config-json5",
   "version": "1.0.0",
-  "description": "JSON5 config format plugin for match-lock untrusted scripts",
+  "description": "JSON5 config format plugin for roster-lock untrusted scripts",
   "license": "JSON",
   "author": "Sam Tobia",
   "type": "commonjs",

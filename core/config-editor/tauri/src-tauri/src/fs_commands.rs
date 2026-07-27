@@ -126,7 +126,7 @@ pub async fn fs_get_downloads_dir() -> Result<String, String> {
 #[tauri::command]
 pub async fn fs_get_match_lock_dir() -> Result<String, String> {
   let home = dirs::home_dir().ok_or_else(|| "Could not get home directory".to_string())?;
-  Ok(home.join("match-lock").to_string_lossy().to_string())
+  Ok(home.join("roster-lock").to_string_lossy().to_string())
 }
 
 #[tauri::command]

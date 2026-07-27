@@ -1,7 +1,7 @@
 {
   "name": "@roster-lock/dl-compression-gzip",
   "version": "1.0.0",
-  "description": "Gzip decompression plugin for match-lock downloads",
+  "description": "Gzip decompression plugin for roster-lock downloads",
   "license": "JSON",
   "author": "Sam Tobia",
   "type": "commonjs",
