@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ScriptPurposeInput } from "@roster-lock/types";
-import { PieceType, SelectedPiece, UntrustedScriptRef, UserId } from "@roster-lock/types";
+import { PieceType, SelectedPiece, UntrustedScriptRef, PlayerId } from "@roster-lock/types";
 import { useRosterLock } from "../../../../Contexts/RosterLock";
 import { ProcessError, usePlugins } from "../../../../../../globals/agent";
 
@@ -87,7 +87,7 @@ export function RunScriptPage(){
             setUsers(newUsers);
             if(purposeBody.type === "piece-user-validation") return;
             if(purposeBody.type === "piece-merge"){
-              const newInput: Record<UserId, Array<SelectedPiece>> = {};
+              const newInput: Record<PlayerId, Array<SelectedPiece>> = {};
               for(const user of newUsers){
                 newInput[user] = purposeBody.input[user] || []
               }
@@ -95,7 +95,7 @@ export function RunScriptPage(){
               return;
             }
             if(purposeBody.type === "global-validation"){
-              const newInput: Record<PieceType, Array<SelectedPiece> | Record<UserId, Array<SelectedPiece>>> = {};
+              const newInput: Record<PieceType, Array<SelectedPiece> | Record<PlayerId, Array<SelectedPiece>>> = {};
               for(const [pieceType, def] of Object.entries(lock.engine.pieceDefinitions)){
                 if(def.selectionStrategy === "mandatory" || def.selectionStrategy === "on demand"){
                   continue
