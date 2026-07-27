@@ -1,12 +1,12 @@
-import { UserSelection, UserId } from "@roster-lock/types";
+import { UserSelection, PlayerId } from "@roster-lock/types";
 
 // Only walks each pieceType's top-level picks (not the recursive `required`
 // sub-selections nested inside a SelectedPiece) - sortPieces ranks exactly one
 // pieceType at a time, and a piece's own internal composition is a separate
 // concern from how often the piece itself gets picked.
 export function forSelectedPieces(
-  userSelections: Record<UserId, UserSelection>,
-  userIds: Array<UserId>,
+  userSelections: Record<PlayerId, UserSelection>,
+  userIds: Array<PlayerId>,
   callback: (pieceType: string, pieceId: string) => void,
 ){
   for(const userId of userIds){

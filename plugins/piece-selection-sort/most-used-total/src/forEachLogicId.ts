@@ -1,4 +1,4 @@
-import { RosterLockV1Config, UserSelection, UserId } from "@roster-lock/types";
+import { RosterLockV1Config, UserSelection, PlayerId } from "@roster-lock/types";
 import { buildPieceIdToLogicId } from "./pieceIdToLogicId";
 import { forSelectedPieces } from "./forSelectedPieces";
 
@@ -7,8 +7,8 @@ import { forSelectedPieces } from "./forSelectedPieces";
 // composition every plugin here actually needs when recording stats.
 export function forEachLogicId(
   lockConfig: RosterLockV1Config,
-  userSelections: Record<UserId, UserSelection>,
-  userIds: Array<UserId>,
+  userSelections: Record<PlayerId, UserSelection>,
+  userIds: Array<PlayerId>,
   callback: (pieceType: string, logicId: string) => void,
 ){
   const logicIdLookups = new Map<string, Record<string, string>>();
