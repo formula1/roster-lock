@@ -18,13 +18,16 @@ async function main() {
     process.exit(1);
   }
 
-  const userId = process.env["USER_ID"] ?? crypto.randomUUID();
-  const displayName = process.env["DISPLAY_NAME"] ?? `Player-${userId.slice(0, 8)}`;
+  const machineId = process.env["USER_ID"] ?? crypto.randomUUID();
+  const displayName = process.env["DISPLAY_NAME"] ?? `Player-${machineId.slice(0, 8)}`;
   const keys = await generateKeyPair();
 
-  const user = { userId, displayName, keys };
+  // This example harness runs one local player per machine - the matchmaker
+  // assumes playerCount: 1 for every machine, and no example client here
+  // yet drives a multi-controller UI.
+  const user = { machineId, displayName, keys };
 
-  console.log(`Starting headless game as "${displayName}" (${userId})`);
+  console.log(`Starting headless game as "${displayName}" (${machineId})`);
   console.log(`Using roster config from: ${configPath}`);
 
   try {

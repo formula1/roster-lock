@@ -23,7 +23,7 @@ async function enterQueue(matchmakingUrl: string, user: CurrentUser, rosterHash:
   const timestamp = Date.now();
   const signature = await SIGNATURE.ASYMMETRIC.createSignature(user.keys.privateKey as PrivateKey, {
     service: 'join-queue',
-    userId: user.userId,
+    machineId: user.machineId,
     displayName: user.displayName,
     rosterHash: rosterHash,
     timestamp: timestamp,
@@ -34,7 +34,7 @@ async function enterQueue(matchmakingUrl: string, user: CurrentUser, rosterHash:
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      userId: user.userId,
+      machineId: user.machineId,
       displayName: user.displayName,
       rosterConfig: rosterConfig,
       publicKey: user.keys.publicKey,

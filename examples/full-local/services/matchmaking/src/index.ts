@@ -31,13 +31,13 @@ app.get('/queue/:hash', (req: Request, res: Response) => {
   const list = matchmakingQueue.getUserQueue(req.params.hash);
   res.json({
     queueLength: list.length,
-    users: Array.from(list).map(u => ({ userId: u.userId, timestamp: u.timestamp }))
+    users: Array.from(list).map(u => ({ machineId: u.machineId, timestamp: u.timestamp }))
   });
 });
 
 // Join matchmaking queue
 const joinBodySchema: ZodType<Omit<QueuedUser, "timestamp" | "rosterConfigHash"> & { timestamp: number, signature: string }> = z.object({
-  userId: z.string(),
+  machineId: z.string(),
   displayName: z.string(),
   rosterConfig: z.any(),
   publicKey: z.string(),
@@ -57,7 +57,7 @@ app.post('/join', async (req: Request, res: Response) => {
 
   if(!await SIGNATURE.ASYMMETRIC.verifySignature(casted.data.publicKey as PublicKey, casted.data.signature, {
     service: 'join-queue',
-    userId: casted.data.userId,
+    machineId: casted.data.machineId,
     displayName: casted.data.displayName,
     rosterHash: rosterHash,
     timestamp: casted.data.timestamp,
@@ -67,7 +67,7 @@ app.post('/join', async (req: Request, res: Response) => {
   }
   const body = casted.data;
 
-  // Add user to queue
+  // Add machine to queue
   const queuedUser: QueuedUser = {
     ...body,
     rosterConfigHash: rosterHash,
@@ -75,7 +75,7 @@ app.post('/join', async (req: Request, res: Response) => {
 
   const storedUser = matchmakingQueue.join(queuedUser);
 
-  console.log(`User ${body.userId} joined queue. Queue length: ${matchmakingQueue.totalUsers}`);
+  console.log(`Machine ${body.machineId} joined queue. Queue length: ${matchmakingQueue.totalUsers}`);
 
 
   // User is waiting

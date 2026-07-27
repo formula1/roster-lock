@@ -1,6 +1,6 @@
 
 import {
-  getUsers, syncDownloadOverHTTP, RosterLockV1SyncDLRequestUserToClient
+  getMachines, syncDownloadOverHTTP, RosterLockV1SyncDLRequestUserToClient
 } from "@roster-lock/ts-client";
 
 export async function relayAndDownload(
@@ -10,7 +10,7 @@ export async function relayAndDownload(
 ){
 
   const [users, gameResult] = await Promise.all([
-    getUsers(request),
+    getMachines(request),
     syncDownloadOverHTTP(request, matchAgentAuth, matchAgentUrl),
   ]);
 

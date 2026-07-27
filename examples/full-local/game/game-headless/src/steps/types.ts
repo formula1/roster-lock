@@ -4,14 +4,15 @@ import {
 } from "@roster-lock/types";
 
 export type CurrentUser = (
-  & RosterLockV1SyncDLRequestUserToClient["user"]
+  & RosterLockV1SyncDLRequestUserToClient["machine"]
   & { displayName: string }
 );
 
 export type RelayRoomConfig = RosterLockV1SyncDLRequestUserToClient["relay"];
 
 export type Users = Array<{
-  userId: string,
+  machineId: string,
   publicKey: string,
   displayName: string,
+  playerCount: number,
 }>
