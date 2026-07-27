@@ -64,9 +64,22 @@ export class ProcessGroup {
     return dir;
   }
 
-  registerCleanupOnSignals(){
-    process.on("SIGINT", async ()=>{ await this.cleanup(); process.exit(1); });
-    process.on("SIGTERM", async ()=>{ await this.cleanup(); process.exit(1); });
+  registerCleanupOnSignals(onCleanup?: ()=>Promise<unknown>){
+    process.on("SIGINT", async ()=>{ await this.cleanup(onCleanup); process.exit(1); });
+    process.on("SIGTERM", async ()=>{ await this.cleanup(onCleanup); process.exit(1); });
+    // A throw inside an event-emitter callback (e.g. a stream "data" handler) or a
+    // rejected promise nobody awaited bypasses the calling script's try/catch entirely,
+    // so without these the tracked child processes would be silently orphaned.
+    process.on("uncaughtException", async (err)=>{
+      console.error("Uncaught exception:", err);
+      await this.cleanup(onCleanup);
+      process.exit(1);
+    });
+    process.on("unhandledRejection", async (err)=>{
+      console.error("Unhandled rejection:", err);
+      await this.cleanup(onCleanup);
+      process.exit(1);
+    });
   }
 
   /** onCleanup runs after children are killed but before temp dirs are removed. */

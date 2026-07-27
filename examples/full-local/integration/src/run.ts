@@ -1,34 +1,26 @@
 import * as os from "os";
 import * as path from "path";
-import { ProcessGroup, runToCompletion } from "./lib/process-utils";
+import { ProcessGroup } from "./lib/process-utils";
 import { loadEnvVars } from "./lib/env";
-import { setupServers } from "./setupServers";
+import { setupServers, dockerComposeUp, dockerComposeDown } from "./setupServers";
 import { startMatchAgent, runPlayers } from "./run-game";
 
-const FULL_LOCAL_DIR = path.resolve(__dirname, "../..");
-const ENV_VARS_DIR = path.join(FULL_LOCAL_DIR, "services/env-vars");
+import { ENV_VARS_DIR } from "./constants";
 
 const MATCH_AGENT_CONFIG = {
   port: String(58732),
   authCode: "abc123"
 };
-function dockerComposeDown(){
-  return runToCompletion("docker-compose", "docker", ["compose", "down"], { cwd: FULL_LOCAL_DIR });
-}
 
 /** Full pipeline: docker compose up, match-agent, server-setup, N game-headless players, teardown. */
 export async function runIntegration(numPlayers: number){
   const processes = new ProcessGroup();
-  processes.registerCleanupOnSignals();
+  processes.registerCleanupOnSignals(dockerComposeDown);
 
   try {
     const envVars = loadEnvVars(ENV_VARS_DIR);
 
-    console.log("Starting docker compose services (download-provider, relay-room, match-maker, game-coordinator)...");
-    const composeExit = await runToCompletion(
-      "docker-compose", "docker", ["compose", "up", "-d", "--build", "--wait"], { cwd: FULL_LOCAL_DIR }
-    );
-    if(composeExit !== 0) throw new Error("docker compose up failed");
+    await dockerComposeUp();
 
     const piecesFolder = processes.mkTempDir(path.join(os.tmpdir(), "roster-lock-pieces-"));
     await startMatchAgent(processes, { ...MATCH_AGENT_CONFIG, folder: piecesFolder });

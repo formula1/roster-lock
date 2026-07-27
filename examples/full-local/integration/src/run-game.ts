@@ -14,15 +14,14 @@ import { ChildProcess } from "child_process";
 import { ProcessGroup, runToCompletion, waitForExit, waitForHttpOk } from "./lib/process-utils";
 import { loadEnvVars } from "./lib/env";
 
+import { REPO_ROOT, FULL_LOCAL_DIR, ENV_VARS_DIR } from "./constants";
+
 type GameResult = {
   winners: Array<string>,
   turnCount: number,
   randomSeed: Record<string, string>,
 };
 
-const FULL_LOCAL_DIR = path.resolve(__dirname, "../..");
-const REPO_ROOT = path.resolve(__dirname, "../../../..");
-const ENV_VARS_DIR = path.join(FULL_LOCAL_DIR, "services/env-vars");
 const ROSTER_LOCK_CONFIG_PATH = path.join(FULL_LOCAL_DIR, "simple-game.roster-lock.json");
 
 const MATCH_AGENT_CONFIG = {
@@ -142,7 +141,11 @@ function captureGameResult(child: ChildProcess): Promise<GameResult> {
         const match = line.match(/^GAME_RESULT (.+)$/);
         if(match){
           resolved = true;
-          resolve(JSON.parse(match[1]));
+          try {
+            resolve(JSON.parse(match[1]));
+          } catch(err){
+            reject(new Error(`Failed to parse GAME_RESULT line as JSON: ${match[1]}`, { cause: err }));
+          }
         }
       }
     });

@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import { runIntegration } from "./run";
 import { runGame } from "./run-game";
-import { setupServers } from "./setupServers";
+import { runServers } from "./setupServers";
 import { requireEnv } from "./lib/env";
 
 const program = new Command();
@@ -33,16 +33,7 @@ program
   .command("server-setup")
   .description("Register the matchmaker + game coordinator with the relay (assumes docker services are already up)")
   .action(async ()=>{
-    await setupServers({
-      publicRelayServerUrl: requireEnv("PUBLIC_RELAY_SERVER_URL"),
-      publicMatchmakerUrl: requireEnv("PUBLIC_MATCHMAKER_URL"),
-      gameCoordinatorUrl: requireEnv("GAME_COORDINATOR_URL"),
-      initialAdminUsername: requireEnv("INITIAL_ADMIN_USERNAME"),
-      initialAdminPassword: requireEnv("INITIAL_ADMIN_PASSWORD"),
-      gameCoordinatorId: requireEnv("GAME_COORDINATOR_ID"),
-      coordinatorApiKey: requireEnv("COORDINATOR_API_KEY"),
-    });
-    console.log("Server setup complete: matchmaker and game coordinator registered with relay.");
+    await runServers();
   });
 
 program.parseAsync().catch(()=>{
