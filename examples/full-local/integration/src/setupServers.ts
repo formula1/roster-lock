@@ -52,7 +52,7 @@ function keepAliveUntilSignal(): Promise<never> {
 export async function dockerComposeUp(){
   console.log("Starting docker compose services (download-provider, relay-room, match-maker, game-coordinator)...");
   const composeExit = await runToCompletion(
-    "docker-compose", "docker", ["compose", "up", "-d", "--build", "--wait"], { cwd: FULL_LOCAL_DIR }
+    "docker-compose", "docker", ["compose", "up", "-d", /* "--build", */ "--wait"], { cwd: FULL_LOCAL_DIR }
   );
   if(composeExit !== 0) throw new Error("docker compose up failed");
 }
