@@ -33,7 +33,7 @@ COPY core/relay-server/client/package.json core/relay-server/client/
 # Installs @roster-lock/utils (builds it via its own "prepare" script),
 # core/relay-server's own deps (including wrangler's postinstall fetch of
 # the workerd binary it needs to run), and the admin client's deps.
-RUN pnpm install --filter @roster-lock/server... --filter @roster-lock/relay-client... --frozen-lockfile
+RUN pnpm install --filter @roster-lock/relay-server... --filter @roster-lock/relay-client... --frozen-lockfile
 
 # Now bring in the rest of the relay-server source (tests, client, etc).
 # core/utils doesn't need a second copy: package.json/tsconfig/src are already
