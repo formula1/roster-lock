@@ -23,11 +23,15 @@ export class FakeFolderDB implements IFolderDB {
 
   async *getFilesofAsset(): AsyncIterable<string> {}
 
-  async getPieceFileContents(): Promise<Readable> {
+  async getPieceFileContents(): ReturnType<IFolderDB["getPieceFileContents"]> {
     throw new Error("not implemented in FakeFolderDB");
   }
 
-  async listPieces(): Promise<Array<Pick<RosterLockPiece, "version" | "pathVariables">>> {
+  async listPieces(): ReturnType<IFolderDB["listPieces"]> {
+    throw new Error("not implemented in FakeFolderDB");
+  }
+
+  async searchPieces(): ReturnType<IFolderDB["searchPieces"]>{
     throw new Error("not implemented in FakeFolderDB");
   }
 }

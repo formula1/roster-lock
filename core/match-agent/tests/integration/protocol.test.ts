@@ -3,6 +3,7 @@ import { bindStepsToBridge } from "../../src/handle-room/version-1/room-handler-
 import { wireBridgePair } from "./helpers/bridge";
 import { driveRoomProtocol } from "./helpers/room";
 import { FakeFolderDB } from "./helpers/fakeFolderDB";
+import { FakePluginManager } from "./helpers/fakePluginRuntime";
 import { makeLockConfig, makeHeroSelection } from "./helpers/lockConfig";
 
 // These exercise the two "scary" parts of the sync-dl protocol - real
@@ -22,27 +23,28 @@ describe("bindStepsToBridge: runSelection + handleDownloads", () => {
 
     const dbA = new FakeFolderDB();
     const dbB = new FakeFolderDB();
+    const pm = new FakePluginManager();
 
     const resultAPromise = bindStepsToBridge({
       bridge: pairA.agentSide,
       fileDB: dbA,
+      pluginRuntime: pm,
       machines,
       ownMachinePublicKey: "pk-a",
       ownSelections: { 0: makeHeroSelection() },
       lockConfig,
-      scriptsByPath: {},
       gameControlledSelections: {},
-    } as any);
+    });
     const resultBPromise = bindStepsToBridge({
       bridge: pairB.agentSide,
       fileDB: dbB,
+      pluginRuntime: pm,
       machines,
       ownMachinePublicKey: "pk-b",
       ownSelections: { 0: makeHeroSelection() },
       lockConfig,
-      scriptsByPath: {},
       gameControlledSelections: {},
-    } as any);
+    });
 
     await driveRoomProtocol([
       { bridge: pairA.roomSide, publicKey: "pk-a" },
@@ -84,29 +86,30 @@ describe("bindStepsToBridge: runSelection + handleDownloads", () => {
 
     const pairA = wireBridgePair();
     const pairB = wireBridgePair();
+    const pm = new FakePluginManager();
 
     const badSelection = { character: [{ id: "not-a-real-piece", required: { weapon: { mandatory: [], selectable: [] } } }] };
 
     const resultAPromise = bindStepsToBridge({
       bridge: pairA.agentSide,
       fileDB: new FakeFolderDB(),
+      pluginRuntime: pm,
       machines,
       ownMachinePublicKey: "pk-a",
       ownSelections: { 0: badSelection },
       lockConfig,
-      scriptsByPath: {},
       gameControlledSelections: {},
-    } as any);
+    });
     const resultBPromise = bindStepsToBridge({
       bridge: pairB.agentSide,
       fileDB: new FakeFolderDB(),
+      pluginRuntime: pm,
       machines,
       ownMachinePublicKey: "pk-b",
       ownSelections: { 0: makeHeroSelection() },
       lockConfig,
-      scriptsByPath: {},
       gameControlledSelections: {},
-    } as any);
+    });
     // both agents run runSelection independently over the same decrypted
     // inputs, so the bad selection fails validation on both sides.
     resultAPromise.catch(() => {});
