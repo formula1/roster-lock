@@ -3,7 +3,9 @@
   "private": true,
   "packageManager": "pnpm@10.7.0",
   "scripts": {
-    "test:core": "pnpm --filter \"./core/**\" test"
+    "test:core": "pnpm --filter \"./core/**\" test",
+    "test:example:full-local": "pnpm --filter \"./examples/full-local/integration\" run start",
+    "test:plugin:integration": "pnpm --filter \"./plugins/download/protocol/*\" run test:integration"
   },
   "devDependencies": {
     "@stylistic/eslint-plugin": "^4.4.1",
