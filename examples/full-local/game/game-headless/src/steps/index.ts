@@ -7,16 +7,16 @@ import { relayAndDownload } from "./2-relay-download";
 import { runGame } from "./3-game";
 import { CurrentUser } from "./types";
 
-const PUBLIC_RELAY_SERVER_URL = requireEnv("PUBLIC_RELAY_SERVER_URL");
-const MATCH_AGENT_AUTH = requireEnv("MATCH_AGENT_AUTH");
-const MATCH_AGENT_URL = requireEnv("MATCH_AGENT_URL");
+import {
+  PUBLIC_RELAY_SERVER_URL, MATCH_AGENT_AUTH, MATCH_AGENT_URL, PUBLIC_MATCHMAKER_URL
+} from "../globals/env"
 
 export async function runSteps(
   user: CurrentUser,
   rosterConfig: RosterLockV1Config,
 ){
   const selection = await makeSelect(rosterConfig);
-  const match = await joinMatch(user, rosterConfig, requireEnv("PUBLIC_MATCHMAKER_URL"));
+  const match = await joinMatch(user, rosterConfig, PUBLIC_MATCHMAKER_URL);
   const { users, gameResult } = await relayAndDownload(
     {
       version: 1,

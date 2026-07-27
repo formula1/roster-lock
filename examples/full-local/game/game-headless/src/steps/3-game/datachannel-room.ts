@@ -1,6 +1,7 @@
 import { SIGNATURE, MessageBridge, promiseWithResolvers } from "@roster-lock/utils";
 import { ISimpleEventEmitter, createSimpleEmitter } from "@roster-lock/utils";
 import { RelayRoomConfig, CurrentUser, Users } from "../types";
+import { GAME_SERVER } from "../../globals/env";
 import { WebSocket } from "ws";
 
 import { PeerConnection, DataChannel, cleanup as cleanupDataChannelLib } from "node-datachannel";
@@ -22,14 +23,6 @@ export interface PeerRoom {
   // background threads keep the event loop alive indefinitely.
   close(): void
 }
-
-const GAME_SERVER = (()=>{
-  const url = new URL(process.env.GAME_SERVER || "");
-  if(url.protocol !== "ws:" && url.protocol !== "wss:"){
-    throw new Error("Expecting websocket url")
-  }
-  return url;
-})();
 
 type PrivateKey = Parameters<typeof SIGNATURE.ASYMMETRIC.createSignature>[0];
 
