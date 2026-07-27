@@ -70,7 +70,8 @@ export async function buildGameFromSelection(
 
   const players: GameState["players"] = {};
   const characterLoads: Array<Promise<[string, Character]>> = [];
-  for(const [userId, selectedCharacters] of Object.entries(characterSelection.value)){
+  for(const [machineIdPlayerNum, selectedCharacters] of Object.entries(characterSelection.value)){
+    const userId = machineIdPlayerNum.split(":")[0]
     players[userId] = { id: userId };
     selectedCharacters.forEach((characterPiece, index) => {
       characterLoads.push(

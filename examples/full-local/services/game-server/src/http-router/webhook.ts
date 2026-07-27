@@ -18,10 +18,11 @@ const roomCompleteCaster: ZodType<RoomConfig & { timestamp: number }> = z.object
   coordinatorId: z.string(),
   roomId: z.string(),
   rosterConfigHash: z.string(),
-  users: z.array(z.object({
-    userId: z.string(),
+  machines: z.array(z.object({
+    machineId: z.string(),
     publicKey: z.string(),
     displayName: z.string(),
+    playerCount: z.number(),
   }).strict()),
   timestamp: z.number(),
 }).strict();
@@ -69,10 +70,11 @@ const roomFailureCaster: ZodType<(
   coordinatorId: z.string(),
   roomId: z.string(),
   rosterConfigHash: z.string(),
-  users: z.array(z.object({
-    userId: z.string(),
+  machines: z.array(z.object({
+    machineId: z.string(),
     publicKey: z.string(),
     displayName: z.string(),
+    playerCount: z.number(),
   }).strict()),
   timestamp: z.number(),
   failedUser: z.string(),

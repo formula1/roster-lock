@@ -58,7 +58,7 @@ export async function validateAuth(
   if(userMessage.timestamp < now - MAX_MESSAGE_AGE) return null;
 
   // User not found
-  const user = roomInfo.users.find(u => u.publicKey === userMessage.publicKey);
+  const user = roomInfo.machines.find(u => u.publicKey === userMessage.publicKey);
   if(!user) return null;
 
   // Invalid Signature

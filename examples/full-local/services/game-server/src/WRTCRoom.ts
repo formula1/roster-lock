@@ -57,7 +57,7 @@ export class WebRTCRoom {
       this.removeRoom("failed", "user disconnected early")
     })
 
-    if(Object.keys(this.users).length < this.config.users.length) return;
+    if(Object.keys(this.users).length < this.config.machines.length) return;
 
     this.startConnection();
 
