@@ -63,21 +63,21 @@ CREATE TABLE IF NOT EXISTS room_stats (
   roster_hash TEXT NOT NULL,
   
 
-  user_ids TEXT NOT NULL,  -- JSON: ["user1", "user2", "user3"]
-  user_count INTEGER NOT NULL,
+  machine_ids TEXT NOT NULL,  -- JSON: ["machine1", "machine2", "machine3"]
+  machine_count INTEGER NOT NULL,
 
   -- Webhooks
   coordinator_id TEXT NOT NULL,
 
   -- Timestamps
   created_at TEXT NOT NULL,
-  finished_at TEXT,      -- When all users finished
-  
+  finished_at TEXT,      -- When all machines finished
+
   -- Status tracking
-  status TEXT NOT NULL 
+  status TEXT NOT NULL
     CHECK(status IN ('active', 'completed', 'failed')),
   failed_reason TEXT,     -- If room failed/errored
-  failed_user TEXT,       -- If room failed, which user caused it
+  failed_machine TEXT,    -- If room failed, which machine caused it
 
   -- Metrics
   message_count INTEGER,
@@ -116,15 +116,15 @@ CREATE INDEX IF NOT EXISTS idx_room_stats_completed ON room_stats(finished_at);
 -- ORDER BY completed_at DESC 
 -- LIMIT 10;
 
--- Example query to get user stats:
--- SELECT 
---   user_id,
+-- Example query to get machine stats:
+-- SELECT
+--   machine_id,
 --   COUNT(*) as total_games,
 --   SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_games,
 --   AVG(message_count) as avg_messages
--- FROM room_stats, json_each(user_ids) 
--- WHERE json_each.value = 'target_user_id'
--- GROUP BY user_id;
+-- FROM room_stats, json_each(machine_ids)
+-- WHERE json_each.value = 'target_machine_id'
+-- GROUP BY machine_id;
 
 CREATE TABLE IF NOT EXISTS game_coordinators (
   id TEXT PRIMARY KEY,

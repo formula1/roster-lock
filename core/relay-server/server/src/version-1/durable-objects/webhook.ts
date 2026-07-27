@@ -22,7 +22,7 @@ export async function successWebhook(env: RoomType['env'], config: RoomConfig){
   );
 }
 
-export async function failWebhook(env: RoomType['env'], config: RoomConfig, reason: string, failedUser: string){
+export async function failWebhook(env: RoomType['env'], config: RoomConfig, reason: string, failedMachine: string){
   const coordinator = await env.DB.prepare(
     `SELECT failure_webhook_url, api_key_encrypted FROM game_coordinators WHERE id = ?`
   ).bind(
@@ -33,7 +33,7 @@ export async function failWebhook(env: RoomType['env'], config: RoomConfig, reas
   await runWebhook(env, coordinator.api_key_encrypted, coordinator.failure_webhook_url, {
     ...config,
     failedReason: reason,
-    failedUser,
+    failedMachine,
     timestamp: Date.now()
   });
 }

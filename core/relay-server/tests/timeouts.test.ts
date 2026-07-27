@@ -26,9 +26,9 @@ describe("ping/pong keepalive", () => {
     const [userA] = testRoom.users;
     userA.bridge.onRequest("ping", () => "pong");
 
-    await sendPing({ state: testRoom.state as any, env: testRoom.env }, userA.userId);
+    await sendPing({ state: testRoom.state as any, env: testRoom.env }, userA.machineId);
 
-    expect(await testRoom.state.storage.get(`ping-state-${userA.userId}`)).toBe("sent");
+    expect(await testRoom.state.storage.get(`ping-state-${userA.machineId}`)).toBe("sent");
     const sentPing = userA.socket.sentRaw.find(raw => JSON.parse(raw).path === "ping");
     expect(sentPing).toBeDefined();
   });
@@ -38,12 +38,12 @@ describe("ping/pong keepalive", () => {
     const [userA] = testRoom.users;
     userA.bridge.onRequest("ping", () => "pong");
 
-    await sendPing({ state: testRoom.state as any, env: testRoom.env }, userA.userId);
+    await sendPing({ state: testRoom.state as any, env: testRoom.env }, userA.machineId);
     // The "pong" response travels back through the same real
     // room.webSocketMessage path as everything else (userA.bridge's
     // sendMessage callback, wired in makeTestRoom).
     await vi.waitFor(async () => {
-      expect(await testRoom.state.storage.get(`ping-state-${userA.userId}`)).toBeUndefined();
+      expect(await testRoom.state.storage.get(`ping-state-${userA.machineId}`)).toBeUndefined();
     });
 
     const alarm = testRoom.state.storage.getAlarm();
@@ -58,7 +58,7 @@ describe("ping/pong keepalive", () => {
     let pingCount = 0;
     userA.bridge.onRequest("ping", () => { pingCount++; return "pong"; });
 
-    await sendPing({ state: testRoom.state as any, env: testRoom.env }, userA.userId);
+    await sendPing({ state: testRoom.state as any, env: testRoom.env }, userA.machineId);
     await vi.waitFor(() => expect(pingCount).toBe(1));
 
     await vi.advanceTimersByTimeAsync(1000);
@@ -74,11 +74,11 @@ describe("ping/pong keepalive", () => {
     userA.bridge.onRequest("ping", () => "pong");
     const errorB = waitForBridgeEvent<string>(userB, "error");
 
-    await sendPing({ state: testRoom.state as any, env: testRoom.env }, userA.userId);
+    await sendPing({ state: testRoom.state as any, env: testRoom.env }, userA.machineId);
     // Simulate the ping-state having desynced (e.g. a duplicate/replayed
     // pong after the first one already cleared it) by clearing it out from
     // under a *real*, still-outstanding ping request.
-    await testRoom.state.storage.delete(`ping-state-${userA.userId}`);
+    await testRoom.state.storage.delete(`ping-state-${userA.machineId}`);
     await vi.advanceTimersByTimeAsync(0);
 
     await expect(errorB).resolves.toBe("Not expecting pong");

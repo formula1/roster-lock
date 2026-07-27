@@ -15,18 +15,4 @@ export interface Env {
   INITIAL_ADMIN_PASSWORD?: string;  // Optional: initial admin password for bootstrap
 }
 
-
-// Room Creation
-export interface RoomConfig {
-  matchmakerId: string;
-  coordinatorId: string;
-  roomId: string;
-  rosterConfigHash: string;
-  users: RoomUser[];
-}
-
-export interface RoomUser {
-  userId: string;
-  publicKey: string;
-  displayName: string;
-}
+export type { RoomConfig, RoomMachine } from "@roster-lock/types";

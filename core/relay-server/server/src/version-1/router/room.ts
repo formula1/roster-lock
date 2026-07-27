@@ -12,12 +12,12 @@ type PublicKey = Parameters<typeof SIGNATURE_ASYMMETRIC.verifySignature>[0];
 
 export const app = new Hono<{ Bindings: Env }>();
 
-import { RoomUser } from '../types';
+import { RoomMachine } from '../types';
 type CreateRoomBody = {
   rosterConfig: any;
 
   rosterConfigHash: string;
-  users: RoomUser[];
+  machines: RoomMachine[];
   coordinatorId: string;
 
   publicKey: string;
@@ -27,10 +27,11 @@ const createRoomCaster: ZodType<CreateRoomBody> = z.object({
   rosterConfig: z.any(),
 
   rosterConfigHash: z.string(),
-  users: z.array(z.object({
-    userId: z.string(),
+  machines: z.array(z.object({
+    machineId: z.string(),
     publicKey: z.string(),
     displayName: z.string(),
+    playerCount: z.number().int().min(1),
   }).strict()),
   coordinatorId: z.string(),
 
@@ -72,7 +73,7 @@ app.post('/', async (c)=> {
       service: 'create-room',
       publicKey: body.publicKey,
       rosterConfigHash: body.rosterConfigHash,
-      users: body.users,
+      machines: body.machines,
       coordinatorId: body.coordinatorId,
     }
   );
@@ -99,7 +100,7 @@ app.post('/', async (c)=> {
       coordinatorId: gameCoordinator.id,
       roomId,
       rosterConfigHash: full_hashBuffer,
-      users: body.users,
+      machines: body.machines,
     } satisfies RoomConfig),
   });
 
@@ -109,13 +110,13 @@ app.post('/', async (c)=> {
   const rosterHash = await createShaFromJSON(body.rosterConfig.rosters);
   const engineId = body.rosterConfig.engine.name;
   const engineVersion = body.rosterConfig.engine.version;
-  const users_ids = JSON.stringify(body.users.sort());
+  const machine_ids = JSON.stringify(body.machines.sort());
 
   await c.env.DB.prepare(`
     INSERT INTO room_stats (
       room_id, matchmaker_id,
       full_config_hash, engine_id, engine_version, roster_hash,
-      user_ids, user_count,
+      machine_ids, machine_count,
       coordinator_id,
       created_at,
       status
@@ -130,7 +131,7 @@ app.post('/', async (c)=> {
   `).bind(
     roomId, matchmaker.id,
     full_hashBuffer, engineId, engineVersion, rosterHash,
-    users_ids, body.users.length,
+    machine_ids, body.machines.length,
     gameCoordinator.id,
     new Date().toISOString(),
     'active',
@@ -139,8 +140,8 @@ app.post('/', async (c)=> {
   return c.json({ roomId });
 });
 
-// Get room users (authenticated user only)
-app.get('/:roomId/users', async (c) => {
+// Get room machines (authenticated machine only)
+app.get('/:roomId/machines', async (c) => {
   try {
     const roomId = c.req.param('roomId');
     await ensureRoomExists(c.env.DB, roomId);
@@ -148,7 +149,7 @@ app.get('/:roomId/users', async (c) => {
     const room = c.env.ROOM.get(id);
 
     const url = new URL(c.req.url);
-    url.pathname = '/users';
+    url.pathname = '/machines';
 
     return room.fetch(url, {
       headers: c.req.raw.headers,

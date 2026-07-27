@@ -57,9 +57,9 @@ export async function validateAuth(
   // Too Old
   if(userMessage.timestamp < now - MAX_MESSAGE_AGE) return null;
 
-  // User not found
-  const user = roomInfo.users.find(u => u.publicKey === userMessage.publicKey);
-  if(!user) return null;
+  // Machine not found
+  const machine = roomInfo.machines.find(m => m.publicKey === userMessage.publicKey);
+  if(!machine) return null;
 
   // Invalid Signature
   const isValid = await SIGNATURE_ASYMMETRIC.verifySignature(
@@ -75,7 +75,7 @@ export async function validateAuth(
 
   if(!isValid) return null;
 
-  return user;
+  return machine;
 }
 
 

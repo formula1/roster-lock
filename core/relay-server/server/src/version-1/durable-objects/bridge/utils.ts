@@ -1,40 +1,40 @@
 import { DurableObjectState } from "@cloudflare/workers-types";
 import { WebSocketAttachment } from "../types";
 
-export type UserPublicKey = string;
+export type MachinePublicKey = string;
 export type WebSocket = ReturnType<DurableObjectState["getWebSockets"]>[0];
 export type WaitingRequest = {
   path: string,
-  publicKey: UserPublicKey,
+  publicKey: MachinePublicKey,
 };
 
 export const CONVO_STATE_KEY = "convo-state";
 
 export async function storeValueInState(
-  doState: DurableObjectState, user: WebSocket, key: string, value: any,
+  doState: DurableObjectState, machine: WebSocket, key: string, value: any,
   expectedState: string, newState: string,
 ){
-  const allUserLength = doState.getWebSockets().length;
-  const publicKey = getPublicKey(user);
+  const allMachineLength = doState.getWebSockets().length;
+  const publicKey = getPublicKey(machine);
   return await doState.storage.transaction(async (txn) => {
     const currentState = await txn.get<string>(CONVO_STATE_KEY);
     if(currentState !== expectedState) throw new Error(`Expected State ${expectedState} but got ${currentState}`);
-    const userValues = await txn.get<Record<UserPublicKey, any>>(key) || {};
-    if(publicKey in userValues) throw new Error(`Duplicate Value for Key ${key}`);
-    userValues[publicKey] = value;
-    await txn.put(key, userValues);
+    const machineValues = await txn.get<Record<MachinePublicKey, any>>(key) || {};
+    if(publicKey in machineValues) throw new Error(`Duplicate Value for Key ${key}`);
+    machineValues[publicKey] = value;
+    await txn.put(key, machineValues);
 
-    if(Object.keys(userValues).length < allUserLength){
+    if(Object.keys(machineValues).length < allMachineLength){
       return false;
     }
     await txn.put(CONVO_STATE_KEY, newState);
-    return userValues;
+    return machineValues;
   });
 }
 
-export function getPublicKey(user: WebSocket){
-  const attachment = user.deserializeAttachment() as WebSocketAttachment | null;
-  if(!attachment) throw new Error("Invalid user");
+export function getPublicKey(machine: WebSocket){
+  const attachment = machine.deserializeAttachment() as WebSocketAttachment | null;
+  if(!attachment) throw new Error("Invalid machine");
   return attachment.publicKey;
 }
 

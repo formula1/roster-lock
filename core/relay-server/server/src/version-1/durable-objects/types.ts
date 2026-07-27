@@ -12,7 +12,7 @@ export type RoomActions = {
 }
 
 export type WebSocketAttachment = {
-  userId: string;
+  machineId: string;
   publicKey: string;
   connectedAt: string;
 }

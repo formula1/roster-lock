@@ -40,8 +40,8 @@ export interface RoomStatsRow {
   engine_version: string;
   roster_hash: string;
   
-  user_ids: string;  // JSON string: ["user1", "user2"]
-  user_count: number;
+  machine_ids: string;  // JSON string: ["machine1", "machine2"]
+  machine_count: number;
 
   webhook_room_complete: string;
   webhhook_room_failed: string | null;
@@ -51,18 +51,18 @@ export interface RoomStatsRow {
 
   status: 'active' | 'completed' | 'failed';
   failed_reason: string | null;
-  failed_user: string | null;
+  failed_machine: string | null;
 
 }
 
-// Helper type for parsed user_ids
-export interface RoomStatsWithUsers extends Omit<RoomStatsRow, 'user_ids'> {
-  user_ids: string[];
+// Helper type for parsed machine_ids
+export interface RoomStatsWithMachines extends Omit<RoomStatsRow, 'machine_ids'> {
+  machine_ids: string[];
 }
 
-// User statistics result
-export interface UserStats {
-  user_id: string;
+// Machine statistics result
+export interface MachineStats {
+  machine_id: string;
   total_games: number;
   completed_games: number;
   failed_games: number;

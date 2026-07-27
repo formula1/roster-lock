@@ -7,7 +7,7 @@ import { FakeDurableObjectState, FakeWebSocket } from "./fakes";
 import { makeFakeEnv, FakeCoordinatorRow } from "./env";
 
 export type TestUser = {
-  userId: string;
+  machineId: string;
   publicKey: string;
   bridge: MessageBridge;
   socket: FakeWebSocket;
@@ -50,9 +50,10 @@ export async function makeTestRoom(userCount = 2, options: TestRoomOptions = {})
   // and nothing would ever fire it.
   state.storage.onAlarm(() => { void (room as any).alarm(); });
 
-  const userIds = Array.from({ length: userCount }, (_, i) => ({
-    userId: `user-${i + 1}`,
+  const machineIds = Array.from({ length: userCount }, (_, i) => ({
+    machineId: `user-${i + 1}`,
     publicKey: `pk-${i + 1}`,
+    playerCount: 1,
   }));
 
   const config: RoomConfig = {
@@ -60,7 +61,7 @@ export async function makeTestRoom(userCount = 2, options: TestRoomOptions = {})
     coordinatorId: "coordinator-1",
     roomId: "room-1",
     rosterConfigHash: "hash-1",
-    users: userIds.map(u => ({ ...u, displayName: u.userId })),
+    machines: machineIds.map(u => ({ ...u, displayName: u.machineId })),
   };
 
   await state.storage.put("config", config);
@@ -69,23 +70,23 @@ export async function makeTestRoom(userCount = 2, options: TestRoomOptions = {})
   // seeded here too, not left absent (which now means "already finished").
   await state.storage.put(CONVO_STATE_KEY, "wait-for-connections");
   // Mirrors what Room's (private) startTimeouts does on room creation - seeds
-  // the total-timeout plus one user-timeout per user via the real
+  // the total-timeout plus one machine-timeout per machine via the real
   // TimeoutController, so refreshTimeout/alarm() have real entries to work
   // with instead of a hand-rolled storage shape that'd drift from Room.ts's.
   await state.storage.transaction(async (txc) => {
     const timeouts: Array<TimeoutInput> = [
       { id: "total-timeout", offset: totalTimeoutLength, fn: { id: "total-timeout", args: {} } },
-      ...userIds.map(({ userId }) => ({
-        id: "user-timeout-" + userId,
+      ...machineIds.map(({ machineId }) => ({
+        id: "machine-timeout-" + machineId,
         offset: userTimeoutLength,
-        fn: { id: "user-timeout", args: { userId } },
+        fn: { id: "machine-timeout", args: { machineId } },
       })),
     ];
     await TIMEOUT_CONTROLLER.addTimeouts(txc, timeouts);
   });
 
-  const users: Array<TestUser> = userIds.map(({ userId, publicKey }) => {
-    const socket = new FakeWebSocket({ userId, publicKey, connectedAt: new Date().toISOString() });
+  const users: Array<TestUser> = machineIds.map(({ machineId, publicKey }) => {
+    const socket = new FakeWebSocket({ machineId, publicKey, connectedAt: new Date().toISOString() });
     const sentToRoom: Array<string> = [];
     const bridge = new MessageBridge((message) => {
       const raw = JSON.stringify(message);
@@ -96,7 +97,7 @@ export async function makeTestRoom(userCount = 2, options: TestRoomOptions = {})
       void bridge.handleMessage(JSON.parse(data));
     });
     state.addSocket(socket);
-    return { userId, publicKey, bridge, socket, sentToRoom };
+    return { machineId, publicKey, bridge, socket, sentToRoom };
   });
 
   return { room, state, env, config, coordinator, statements, users };

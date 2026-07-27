@@ -4,7 +4,7 @@ export { CONVO_STATE_KEY } from "./utils";
 
 import { recievePong } from "./ping-pong";
 import { handleSelection, handleReveal, handleFinal, handleDownload } from "./response-handlers";
-const RESPONSE_HANDLERS: Record<string, (room: RoomType, user: WebSocket, value: any)=>Promise<any>> = {
+const RESPONSE_HANDLERS: Record<string, (room: RoomType, machine: WebSocket, value: any)=>Promise<any>> = {
   "user-selection": handleSelection,
   "all-selection-for-user-decryption": handleReveal,
   "all-decryption-for-user-final": handleFinal,
@@ -15,11 +15,11 @@ const RESPONSE_HANDLERS: Record<string, (room: RoomType, user: WebSocket, value:
 import { handleDownloadProgress } from "./event-handlers";
 import { handleBridgeMessage, makeBridgeEvent, makeBridgeRequest } from "./bridge-compatability";
 import { RoomType } from "../types";
-const EVENT_HANDLERS: Record<string, (room: RoomType, user: WebSocket, value: any)=>Promise<any>> = {
+const EVENT_HANDLERS: Record<string, (room: RoomType, machine: WebSocket, value: any)=>Promise<any>> = {
   "download-progress": handleDownloadProgress,
 };
 
-const REQUEST_HANDLERS: Record<string, (room: RoomType, user: WebSocket, value: any)=>Promise<void>> = {};
+const REQUEST_HANDLERS: Record<string, (room: RoomType, machine: WebSocket, value: any)=>Promise<void>> = {};
 
 const handlers = {
   response: RESPONSE_HANDLERS,
@@ -32,8 +32,8 @@ const handlers = {
 // isRoomFinished, or a differently-timed message (e.g. from the other user)
 // can observe "finished" and complete/close the room before the response
 // handler that actually earned that state has broadcast anything to anyone.
-export function handleMessage(room: RoomType, user: WebSocket, messageRaw: string): Promise<boolean> {
-  return handleBridgeMessage(room, handlers, user, messageRaw);
+export function handleMessage(room: RoomType, machine: WebSocket, messageRaw: string): Promise<boolean> {
+  return handleBridgeMessage(room, handlers, machine, messageRaw);
 }
 
 export async function startRoom(room: RoomType){
@@ -44,8 +44,8 @@ export async function startRoom(room: RoomType){
     }
     await txn.put(CONVO_STATE_KEY, "user-selection");
   });
-  for(const user of room.state.getWebSockets()){
-    makeBridgeRequest(room, user, "user-selection", {});
+  for(const machine of room.state.getWebSockets()){
+    makeBridgeRequest(room, machine, "user-selection", {});
   }
 }
 
@@ -65,9 +65,9 @@ export async function isRoomFinished(doState: DurableObjectState){
 // every other connected agent until their own 30s heartbeat times out instead
 // of surfacing the real failure reason.
 export async function broadcastError(room: RoomType, reason: string){
-  await Promise.all(room.state.getWebSockets().map(async (user)=>{
+  await Promise.all(room.state.getWebSockets().map(async (machine)=>{
     try {
-      await makeBridgeEvent(room, user, "error", reason);
+      await makeBridgeEvent(room, machine, "error", reason);
     }catch(e){
       // Best-effort, same as handleDownloadProgress: a peer may already be
       // disconnected, in which case send() throws - shouldn't stop the other

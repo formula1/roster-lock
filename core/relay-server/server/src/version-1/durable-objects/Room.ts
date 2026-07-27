@@ -22,10 +22,11 @@ const newRoomCaster: ZodType<RoomConfig> = z.object({
   coordinatorId: z.string(),
   roomId: z.string(),
   rosterConfigHash: z.string(),
-  users: z.array(z.object({
-    userId: z.string(),
+  machines: z.array(z.object({
+    machineId: z.string(),
     publicKey: z.string(),
     displayName: z.string(),
+    playerCount: z.number().int().min(1),
   }).strict()),
 }).strict();
 
@@ -73,7 +74,7 @@ export class Room {
       // "already finished and wiped" (see bridge/index.ts), so this can't be
       // left unset without those two becoming ambiguous with each other.
       await this.state.storage.put(CONVO_STATE_KEY, "wait-for-connections");
-      await this.startTimeouts(body.users);
+      await this.startTimeouts(body.machines);
 
       return c.json({ status: 'created' });
     });
@@ -94,38 +95,39 @@ export class Room {
       });
     });
 
-    // Get users
-    this.app.get('/users', async (c) => {
+    // Get machines
+    this.app.get('/machines', async (c) => {
       const config = await this.state.storage.get<RoomConfig>('config');
       if(!config) return c.json([], 404);
       const url = new URL(c.req.url);
-      const user = await validateAuthFromSearch(url.searchParams, config, 'room-ws');
-      if(!user) return c.json([], 403);
+      const machine = await validateAuthFromSearch(url.searchParams, config, 'room-ws');
+      if(!machine) return c.json([], 403);
 
       const sockets = this.state.getWebSockets();
       const attachments = sockets.map(ws => {
         const attachment = ws.deserializeAttachment() as WebSocketAttachment | null;
         return attachment;
       }).filter(Boolean);
-      const userInfo: {
-        userId: string;
+      const machineInfo: {
+        machineId: string;
         publicKey: string;
         displayName: string;
+        playerCount: number;
         connected: boolean;
         connectedAt?: string
       }[] = [];
-      for(const user of config.users){
+      for(const roomMachine of config.machines){
         const attachment = attachments.find(attachment => {
           if(!attachment) return false;
-          return attachment.userId === user.userId;
+          return attachment.machineId === roomMachine.machineId;
         });
         if(!attachment){
-          userInfo.push({ ...user, connected: false });
+          machineInfo.push({ ...roomMachine, connected: false });
           continue;
         }
-        userInfo.push({ ...user, connected: true, connectedAt: attachment.connectedAt });
+        machineInfo.push({ ...roomMachine, connected: true, connectedAt: attachment.connectedAt });
       }
-      return c.json(userInfo);
+      return c.json(machineInfo);
     });
 
     // WebSocket upgrade
@@ -138,15 +140,15 @@ export class Room {
       if(!config) return c.json({ error: 'Room not found' }, 404);
 
       const url = new URL(c.req.url);
-      const user = await validateAuthFromSearch(url.searchParams, config, 'room-ws');
-      if (!user) {
+      const machine = await validateAuthFromSearch(url.searchParams, config, 'room-ws');
+      if (!machine) {
         return c.json({ error: 'Invalid token' }, 401);
       }
       await this.state.storage.transaction(async (txn) => {
-        const connectedUsers = await txn.get<string[]>('connectedUsers') || [];
-        if(connectedUsers.includes(user.userId)) throw new Error("Duplicate Connection");
-        connectedUsers.push(user.userId);
-        await txn.put('connectedUsers', connectedUsers);
+        const connectedMachines = await txn.get<string[]>('connectedUsers') || [];
+        if(connectedMachines.includes(machine.machineId)) throw new Error("Duplicate Connection");
+        connectedMachines.push(machine.machineId);
+        await txn.put('connectedUsers', connectedMachines);
       });
 
       // Create WebSocket pair - client goes to browser, server stays in DO
@@ -154,25 +156,25 @@ export class Room {
       const client = pair[0];
       const server = pair[1];
 
-      // Attach user metadata to the socket (survives hibernation)
+      // Attach machine metadata to the socket (survives hibernation)
       const attachment: WebSocketAttachment = {
-        userId: user.userId,
-        publicKey: user.publicKey,
+        machineId: machine.machineId,
+        publicKey: machine.publicKey,
         connectedAt: new Date().toISOString(),
       };
       (server as any).serializeAttachment(attachment);
 
       // Accept the WebSocket with hibernation API
       // Tags allow you to get specific sockets later via state.getWebSockets(tag)
-      this.state.acceptWebSocket(server as any, [user.userId]);
-      await this.refreshTimeout(user.userId);
-      await sendPing({ state: this.state, env: this.env }, user.userId)
+      this.state.acceptWebSocket(server as any, [machine.machineId]);
+      await this.refreshTimeout(machine.machineId);
+      await sendPing({ state: this.state, env: this.env }, machine.machineId)
 
       // There is no hibernatable "open" callback (only webSocketMessage/
       // webSocketClose/webSocketError), so check here - right as each
-      // connection is accepted - whether all users are now connected.
+      // connection is accepted - whether all machines are now connected.
       const sockets = this.state.getWebSockets();
-      if (sockets.length === config.users.length) {
+      if (sockets.length === config.machines.length) {
         await startBridgeRoom({ state: this.state, env: this.env });
       }
 
@@ -227,12 +229,12 @@ export class Room {
         // this - refreshing the timeout first would just be a wasted write.
         await this.completeRoom();
       } else {
-        await this.refreshTimeout(attachment.userId)
+        await this.refreshTimeout(attachment.machineId)
       }
 
     } catch (error) {
       console.error('WebSocket message error:', error);
-      await this.failRoom((error as Error).message, attachment.userId);
+      await this.failRoom((error as Error).message, attachment.machineId);
     }
   }
 
@@ -245,10 +247,10 @@ export class Room {
     if (!attachment) return;
     try {
       if(await isBridgeRoomFinished(this.state)) return;
-      throw new Error("User left early");
+      throw new Error("Machine left early");
     }catch(error){
       console.error('WebSocket close error:', error);
-      await this.failRoom((error as Error).message, attachment.userId);
+      await this.failRoom((error as Error).message, attachment.machineId);
     }
   }
 
@@ -260,8 +262,8 @@ export class Room {
     const attachment = (ws as any).deserializeAttachment() as WebSocketAttachment | null;
     if (!attachment) return;
 
-    console.error(`Error for user ${attachment.userId}:`, error);
-    await this.failRoom((error as Error).message, attachment.userId);
+    console.error(`Error for machine ${attachment.machineId}:`, error);
+    await this.failRoom((error as Error).message, attachment.machineId);
   }
 
 
@@ -326,7 +328,7 @@ export class Room {
     ).run();
   }
 
-  private async failRoom(failReason: string, failedUser: string){
+  private async failRoom(failReason: string, failedMachine: string){
     // Must happen before cleanupRoom (which closes every socket) - and is
     // best-effort/safe to call even on a race with a second failRoom, since
     // sending to an already-closed socket is caught and logged, not thrown.
@@ -337,17 +339,17 @@ export class Room {
     await this.env.DB.prepare(`
       UPDATE room_stats
       SET finished_at = ?, status = ?, message_count = ?,
-          failed_reason = ?, failed_user = ?
+          failed_reason = ?, failed_machine = ?
       WHERE room_id = ?
     `).bind(
       new Date().toISOString(), 'failed', result.messageCount,
-      failReason, failedUser,
+      failReason, failedMachine,
       result.config.roomId
     ).run();
-    await failWebhook(this.env, result.config, failReason, failedUser);
+    await failWebhook(this.env, result.config, failReason, failedMachine);
   }
 
-  private async startTimeouts(users: RoomConfig["users"]){
+  private async startTimeouts(machines: RoomConfig["machines"]){
     return this.state.storage.transaction(async (txc)=>{
       const timeouts: Array<TimeoutInput> = []
       timeouts.push({
@@ -355,25 +357,25 @@ export class Room {
         offset: this.totalTimeoutLength,
         fn: { id: "total-timeout", args: {} }
       })
-      for(const user of users){
+      for(const machine of machines){
         timeouts.push({
-          id: "user-timeout-" + user.userId,
+          id: "machine-timeout-" + machine.machineId,
           offset: this.userTimeoutLength,
-          fn: { id: "user-timeout", args: { userId: user.userId } }
+          fn: { id: "machine-timeout", args: { machineId: machine.machineId } }
         })
       }
       await TIMEOUT_CONTROLLER.addTimeouts(txc, timeouts);
     })
   }
 
-  private async refreshTimeout(userId: string){
+  private async refreshTimeout(machineId: string){
     await this.state.storage.transaction(async (txc)=>{
-      await TIMEOUT_CONTROLLER.cancelTimeout(txc, "user-timeout-" + userId)
+      await TIMEOUT_CONTROLLER.cancelTimeout(txc, "machine-timeout-" + machineId)
       await TIMEOUT_CONTROLLER.addTimeouts(txc, [
         {
-          id: "user-timeout-" + userId,
+          id: "machine-timeout-" + machineId,
           offset: this.userTimeoutLength,
-          fn: { id: "user-timeout", args: { userId: userId } }
+          fn: { id: "machine-timeout", args: { machineId: machineId } }
         }
       ]);
     })
@@ -384,14 +386,14 @@ export class Room {
       return TIMEOUT_CONTROLLER.handleTimeout(txc);
     });
     for(const fn of fns){
-      if(fn.id === "user-timeout"){
-        return this.failRoom("User timed out", fn.args.userId);
+      if(fn.id === "machine-timeout"){
+        return this.failRoom("Machine timed out", fn.args.machineId);
       }
       if(fn.id === "total-timeout"){
         return this.failRoom("Total timed out", "");
       }
       if(fn.id === "ping"){
-        await sendPing({ state: this.state, env: this.env }, fn.args.userId);
+        await sendPing({ state: this.state, env: this.env }, fn.args.machineId);
       }
     }
   }

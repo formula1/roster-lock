@@ -111,7 +111,7 @@ export class FakeStorage {
 }
 
 export type FakeAttachment = {
-  userId: string;
+  machineId: string;
   publicKey: string;
   connectedAt: string;
 };

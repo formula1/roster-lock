@@ -30,8 +30,8 @@ describe("auth", () => {
       coordinatorId: "coordinator-1",
       roomId: "room-1",
       rosterConfigHash: "hash-1",
-      users: [
-        { userId: "user-1", publicKey: keyPair.publicVerificationKey, displayName: "User One" },
+      machines: [
+        { machineId: "user-1", publicKey: keyPair.publicVerificationKey, displayName: "User One", playerCount: 1 },
       ],
     };
   });
@@ -44,7 +44,9 @@ describe("auth", () => {
 
       const user = await validateAuth({ ...fields, signature }, roomInfo, "room-ws");
 
-      expect(user).toEqual({ userId: "user-1", publicKey: keyPair.publicVerificationKey, displayName: "User One" });
+      expect(user).toEqual({
+        machineId: "user-1", publicKey: keyPair.publicVerificationKey, displayName: "User One", playerCount: 1,
+      });
     });
 
     it("rejects a message signed for a different room", async () => {
@@ -172,7 +174,9 @@ describe("auth", () => {
 
       const user = await validateAuthFromSearch(params, roomInfo, "room-ws");
 
-      expect(user).toEqual({ userId: "user-1", publicKey: keyPair.publicVerificationKey, displayName: "User One" });
+      expect(user).toEqual({
+        machineId: "user-1", publicKey: keyPair.publicVerificationKey, displayName: "User One", playerCount: 1,
+      });
     });
 
     it("returns null when required query params are missing", async () => {
