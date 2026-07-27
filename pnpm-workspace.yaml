@@ -1,7 +1,8 @@
 packages:
   - 'client/*'
   - 'core/*'
-  - 'core/config-editor/src-node-sidecar'
+  - 'core/config-editor/*'
+  - 'core/config-editor-cli'
   - 'core/relay-server/client'
   - 'examples/full-local/game/*'
   - 'examples/full-local/integration'
