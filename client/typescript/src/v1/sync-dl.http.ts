@@ -15,9 +15,9 @@ export async function syncDownloadOverHTTP(
   {
     version,
     relay,
-    user,
+    machine,
     rosterConfig,
-    userSelection: selection,
+    playerSelections,
   }: RosterLockV1SyncDLRequestUserToClient,
   matchAgentAuth: string,
   matchAgentUrl: string | URL = ROSTERLOCK_MATCH_AGENT_URL,
@@ -26,11 +26,11 @@ export async function syncDownloadOverHTTP(
   const syncDLURL = new URL("/v1/sync-dl", matchAgentUrl);
   const timestamp = Date.now();
   const signature = await SIGNATURE.ASYMMETRIC.createSignature(
-    user.keys.privateKey as PrivateKey,
+    machine.keys.privateKey as PrivateKey,
     {
       service: 'room-ws',
       roomId: relay.roomId,
-      publicKey: user.keys.publicKey,
+      publicKey: machine.keys.publicKey,
       timestamp: timestamp,
     }
   );
@@ -40,9 +40,9 @@ export async function syncDownloadOverHTTP(
     method: "POST",
     body: {
       relay: relay,
-      user: { timestamp, publicKey: user.keys.publicKey, signature },
+      machine: { timestamp, publicKey: machine.keys.publicKey, signature },
       rosterConfig,
-      userSelection: selection,
+      playerSelections,
     } satisfies RosterLockV1SyncDLRequestClientToAgent
   });
 

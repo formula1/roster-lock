@@ -5,33 +5,34 @@ import { SIGNATURE } from "@roster-lock/utils";
 type PrivateKey = Parameters<typeof SIGNATURE.ASYMMETRIC.createSignature>[0];
 
 
-type User = {
-  userId: string;
+type Machine = {
+  machineId: string;
   publicKey: string;
   displayName: string;
+  playerCount: number;
   connected: boolean;
   connectedAt?: string
 }
 
-export async function getUsers(
+export async function getMachines(
   {
-    user, relay,
-  }: Pick<RosterLockV1SyncDLRequestUserToClient, "user" | "relay">
+    machine, relay,
+  }: Pick<RosterLockV1SyncDLRequestUserToClient, "machine" | "relay">
 ){
   const timestamp = Date.now();
   const signature = await SIGNATURE.ASYMMETRIC.createSignature(
-    user.keys.privateKey as PrivateKey,
+    machine.keys.privateKey as PrivateKey,
     {
       service: 'room-ws',
       roomId: relay.roomId,
-      publicKey: user.keys.publicKey,
+      publicKey: machine.keys.publicKey,
       timestamp: timestamp,
     }
   );
-  return await getRoomUsers(relay.url, {
+  return await getRoomMachines(relay.url, {
     room: relay.roomId,
     timestamp,
-    publicKey: user.keys.publicKey,
+    publicKey: machine.keys.publicKey,
     signature,
   });
 }
@@ -43,14 +44,14 @@ type ReqParams = {
   publicKey: string,
   signature: string,
 }
-async function getRoomUsers(url: string, params: ReqParams){
-  const roomURL = new URL(`/api/v1/room/${params.room}/users`, url);
+async function getRoomMachines(url: string, params: ReqParams){
+  const roomURL = new URL(`/api/v1/room/${params.room}/machines`, url);
   roomURL.searchParams.set("room", params.room);
   roomURL.searchParams.set("t", params.timestamp.toString());
   roomURL.searchParams.set("pk", params.publicKey);
   roomURL.searchParams.set("sig", params.signature);
 
   const response = await fetch(roomURL);
-  if(!response.ok) throw new Error("Failed to get room users");
-  return await response.json() as Array<User>;
+  if(!response.ok) throw new Error("Failed to get room machines");
+  return await response.json() as Array<Machine>;
 }
