@@ -2,16 +2,40 @@ import {
   installPlugin, updatePlugin, uninstallPlugin, setPluginPriority, getPluginPackagesOfType,
   getPluginFullOfType,
   PLUGIN_TYPES, PluginType,
+  PluginEntry,
+  PluginTypeMap,
 } from "./plugin-management";
 
 import { stat } from "fs/promises"
 
 import { runUntrustedScript, ScriptStarter } from "./run-untrusted";
 import { downloadToFolder, DownloadToFolderArg } from "./download";
-import { PieceSort } from "./PieceSort";
+import { IPieceSort, PieceSort } from "./PieceSort";
+import { PluginPackageType } from "./plugin-management/package";
 
-export class PluginManager {
-  public pieceSort: PieceSort = new PieceSort(this);
+export { IPieceSort }
+export interface IPluginManager {
+  readonly pluginDir: string
+  pieceSort: IPieceSort,
+  installPlugin(pluginName: string): Promise<void>,
+  updatePlugin(pluginName: string): Promise<void>,
+  uninstallPlugin(pluginName: string): Promise<void>,
+  setPluginPriority(pluginName: string, priority: number): void,
+  getPluginPackagesOfType(type: PluginType): Promise<{
+    entry: PluginEntry;
+    package: PluginPackageType;
+  }[]>
+  getPluginFullOfType<T extends PluginType>(
+    type: T
+  ): Promise<Array<{ entry: PluginEntry; package: PluginPackageType; module: PluginTypeMap[T]; }>>,
+  downloadToFolder(
+    downloadArgs: DownloadToFolderArg
+  ): Promise<{ finishPromise: Promise<any>; metaData?: any }>,
+  runUntrustedScript(scriptStarter: ScriptStarter): Promise<unknown>,
+}
+
+export class PluginManager implements IPluginManager {
+  public pieceSort: IPieceSort = new PieceSort(this);
   private constructor(public readonly pluginDir: string){}
   static async create(pluginDir: string){
     const statInfo = await tryStat(pluginDir)

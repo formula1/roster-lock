@@ -13,7 +13,20 @@ export type AvailableSortPlugin = {
   publicInfo: PieceSelectionSortPlugin["publicInfo"],
 };
 
-export class PieceSort {
+export interface IPieceSort {
+  listAvailable(): Promise<Array<AvailableSortPlugin>>,
+  sortPieces(
+    pluginName: string, arg: Omit<SortPiecesArg, "dataDir">
+  ): Promise<Array<string>>
+  handleFullSelection(
+    arg: Omit<HandleFullSelectionArg, "dataDir">
+  ): Promise<void>
+  handleGameComplete(
+    arg: Omit<HandleGameCompleteArg, "dataDir">
+  ): Promise<void>
+}
+
+export class PieceSort implements IPieceSort {
   constructor(private pluginManager: PluginManager){}
 
   async listAvailable(): Promise<Array<AvailableSortPlugin>> {
