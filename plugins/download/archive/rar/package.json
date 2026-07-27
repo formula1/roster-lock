@@ -6,6 +6,7 @@
   "author": "Sam Tobia",
   "type": "commonjs",
   "main": "dist/index.js",
+  "types": "./src/index.ts",
   "roster-lock": {
     "pluginType": "dl-archive"
   },
