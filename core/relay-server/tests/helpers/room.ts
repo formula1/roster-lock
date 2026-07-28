@@ -30,21 +30,30 @@ export type TestRoom = Awaited<ReturnType<typeof makeTestRoom>>;
 // what's under test, not a fake standing in for it.
 export type TestRoomOptions = {
   coordinatorOverrides?: Partial<FakeCoordinatorRow>;
-  // Room's real defaults are 5s user / 5min total - way too slow to wait out
-  // in a test. Room's constructor takes these as an optional third param
-  // real Cloudflare instantiation never supplies, so tests can use fast ones
-  // instead. totalTimeoutLength defaults comfortably above every other
-  // timing in these tests so it never fires by accident - override it low in
-  // a test that specifically wants to exercise the total-timeout path.
+  // Room's real defaults are 5s user / 60s initial-connect / 5min total - way
+  // too slow to wait out in a test. Room's constructor takes these as an
+  // optional third param real Cloudflare instantiation never supplies, so
+  // tests can use fast ones instead. totalTimeoutLength defaults comfortably
+  // above every other timing in these tests so it never fires by accident -
+  // override it low in a test that specifically wants to exercise the
+  // total-timeout path.
   userTimeoutLength?: number;
   totalTimeoutLength?: number;
+  // Defaults to userTimeoutLength since most tests don't care about this
+  // distinction and just want a single fast timeout throughout.
+  initialConnectTimeoutLength?: number;
 };
 
 export async function makeTestRoom(userCount = 2, options: TestRoomOptions = {}){
-  const { coordinatorOverrides = {}, userTimeoutLength = 50, totalTimeoutLength = 10_000 } = options;
+  const {
+    coordinatorOverrides = {}, userTimeoutLength = 50, totalTimeoutLength = 10_000,
+    initialConnectTimeoutLength = userTimeoutLength,
+  } = options;
   const { env, coordinator, statements } = await makeFakeEnv(coordinatorOverrides);
   const state = new FakeDurableObjectState();
-  const room = new Room(state as any, env, { user: userTimeoutLength, total: totalTimeoutLength });
+  const room = new Room(state as any, env, {
+    user: userTimeoutLength, total: totalTimeoutLength, initialConnect: initialConnectTimeoutLength,
+  });
   // Mirrors Cloudflare actually invoking the DO's alarm() method when the
   // scheduled time elapses - without this, setAlarm would just be recorded
   // and nothing would ever fire it.
@@ -78,7 +87,7 @@ export async function makeTestRoom(userCount = 2, options: TestRoomOptions = {})
       { id: "total-timeout", offset: totalTimeoutLength, fn: { id: "total-timeout", args: {} } },
       ...machineIds.map(({ machineId }) => ({
         id: "machine-timeout-" + machineId,
-        offset: userTimeoutLength,
+        offset: initialConnectTimeoutLength,
         fn: { id: "machine-timeout", args: { machineId } },
       })),
     ];

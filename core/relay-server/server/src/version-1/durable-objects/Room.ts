@@ -31,24 +31,35 @@ const newRoomCaster: ZodType<RoomConfig> = z.object({
 }).strict();
 
 const DEFAULT_TOTAL_TIMEOUT_LENGTH = 5 * 60 * 1000;
+// Once a machine's WebSocket is open, ping/pong (see bridge/ping-pong.ts)
+// keeps refreshing this on a ~1s cadence, so 5s is only ever a "did the last
+// ping go unanswered" check, not a budget for anything slower.
 const DEFAULT_USER_TIMEOUT_LENGTH = 5 * 1000;
+// Covers the time between room creation (which happens the moment the
+// matchmaker pairs two machines) and that machine actually opening its
+// room-ws socket - unlike DEFAULT_USER_TIMEOUT_LENGTH, nothing refreshes this
+// (there's no socket yet for ping/pong to use), so it has to cover real-world
+// slop: network latency, piece downloads, a user lingering on a UI screen.
+const DEFAULT_INITIAL_CONNECT_TIMEOUT_LENGTH = 60 * 1000;
 
 export class Room {
   private state: DurableObjectState;
   private env: Env;
   private app: Hono;
   // Cloudflare always constructs a DO with exactly (state, env) - this third
-  // param is only ever supplied by tests, letting them use a fast timeout
-  // instead of waiting out the real 5s default.
+  // param is only ever supplied by tests, letting them use fast timeouts
+  // instead of waiting out the real defaults.
   private userTimeoutLength = DEFAULT_USER_TIMEOUT_LENGTH;
   private totalTimeoutLength = DEFAULT_TOTAL_TIMEOUT_LENGTH;
+  private initialConnectTimeoutLength = DEFAULT_INITIAL_CONNECT_TIMEOUT_LENGTH;
 
-  constructor(state: DurableObjectState, env: Env, timeouts?: { user : number, total: number }) {
+  constructor(state: DurableObjectState, env: Env, timeouts?: { user: number, total: number, initialConnect: number }) {
     this.state = state;
     this.env = env;
     if(timeouts){
       this.userTimeoutLength = timeouts.user;
       this.totalTimeoutLength = timeouts.total;
+      this.initialConnectTimeoutLength = timeouts.initialConnect;
     }
 
     // Initialize Hono router for this DO
@@ -360,7 +371,7 @@ export class Room {
       for(const machine of machines){
         timeouts.push({
           id: "machine-timeout-" + machine.machineId,
-          offset: this.userTimeoutLength,
+          offset: this.initialConnectTimeoutLength,
           fn: { id: "machine-timeout", args: { machineId: machine.machineId } }
         })
       }
