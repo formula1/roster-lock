@@ -9,6 +9,7 @@ export * from "./v1/sync-dl.http";
 export * from "./v1/get-users";
 export * from "./v1/file-routes";
 export * from "./utils/keys";
+export { HTTPError } from "./utils/fetch";
 
 export async function validateAuthCode(
   matchAgentAuth: string,
