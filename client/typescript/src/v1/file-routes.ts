@@ -48,6 +48,12 @@ export async function getPieceAssetFiles(
 
 
 
+// Returns the full Response (not just .body) so callers can read it however
+// they need (.text(), .json(), .blob()) while keeping the Content-Type
+// header match-agent set for the file - reading only the raw byte stream
+// and re-wrapping it in `new Response(stream)` loses that header, which
+// silently breaks anything relying on a Blob's .type (e.g. an <img src>
+// pointed at the resulting object URL).
 export async function getPieceFileContents(
   {
     version,
@@ -61,12 +67,10 @@ export async function getPieceFileContents(
 ){
   if(version !== 1) throw new Error(`Unsupported Version ${version}`);
   const url = new URL("/v1/piece/file-contents", matchAgentUrl);
-  const response = await runFetch(matchAgentAuth, url.href, {
+  return runFetch(matchAgentAuth, url.href, {
     method: "POST",
     body: {
       engine, pieceType, piece, filePath
     }
   });
-
-  return response.body;
 }
