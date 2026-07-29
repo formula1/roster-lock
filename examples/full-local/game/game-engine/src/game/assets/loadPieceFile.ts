@@ -18,7 +18,7 @@ async function fetchPieceFileText(
   pieceFiles: PieceFilesConfig, pieceType: string, pieceId: string, fileName: string
 ): Promise<string> {
   const piece = getPiece(pieceFiles.rosterConfig, pieceType, pieceId);
-  const stream = await getPieceFileContents(
+  const response = await getPieceFileContents(
     {
       version: 1,
       engine: pieceFiles.rosterConfig.engine,
@@ -29,8 +29,7 @@ async function fetchPieceFileText(
     pieceFiles.matchAgentAuth,
     pieceFiles.matchAgentUrl,
   );
-  if(!stream) throw new Error(`Empty response body for ${fileName}`);
-  return new Response(stream).text();
+  return response.text();
 }
 
 export async function loadPieceStats<T = any>(
