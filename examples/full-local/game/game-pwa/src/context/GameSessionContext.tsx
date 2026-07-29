@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useRef, useState, ReactNode } from "react";
 import {
   RosterLockV1Config,
   RosterLockV1SyncDLResult,
@@ -18,6 +18,18 @@ export type MatchAgentConnection = {
   // ws(s)://.../signaling URL from it, matching how game-headless turns
   // GAME_SERVER's http(s) base into a ws(s) URL.
   gameCoordinatorUrl: string;
+};
+
+// Matches the full-local example's docker-compose ports (see
+// examples/full-local/services/env-vars/internal-urls.env) and the match
+// agent's own default --port. Good defaults for the common case of running
+// this PWA against a locally-running full-local stack - the Settings screen
+// lets them be overridden for anything else.
+export const DEFAULT_MATCH_AGENT_CONNECTION: MatchAgentConnection = {
+  url: "http://localhost:58732",
+  authCode: "",
+  matchmakerUrl: "http://localhost:7344",
+  gameCoordinatorUrl: "http://localhost:7345",
 };
 
 export type CurrentUser = {
@@ -54,7 +66,12 @@ function savePersisted(state: PersistedState) {
 }
 
 type GameSessionContextType = {
-  matchAgent: MatchAgentConnection | null;
+  matchAgent: MatchAgentConnection;
+  // True only once the current matchAgent settings have been validated
+  // against the match agent's /validate-authcode this session - deliberately
+  // not persisted, so a stale/rotated auth code always gets re-checked on
+  // load instead of trusting whatever was saved last time.
+  connected: boolean;
   user: CurrentUser | null;
   rosterConfig: RosterLockV1Config | null;
   selection: UserSelection | null;
@@ -63,7 +80,10 @@ type GameSessionContextType = {
   users: Array<RoomUser> | null;
   gameSummary: GameSummary | null;
 
-  connect: (connection: MatchAgentConnection, displayName: string) => Promise<void>;
+  // Persists connection settings (URLs + auth code) without asserting
+  // they've been validated - use `connect` once validateAuthCode succeeds.
+  updateSettings: (settings: MatchAgentConnection) => void;
+  connect: (displayName: string) => Promise<void>;
   setRosterConfig: (config: RosterLockV1Config) => void;
   setSelection: (selection: UserSelection) => void;
   setMatch: (match: MatchInfo) => void;
@@ -76,8 +96,18 @@ const GameSessionContext = createContext<GameSessionContextType | undefined>(und
 export function GameSessionProvider({ children }: { children: ReactNode }) {
   const persisted = loadPersisted();
 
-  const [matchAgent, setMatchAgentState] = useState<MatchAgentConnection | null>(persisted.matchAgent);
+  const [matchAgent, setMatchAgentState] = useState<MatchAgentConnection>(
+    persisted.matchAgent ?? DEFAULT_MATCH_AGENT_CONNECTION,
+  );
+  const [connected, setConnected] = useState(false);
   const [user, setUserState] = useState<CurrentUser | null>(persisted.user);
+  // updateSettings() and connect() can both be called back-to-back within the
+  // same handler (see ConnectScreen), before either state update has caused a
+  // re-render - so a savePersisted() reading `matchAgent`/`user` straight out
+  // of this closure would write stale values. These refs always hold the
+  // latest value instead.
+  const matchAgentRef = useRef(matchAgent);
+  const userRef = useRef(user);
   const [rosterConfig, setRosterConfigState] = useState<RosterLockV1Config | null>(null);
   const [selection, setSelectionState] = useState<UserSelection | null>(null);
   const [match, setMatchState] = useState<MatchInfo | null>(null);
@@ -85,15 +115,23 @@ export function GameSessionProvider({ children }: { children: ReactNode }) {
   const [users, setUsersState] = useState<Array<RoomUser> | null>(null);
   const [gameSummary, setGameSummaryState] = useState<GameSummary | null>(null);
 
-  async function connect(connection: MatchAgentConnection, displayName: string) {
-    const existingUser = user ?? {
+  function updateSettings(settings: MatchAgentConnection) {
+    matchAgentRef.current = settings;
+    setMatchAgentState(settings);
+    setConnected(false);
+    savePersisted({ matchAgent: settings, user: userRef.current });
+  }
+
+  async function connect(displayName: string) {
+    const existingUser = userRef.current ?? {
       machineId: crypto.randomUUID(),
       displayName,
       keys: await generateKeyPair(),
     };
-    setMatchAgentState(connection);
+    userRef.current = existingUser;
     setUserState(existingUser);
-    savePersisted({ matchAgent: connection, user: existingUser });
+    setConnected(true);
+    savePersisted({ matchAgent: matchAgentRef.current, user: existingUser });
   }
 
   function setRosterConfig(config: RosterLockV1Config) {
@@ -125,6 +163,7 @@ export function GameSessionProvider({ children }: { children: ReactNode }) {
     <GameSessionContext.Provider
       value={{
         matchAgent,
+        connected,
         user,
         rosterConfig,
         selection,
@@ -132,6 +171,7 @@ export function GameSessionProvider({ children }: { children: ReactNode }) {
         downloadResult,
         users,
         gameSummary,
+        updateSettings,
         connect,
         setRosterConfig,
         setSelection,

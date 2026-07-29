@@ -2,6 +2,7 @@ import { ChangeEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { RosterLockV1Config } from "@roster-lock/types";
 import { useGameSession } from "../../context/GameSessionContext";
+import { describeError } from "../../utils/describeError";
 
 export function RosterUploadScreen() {
   const navigate = useNavigate();
@@ -26,7 +27,7 @@ export function RosterUploadScreen() {
       setRosterConfig(parsed);
       setFileName(file.name);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to parse the file.");
+      setError(describeError(err, "Couldn't read that file - make sure it's the published roster-lock config JSON."));
     }
   }
 

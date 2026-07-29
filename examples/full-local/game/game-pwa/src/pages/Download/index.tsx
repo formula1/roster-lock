@@ -7,6 +7,7 @@ import {
   RosterLockV1SyncDLRequestUserToClient,
 } from "@roster-lock/types";
 import { useGameSession } from "../../context/GameSessionContext";
+import { describeError, humanizeServerMessage } from "../../utils/describeError";
 
 type PieceProgress = { pieceType: string; status: ROSTERLOCK_DOWNLOAD_STATE; progress: number; error?: string };
 
@@ -51,7 +52,7 @@ export function DownloadScreen() {
 
   useEffect(() => {
     if (started.current) return;
-    if (!matchAgent || !user || !rosterConfig || !selection || !match) return;
+    if (!user || !rosterConfig || !selection || !match) return;
     started.current = true;
 
     const request: RosterLockV1SyncDLRequestUserToClient = {
@@ -71,7 +72,7 @@ export function DownloadScreen() {
           onState: (state) => setRoomState(state),
           onDownloadProgress: (update) => {
             if (update.type === ROSTERLOCK_DOWNLOAD_STATE.downloadFullFailure) {
-              setError(update.error);
+              setError(humanizeServerMessage(update.error));
               return;
             }
             setPieces((prev) => applyUpdate(prev, update));
@@ -85,7 +86,7 @@ export function DownloadScreen() {
         navigate("/game");
       })
       .catch((err) => {
-        setError(err instanceof Error ? err.message : "Download failed.");
+        setError(describeError(err, "Downloading pieces failed."));
       });
   }, [matchAgent, user, rosterConfig, selection, match, setDownloadResult, navigate]);
 
@@ -110,7 +111,7 @@ export function DownloadScreen() {
             <span>{p.pieceType}</span>
             <span>
               {p.status}
-              {p.error ? `: ${p.error}` : ""}
+              {p.error ? `: ${humanizeServerMessage(p.error)}` : ""}
             </span>
           </div>
           <div className="progress-bar">

@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { GameSessionProvider, useGameSession } from "./context/GameSessionContext";
 import { RequireStep } from "./router/RequireStep";
 import { ConnectScreen } from "./pages/Connect";
+import { SettingsScreen } from "./pages/Settings";
 import { RosterUploadScreen } from "./pages/RosterUpload";
 import { SelectScreen } from "./pages/Select";
 import { MatchmakingScreen } from "./pages/Matchmaking";
@@ -9,16 +10,17 @@ import { DownloadScreen } from "./pages/Download";
 import { GameScreen } from "./pages/Game";
 
 function Screens() {
-  const { matchAgent, rosterConfig, selection, match, downloadResult } = useGameSession();
+  const { connected, rosterConfig, selection, match, downloadResult } = useGameSession();
 
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/connect" replace />} />
       <Route path="/connect" element={<ConnectScreen />} />
+      <Route path="/settings" element={<SettingsScreen />} />
       <Route
         path="/roster"
         element={
-          <RequireStep ok={!!matchAgent} redirectTo="/connect">
+          <RequireStep ok={connected} redirectTo="/connect">
             <RosterUploadScreen />
           </RequireStep>
         }

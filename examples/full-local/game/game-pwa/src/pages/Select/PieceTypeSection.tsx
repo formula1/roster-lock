@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { RosterLockV1Config } from "@roster-lock/types";
 import { PieceTypePlan } from "../../game/selection";
 import { pieceVersionKey } from "../../game/pieceAssets";
@@ -5,7 +6,7 @@ import { downloadPieceTree } from "../../game/downloadPieceTree";
 import { useDownloadedPieces } from "../../hooks/useDownloadedPieces";
 import { usePieceMedia } from "../../hooks/usePieceMedia";
 import { useGameSession } from "../../context/GameSessionContext";
-import { PieceCard } from "./PieceCard";
+import { PieceCard, DownloadState } from "./PieceCard";
 import selectBongoUrl from "../../../assets/select-bongo.mp3";
 
 export function PieceTypeSection({
@@ -26,6 +27,7 @@ export function PieceTypeSection({
   const { downloaded, refresh } = useDownloadedPieces(rosterConfig, pieceType);
   const downloadedPieces = pieces.filter((p) => downloaded.has(pieceVersionKey(p)));
   const { portraitUrlFor } = usePieceMedia(rosterConfig.engine, pieceType, downloadedPieces);
+  const [downloadStates, setDownloadStates] = useState<Record<string, DownloadState>>({});
 
   function toggle(pieceId: string) {
     if (selected.includes(pieceId)) {
@@ -35,7 +37,15 @@ export function PieceTypeSection({
     if (selected.length >= plan.max) return;
     onChange([...selected, pieceId]);
     new Audio(selectBongoUrl).play().catch(() => {});
-    if (matchAgent) downloadPieceTree(rosterConfig, pieceType, pieceId, matchAgent).then(refresh).catch(() => {});
+    setDownloadStates((prev) => ({ ...prev, [pieceId]: "downloading" }));
+    downloadPieceTree(rosterConfig, pieceType, pieceId, matchAgent)
+      .then(() => {
+        setDownloadStates((prev) => ({ ...prev, [pieceId]: "done" }));
+        refresh();
+      })
+      .catch(() => {
+        setDownloadStates((prev) => ({ ...prev, [pieceId]: "error" }));
+      });
   }
 
   const countLabel =
@@ -55,6 +65,7 @@ export function PieceTypeSection({
             piece={piece}
             portraitUrl={portraitUrlFor(piece.id)}
             isDownloaded={downloaded.has(pieceVersionKey(piece))}
+            downloadState={downloadStates[piece.id] ?? "idle"}
             selected={selected.includes(piece.id)}
             disabled={selected.length >= plan.max}
             onToggle={() => toggle(piece.id)}

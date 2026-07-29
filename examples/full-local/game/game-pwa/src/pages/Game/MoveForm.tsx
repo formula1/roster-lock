@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Game, GameState, MoveDescription } from "@roster-lock/example-game-engine";
+import { RosterLockV1Config } from "@roster-lock/types";
+import { characterDisplayName } from "../../game/characterNames";
 
 type CharacterState = GameState["characters"][string];
 type Choice = { moveId: string; targetId: string };
@@ -22,10 +24,12 @@ function buildInitialChoices(myCharacters: Array<CharacterState>, enemies: Array
 export function MoveForm({
   game,
   localPlayer,
+  rosterConfig,
   onSubmit,
 }: {
   game: Game;
   localPlayer: string;
+  rosterConfig: RosterLockV1Config;
   onSubmit: (moves: Array<Omit<MoveDescription, "player">>) => void;
 }) {
   const characters = Object.values(game.gameState.characters);
@@ -77,7 +81,7 @@ export function MoveForm({
         return (
           <div key={character.id} className="download-row">
             <div className="row-label">
-              <span>{character.id}</span>
+              <span>{characterDisplayName(rosterConfig, character.id)}</span>
               <span>
                 HP {character.hp.current}/{character.hp.max}
               </span>
@@ -106,7 +110,7 @@ export function MoveForm({
                 >
                   {enemies.map((enemy) => (
                     <option key={enemy.id} value={enemy.id}>
-                      {enemy.id}
+                      {characterDisplayName(rosterConfig, enemy.id)}
                     </option>
                   ))}
                 </select>

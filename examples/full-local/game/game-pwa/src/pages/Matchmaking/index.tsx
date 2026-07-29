@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useGameSession } from "../../context/GameSessionContext";
 import { joinMatch } from "../../game/matchmaking";
+import { describeError } from "../../utils/describeError";
 
 export function MatchmakingScreen() {
   const navigate = useNavigate();
@@ -12,7 +13,7 @@ export function MatchmakingScreen() {
 
   useEffect(() => {
     if (started.current) return;
-    if (!matchAgent || !user || !rosterConfig) return;
+    if (!user || !rosterConfig) return;
     started.current = true;
 
     joinMatch(user, rosterConfig, matchAgent.matchmakerUrl, (attempt) => {
@@ -23,7 +24,7 @@ export function MatchmakingScreen() {
         navigate("/download");
       })
       .catch((err) => {
-        setError(err instanceof Error ? err.message : "Matchmaking failed.");
+        setError(describeError(err, "Couldn't reach the matchmaker."));
       });
   }, [matchAgent, user, rosterConfig, setMatch, navigate]);
 

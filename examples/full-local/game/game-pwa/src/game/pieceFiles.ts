@@ -21,8 +21,19 @@ export async function getPieceFileBlob(
   matchAgentAuth: string,
   matchAgentUrl: string | URL,
 ): Promise<string> {
-  const stream = await getPieceFileContents(info, matchAgentAuth, matchAgentUrl);
-  if (!stream) throw new Error(`Empty response body for ${info.filePath}`);
-  const blob = await new Response(stream).blob();
+  const response = await getPieceFileContents(info, matchAgentAuth, matchAgentUrl);
+  const blob = await response.blob();
   return URL.createObjectURL(blob);
+}
+
+// Same known-path fetch as getPieceFileBlob, but for JSON asset files (e.g.
+// weather's "media/particles.json") that get parsed and read directly rather
+// than handed to an <img>/<audio> as an object URL.
+export async function getPieceFileJSON<T>(
+  info: GetPieceInfo & { filePath: string },
+  matchAgentAuth: string,
+  matchAgentUrl: string | URL,
+): Promise<T> {
+  const response = await getPieceFileContents(info, matchAgentAuth, matchAgentUrl);
+  return (await response.json()) as T;
 }
