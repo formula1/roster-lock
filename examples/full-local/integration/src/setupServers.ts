@@ -32,6 +32,7 @@ export async function runServers(){
     console.log("Servers are up and registered. Press Ctrl+C to stop.");
     await keepAliveUntilSignal();
   } catch(err){
+    console.error("Server setup failed:", err);
     await processes.cleanup(dockerComposeDown);
     throw err;
   }
