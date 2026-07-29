@@ -70,9 +70,9 @@ export async function setupServers(config: ServerSetupConfig){
   });
 
   const { publicKey } = await getMatchMakerPublicKey(config);
-  await addMatchMakerToRelay(config, jwt, { name: "Simple Battle Matchmaking", publicKey });
+  await ensureMatchMakerRegistered(config, jwt, { name: "Simple Battle Matchmaking", publicKey });
 
-  await addGameCoordinatorToRelay(config, jwt, {
+  await ensureGameCoordinatorRegistered(config, jwt, {
     id: config.gameCoordinatorId,
     name: "Simple WebRTC Connector",
     success_webhook_url: `${config.gameCoordinatorUrl}/webhook/room-complete`,
@@ -105,6 +105,36 @@ async function getMatchMakerPublicKey(config: ServerSetupConfig){
   return json as { publicKey: string };
 }
 
+// matchmakers.name is UNIQUE in the relay's schema, and this always registers
+// under the same fixed name - so a second run against a relay-room that
+// wasn't cleanly torn down (docker compose down; relay-room keeps its SQLite
+// data across a plain stop/start since it's not backed by a volume) would
+// otherwise hit a constraint violation. Reuse the existing registration
+// instead of re-inserting.
+async function ensureMatchMakerRegistered(config: ServerSetupConfig, jwt: string, body: { name: string, publicKey: string }){
+  const existing = (await listMatchMakers(config, jwt)).find(m => m.name === body.name);
+  if(existing){
+    if(existing.public_key !== body.publicKey){
+      throw new ErrorWithDetails(
+        `Matchmaker "${body.name}" is already registered with a different public key - ` +
+        `if the matchmaker's keys were regenerated, run "docker compose down" first to clear the relay's old registration`,
+        { existingId: existing.id }
+      );
+    }
+    return existing;
+  }
+  return addMatchMakerToRelay(config, jwt, body);
+}
+
+async function listMatchMakers(config: ServerSetupConfig, jwt: string){
+  const response = await fetch(`${config.publicRelayServerUrl}/api/v1/matchmaker`, {
+    headers: { "Authorization": `Bearer ${jwt}` },
+  })
+  const json = await response.json();
+  if(!response.ok) throw new ErrorWithDetails("Failed to list matchmakers", json);
+  return json as Array<{ id: string, name: string, public_key: string }>;
+}
+
 async function addMatchMakerToRelay(config: ServerSetupConfig, jwt: string, body: { name: string, publicKey: string }){
   const response = await fetch(`${config.publicRelayServerUrl}/api/v1/matchmaker`, {
     method: "POST",
@@ -117,6 +147,33 @@ async function addMatchMakerToRelay(config: ServerSetupConfig, jwt: string, body
   const json = await response.json();
   if(!response.ok) throw new ErrorWithDetails("Failed to add matchmaker to relay", json);
   return json as { id: string, name: string, publicKey: string };
+}
+
+// game_coordinators.id is the PRIMARY KEY and .name is also UNIQUE, and this
+// always registers under the same fixed id/name - same story as
+// ensureMatchMakerRegistered above. Webhook URLs and the API key are static
+// (derived from env vars), so an existing registration is always equivalent
+// to what this run would send - just reuse it.
+async function ensureGameCoordinatorRegistered(config: ServerSetupConfig, jwt: string,
+  body: {
+    id: string, name: string,
+    success_webhook_url: string, failure_webhook_url: string,
+    api_key: string
+  }
+){
+  const existing = await getGameCoordinator(config, jwt, body.id);
+  if(existing) return existing;
+  return addGameCoordinatorToRelay(config, jwt, body);
+}
+
+async function getGameCoordinator(config: ServerSetupConfig, jwt: string, id: string){
+  const response = await fetch(`${config.publicRelayServerUrl}/api/v1/game-coordinator/${id}`, {
+    headers: { "Authorization": `Bearer ${jwt}` },
+  })
+  if(response.status === 404) return null;
+  const json = await response.json();
+  if(!response.ok) throw new ErrorWithDetails("Failed to look up game coordinator", json);
+  return json as { id: string, name: string };
 }
 
 async function addGameCoordinatorToRelay(config: ServerSetupConfig, jwt: string,
