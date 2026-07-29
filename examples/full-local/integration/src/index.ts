@@ -36,6 +36,4 @@ program
     await runServers();
   });
 
-program.parseAsync().catch(()=>{
-  process.exitCode = 1;
-});
+program.parseAsync();
