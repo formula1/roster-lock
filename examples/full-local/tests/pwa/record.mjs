@@ -1,4 +1,5 @@
 import { chromium } from "playwright-core";
+import { execFileSync } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
 import { fileURLToPath } from "url";
@@ -13,66 +14,55 @@ const CHROME_PATH = process.env.CHROME_PATH ?? "/usr/bin/google-chrome";
 const ROSTER_LOCK_PATH = process.env.ROSTER_LOCK_PATH
   ?? path.join(REPO_ROOT, "examples/full-local/simple-game.roster-lock.json");
 
-const SHOT_DIR = path.join(__dirname, "shots");
+const VIDEO_DIR = path.join(__dirname, "videos");
+const OUTPUT_PATH = path.join(VIDEO_DIR, "game-pwa-playthrough.mp4");
+const VIEWPORT = { width: 1280, height: 800 };
 
 /**
- * Drives the game-pwa example through a full match against whatever
- * opponent is already waiting in the matchmaking queue (usually a
- * game-headless instance - see examples/full-local/CLAUDE.md / the
- * integration package's `server-setup` + `run-game` scripts).
+ * Same flow as drive.mjs, but records a video of the browser instead of
+ * screenshotting each step - for watching the pwa play out end to end
+ * rather than asserting on it. Requires ffmpeg on PATH to convert the raw
+ * webm capture to mp4.
  *
- * Usage: pnpm run drive
- * Env vars (all optional, defaults match the full-local example):
- *   PWA_URL, MATCH_AGENT_AUTH, DISPLAY_NAME, CHROME_PATH, ROSTER_LOCK_PATH
+ * Usage: pnpm run record
+ * Env vars: same as drive.mjs (PWA_URL, MATCH_AGENT_AUTH, DISPLAY_NAME,
+ * CHROME_PATH, ROSTER_LOCK_PATH)
  */
 
-let shotN = 0;
-async function shot(page, name) {
-  shotN += 1;
-  const shotPath = path.join(SHOT_DIR, `${String(shotN).padStart(2, "0")}-${name}.png`);
-  await page.screenshot({ path: shotPath });
-  console.log(`screenshot: ${shotPath}`);
-}
-
 async function main() {
-  fs.mkdirSync(SHOT_DIR, { recursive: true });
+  fs.mkdirSync(VIDEO_DIR, { recursive: true });
 
   const browser = await chromium.launch({
     executablePath: CHROME_PATH,
     headless: true,
     args: ["--no-sandbox"],
   });
-  const page = await browser.newPage();
-  page.on("console", (msg) => {
-    if (msg.type() === "error") console.log(`[console.error] ${msg.text()}`);
+  const context = await browser.newContext({
+    viewport: VIEWPORT,
+    recordVideo: { dir: VIDEO_DIR, size: VIEWPORT },
   });
+  const page = await context.newPage();
   page.on("pageerror", (err) => console.log(`[pageerror] ${err}`));
 
   try {
     await page.goto(PWA_URL, { waitUntil: "domcontentloaded" });
-    // Connect auto-validates any saved auth code first ("Checking saved
-    // connection..."); a fresh browser profile has none, so it falls through
-    // to the auth-code prompt. Match agent / matchmaker / game coordinator
-    // URLs default to this stack's docker-compose ports (see
-    // DEFAULT_MATCH_AGENT_CONNECTION), so only auth code + name are needed
-    // here - /settings is only for overriding those defaults.
     await page.waitForSelector("text=Connect to Match Agent", { timeout: 15000 });
-    await shot(page, "connect");
+    await page.waitForTimeout(800);
 
     await page.fill("#authCode", AUTH_CODE);
     await page.fill("#displayName", DISPLAY_NAME);
+    await page.waitForTimeout(500);
     await page.click('button:has-text("Connect")');
 
     await page.waitForSelector("text=Load Roster Config", { timeout: 15000 });
-    await shot(page, "roster-upload");
-
+    await page.waitForTimeout(500);
     await page.setInputFiles("#roster-file", ROSTER_LOCK_PATH);
     await page.waitForSelector("text=Loaded", { timeout: 10000 });
-    await shot(page, "roster-loaded");
+    await page.waitForTimeout(800);
     await page.click('button:has-text("Continue")');
 
     await page.waitForSelector("text=Choose Your Pieces", { timeout: 15000 });
-    await shot(page, "select-screen");
+    await page.waitForTimeout(500);
 
     const sections = await page.$$(".piece-type-section");
     for (const section of sections) {
@@ -81,66 +71,70 @@ async function main() {
       const range = heading.match(/pick (\d+)-/);
       const needed = exact ? parseInt(exact[1], 10) : range ? parseInt(range[1], 10) : 0;
       const cards = await section.$$(".piece-card");
-      console.log(`section "${heading.trim()}": need ${needed}, ${cards.length} cards available`);
+      console.log(`section "${heading.trim()}": picking ${needed} of ${cards.length}`);
       for (let i = 0; i < needed && i < cards.length; i++) {
+        await cards[i].scrollIntoViewIfNeeded();
         await cards[i].click();
-        await page.waitForTimeout(300);
+        await page.waitForTimeout(500);
       }
     }
-    await shot(page, "select-filled");
+    await page.waitForTimeout(800);
 
     const confirmBtn = page.locator('button:has-text("Confirm Selection")');
     await confirmBtn.waitFor({ state: "attached", timeout: 5000 });
-    if (await confirmBtn.isDisabled()) {
-      throw new Error("Confirm Selection button still disabled after picking pieces");
-    }
+    await confirmBtn.scrollIntoViewIfNeeded();
     await confirmBtn.click();
 
     await page.waitForSelector("text=Matchmaking", { timeout: 15000 });
-    await shot(page, "matchmaking");
+    console.log("Waiting for matchmaking...");
 
     await page.waitForSelector("text=Downloading Pieces", { timeout: 60000 });
-    await shot(page, "download-start");
-    console.log("Matched with opponent, download started.");
+    console.log("Matched, downloading...");
 
     await page.waitForURL("**/game", { timeout: 120000 });
-    await shot(page, "game-start");
-    console.log("Download complete, entered game screen.");
+    console.log("In game.");
 
     await page.waitForSelector("text=Turn 1", { timeout: 30000 });
-    await shot(page, "game-turn1");
+    await page.waitForTimeout(800);
 
     const deadline = Date.now() + 5 * 60 * 1000;
     let turnsSubmitted = 0;
     while (Date.now() < deadline) {
       const url = page.url();
       if (!url.includes("/game")) {
-        console.log(`Left /game screen (now at ${url}) - game loop ended.`);
+        console.log(`Game over (now at ${url}).`);
         break;
       }
       const submitBtn = page.locator('button:has-text("Submit Moves")');
       if ((await submitBtn.count()) > 0 && !(await submitBtn.isDisabled())) {
+        await submitBtn.scrollIntoViewIfNeeded();
+        await page.waitForTimeout(600);
         await submitBtn.click();
         turnsSubmitted += 1;
         console.log(`Submitted moves (turn ${turnsSubmitted}).`);
-        await shot(page, `after-submit-${turnsSubmitted}`);
-      }
-      const banner = page.locator(".banner");
-      if ((await banner.count()) > 0) {
-        console.log(`Banner/error visible: ${await banner.first().textContent()}`);
       }
       await page.waitForTimeout(1000);
     }
 
-    await shot(page, "final");
+    await page.waitForTimeout(1500);
     console.log(`Done. Final URL: ${page.url()}`);
   } catch (err) {
-    console.error("DRIVER FAILED:", err);
-    await shot(page, "error");
+    console.error("RECORDING FAILED:", err);
     process.exitCode = 1;
   } finally {
+    await context.close();
     await browser.close();
   }
+
+  const rawVideoPath = await page.video()?.path();
+  if (!rawVideoPath || !fs.existsSync(rawVideoPath)) {
+    throw new Error("No video was recorded.");
+  }
+
+  console.log(`Converting ${rawVideoPath} -> ${OUTPUT_PATH} ...`);
+  execFileSync("ffmpeg", ["-y", "-i", rawVideoPath, "-pix_fmt", "yuv420p", "-movflags", "+faststart", OUTPUT_PATH]);
+  fs.rmSync(rawVideoPath, { force: true });
+  console.log(`Video ready: ${OUTPUT_PATH}`);
 }
 
 main();

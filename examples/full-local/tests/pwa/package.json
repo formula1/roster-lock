@@ -8,6 +8,7 @@
   "type": "module",
   "scripts": {
     "drive": "node drive.mjs",
+    "record": "node record.mjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
