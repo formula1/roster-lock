@@ -23,7 +23,7 @@ program
   .name("rosterlock-match-agent")
   .description("Runs the match-agent server");
 
-// Resolves the same way `run` does (sibling config next to the executable,
+// Resolves the same way `listen` does (sibling config next to the executable,
 // falling back to home), so `plugin install` without -d/--plugin-dir lands
 // in the folder a mounted USB's config actually points at, instead of
 // silently defaulting to plugin-runtime's own ~/roster-lock/plugins.
@@ -44,8 +44,8 @@ for(const command of createPluginCommands({ getDefaultPluginDir: defaultPluginDi
 }
 
 program
-  .command("run")
-  .description("Runs the match-agent server")
+  .command("listen")
+  .description("Runs the match-agent server (leave this running while you play - it can serve multiple games/matches at once)")
   .option("--port <port>", "port to listen on", "58732")
   .option("--auth-code <string>", "authentication code required for access (overrides the config file)")
   .option("--piece-folder <path>", "folder to store downloaded pieces in (overrides the config file)")
@@ -140,7 +140,7 @@ program
   .description(
     "Install match-agent for regular (non-USB) use: creates pieces/plugins folders and a " +
     CONFIG_FILE_NAME + " at the default config location, stores the given auth code, and syncs " +
-    "plugins to the official manifest. Intended as the one-time setup step before `run`."
+    "plugins to the official manifest. Intended as the one-time setup step before `listen`."
   )
   .option(
     "--config-file <path>",
