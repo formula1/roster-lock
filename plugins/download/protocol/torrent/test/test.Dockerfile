@@ -5,7 +5,7 @@ RUN apk add --no-cache tar python3 make g++
 
 WORKDIR /app
 
-RUN npm install webtorrent create-torrent
+RUN npm install webtorrent
 
 COPY seed.mjs /app/seed.mjs
 

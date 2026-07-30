@@ -1,24 +1,13 @@
-import { SelectedPiece, UserId } from "@roster-lock/types";
+import { SelectedPiece, PlayerId } from "@roster-lock/types";
 import Ajv from "ajv";
+import { SelectedPieceSchema, SelectedPieceSchemaDef } from "../../../../shared/SelectedPiece";
 
 const ajv = new Ajv({ allErrors: true, strict: true, allowUnionTypes: true });
 
 ajv.addSchema({
   $id: "SelectedPiece",
-  type: "object",
-  required: ["id", "required"],
-  additionalProperties: false,
-  properties: {
-    id: { type: "string" },
-    required: {
-      type: "object",
-      required: [],
-      additionalProperties: {
-        type: "array",
-        items: { $ref: "SelectedPiece" },
-      },
-    },
-  },
+  ...SelectedPieceSchemaDef,
+  ...SelectedPieceSchema,
 });
 
 const validateShared = ajv.compile<Array<SelectedPiece>>({
@@ -26,7 +15,7 @@ const validateShared = ajv.compile<Array<SelectedPiece>>({
   items: { $ref: "SelectedPiece" },
 });
 
-const validatePersonal = ajv.compile<Record<UserId, Array<SelectedPiece>>>({
+const validatePersonal = ajv.compile<Record<PlayerId, Array<SelectedPiece>>>({
   type: "object",
   required: [],
   additionalProperties: {
@@ -42,7 +31,7 @@ export function castSharedResult(value: unknown): Array<SelectedPiece> {
   return value;
 }
 
-export function castPersonalResult(value: unknown): Record<UserId, Array<SelectedPiece>> {
+export function castPersonalResult(value: unknown): Record<PlayerId, Array<SelectedPiece>> {
   if (!validatePersonal(value)) {
     throw validatePersonal.errors;
   }

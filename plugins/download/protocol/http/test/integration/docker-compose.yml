@@ -1,0 +1,12 @@
+services:
+  http:
+    build:
+      context: ..
+      dockerfile: test.Dockerfile
+    ports:
+      - "18080:80"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/archive.tar.gz"]
+      interval: 3s
+      timeout: 5s
+      retries: 10

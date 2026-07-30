@@ -1,5 +1,5 @@
 
-import { strToBuffer, uint8ToBuffer } from "../../../utils/crypto";
+import { strToBuffer } from "@roster-lock/utils";
 
 // Generate a random temporary password
 export function generateTemporaryPassword(): string {
@@ -24,7 +24,7 @@ export async function hashPassword(password: string): Promise<string> {
   const hash = await crypto.subtle.deriveBits(
     {
       name: 'PBKDF2',
-      salt: uint8ToBuffer(salt),
+      salt: salt,
       iterations: 100000,
       hash: 'SHA-256'
     },
@@ -57,7 +57,7 @@ export async function verifyPassword(password: string, storedHash: string): Prom
   const hash = await crypto.subtle.deriveBits(
     {
       name: 'PBKDF2',
-      salt: uint8ToBuffer(salt),
+      salt: salt,
       iterations: 100000,
       hash: 'SHA-256'
     },

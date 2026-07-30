@@ -13,13 +13,14 @@ const GAME_COORDINATOR_ID = getEnv("GAME_COORDINATOR_ID");
 import { LinkedList } from './utils/LinkedList';
 
 type User = {
-  userId: string;
+  machineId: string;
   publicKey: string;
   displayName: string;
+  playerCount: number;
 }
 
 export type QueuedUser = (
-  & User
+  & Omit<User, "playerCount">
   & {
     rosterConfigHash: string;
     rosterConfig: any;
@@ -35,14 +36,14 @@ type StoredUser = (
 );
 
 type MatchInfo = {
-  users: Array<User>;
+  machines: Array<User>;
   rosterConfig: any;
   rosterConfigHash: string;
 };
 
 type Match = {
   matchId: string;
-  users: Array<User>;
+  machines: Array<User>;
   rosterConfig: any;
   rosterConfigHash: string;
   roomStatus: (
@@ -92,8 +93,8 @@ export class MatchmakingQueue {
   checkForMatch(publicKey: string, rosterConfigHash: RosterHash) {
     const list = this.getUserQueue(rosterConfigHash);
     for(const match of this.matches.get(rosterConfigHash) ?? []) {
-      for(const user of match.users) {
-        if(user.publicKey === publicKey) {
+      for(const machine of match.machines) {
+        if(machine.publicKey === publicKey) {
           match.timeout = setTimeout(() => {
             this.staleMatch(rosterConfigHash, match.matchId);
           }, 60 * 1000);
@@ -139,10 +140,11 @@ export class MatchmakingQueue {
     const user2 = list.shift()!;
     this.totalUsers -= 2;
     const match = {
-      users: [user1, user2].map(u => ({
-        userId: u.userId,
+      machines: [user1, user2].map(u => ({
+        machineId: u.machineId,
         publicKey: u.publicKey,
-        displayName: u.displayName
+        displayName: u.displayName,
+        playerCount: 1,
       })),
       rosterConfig: user1.rosterConfig,
       rosterConfigHash: user1.rosterConfigHash
@@ -203,17 +205,20 @@ export class MatchmakingQueue {
 
 
 import { CreateRoomBody } from './types';
-import { signMessage } from './utils/crypto';
+import { SIGNATURE } from '@roster-lock/utils';
 import { getSignatureKeys } from './globals/signature-keys';
+
+type PrivateKey = Parameters<typeof SIGNATURE.ASYMMETRIC.createSignature>[0];
+
 async function createMatch(match: MatchInfo){
   const { publicKey, secretKey } = await getSignatureKeys();
-  const signiture = await signMessage({
+  const signiture = await SIGNATURE.ASYMMETRIC.createSignature(secretKey as PrivateKey, {
     service: 'create-room',
     publicKey: publicKey,
     rosterConfigHash: match.rosterConfigHash,
-    users: match.users,
+    machines: match.machines,
     coordinatorId: GAME_COORDINATOR_ID,
-  }, secretKey);
+  });
 
 
   const relayRoomResponse = await fetch(`${RELAY_SERVER_URL}/api/v1/room`, {

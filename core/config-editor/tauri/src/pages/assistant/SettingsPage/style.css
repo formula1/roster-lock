@@ -1,0 +1,80 @@
+.assistant-settings-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  max-width: 40em;
+}
+
+.assistant-settings-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+}
+
+.assistant-settings-field input {
+  padding: 0.4em 0.5em;
+}
+
+.assistant-settings-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75em;
+  padding: 0.5em 0.75em;
+  border-radius: 0.4em;
+  font-size: 0.9em;
+}
+
+.assistant-settings-status-available {
+  background: rgba(50, 180, 90, 0.12);
+  color: #2a8a4a;
+}
+
+.assistant-settings-status-unavailable {
+  background: rgba(220, 50, 50, 0.12);
+  color: #d33;
+}
+
+.assistant-settings-status-checking {
+  opacity: 0.7;
+  font-style: italic;
+}
+
+.assistant-settings-models-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.assistant-settings-models-empty {
+  opacity: 0.6;
+  font-style: italic;
+  margin: 0.5em 0;
+}
+
+.assistant-settings-models ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.assistant-settings-models li {
+  padding: 0.35em 0;
+}
+
+.assistant-model-badge {
+  margin-left: 0.5em;
+  padding: 0.1em 0.5em;
+  border-radius: 1em;
+  font-size: 0.75em;
+}
+
+.assistant-model-badge-ok {
+  background: rgba(50, 180, 90, 0.15);
+  color: #2a8a4a;
+}
+
+.assistant-model-badge-warn {
+  background: rgba(220, 150, 50, 0.15);
+  color: #b57a1a;
+}

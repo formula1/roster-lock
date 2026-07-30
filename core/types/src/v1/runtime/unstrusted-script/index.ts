@@ -34,6 +34,13 @@ export type UntrustedScript<ScriptModule> = {
   extensions: Array<string>,
   directoryFile: Array<string>,
   runScript: ScriptRunner<ScriptModule>,
+  exportConfig: (config: any)=>ScriptModule
+};
+
+export type UntrustedConfig = {
+  name: string,
+  extensions: Array<string>,
+  runConfig: (configString: string)=>Promise<unknown>
 };
 
 export type ScriptStackFrame = {

@@ -1,8 +1,10 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import { z, ZodType } from 'zod';
-import { createSha, verifySignature } from './utils/crypto';
+import { createShaFromJSON, SIGNATURE } from '@roster-lock/utils';
 import { MatchmakingQueue, QueuedUser } from './queue';
+
+type PublicKey = Parameters<typeof SIGNATURE.ASYMMETRIC.verifySignature>[0];
 
 const app = express();
 const PORT = process.env.PORT;
@@ -29,13 +31,13 @@ app.get('/queue/:hash', (req: Request, res: Response) => {
   const list = matchmakingQueue.getUserQueue(req.params.hash);
   res.json({
     queueLength: list.length,
-    users: Array.from(list).map(u => ({ userId: u.userId, timestamp: u.timestamp }))
+    users: Array.from(list).map(u => ({ machineId: u.machineId, timestamp: u.timestamp }))
   });
 });
 
 // Join matchmaking queue
 const joinBodySchema: ZodType<Omit<QueuedUser, "timestamp" | "rosterConfigHash"> & { timestamp: number, signature: string }> = z.object({
-  userId: z.string(),
+  machineId: z.string(),
   displayName: z.string(),
   rosterConfig: z.any(),
   publicKey: z.string(),
@@ -51,11 +53,11 @@ app.post('/join', async (req: Request, res: Response) => {
   if(Date.now() - casted.data.timestamp > 1000){
     return res.status(400).json({ error: 'Timestamp is too old' });
   }
-  const rosterHash = await createSha(casted.data.rosterConfig);
+  const rosterHash = await createShaFromJSON(casted.data.rosterConfig);
 
-  if(!await verifySignature(casted.data.publicKey, casted.data.signature, {
+  if(!await SIGNATURE.ASYMMETRIC.verifySignature(casted.data.publicKey as PublicKey, casted.data.signature, {
     service: 'join-queue',
-    userId: casted.data.userId,
+    machineId: casted.data.machineId,
     displayName: casted.data.displayName,
     rosterHash: rosterHash,
     timestamp: casted.data.timestamp,
@@ -65,7 +67,7 @@ app.post('/join', async (req: Request, res: Response) => {
   }
   const body = casted.data;
 
-  // Add user to queue
+  // Add machine to queue
   const queuedUser: QueuedUser = {
     ...body,
     rosterConfigHash: rosterHash,
@@ -73,7 +75,7 @@ app.post('/join', async (req: Request, res: Response) => {
 
   const storedUser = matchmakingQueue.join(queuedUser);
 
-  console.log(`User ${body.userId} joined queue. Queue length: ${matchmakingQueue.totalUsers}`);
+  console.log(`Machine ${body.machineId} joined queue. Queue length: ${matchmakingQueue.totalUsers}`);
 
 
   // User is waiting
@@ -84,8 +86,8 @@ app.post('/join', async (req: Request, res: Response) => {
   });
 });
 
-app.get("/status/:roster-hash", async (req: Request, res: Response) => {
-  const rosterHash = req.params["roster-hash"];
+app.get("/status/:rosterHash", async (req: Request, res: Response) => {
+  const rosterHash = req.params.rosterHash;
   const publicKey = req.query.publicKey as string;
   const signature = req.query.signature as string;
   const timestamp = Number.parseInt(req.query.timestamp as string);
@@ -99,7 +101,7 @@ app.get("/status/:roster-hash", async (req: Request, res: Response) => {
     return res.status(400).json({ error: 'Timestamp is too old' });
   }
 
-  if(!await verifySignature(publicKey, signature, {
+  if(!await SIGNATURE.ASYMMETRIC.verifySignature(publicKey as PublicKey, signature, {
     service: 'queue-status',
     rosterConfigHash: rosterHash,
     timestamp: timestamp,
@@ -124,14 +126,14 @@ const leaveBodySchema: ZodType<{ rosterConfigHash: string; publicKey: string; si
   publicKey: z.string(),
   signature: z.string(),
 }).strict();
-app.post('/leave', (req: Request, res: Response) => {
+app.post('/leave', async (req: Request, res: Response) => {
   const bodyUncasted = req.body;
   const casted = leaveBodySchema.safeParse(bodyUncasted);
   if(!casted.success){
     return res.status(400).json({ error: 'Invalid body' });
   }
 
-  if(!verifySignature(casted.data.publicKey, casted.data.signature, {
+  if(!await SIGNATURE.ASYMMETRIC.verifySignature(casted.data.publicKey as PublicKey, casted.data.signature, {
     service: 'leave-queue',
     rosterConfigHash: casted.data.rosterConfigHash,
     publicKey: casted.data.publicKey,

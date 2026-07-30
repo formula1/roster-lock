@@ -3,7 +3,9 @@
 export * from "./plugin-management";
 export * from "./download"
 export * from "./run-untrusted"
-import { runCommand } from "./command";
+export * from "./PluginHandler";
+import { runCommand, createPluginCommands } from "./command";
+export { createPluginCommands };
 
 if(require.main === module){
   runCommand();

@@ -1,0 +1,12 @@
+
+.move-buttons {
+  display: flex; flex-direction: column; align-items: stretch; 
+}
+
+.move-buttons > button {
+  display: flex; flex-direction: row; justify-content: space-between; align-items: center;
+}
+
+.move-buttons > button > img {
+  height: 1em;
+}

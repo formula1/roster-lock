@@ -104,5 +104,6 @@ watch/target
 
 # Dist should only be on the compiled branch
 **/dist
+**/dev-dist
 
 .early.coverage

@@ -1,5 +1,5 @@
 import { WebSocket } from "ws";
-import { MessageBridge, waitForBridgeEvent } from "./utils/MessageBridge"
+import { MessageBridge, waitForBridgeEvent } from "@roster-lock/utils";
 import { HTTPError } from "./utils/errors";
 import { z, ZodType } from "zod";
 
@@ -36,10 +36,9 @@ export class WebRTCRoom {
     const bridge = new MessageBridge((message)=>(ws.send(JSON.stringify(message))));
     ws.on("message", (message)=>{
       this.heartBeat(userPublicKey);
-      if(typeof message !== "string"){
-        throw new Error("Invalid message");
-      }
-      bridge.handleMessage(JSON.parse(message))
+      // The `ws` library always delivers frames (text or binary) as a Buffer/ArrayBuffer,
+      // never a JS string - `typeof message === "string"` is never true here.
+      bridge.handleMessage(JSON.parse(message.toString()));
     })
     this.users[userPublicKey] = {
       publicKey: userPublicKey,
@@ -51,11 +50,14 @@ export class WebRTCRoom {
     this.heartBeat(userPublicKey)
 
     ws.on("close", ()=>{
-      if(this.state === "finished") return;
+      // removeRoom() closes every user's socket, which re-fires this handler
+      // for sockets that are still registered - only a still-active room
+      // (not already failed/finished) should ever call removeRoom here.
+      if(this.state !== "waiting" && this.state !== "connecting") return;
       this.removeRoom("failed", "user disconnected early")
     })
 
-    if(Object.keys(this.users).length < this.config.users.length) return;
+    if(Object.keys(this.users).length < this.config.machines.length) return;
 
     this.startConnection();
 
@@ -67,7 +69,11 @@ export class WebRTCRoom {
       this.removeRoom("finished", "success");
 
     }catch(e){
-      this.removeRoom("failed", (e as Error).message)
+      // Rejections here aren't always Error instances (e.g. a request's error
+      // response is relayed as a raw string) - keep the real reason instead
+      // of silently collapsing it to "undefined".
+      const reason = typeof e === "string" ? e : e instanceof Error ? e.message : "Unknown Error";
+      this.removeRoom("failed", reason)
     }
   }
 
@@ -92,13 +98,14 @@ export class WebRTCRoom {
   }
 }
 
-const IceMessageSchema: ZodType<{ ice: string, user: string }> = z.object({
-  ice: z.string(), user: z.string()
+const IceMessageSchema: ZodType<{ ice: { candidate: string, mid: string }, user: string }> = z.object({
+  ice: z.object({ candidate: z.string(), mid: z.string() }), user: z.string()
 })
 
 const CONNECT_TIMEOUT = 10 * 1000;
 async function singleHostConect(users: WebRTCRoom["users"]){
   const host = await selectHost(users)
+  host.bridge.sendEvent("host", true);
   for(const user of Object.values(users)){
     addIceListener(user)
   }
@@ -107,9 +114,17 @@ async function singleHostConect(users: WebRTCRoom["users"]){
     if(host.publicKey === other.publicKey) return;
     const hostConnected = waitForBridgeEvent(host.bridge, "connect-" + other.publicKey, CONNECT_TIMEOUT);
     const userConnected = waitForBridgeEvent(other.bridge, "connect-" + host.publicKey, CONNECT_TIMEOUT);
+    // Both promises can time out and reject well before the `await
+    // Promise.all([hostConnected, userConnected])` below ever attaches a
+    // handler to them - and an unhandled rejection crashes the whole
+    // process (killing every concurrent room), not just this one. Attaching
+    // a no-op catch here just marks them "handled" for Node's tracker; the
+    // real rejection still propagates through the awaited Promise.all.
+    hostConnected.catch(()=>{});
+    userConnected.catch(()=>{});
     const offer = await other.bridge.sendRequest("get-offer", { user: host.publicKey });
-    const accept = await host.bridge.sendRequest("offer-for-answer", { user: other.publicKey, offer });
-    await other.bridge.sendRequest("finish-answer", { user: host.publicKey, accept });
+    const answer = await host.bridge.sendRequest("offer-for-answer", { user: other.publicKey, offer });
+    await other.bridge.sendRequest("finish-answer", { user: host.publicKey, answer });
 
     await Promise.all([hostConnected, userConnected])
   }))

@@ -1,0 +1,8 @@
+// Blue Character
+// A speedster with medium HP and low attack.
+{
+  id: 'blue',
+  name: 'Blue',
+  color: '#3b82f6',
+  stats: { hp: 2, attack: 1, speed: 3 },
+}

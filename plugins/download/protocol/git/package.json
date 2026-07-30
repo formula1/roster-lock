@@ -14,14 +14,16 @@
   "scripts": {
     "build": "rimraf ./dist && tsc",
     "prepare": "pnpm run build",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:integration": "vitest run --config vitest.integration.config.ts"
   },
   "devDependencies": {
+    "@roster-lock/dl-shared": "workspace:*",
     "@roster-lock/types": "workspace:*",
     "@types/node": "^25.9.1",
     "rimraf": "^6.1.3",
-    "typescript": "^6.0.3",
-    "vitest": "^2.0.0"
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.5"
   },
   "dependencies": {
     "isomorphic-git": "^1.38.1"

@@ -14,12 +14,12 @@
     "isolatedModules": true,
     "noEmit": true,
     "sourceMap": true,
-    "rootDir": "./src",
+    "rootDir": "./server/src",
     "outDir": "./dist",
     "removeComments": true,
     "noImplicitAny": true
   },
   "files": ["server/src/index.ts"],
   "include": ["./typings", "./types", "**/*.test.ts"],
-  "exclude": ["node_modules", "**/*.spec.ts"]
+  "exclude": ["node_modules", "**/*.spec.ts", "tests"]
 }

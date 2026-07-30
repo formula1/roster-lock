@@ -1,12 +1,13 @@
 import { Room, CommitReveal } from "../room";
-import { RANDOM } from "../utils/Random";
+import { Random } from "../utils/Random";
 import { z } from "zod";
 
-export async function prepareGlobalRandom(room: Room){
+export async function prepareGlobalRandom(room: Room, random: Random): Promise<Record<string, string>> {
   const commitReveal = new CommitReveal(
-    room, "rand-seed", ()=>Promise.resolve(RANDOM.createSeed()), z.string()
+    room, "rand-seed", ()=>Promise.resolve(random.createSeed()), z.string()
   );
   const seeds = await commitReveal.waitForValues();
   commitReveal.destroy();
-  RANDOM.seed(seeds);
+  random.seed(seeds);
+  return seeds;
 }

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Overcast sky -->
+  <rect width="200" height="200" fill="#b0bec5"/>
+  <rect width="200" height="80" fill="#cfd8dc"/>
+  <!-- Far mountain -->
+  <polygon points="0,140 90,40 180,140" fill="#607d8b"/>
+  <!-- Near mountain -->
+  <polygon points="20,190 100,60 180,190" fill="#78909c"/>
+  <!-- Snow cap -->
+  <polygon points="72,90 100,60 128,90 110,100 90,98" fill="#eceff1"/>
+  <!-- Ground snow -->
+  <rect y="175" width="200" height="25" fill="#eceff1"/>
+</svg>

@@ -1,5 +1,5 @@
 
-import { UserId, PieceType } from "../../shared";
+import { PlayerId, PieceType } from "../../shared";
 import { SelectedPiece } from "../../request";
 
 export type PieceUserValidationInput = {
@@ -12,16 +12,16 @@ export type PieceUserValidationInput = {
 export type PieceMergeInput = {
   type: "piece-merge",
   pieceType: string,
-  users: Array<UserId>,
-  input: Record<UserId, Array<SelectedPiece>>,
+  users: Array<PlayerId>,
+  input: Record<PlayerId, Array<SelectedPiece>>,
 };
 
 export type GlobalValidationInput = {
   type: "global-validation",
   pieceTypes: Array<string>,
-  users: Array<UserId>,
+  users: Array<PlayerId>,
   input: Record<PieceType, (
-    | Record<UserId, Array<SelectedPiece>>
+    | Record<PlayerId, Array<SelectedPiece>>
     | Array<SelectedPiece>
   )> ,
 };

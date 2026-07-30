@@ -3,16 +3,16 @@
   "version": "0.0.0",
   "description": "Shared utilities, variables, etc between client and server",
   "keywords": [
-    "match-lock",
+    "roster-lock",
     "game"
   ],
-  "homepage": "https://github.com/formula1/match-lock#readme",
+  "homepage": "https://github.com/formula1/roster-lock#readme",
   "bugs": {
-    "url": "https://github.com/formula1/match-lock/issues"
+    "url": "https://github.com/formula1/roster-lock/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/formula1/match-lock.git"
+    "url": "git+https://github.com/formula1/roster-lock.git"
   },
   "license": "JSON",
   "author": "Sam Tobia",
@@ -29,7 +29,7 @@
     "@types/micromatch": "^4.0.9",
     "@types/node": "^22.14.1",
     "rimraf": "^6.0.1",
-    "typescript": "^5.8.3",
+    "typescript": "^7.0.2",
     "vitest": "^4.1.5"
   },
   "dependencies": {

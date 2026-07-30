@@ -43,18 +43,10 @@ export const selectionConfigSchema: JSONSchemaType<RosterLockV1Config["selection
 import { banListSchemaValidator } from "./selection-types/normal";
 import { preselectedSchemaValidator } from "./selection-types/preselected";
 
-import {
-  metaDefaultValueSchemaValidator,
-  metaPieceValueSchemaValidator
-} from "./meta";
-
 export const selectionKeywords = [
   banListSchemaValidator,
 
   preselectedSchemaValidator,
-
-  metaDefaultValueSchemaValidator,
-  metaPieceValueSchemaValidator,
 
   scriptRefSrcSchemaValidator,
   scriptRefMethodSchemaValidator,

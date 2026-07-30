@@ -6,7 +6,6 @@ import {
   UserSelectionValidation,
 } from "@roster-lock/types";
 
-import { selectionPieceMetaSchema } from "../meta";
 import { untrustedScriptRefSchema } from "../script";
 import { validateSelectionBanList } from "../../validate/selections/normal";
 import { defineKeyword } from "../../../../../../util-types/json-schema";
@@ -51,7 +50,6 @@ export const normalSelectionSchema: JSONSchemaType<SelectionNormalConfig> = {
   additionalProperties: false,
   properties: {
     type: { type: "string", const: "normal" },
-    pieceMeta: selectionPieceMetaSchema,
     validation: userSelectionValidationSchema,
     mergeAlgorithm: { ...untrustedScriptRefSchema, nullable: true },
   },

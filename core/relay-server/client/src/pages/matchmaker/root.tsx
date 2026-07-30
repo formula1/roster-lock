@@ -6,7 +6,7 @@ import { usePromisedMemo } from "../../utils/promised-memo";
 import { RunnableState, useRunnable } from "../../utils/runnable";
 import { Forbidden } from "../error/forbidden";
 import { MatchMakerPaths } from "./paths";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { ValidatedTextInput } from "../../components/ValidatedTextInput";
 
 
@@ -55,13 +55,13 @@ function CreateForm({ items, update }: { items: Array<MatchMaker>, update: ()=>v
   const [name, setName] = useState('');
   const [publicKey, setPublicKey] = useState('');
 
-  const createResult = useRunnable(async ()=>{
+  const createResult = useRunnable(useCallback(async ()=>{
     if(!user) throw new Error("Not logged in");
     await RELAY_API.matchmaker.create({ authToken: user.token }, { name, publicKey });
     update();
     setName('');
     setPublicKey('');
-  })
+  }, [user, name, publicKey]));
 
   return (
     <div>
@@ -107,7 +107,7 @@ function MatchMakerList({ matchMakers, updateMatchMakers }: {
   updateMatchMakers: ()=>void
 }){
   const { user } = useUser();
-  const toggleResult = useRunnable(async (matchMaker: MatchMaker)=>{
+  const toggleResult = useRunnable(useCallback(async (matchMaker: MatchMaker)=>{
     if(!user) throw new Error("Not logged in");
     if(matchMaker.status === 'active'){
       await RELAY_API.matchmaker.suspend({ authToken: user.token }, { matchMakerId: matchMaker.id });
@@ -115,7 +115,7 @@ function MatchMakerList({ matchMakers, updateMatchMakers }: {
       await RELAY_API.matchmaker.activate({ authToken: user.token }, { matchMakerId: matchMaker.id });
     };
     updateMatchMakers();
-  })
+  }, [user]));
   
   return (
     <table>

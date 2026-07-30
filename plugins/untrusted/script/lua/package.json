@@ -1,0 +1,29 @@
+{
+  "name": "@roster-lock/untrusted-lua",
+  "version": "1.0.3",
+  "description": "Run lua in an untrusted environment",
+  "license": "JSON",
+  "author": "Sam Tobia",
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "types": "./src/index.ts",
+  "roster-lock": {
+    "pluginType": "untrusted-script"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "build": "rimraf ./dist && tsc",
+    "prepare": "pnpm run build"
+  },
+  "dependencies": {
+    "wasmoon": "^1.16.0"
+  },
+  "devDependencies": {
+    "@roster-lock/types": "workspace:*",
+    "@roster-lock/untrusted-config-json5": "workspace:*",
+    "@types/node": "^25.9.1",
+    "rimraf": "^6.1.3",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.5"
+  }
+}

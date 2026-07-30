@@ -1,0 +1,86 @@
+.assistant-transcript-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.assistant-transcript-view-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 0.5em;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.25);
+}
+
+.assistant-transcript-view-title {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.assistant-transcript-view-messages {
+  flex-grow: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75em;
+  padding: 0.5em 0;
+}
+
+.assistant-transcript-view-empty {
+  opacity: 0.6;
+  font-style: italic;
+}
+
+.assistant-status-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75em;
+  padding: 0.5em 0.75em;
+  margin-top: 0.5em;
+  border-radius: 0.4em;
+  background: rgba(220, 50, 50, 0.12);
+  color: #d33;
+  font-size: 0.9em;
+}
+
+.assistant-message {
+  padding: 0.5em 0.75em;
+  border-radius: 0.5em;
+  max-width: 80%;
+}
+
+.assistant-message-user {
+  align-self: flex-end;
+  background: rgba(64, 128, 255, 0.15);
+}
+
+.assistant-message-assistant {
+  align-self: flex-start;
+  background: rgba(128, 128, 128, 0.12);
+}
+
+.assistant-message-error {
+  color: #d33;
+}
+
+.assistant-message-progress {
+  opacity: 0.7;
+  font-style: italic;
+}
+
+.assistant-transcript-view-input {
+  display: flex;
+  gap: 0.5em;
+  padding-top: 0.5em;
+  border-top: 1px solid rgba(128, 128, 128, 0.25);
+}
+
+.assistant-transcript-view-input textarea {
+  flex-grow: 1;
+  resize: vertical;
+  min-height: 2.5em;
+}

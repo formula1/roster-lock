@@ -1,15 +1,17 @@
-import { execSync } from "node:child_process";
+import type Arborist from "@npmcli/arborist";
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { importPluginPackage, PluginPackageType } from "./package";
 import { importPluginModule } from "./module";
 import { PluginType, PluginTypeMap, PLUGIN_TYPE_VALIDATORS } from "./plugin-types";
+import { fetchOfficialManifest, diffAgainstOfficial } from "./official-manifest";
 
 export { DEFAULT_PLUGIN_DIR } from "./constants";
 export * from "./plugin-types";
+export * from "./official-manifest";
 
-type PluginEntry = {
+export type PluginEntry = {
   package: string;
   version: string;
   type: PluginType;
@@ -19,6 +21,10 @@ type PluginEntry = {
 type PluginManifest = {
   plugins: PluginEntry[];
 };
+
+export function getInstalledPlugins(pluginDir: string): Array<PluginEntry> {
+  return readManifest(pluginDir).plugins;
+}
 
 const manifestPath = (pluginDir: string) => path.join(pluginDir, "plugins.json");
 
@@ -54,6 +60,15 @@ function validatePluginShape(plugin: unknown, type: PluginType, packageName: str
   }
 }
 
+// @npmcli/arborist takes ~250ms just to require() - loaded only by the
+// three functions below (install/update/uninstall), so every other consumer
+// of plugin-management (running scripts, downloading, listing plugins)
+// doesn't pay that cost on every process start.
+async function newArborist(pluginDir: string): Promise<Arborist> {
+  const { default: ArboristCtor } = await import("@npmcli/arborist");
+  return new ArboristCtor({ path: pluginDir });
+}
+
 function normalizePackagePath(packagePath: string): string {
   if (packagePath.startsWith("file:"))
     packagePath = packagePath.slice(5);
@@ -78,7 +93,8 @@ export async function installPlugin(
   packagePath = normalizePackagePath(packagePath);
   const packageName = resolvePackageName(packagePath);
 
-  execSync(`npm install "${packagePath}" --prefix "${pluginDir}"`, { stdio: "inherit" });
+  const arborist = await newArborist(pluginDir);
+  await arborist.reify({ add: [packagePath] });
 
   const installedPkgJson = await importPluginPackage(pluginDir, packageName);
   const version = installedPkgJson.version;
@@ -113,17 +129,13 @@ export async function updatePlugin(
   const specifier = pluginDirPkgJson.dependencies?.[packageName];
   if (!specifier) throw new Error(`No install specifier found for ${packageName} in ${pluginDir}/package.json`);
 
-
-  const npmCommand = (()=>{
-    if(specifier.startsWith("file:")){
-      const specifierPath = path.resolve(pluginDir, specifier.slice(5));
-      return `npm install "${specifierPath}" --prefix "${pluginDir}"`
-    } else {
-      return `npm update "${packageName}" --prefix "${pluginDir}"`;
-    }
-  })();
-
-  execSync(npmCommand, { stdio: "inherit" });
+  const arborist = await newArborist(pluginDir);
+  if(specifier.startsWith("file:")){
+    const specifierPath = path.resolve(pluginDir, specifier.slice(5));
+    await arborist.reify({ add: [specifierPath] });
+  } else {
+    await arborist.reify({ update: { names: [packageName] } });
+  }
 
   const installedPkgJson = await importPluginPackage(pluginDir, packageName);
   const pluginModule = await importPluginModule(pluginDir, packageName, installedPkgJson);
@@ -133,8 +145,9 @@ export async function updatePlugin(
   writeManifest(pluginDir, manifest);
 }
 
-export function uninstallPlugin(pluginDir: string, packageName: string): void {
-  execSync(`npm uninstall "${packageName}" --prefix "${pluginDir}"`, { stdio: "inherit" });
+export async function uninstallPlugin(pluginDir: string, packageName: string): Promise<void> {
+  const arborist = await newArborist(pluginDir);
+  await arborist.reify({ rm: [packageName] });
 
   const manifest = readManifest(pluginDir);
   manifest.plugins = manifest.plugins.filter((p) => p.package !== packageName);
@@ -168,6 +181,19 @@ export function getPluginPackagesOfType(
   }))
 }
 
+export async function getPluginModuleByName<T extends PluginType>(
+  pluginDir: string,
+  packageName: string,
+  type: T
+): Promise<PluginTypeMap[T]> {
+  const entry = readManifest(pluginDir).plugins.find((p) => p.package === packageName);
+  if(!entry) throw new Error(`Plugin not installed: ${packageName}`);
+  if(entry.type !== type) throw new Error(`Plugin ${packageName} is a "${entry.type}" plugin, not "${type}"`);
+
+  const packageJson = await importPluginPackage(pluginDir, packageName);
+  return await importPluginModule(pluginDir, packageName, packageJson) as PluginTypeMap[T];
+}
+
 export function getPluginModulesOfType<T extends PluginType>(
   pluginDir: string,
   type: T
@@ -180,6 +206,36 @@ export function getPluginModulesOfType<T extends PluginType>(
     const packageJson = await importPluginPackage(pluginDir, plugin.package);
     return await importPluginModule(pluginDir, plugin.package, packageJson) as PluginTypeMap[T]
   }));
+}
+
+// Shared by the `plugin sync` CLI command and match-agent's `mount-usb`, so
+// there's one place that decides what "in sync with the official manifest"
+// means to actually install/update/re-prioritize.
+export async function syncPluginsToOfficialManifest(pluginDir: string, manifestUrl: string): Promise<{
+  installed: Array<{ package: string, version: string }>,
+  priorityChanges: Array<{ package: string, priority: number }>,
+}> {
+  const official = await fetchOfficialManifest(manifestUrl);
+  const installed = getInstalledPlugins(pluginDir);
+  const diff = diffAgainstOfficial(installed, official);
+
+  const toInstall = [
+    ...diff.missing,
+    ...diff.outdated.map((o) => ({ package: o.package, version: o.officialVersion })),
+  ];
+  for(const p of toInstall){
+    await installPlugin(pluginDir, `${p.package}@${p.version}`);
+  }
+
+  const priorityChanges: Array<{ package: string, priority: number }> = [];
+  for(const [packageName, p] of Object.entries(official.plugins)){
+    if(typeof p.priority === "number"){
+      await setPluginPriority(pluginDir, packageName, p.priority);
+      priorityChanges.push({ package: packageName, priority: p.priority });
+    }
+  }
+
+  return { installed: toInstall, priorityChanges };
 }
 
 export function getPluginFullOfType<T extends PluginType>(

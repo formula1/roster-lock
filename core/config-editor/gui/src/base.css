@@ -1,0 +1,61 @@
+/* Shared visual classes the gui pages rely on - imported by RouterWrapper
+   so every host gets them without copying stylesheets around. */
+
+:root {
+  --sticky-top: 0px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+ul > li { margin-left: 32px; }
+
+.react-tooltip-content-wrapper {
+  max-width: 75vw;
+}
+
+.react-tooltip-content-wrapper a {
+  color: #90D5FF;
+}
+
+.react-tooltip-content-wrapper code {
+  color: #F77
+}
+
+.alternate-list > *:nth-child(even) {
+  background-color: #fff;
+}
+
+.alternate-list > *:nth-child(odd) {
+  background-color: #eee;
+}
+
+.section {
+  padding: 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #bbb;
+}
+
+.error {
+  color: red;
+  font-weight: bold;
+}
+
+.warning {
+  color: orange;
+  font-weight: bold;
+}
+
+.editable-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.editable-title input {
+  font-size: 24px;
+  font-weight: 600;
+  padding: 4px 8px;
+}
+.editable-title button {
+  padding: 4px 12px;
+  font-size: 14px;
+}

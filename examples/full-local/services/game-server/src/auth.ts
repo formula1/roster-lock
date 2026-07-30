@@ -42,7 +42,8 @@ export function searchParamsToUserMessage(searchParams: URLSearchParams): UserMe
 
 const MAX_DRIFT = 10 * 1000; // 10 seconds
 const MAX_MESSAGE_AGE = 30 * 1000; // 30 seconds
-import { verifySignature } from "./utils/crypto";
+import { SIGNATURE } from "@roster-lock/utils";
+type PublicKey = Parameters<typeof SIGNATURE.ASYMMETRIC.verifySignature>[0];
 export async function validateAuth(
   userMessage: UserMessage,
   roomInfo: RoomConfig,
@@ -57,12 +58,12 @@ export async function validateAuth(
   if(userMessage.timestamp < now - MAX_MESSAGE_AGE) return null;
 
   // User not found
-  const user = roomInfo.users.find(u => u.publicKey === userMessage.publicKey);
+  const user = roomInfo.machines.find(u => u.publicKey === userMessage.publicKey);
   if(!user) return null;
 
   // Invalid Signature
-  const isValid = await verifySignature(
-    userMessage.publicKey,
+  const isValid = await SIGNATURE.ASYMMETRIC.verifySignature(
+    userMessage.publicKey as PublicKey,
     userMessage.signature,
     {
       service: serviceName,

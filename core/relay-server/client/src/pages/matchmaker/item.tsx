@@ -76,15 +76,15 @@ function MatchMakerInfo(
     setPublicKey(matchMaker.public_key);
   }, [matchMaker])
 
-  const saveResult = useRunnable(async ()=>{
+  const saveResult = useRunnable(useCallback(async ()=>{
     if(!user) throw new Error("Not logged in");
     await RELAY_API.matchmaker.update(
       { authToken: user.token }, { matchMakerId: matchMaker.id }, { name, publicKey }
     );
     update();
-  })
+  }, [user, matchMaker, name, publicKey]));
 
-  const toggleResult = useRunnable(async ()=>{
+  const toggleResult = useRunnable(useCallback(async ()=>{
     if(!user) throw new Error("Not logged in");
     if(matchMaker.status === 'active'){
       await RELAY_API.matchmaker.suspend({ authToken: user.token }, { matchMakerId: matchMaker.id });
@@ -92,7 +92,7 @@ function MatchMakerInfo(
       await RELAY_API.matchmaker.activate({ authToken: user.token }, { matchMakerId: matchMaker.id });
     }
     update();
-  })
+  }, [user, matchMaker]));
 
   const hasChanged = (
     name !== matchMaker.name ||

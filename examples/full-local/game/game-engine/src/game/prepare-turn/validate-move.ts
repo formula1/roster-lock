@@ -1,12 +1,12 @@
-import { FinalState, GameState, MoveDescription, TurnState } from "../../types";
+import { Character, GameState, MoveDescription, TurnState } from "../../types";
 
 export function validateMove(
-  finalState: FinalState,
+  character: Character,
   gameState: GameState,
   turnState: TurnState,
   move: MoveDescription,
 ){
-  const runnableMove = finalState.availableMoves[move.move.id];
+  const runnableMove = character.moves[move.move.id];
   if(!runnableMove){
     throw new Error(`Move ${move.move.id} not found`);
   }
@@ -26,13 +26,13 @@ export function validateMove(
     const runnableMoveConfig = runnableMove[key];
     switch(runnableMoveConfig.type){
       case "gauge-subtract":
-        validateTargets(finalState, gameState, turnState, runnableMoveConfig.target, config);
+        validateTargets(gameState, turnState, runnableMoveConfig.target, config);
         break;
       case "gauge-add":
-        validateTargets(finalState, gameState, turnState, runnableMoveConfig.target, config);
+        validateTargets(gameState, turnState, runnableMoveConfig.target, config);
         break;
       case "weather":
-        validateEnumValue(finalState, gameState, turnState, runnableMoveConfig.value, config);
+        validateEnumValue(gameState, turnState, runnableMoveConfig.value, config);
         break;
     }
   }
@@ -41,7 +41,6 @@ export function validateMove(
 
 import { TargetFilter, targetConfigSchema, EnumValue, enumValueConfigSchema } from "../../types/move";
 function validateTargets(
-  finalState: FinalState,
   gameState: GameState,
   turnState: TurnState,
   targetConfig: TargetFilter,
@@ -85,7 +84,6 @@ function validateTargets(
 
 
 function validateEnumValue(
-  finalState: FinalState,
   gameState: GameState,
   turnState: TurnState,
   enumValue: EnumValue<any>,

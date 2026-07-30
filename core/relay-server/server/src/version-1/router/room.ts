@@ -3,23 +3,21 @@ import { Hono } from 'hono';
 import { Env, RoomConfig } from '../types';
 
 import { z, ZodType } from 'zod';
-import { verifySignature, createSha } from '../../utils/crypto';
-<<<<<<< HEAD
+import { SIGNATURE_ASYMMETRIC, createShaFromJSON } from '@roster-lock/utils';
 import { GameCoordinatorRow, MatchmakerRow, RoomStatsRow } from '../schema/types';
-=======
-import { MatchmakerRow, RoomStatsRow } from '../schema/types';
->>>>>>> Feature-RelayServer
 import { D1Database } from '@cloudflare/workers-types';
 import { ContentfulStatusCode } from 'hono/utils/http-status';
 
+type PublicKey = Parameters<typeof SIGNATURE_ASYMMETRIC.verifySignature>[0];
+
 export const app = new Hono<{ Bindings: Env }>();
 
-import { RoomUser } from '../types';
+import { RoomMachine } from '../types';
 type CreateRoomBody = {
   rosterConfig: any;
 
   rosterConfigHash: string;
-  users: RoomUser[];
+  machines: RoomMachine[];
   coordinatorId: string;
 
   publicKey: string;
@@ -29,10 +27,11 @@ const createRoomCaster: ZodType<CreateRoomBody> = z.object({
   rosterConfig: z.any(),
 
   rosterConfigHash: z.string(),
-  users: z.array(z.object({
-    userId: z.string(),
+  machines: z.array(z.object({
+    machineId: z.string(),
     publicKey: z.string(),
     displayName: z.string(),
+    playerCount: z.number().int().min(1),
   }).strict()),
   coordinatorId: z.string(),
 
@@ -67,17 +66,21 @@ app.post('/', async (c)=> {
   }
 
 
-  const isValid = await verifySignature(matchmaker.public_key, body.signature, {
-    service: 'create-room',
-    publicKey: body.publicKey,
-    rosterConfigHash: body.rosterConfigHash,
-    users: body.users,
-    coordinatorId: body.coordinatorId,
-  });
+  const isValid = await SIGNATURE_ASYMMETRIC.verifySignature(
+    matchmaker.public_key as PublicKey,
+    body.signature,
+    {
+      service: 'create-room',
+      publicKey: body.publicKey,
+      rosterConfigHash: body.rosterConfigHash,
+      machines: body.machines,
+      coordinatorId: body.coordinatorId,
+    }
+  );
   if(!isValid) return c.json({ error: 'Invalid signature' }, 401);
   
   const roomId = crypto.randomUUID();
-  const full_hashBuffer = await createSha(body.rosterConfig);
+  const full_hashBuffer = await createShaFromJSON(body.rosterConfig);
   if(body.rosterConfigHash !== full_hashBuffer){
     return c.json({ error: 'Invalid roster config hash' }, 401);
   }
@@ -97,23 +100,23 @@ app.post('/', async (c)=> {
       coordinatorId: gameCoordinator.id,
       roomId,
       rosterConfigHash: full_hashBuffer,
-      users: body.users,
+      machines: body.machines,
     } satisfies RoomConfig),
   });
 
   if(!response.ok) return c.json({ error: 'Failed to create room' }, 500);
 
   // Now store room stats in D1 after DO creation succeeded
-  const rosterHash = await createSha(body.rosterConfig.rosters);
+  const rosterHash = await createShaFromJSON(body.rosterConfig.rosters);
   const engineId = body.rosterConfig.engine.name;
   const engineVersion = body.rosterConfig.engine.version;
-  const users_ids = JSON.stringify(body.users.sort());
+  const machine_ids = JSON.stringify(body.machines.sort());
 
   await c.env.DB.prepare(`
     INSERT INTO room_stats (
       room_id, matchmaker_id,
       full_config_hash, engine_id, engine_version, roster_hash,
-      user_ids, user_count,
+      machine_ids, machine_count,
       coordinator_id,
       created_at,
       status
@@ -128,7 +131,7 @@ app.post('/', async (c)=> {
   `).bind(
     roomId, matchmaker.id,
     full_hashBuffer, engineId, engineVersion, rosterHash,
-    users_ids, body.users.length,
+    machine_ids, body.machines.length,
     gameCoordinator.id,
     new Date().toISOString(),
     'active',
@@ -137,8 +140,8 @@ app.post('/', async (c)=> {
   return c.json({ roomId });
 });
 
-// Get room users (authenticated user only)
-app.get('/:roomId/users', async (c) => {
+// Get room machines (authenticated machine only)
+app.get('/:roomId/machines', async (c) => {
   try {
     const roomId = c.req.param('roomId');
     await ensureRoomExists(c.env.DB, roomId);
@@ -146,7 +149,7 @@ app.get('/:roomId/users', async (c) => {
     const room = c.env.ROOM.get(id);
 
     const url = new URL(c.req.url);
-    url.pathname = '/users';
+    url.pathname = '/machines';
 
     return room.fetch(url, {
       headers: c.req.raw.headers,

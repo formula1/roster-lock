@@ -1,4 +1,3 @@
-import { JSONShallowObject, SelectionPieceMeta } from "../meta";
 import { UntrustedScriptRef } from "../script";
 import { PieceId, Count } from "../../../shared";
 
@@ -12,11 +11,6 @@ export type UserSelectionValidation = {
 
 export type SelectionNormalConfig = {
   type: "normal",
-  /*
-  Shared meta exists so there doesn't have to be duplication of metadata between validation and merging
-  If a path of the shared meta intersects with validation of merge meta then its invalid
-  */
-  pieceMeta: SelectionPieceMeta<JSONShallowObject>,
 
   /*
     The validation is used to validate the current user's and other player's choices

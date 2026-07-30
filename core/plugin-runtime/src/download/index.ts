@@ -5,13 +5,15 @@ import { createGetProcessors } from "./processors";
 
 type DownloadArgs = Parameters<ProtocolHandler["download"]>
 
+export type DownloadToFolderArg = {
+  url: DownloadArgs[0],
+  destinationFolder: DownloadArgs[1],
+  processHandlers: Omit<DownloadArgs[2], "getProcessors">
+};
+
 export async function downloadToFolder(
   pluginDir: string,
-  { url, destinationFolder, processHandlers }: {
-    url: DownloadArgs[0],
-    destinationFolder: DownloadArgs[1],
-    processHandlers: Omit<DownloadArgs[2], "getProcessors">
-  }
+  { url, destinationFolder, processHandlers }: DownloadToFolderArg
 ){
   const [
     protocol, decompressors, archive

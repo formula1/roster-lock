@@ -7,6 +7,8 @@ import { rosterKeywords, rostersSchema } from "./rosters";
 export * from "./rosters";
 import { selectionKeywords, selectionConfigSchema  } from "./selection";
 export * from "./selection";
+import { pieceMetaKeywords, pieceMetaSchema } from "./piece-meta";
+export * from "./piece-meta";
 import { sharedKeywords } from "../shared";
 
 import { RosterLockV1Config } from "@roster-lock/types";
@@ -18,7 +20,7 @@ export const RosterLockV1Schema: JSONSchemaType<RosterLockV1Config> =   {
   required: [
     "configIdentity",
     "author", "title", "version",
-    "engine", "rosters", "selection"
+    "engine", "rosters", "selection", "pieceMeta"
   ],
   additionalProperties: false,
   properties: {
@@ -31,6 +33,7 @@ export const RosterLockV1Schema: JSONSchemaType<RosterLockV1Config> =   {
     engine: engineSchema,
     rosters: rostersSchema,
     selection: selectionConfigSchema,
+    pieceMeta: pieceMetaSchema,
   },
 };
 
@@ -39,6 +42,7 @@ export const RosterLockV1SchemaKeywords = [
   ...engineKeywords,
   ...rosterKeywords,
   ...selectionKeywords,
+  ...pieceMetaKeywords,
 ];
 
 

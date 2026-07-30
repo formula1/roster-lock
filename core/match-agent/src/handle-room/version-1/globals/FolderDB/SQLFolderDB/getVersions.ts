@@ -1,6 +1,7 @@
 
 import { RosterLockV1Config } from "@roster-lock/types";
 import { calculatePieceVersion, getAssetsOfFiles } from "@roster-lock/shared";
+import { getFilesFromFolder } from "../../../../../utils/fs";
 
 type PieceDefinition = RosterLockV1Config["engine"]["pieceDefinitions"][string];
 
@@ -10,29 +11,21 @@ export async function getDownloadSourceVersion(
   pieceDefinition: PieceDefinition,
 ){
   const { filesWithAssets } = await getAssetsOfFiles(
-    walkDirectory(folder), pathVariables, pieceDefinition
+    getFilesFromFolder(folder), pathVariables, pieceDefinition
   );
   return calculatePieceVersion(
-    filesWithAssets, getFile
+    filesWithAssets, (relativePath) => getFileFromRoot(folder, relativePath)
   );
 }
 
-import { readdir } from "node:fs/promises";
-import { join as pathJoin } from "node:path";
-async function* walkDirectory(folder: string): AsyncIterable<string>{
-  const files = await readdir(folder, { withFileTypes: true })
-  for(const file of files){
-    if(file.isDirectory()){
-      yield* walkDirectory(pathJoin(folder, file.name));
-    } else {
-      yield pathJoin(folder, file.name);
-    }
-  }
-}
+import { join as pathJoin, relative as pathRelative, sep as pathSep } from "node:path";
 
 import { stat as fsStat } from "node:fs/promises";
 import { createReadStream } from "node:fs";
-async function getFile(filePath: string): Promise<{ byteSize: number, stream: AsyncIterable<Uint8Array> }> {
+async function getFileFromRoot(
+  root: string, relativePath: string
+): Promise<{ byteSize: number, stream: AsyncIterable<Uint8Array> }> {
+  const filePath = pathJoin(root, relativePath);
   const stats = await fsStat(filePath);
   return { byteSize: stats.size, stream: createReadStream(filePath) } ;
 }

@@ -5,26 +5,28 @@ import { bindStepsToBridge, ProgressListeners } from "./steps";
 import { RosterLockV1Config, RosterLockV1SyncDLRequestClientToAgent } from "@roster-lock/types";
 import { ROSTERLOCK_V1_CASTER_JSONSCHEMA } from "@roster-lock/shared";
 import { UserSelectionSchema } from "../schema/selected";
-import { getSQLite3FolderDB } from "../globals/FolderDB";
+import { IFolderDB } from "../globals/FolderDB";
 import { once } from "events";
 import z, { ZodType } from "zod";
+import { PluginManager } from "@roster-lock/plugin-runtime";
 
 const RequestCaster: ZodType<(
   & RosterLockV1SyncDLRequestClientToAgent
   & { rosterConfig: any }
 )> = z.object({
-  folder: z.string(),
   relay: z.object({
     url: z.string(),
     roomId: z.string(),
   }),
-  user: z.object({
+  machine: z.object({
     timestamp: z.number(),
     publicKey: z.string(),
     signature: z.string(),
   }),
   rosterConfig: z.any(),
-  userSelection: UserSelectionSchema,
+  // Record<number, UserSelection> at the type level, but JSON object keys
+  // are always strings on the wire - validate them as such.
+  playerSelections: z.record(z.string(), UserSelectionSchema),
 }).strict();
 
 export function castRoomRequest(uncasted: unknown): RosterLockV1SyncDLRequestClientToAgent {
@@ -39,56 +41,85 @@ export function castRoomRequest(uncasted: unknown): RosterLockV1SyncDLRequestCli
   return casted;
 }
 
-type User = {
+type Machine = {
   userId: string,
   publicKey: string,
   displayName: string,
+  playerCount: number,
 };
 
 export async function exchangeAndDownloadSelections(
+  fileDB: IFolderDB,
+  pluginRuntime: PluginManager,
   roomRequest: RosterLockV1SyncDLRequestClientToAgent,
   progressListeners: ProgressListeners = {}
 ){
-  const fileDB = getSQLite3FolderDB(roomRequest.folder);
   const roomURL = prepareRelayURL(roomRequest);
 
   const httpURL = new URL(roomURL);
-  httpURL.pathname = "/" + roomRequest.relay.roomId + "/users";
-  const users = await handleFetch<Array<User>>(fetch(httpURL.href));
+  httpURL.pathname = "/api/v1/room/" + roomRequest.relay.roomId + "/machines";
+  const machines = await handleFetch<Array<Machine>>(fetch(httpURL.href));
 
   const wsURL = new URL(roomURL);
   wsURL.protocol = roomURL.protocol === "https:" ? "wss:" : "ws:";
-  wsURL.pathname = "/" + roomRequest.relay.roomId;
-  const roomWebSocket = new WebSocket(wsURL.href);
+  wsURL.pathname = "/api/v1/room/" + roomRequest.relay.roomId;
+  // perMessageDeflate disabled: workerd's hibernatable WebSocket (relay-server,
+  // local wrangler dev) mishandles fragmented/compressed frames for larger
+  // messages, corrupting frame parsing on the "ws" client (surfaces as
+  // "Invalid WebSocket frame: invalid payload length").
+  const roomWebSocket = new WebSocket(wsURL.href, { perMessageDeflate: false });
   const roomBridge = new MessageBridge((message)=>roomWebSocket.send(JSON.stringify(message)));
   roomWebSocket.on("message", (message)=>{
     roomBridge.handleMessage(JSON.parse(message.toString()));
   });
+  roomWebSocket.on("error", (err)=>{
+    // An unhandled "error" event on an EventEmitter throws and crashes the
+    // whole process - and one match-agent process serves many concurrent
+    // games, so a single room's socket hiccup must not take the rest down.
+    console.error("room websocket error", err);
+  });
 
   const roomPromise = bindStepsToBridge({
     bridge: roomBridge,
-    fileDB: fileDB,
-    users: users.map(user=>({ publicKey: user.publicKey })),
-    ownSelection: roomRequest.userSelection,
+    fileDB,
+    pluginRuntime,
+    machines: machines.map(machine=>({ publicKey: machine.publicKey, playerCount: machine.playerCount })),
+    ownMachinePublicKey: roomRequest.machine.publicKey,
+    ownSelections: roomRequest.playerSelections,
     lockConfig: roomRequest.rosterConfig,
-    scriptsByPath: {},
     gameControlledSelections: {},
   }, progressListeners);
 
+  // The relay closes the room websocket with a close reason as soon as it fails
+  // a room (e.g. a download failure on the other user's leg), but never sends a
+  // bridge-level "error" event - so without this, bindStepsToBridge's onEvent("error")
+  // handler never fires and the room hangs until its own 30s heartbeat times out,
+  // surfacing a misleading "Heartbeat Timeout" instead of the real failure reason.
+  const closedEarly = new Promise<never>((_, reject)=>{
+    roomWebSocket.on("close", (code, reason)=>{
+      const reasonText = reason.toString();
+      reject(new Error(reasonText || `Room websocket closed unexpectedly (code ${code})`));
+    });
+  });
+  // roomPromise usually wins the race (success or a bridge-level "error" event),
+  // in which case this rejection is never observed - swallow it here so that
+  // doesn't crash the process as an unhandled rejection.
+  closedEarly.catch(()=>{});
+
   try {
     await once(roomWebSocket, 'open')
-    return await roomPromise;
+    return await Promise.race([roomPromise, closedEarly]);
   } finally {
     roomWebSocket.close();
   }
 }
 
-function prepareRelayURL({ relay, user }: RosterLockV1SyncDLRequestClientToAgent){
+function prepareRelayURL({ relay, machine }: RosterLockV1SyncDLRequestClientToAgent){
   const url = new URL(relay.url);
   url.searchParams.set("room", relay.roomId);
-  url.searchParams.set("t", user.timestamp.toString());
-  url.searchParams.set("pk", user.publicKey);
-  url.searchParams.set("sig", user.signature);
+  url.searchParams.set("t", machine.timestamp.toString());
+  url.searchParams.set("pk", machine.publicKey);
+  url.searchParams.set("sig", machine.signature);
   return url;
 }
 

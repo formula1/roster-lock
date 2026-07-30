@@ -14,7 +14,7 @@ export const requirementCycleSchemaValidator = defineKeyword({
   type: "array",
   validate: function(item: string, { engine }: RosterLockV1Config, path){
     // /engine/pieceDefinitions/pieceType/requires
-    const parts = path.split("/").slice(0, -2);
+    const parts = path.split("/").slice(0, -1);
     const pieceType = parts.at(-1);
     if(!pieceType) throw new Error("Invalid path");
 

@@ -2,7 +2,7 @@
 import { dirname, resolve as pathResolve, join as pathJoin } from "path";
 import { fileExtension } from "@roster-lock/utils";
 
-import { RosterLockV1Config } from "@roster-lock/types";
+import { RosterLockV1Config, UntrustedConfig } from "@roster-lock/types";
 import { UntrustedScript } from "@roster-lock/types";
 
 type ScriptDictionary = RosterLockV1Config["selection"]["scriptDictionary"];
@@ -26,6 +26,7 @@ export class RequiredModule<T> {
     public availableScripts: ScriptDictionary,
     public currentScriptPath: string,
     public scriptType: UntrustedScript<any>,
+    public untrustedConfigs: Array<UntrustedConfig>,
   ){}
   async require(
     targetScriptpath: string,
@@ -49,23 +50,35 @@ export class RequiredModule<T> {
     this.loadingStack.push(resolvedPath);
     this.currentScriptPath = resolvedPath;
 
-    const { content } = this.availableScripts[resolvedPath];
-    const extension = fileExtension(resolvedPath);
-    if(!extension){
-      throw new ScriptImportError(targetScriptpath, fromPath,
-        "Filename needs an extension, requires: " + JSON.stringify(this.scriptType.extensions)
-      );
-    }
-    if(!this.scriptType.extensions.includes(extension)){
-      throw new ScriptImportError(targetScriptpath, fromPath,
-        `Unsupported extension "${extension}", supports: ${JSON.stringify(this.scriptType.extensions)}`
-      );
-    }
-
     try {
-      const newModule = await runCode(resolvedPath, content);
+      const { content } = this.availableScripts[resolvedPath];
+      const extension = fileExtension(resolvedPath);
+      if(!extension){
+        throw new ScriptImportError(targetScriptpath, fromPath,
+          "Filename needs an extension, requires: " + JSON.stringify(this.scriptType.extensions)
+        );
+      }
+
+      const newModule = await (async (): Promise<T> => {
+        if(this.scriptType.extensions.includes(extension)){
+          return runCode(resolvedPath, content);
+        }
+        const configHandler = this.untrustedConfigs.find(c => c.extensions.includes(extension));
+        if(!configHandler){
+          throw new ScriptImportError(targetScriptpath, fromPath,
+            `Unsupported extension "${extension}", supports: ${JSON.stringify(
+              collectAllSupportedExtensions(this)
+            )}`
+          );
+        }
+        return this.scriptType.exportConfig(await configHandler.runConfig(content));
+      })();
+
       this.loadedModules.set(resolvedPath, newModule);
       return newModule;
+    }catch(e){
+      if(e instanceof ScriptImportError) throw e;
+      throw new ScriptImportError(targetScriptpath, fromPath, e);
     }finally{
       this.loadingStack.pop();
       this.currentScriptPath = previousFile;
@@ -107,4 +120,13 @@ export function resolveScriptPath(
   throw new ScriptImportError(
     targetScriptpath, currentScriptPath, "Script Not Found"
   );
+}
+
+
+function collectAllSupportedExtensions(requiredModule: RequiredModule<any>){
+    const allSupportedExtensions = [...requiredModule.scriptType.extensions];
+    for(const configHandler of requiredModule.untrustedConfigs){
+      allSupportedExtensions.push(...configHandler.extensions);
+    }
+    return Array.from(new Set(allSupportedExtensions));
 }

@@ -1,5 +1,6 @@
 
 export * from "./array";
+export * from "./buffer";
 export * from "./crypto";
 export * from "./MessageBridge";
 export * from "./Promise";

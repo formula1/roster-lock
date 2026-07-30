@@ -8,4 +8,5 @@ export default defineWorkspace([
   'plugins/download/protocol/torrent',
   'plugins/download/protocol/ipfs',
   'plugins/download/protocol/git',
+  'core/plugin-runtime',
 ]);

@@ -1,11 +1,12 @@
 {
   "name": "@roster-lock/dl-compression-brotli",
   "version": "1.0.0",
-  "description": "Brotli decompression plugin for match-lock downloads",
+  "description": "Brotli decompression plugin for roster-lock downloads",
   "license": "JSON",
   "author": "Sam Tobia",
   "type": "commonjs",
   "main": "dist/index.js",
+  "types": "./src/index.ts",
   "roster-lock": {
     "pluginType": "dl-compression"
   },
@@ -19,6 +20,6 @@
     "@roster-lock/types": "workspace:*",
     "@types/node": "^25.9.1",
     "rimraf": "^6.1.3",
-    "typescript": "^6.0.3"
+    "typescript": "^7.0.2"
   }
 }

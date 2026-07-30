@@ -86,7 +86,7 @@ describe('validateURL', () => {
 describe('download', () => {
   it('handles a single-file torrent', async () => {
     const file = makeTorrentFile('archive.tar.gz', 4096);
-    WebTorrent.mockImplementation(() => makeWebTorrentClient([file]));
+    WebTorrent.mockImplementation(function () { return makeWebTorrentClient([file]); });
 
     const result = await Tor_Handler.download(VALID_HEX_MAGNET, '/dest', makeProcessHandlers() as any);
     await result.finishPromise;
@@ -102,7 +102,7 @@ describe('download', () => {
     const handlers = makeProcessHandlers({
       getProcessors: vi.fn().mockImplementation(() => { throw new Error('Not an archive'); }),
     });
-    WebTorrent.mockImplementation(() => makeWebTorrentClient(files));
+    WebTorrent.mockImplementation(function () { return makeWebTorrentClient(files); });
 
     const result = await Tor_Handler.download(VALID_HEX_MAGNET, '/dest', handlers as any);
     await result.finishPromise;
@@ -116,7 +116,7 @@ describe('download', () => {
     const handlers = makeProcessHandlers({
       getProcessors: vi.fn().mockImplementation(() => { throw new Error('No handler for .mkv'); }),
     });
-    WebTorrent.mockImplementation(() => makeWebTorrentClient([file]));
+    WebTorrent.mockImplementation(function () { return makeWebTorrentClient([file]); });
 
     const result = await Tor_Handler.download(VALID_HEX_MAGNET, '/dest', handlers as any);
     await result.finishPromise;
@@ -125,7 +125,7 @@ describe('download', () => {
   });
 
   it('rejects when torrent has no files', async () => {
-    WebTorrent.mockImplementation(() => makeWebTorrentClient([]));
+    WebTorrent.mockImplementation(function () { return makeWebTorrentClient([]); });
 
     await expect(
       Tor_Handler.download(VALID_HEX_MAGNET, '/dest', makeProcessHandlers() as any)
@@ -135,7 +135,7 @@ describe('download', () => {
   it('rejects immediately when already aborted', async () => {
     const ac = new AbortController();
     ac.abort();
-    WebTorrent.mockImplementation(() => makeWebTorrentClient([]));
+    WebTorrent.mockImplementation(function () { return makeWebTorrentClient([]); });
 
     await expect(
       Tor_Handler.download(VALID_HEX_MAGNET, '/dest', {

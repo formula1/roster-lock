@@ -1,8 +1,9 @@
 import { GameState, TurnState, ModifierState } from "../../../types";
+import { Random } from "../../../utils/Random";
 import { runGaugeSubtract, runGaugeAdd } from "./gauge";
 import { runSetWeather } from "./weather";
 
-export function runMoves(gameState: GameState, moves: TurnState["speedPoints"][number]){
+export function runMoves(gameState: GameState, moves: TurnState["speedPoints"][number], random: Random){
   const modifiers: ModifierState = { character: {}, stage: { weather: [] } };
 
   // We need to process the moves in a predictable order for random reasons
@@ -26,7 +27,7 @@ export function runMoves(gameState: GameState, moves: TurnState["speedPoints"][n
           runGaugeAdd(gameState, value, partConfig, modifiers);
           break;
         case "weather":
-          runSetWeather(gameState, value, partConfig, modifiers);
+          runSetWeather(gameState, value, partConfig, modifiers, random);
           break;
       }
     }

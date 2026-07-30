@@ -4,6 +4,7 @@ import { usePromisedMemo } from "../../utils/promised-memo";
 import { useUser } from "../../globals/user";
 import { RunnableState, useRunnable } from "../../utils/runnable";
 import { UsersPaths } from "./paths";
+import { useCallback } from "react";
 
 
 
@@ -41,10 +42,10 @@ export function UserItem() {
 
 function ResetPasswordForm({ username }: { username: string }){
   const { user: authUser } = useUser();
-  const resetResult = useRunnable(async ()=>{
+  const resetResult = useRunnable(useCallback(async ()=>{
     if(!authUser) throw new Error("Not logged in");
     return RELAY_API.users.reset({ authToken: authUser.token }, { username });
-  })
+  }, [authUser, username]));
 
   return (
     <div>
@@ -76,11 +77,11 @@ function ResetPasswordForm({ username }: { username: string }){
 function DeleteUserForm({ username }: { username: string }) {
   const { user: authUser } = useUser();
   const navigate = useNavigate();
-  const deleteResult = useRunnable(async ()=>{
+  const deleteResult = useRunnable(useCallback(async ()=>{
     if(!authUser) throw new Error("Not logged in");
     await RELAY_API.users.delete({ authToken: authUser.token }, { username });
     navigate(UsersPaths.root);
-  })
+  }, [authUser, username]));
 
   return (
     <div>

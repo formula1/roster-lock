@@ -1,5 +1,5 @@
 import {
-  RosterLockV1Config, UserId, PieceType, SelectedPiece, FinalSelection, UserInput
+  RosterLockV1Config, PlayerId, PieceType, SelectedPiece, FinalSelection, UserInput
 } from "@roster-lock/types";
 
 
@@ -13,17 +13,25 @@ import { handleValidationResult } from "./handle-validation";
 
 export async function runSelection(
   config: RosterLockV1Config,
-  gameControlledSelections: Record<PieceType, Array<SelectedPiece> | Record<UserId, Array<SelectedPiece>>>,
-  userInputs: Record<UserId, UserInput>,
+  gameControlledSelections: Record<PieceType, Array<SelectedPiece> | Record<PlayerId, Array<SelectedPiece>>>,
+  userInputs: Record<PlayerId, UserInput>,
   runScript: (input: ScriptStarter)=>Promise<any>
 ){
   const users: Array<string> = [];
   const seeds: Array<string> = [];
-  const allSelections: Record<UserId, Record<PieceType, Array<SelectedPiece>>> = {};
-  for(const [userId, { randomSeed, userSelection }] of Object.entries(userInputs)){
-    users.push(userId);
+  const allSelections: Record<PlayerId, Record<PieceType, Array<SelectedPiece>>> = {};
+  // userInputs is built by each party independently (e.g. from concurrent
+  // per-player decryption), so its key-insertion order isn't guaranteed to
+  // match across parties. Sort by playerId so the merge script's RNG seed
+  // (derived from `seeds`) is deterministic regardless of insertion order -
+  // otherwise two parties can compute different "random" tie-breaks for the
+  // same selection and disagree on the final result.
+  const sortedPlayerIds = Object.keys(userInputs).sort();
+  for(const playerId of sortedPlayerIds){
+    const { randomSeed, userSelection } = userInputs[playerId];
+    users.push(playerId);
     seeds.push(randomSeed);
-    allSelections[userId] = userSelection;
+    allSelections[playerId] = userSelection;
   }
 
   const finalSelection: FinalSelection = {};
@@ -66,7 +74,7 @@ export async function runSelection(
 
   if(!config.selection.globalValidation) return finalSelection;
 
-  const strippedSelection: Record<PieceType, Array<SelectedPiece> | Record<UserId, Array<SelectedPiece>>> = {};
+  const strippedSelection: Record<PieceType, Array<SelectedPiece> | Record<PlayerId, Array<SelectedPiece>>> = {};
   for(const [k,v] of Object.entries(finalSelection)){
     strippedSelection[k] = v.value;
   }

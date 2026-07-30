@@ -3,10 +3,11 @@ import { z, ZodType } from 'zod';
 import { RoomConfig } from '../types';
 import { WebRTCRoom } from '../WRTCRoom';
 import { HTTPError } from '../utils/errors';
-import { canonicalJSONStringify } from '../utils/json';
-import { verifyHMAC } from '../utils/crypto';
+import { canonicalJSONStringify, SIGNATURE } from '@roster-lock/utils';
 
-const COORDINATOR_API_KEY = process.env.COORDINATOR_API_KEY;
+type SymmetricKey = Parameters<typeof SIGNATURE.SYMMETRIC.verifySignature>[0];
+
+const COORDINATOR_API_KEY = process.env.COORDINATOR_API_KEY as SymmetricKey | undefined;
 if(!COORDINATOR_API_KEY) throw new Error("Missing COORDINATOR_API_KEY");
 const MAX_AGE = 60 * 1000; // 1 minute
 
@@ -17,18 +18,18 @@ const roomCompleteCaster: ZodType<RoomConfig & { timestamp: number }> = z.object
   coordinatorId: z.string(),
   roomId: z.string(),
   rosterConfigHash: z.string(),
-  users: z.array(z.object({
-    userId: z.string(),
+  machines: z.array(z.object({
+    machineId: z.string(),
     publicKey: z.string(),
     displayName: z.string(),
+    playerCount: z.number(),
   }).strict()),
   timestamp: z.number(),
 }).strict();
 
 router.post('/room-complete', json(), async (req, res, next) => {
   try {
-    if(!req.headers.get) throw new HTTPError(400, 'Missing headers');
-    const signature = req.headers['X-Signature'];
+    const signature = req.headers['x-signature'];
     if(typeof signature !== "string"){
       throw new HTTPError(400, 'Invalid signature');
     }
@@ -43,7 +44,7 @@ router.post('/room-complete', json(), async (req, res, next) => {
 
     const bodyAsString = canonicalJSONStringify(req.body)
 
-    const isValid = await verifyHMAC(COORDINATOR_API_KEY, bodyAsString, signature);
+    const isValid = await SIGNATURE.SYMMETRIC.verifySignature(COORDINATOR_API_KEY, bodyAsString, signature);
     if(!isValid) throw new HTTPError(401, 'Invalid signature');
 
     const parsed = roomCompleteCaster.safeParse(req.body);
@@ -69,10 +70,11 @@ const roomFailureCaster: ZodType<(
   coordinatorId: z.string(),
   roomId: z.string(),
   rosterConfigHash: z.string(),
-  users: z.array(z.object({
-    userId: z.string(),
+  machines: z.array(z.object({
+    machineId: z.string(),
     publicKey: z.string(),
     displayName: z.string(),
+    playerCount: z.number(),
   }).strict()),
   timestamp: z.number(),
   failedUser: z.string(),
@@ -80,14 +82,13 @@ const roomFailureCaster: ZodType<(
 }).strict();
 router.post("/room-failure", json(), async (req, res, next)=>{
   try {
-    if(!req.headers.get) throw new HTTPError(400, 'Missing headers');
-    const signature = req.headers['X-Signature'];
+    const signature = req.headers['x-signature'];
     if(typeof signature !== "string"){
       throw new HTTPError(400, 'Invalid signature');
     }
     const bodyAsString = canonicalJSONStringify(req.body)
 
-    const isValid = await verifyHMAC(COORDINATOR_API_KEY, bodyAsString, signature);
+    const isValid = await SIGNATURE.SYMMETRIC.verifySignature(COORDINATOR_API_KEY, bodyAsString, signature);
     if(!isValid) throw new HTTPError(401, 'Invalid signature');
 
     const parsed = roomFailureCaster.safeParse(req.body);

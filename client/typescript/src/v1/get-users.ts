@@ -1,31 +1,38 @@
 
 import { RosterLockV1SyncDLRequestUserToClient } from "@roster-lock/types";
-import { signMessage } from "../utils/crypto";
+import { SIGNATURE } from "@roster-lock/utils";
 
-type User = {
-  userId: string;
+type PrivateKey = Parameters<typeof SIGNATURE.ASYMMETRIC.createSignature>[0];
+
+
+type Machine = {
+  machineId: string;
   publicKey: string;
   displayName: string;
+  playerCount: number;
   connected: boolean;
   connectedAt?: string
 }
 
-export async function getUsers(
+export async function getMachines(
   {
-    user, relay,
-  }: Pick<RosterLockV1SyncDLRequestUserToClient, "user" | "relay">
+    machine, relay,
+  }: Pick<RosterLockV1SyncDLRequestUserToClient, "machine" | "relay">
 ){
   const timestamp = Date.now();
-  const signature = await signMessage(user.keys.privateKey, {
-    service: 'room-ws',
-    roomId: relay.roomId,
-    publicKey: user.keys.publicKey,
-    timestamp: timestamp,
-  });
-  return await getRoomUsers(relay.url, {
+  const signature = await SIGNATURE.ASYMMETRIC.createSignature(
+    machine.keys.privateKey as PrivateKey,
+    {
+      service: 'room-ws',
+      roomId: relay.roomId,
+      publicKey: machine.keys.publicKey,
+      timestamp: timestamp,
+    }
+  );
+  return await getRoomMachines(relay.url, {
     room: relay.roomId,
     timestamp,
-    publicKey: user.keys.publicKey,
+    publicKey: machine.keys.publicKey,
     signature,
   });
 }
@@ -37,20 +44,14 @@ type ReqParams = {
   publicKey: string,
   signature: string,
 }
-async function getRoomUsers(url: string, params: ReqParams){
-  const roomURL = new URL(`/api/v1/rooms/${params.room}/users`, url);
-  const searchParams = new URLSearchParams();
-  searchParams.set("room", params.room);
-  searchParams.set("t", params.timestamp.toString());
-  searchParams.set("pk", params.publicKey);
-  searchParams.set("sig", params.signature);
+async function getRoomMachines(url: string, params: ReqParams){
+  const roomURL = new URL(`/api/v1/room/${params.room}/machines`, url);
+  roomURL.searchParams.set("room", params.room);
+  roomURL.searchParams.set("t", params.timestamp.toString());
+  roomURL.searchParams.set("pk", params.publicKey);
+  roomURL.searchParams.set("sig", params.signature);
 
-  const response = await fetch(roomURL, {
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: searchParams.toString(),
-  });
-  if(!response.ok) throw new Error("Failed to get room users");
-  return await response.json() as Array<User>;
+  const response = await fetch(roomURL);
+  if(!response.ok) throw new Error("Failed to get room machines");
+  return await response.json() as Array<Machine>;
 }

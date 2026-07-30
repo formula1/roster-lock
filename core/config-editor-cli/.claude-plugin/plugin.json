@@ -1,0 +1,6 @@
+{
+  "name": "rosterlock-config-editor",
+  "description": "Skill for building and editing roster-lock config drafts with the rosterlock CLI",
+  "version": "0.0.1",
+  "author": { "name": "Sam Tobia" }
+}

@@ -2,10 +2,12 @@
 import { GameState, ModifierState } from "../../types";
 import { GaugeType } from "../../types/character";
 import { WeatherType } from "../../types/stage";
-import { RANDOM } from "../../utils/Random";
+import { Random } from "../../utils/Random";
 
 
-export function applyModifiers(gameState: GameState, modifiers: ModifierState): undefined | Array<string> {
+export function applyModifiers(
+  gameState: GameState, modifiers: ModifierState, random: Random
+): undefined | Array<string> {
   for(const [characterId, gaugeDeltas] of Object.entries(modifiers.character)){
     const character = gameState.characters[characterId];
     if(!character) throw new Error(`Character ${characterId} not found`);
@@ -20,7 +22,7 @@ export function applyModifiers(gameState: GameState, modifiers: ModifierState): 
   if(modifiers.stage.weather.length > 0){
     const weathers = modifiers.stage.weather;
     weathers.sort();
-    const weather = RANDOM.int(0, weathers.length);
+    const weather = random.int(0, weathers.length);
     const newWeather = (()=>{
       const newWeather = weathers[weather];
       if(!newWeather) return { type: WeatherType.None, turnsLeft: -1 };

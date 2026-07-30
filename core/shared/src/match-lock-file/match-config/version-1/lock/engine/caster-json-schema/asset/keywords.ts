@@ -8,7 +8,7 @@ export const assetNameSchemaValidator = defineKeyword({
   type: "string",
   validate: function(name: string, { engine }: RosterLockV1Config, path){
     // /engine/pieceDefinitions/pieceType/assets/index/name
-    const pathParts = path.split("/").slice(0, -4);
+    const pathParts = path.split("/").slice(0, -3);
     const pieceType = pathParts.at(-1);
     if(!pieceType) throw new Error("Invalid path");
     const assets = engine.pieceDefinitions[pieceType].assets;
@@ -29,7 +29,7 @@ export const assetGlobPathVariablesSchemaValidator = defineKeyword({
   type: "string",
   validate: function(globItem: string, { engine }: RosterLockV1Config, path){
     // /engine/pieceDefinitions/pieceType/assets/index/glob/index
-    const pathParts = path.split("/").slice(0, -5);
+    const pathParts = path.split("/").slice(0, -4);
     const pieceType = pathParts.at(-1);
     if(!pieceType) throw new Error("Invalid path");
     const variables = engine.pieceDefinitions[pieceType].pathVariables;

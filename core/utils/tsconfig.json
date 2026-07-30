@@ -15,6 +15,6 @@
     "noImplicitAny": true
   },
   "files": ["src/index.ts"],
-  "include": ["./typings", "./types", "**/*.test.ts"],
-  "exclude": ["node_modules", "**/*.spec.ts"]
+  "include": ["./typings", "./types"],
+  "exclude": ["node_modules", "test", "**/*.spec.ts", "**/*.test.ts"]
 }

@@ -2,14 +2,21 @@ import { RosterLockV1SyncDLResult } from "@roster-lock/types";
 import { createSimpleEmitter } from "./utils/SimpleEvent";
 
 import { Room } from "./room";
-import { GameState, MoveDescription, FinalState, TurnState, ModifierState } from "./types";
+import { GameState, MoveDescription, TurnState, ModifierState } from "./types";
+
+// Public surface for consumers (UI, headless runners) that build a Room adapter
+// and a moveRequest callback around this class.
+export type { Room } from "./room";
+export type { MoveDescription, GameState } from "./types";
+export type { PieceFilesConfig } from "./game/assets/loadPieceFile";
 
 import { prepareGlobalRandom } from "./game/prepare-random";
+import { buildGameFromSelection } from "./game/build-game";
+import { PieceFilesConfig } from "./game/assets/loadPieceFile";
 import { MoveSharer } from "./game/MoveSharer";
 import { prepareTurn } from "./game/prepare-turn";
 import { runTurn } from "./game/run-turn";
-
-const MAX_CHARACTERS_PER_PLAYER = 2;
+import { createRandom, Random } from "./utils/Random";
 
 type GameStates = (
   | ["waitingForMoves", { state: GameState }]
@@ -23,30 +30,45 @@ type GameStates = (
 
 
 export class Game {
-  onStateUpdate = createSimpleEmitter<GameStates>()
+  public onStateUpdate = createSimpleEmitter<GameStates>()
+
+  // Public so game clients (UI, headless runners) can read live state directly,
+  // not just through onStateUpdate.
+  public readonly gameState: GameState;
+  // Owned per-Game rather than a process-wide singleton, so two Game instances in the
+  // same process (e.g. simulating two peers in a test) never draw from each other's sequence.
+  private readonly random: Random = createRandom();
+  // The combined commit-reveal seed record every peer converges on - exposed so callers
+  // can sanity-check that independent peers actually ended up with the same seed.
+  public randomSeed: Record<string, string> = {};
 
   private moveSharer: MoveSharer;
-  constructor(
+
+  // Building gameState off a RosterLockV1SyncDLResult means reading piece files off disk,
+  // which is async — so construction goes through the static `create` below instead of a
+  // plain constructor.
+  static async create(
+    room: Room,
+    selectionDownloadResult: RosterLockV1SyncDLResult,
+    moveRequest: ()=>Promise<Array<Omit<MoveDescription, "player">>>,
+    pieceFiles: PieceFilesConfig,
+  ): Promise<Game> {
+    const { gameState } = await buildGameFromSelection(selectionDownloadResult, pieceFiles);
+    const game = new Game(room, gameState, moveRequest);
+    game.randomSeed = await prepareGlobalRandom(room, game.random);
+    return game;
+  }
+
+  private constructor(
     private room: Room,
-    private finalState: FinalState,
-    private gameState: GameState,
+    gameState: GameState,
     private moveRequest: ()=>Promise<Array<Omit<MoveDescription, "player">>>
   ){
-    gameState.winners = null;
-    const charCount = new Map<string, number>();
+    this.gameState = gameState;
+
     for(const character of Object.values(this.gameState.characters)){
       if(!this.gameState.players[character.ownerPlayer]){
         throw new Error(`Player ${character.ownerPlayer} not found`);
-      }
-      const count = (charCount.get(character.ownerPlayer) || 0) + 1;
-      charCount.set(character.ownerPlayer, count);
-      if(count > MAX_CHARACTERS_PER_PLAYER){
-        throw new Error(`Player ${character.ownerPlayer} has too many characters`);
-      }
-      for(const move of character.moves){
-        if(!this.finalState.availableMoves[move]){
-          throw new Error(`Move ${move} not found for character ${character.id}`);
-        }
       }
     }
     const players = Object.values(this.gameState.players);
@@ -60,9 +82,6 @@ export class Game {
       if(!this.room.userIds.includes(player.id)){
         throw new Error(`Player ${player.id} not found in room`);
       }
-      if(charCount.get(player.id) !== MAX_CHARACTERS_PER_PLAYER){
-        throw new Error(`Player ${player.id} does not have enough characters`);
-      }
     }
 
     this.moveSharer = new MoveSharer(
@@ -70,25 +89,15 @@ export class Game {
     );
   }
 
-  async prepareGame(
-    selectionDownloadResult: RosterLockV1SyncDLResult,
-  ){
-    await Promise.all([
-      loadAssets(selectionDownloadResult.downloadResults),
-      prepareGlobalRandom(this.room),
-    ]);
-  }
-
-
   async gameLoop(){
     try {
       this.gameState.turnCount = 0;
       while(true){
         this.onStateUpdate.emit("waitingForMoves", { state: this.gameState });
         const rawMoves = await this.moveSharer.waitForValues();
-        const turnState = prepareTurn(this.finalState, this.gameState, rawMoves);
+        const turnState = prepareTurn(this.gameState, rawMoves, this.random);
         this.onStateUpdate.emit("turnBegin", { state: this.gameState, turnState });
-        for(const { point, moves, modifiers } of runTurn(this.finalState, this.gameState, turnState)){
+        for(const { point, moves, modifiers } of runTurn(this.gameState, turnState, this.random)){
           this.onStateUpdate.emit(
             "runningTurnPoint", { speed: point, state: this.gameState, moves, modifiers }
           );
@@ -108,5 +117,3 @@ export class Game {
     }
   }
 }
-
-

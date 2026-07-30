@@ -1,0 +1,7 @@
+services:
+  git:
+    build:
+      context: ..
+      dockerfile: test.Dockerfile
+    ports:
+      - "13000:3000"

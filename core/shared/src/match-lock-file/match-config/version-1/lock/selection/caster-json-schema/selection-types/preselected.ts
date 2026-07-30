@@ -1,7 +1,6 @@
 
 import { JSONSchemaType } from "ajv";
 import { RosterLockV1Config, SelectionPreselectedConfig } from "@roster-lock/types";
-import { selectionPieceMetaSchema } from "../meta";
 import { validatePreselected } from "../../validate/selections/preselected";
 import { defineKeyword } from "../../../../../../util-types/json-schema";
 import { SelectedPieceSchema, SelectedPieceSchemaDef } from "../../../../shared";
@@ -29,7 +28,6 @@ export const preselectedSelectionSchema = {
   ...SelectedPieceSchemaDef,
   properties: {
     type: { type: "string", const: "preselected" },
-    pieceMeta: { ...selectionPieceMetaSchema, nullable: true },
     pieces: {
       type: "array",
       [preselectedSchemaValidator.keyword]: true,

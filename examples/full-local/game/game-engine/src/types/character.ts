@@ -1,4 +1,5 @@
 
+import type { RunnableMove } from "./move";
 
 type Gauge = {
   current: number,
@@ -19,5 +20,6 @@ export type Character = {
 
   speed: number,
   attack: number,
-  moves: Array<string>,
+  // Keyed by move id, from this character's own selection — not a global move pool.
+  moves: Record<string, RunnableMove>,
 };

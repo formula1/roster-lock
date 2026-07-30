@@ -6,6 +6,7 @@
     "types": ["node"],
     "lib": ["es2024"],
     "sourceMap": true,
+    "rootDir": "./src",
     "outDir": "./dist",
     "esModuleInterop": true,
     "strict": true,
@@ -13,9 +14,6 @@
     "removeComments": true,
     "noImplicitAny": true
   },
-  "files": [
-    "src/index.ts",
-  ],
-  "include": ["./typings", "./types", "./@types", "**/*.test.ts"],
-  "exclude": ["node_modules", "**/*.spec.ts"]
+  "include": ["src/**/*.ts", "./typings", "./types", "./@types"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
 }

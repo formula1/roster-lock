@@ -1,7 +1,9 @@
-import { decryptValue, createHMAC } from "../../utils/crypto";
-import { canonicalJSONStringify } from "../../utils/json";
+import { ENCRYPTION, SIGNATURE, canonicalJSONStringify } from "@roster-lock/utils";
 import { RoomConfig } from "../types";
 import { RoomType } from "./types";
+
+type SymmetricEncryptionKey = Parameters<typeof ENCRYPTION.SYMMETRIC.decryptValue>[0];
+type SymmetricSignatureKey = Parameters<typeof SIGNATURE.SYMMETRIC.createSignature>[0];
 
 
 export async function successWebhook(env: RoomType['env'], config: RoomConfig){
@@ -20,7 +22,7 @@ export async function successWebhook(env: RoomType['env'], config: RoomConfig){
   );
 }
 
-export async function failWebhook(env: RoomType['env'], config: RoomConfig, reason: string, failedUser: string){
+export async function failWebhook(env: RoomType['env'], config: RoomConfig, reason: string, failedMachine: string){
   const coordinator = await env.DB.prepare(
     `SELECT failure_webhook_url, api_key_encrypted FROM game_coordinators WHERE id = ?`
   ).bind(
@@ -31,7 +33,7 @@ export async function failWebhook(env: RoomType['env'], config: RoomConfig, reas
   await runWebhook(env, coordinator.api_key_encrypted, coordinator.failure_webhook_url, {
     ...config,
     failedReason: reason,
-    failedUser,
+    failedMachine,
     timestamp: Date.now()
   });
 }
@@ -39,10 +41,10 @@ export async function failWebhook(env: RoomType['env'], config: RoomConfig, reas
 
 async function runWebhook(env: RoomType['env'], apiKeyEncrypted: string, url: string, body: any){
 
-  const apiKey = await decryptValue(
-    apiKeyEncrypted,
-    env.GAME_COORDINATOR_ENCRYPTION_KEY
-  );
+  const apiKey = await ENCRYPTION.SYMMETRIC.decryptValue(
+    env.GAME_COORDINATOR_ENCRYPTION_KEY as SymmetricEncryptionKey,
+    apiKeyEncrypted
+  ) as string;
 
 
   const webhookController = new AbortController();
@@ -62,7 +64,7 @@ async function runWebhook(env: RoomType['env'], apiKeyEncrypted: string, url: st
 
 async function runFetch(apiKey: string, url: string, body: any, abortSignal: AbortSignal){
   const bodyAsString = canonicalJSONStringify(body);
-  const signature = await createHMAC(apiKey, bodyAsString);
+  const signature = await SIGNATURE.SYMMETRIC.createSignature(apiKey as SymmetricSignatureKey, bodyAsString);
   const response = await fetch(url, {
     method: 'POST',
     headers: {

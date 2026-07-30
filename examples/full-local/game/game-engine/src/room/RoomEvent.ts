@@ -62,10 +62,12 @@ export class RoomEventHandler<T> {
         const actionTypeReady = RoomEventHandler.actionTypeCreate(this.prefix, "ready");
         this.room.broadcastAction(actionTypeReady, this.currentValues);
         this.selfReady = true;
-        if(this.knockInterval){
-          clearInterval(this.knockInterval);
-          this.knockInterval = null;
-        }
+        // Don't cancel the knock resend here: another peer may not have started listening
+        // yet (promiseHandlers still null on their side) when our first "value" broadcast
+        // went out, silently dropping it with no ack. Only `clear()` — invoked once the
+        // whole handshake actually resolves via otherValues reaching every peer below —
+        // should stop the resend, otherwise a late peer can wait forever for a value we've
+        // already stopped sending.
         for(const otherValue of this.otherValues.values()){
           if(!compareJSON(this.currentValues, otherValue)){
             throw new UserError(userId, "Values do not match own values");

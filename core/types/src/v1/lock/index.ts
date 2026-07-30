@@ -2,10 +2,12 @@ import { RosterLockIdentity } from "../shared";
 import { RosterLockEngineConfig } from "./engine";
 import { RosterLockPiece } from "./roster";
 import { RosterLockSelectionConfig } from "./selection";
+import { RosterLockPieceMeta } from "./piece-meta";
 
 export * from "./engine";
 export * from "./roster";
 export * from "./selection";
+export * from "./piece-meta";
 
 
 export type RosterLockV1Config = {
@@ -17,5 +19,6 @@ export type RosterLockV1Config = {
   engine: RosterLockEngineConfig,
   rosters: Record<string, Array<RosterLockPiece>>,
   selection: RosterLockSelectionConfig,
+  pieceMeta: RosterLockPieceMeta,
 }
 

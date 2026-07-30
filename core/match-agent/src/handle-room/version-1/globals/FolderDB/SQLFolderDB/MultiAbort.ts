@@ -69,9 +69,11 @@ export async function raceWithAbort<T>(
 
   abortSignal.addEventListener("abort", listener, { once: true });
  
+  // promise is also awaited via Promise.race below; catch here too so this
+  // second attached continuation doesn't count as an unhandled rejection.
   promise.finally(()=>{
     abortSignal.removeEventListener("abort", listener);
-  });
+  }).catch(()=>{});
 
   return Promise.race([
     promise,

@@ -23,7 +23,9 @@ function selectPiecesAtRandom(rosterConfig: RosterLockV1Config){
   return selection;
 }
 
-function selectFromPieceType(rosterConfig: RosterLockV1Config, pieceType: string): Array<SelectedPiece>{
+function selectFromPieceType(
+  rosterConfig: RosterLockV1Config, pieceType: string
+): Array<SelectedPiece>{
   const definition = rosterConfig.engine.pieceDefinitions[pieceType];
   if(!definition) throw new Error(`Missing piece definition for ${pieceType}`);
   const available = rosterConfig.rosters[pieceType];
@@ -33,27 +35,49 @@ function selectFromPieceType(rosterConfig: RosterLockV1Config, pieceType: string
   if(selectionConfig.type === "preselected") throw new Error(`Preselected pieces not implemented`);
   if(selectionConfig.type === "game-controlled") throw new Error(`Game controlled pieces not implemented`);
 
-  const items = [];
+  const validation = selectionConfig.type === "normal" ? selectionConfig.validation : undefined;
+
+  const items: Array<SelectedPiece> = [];
   const availableIds = available.map(p=>p.id);
-  const count = getCount(selectionConfig.validation?.count || 1);
-  const unique = selectionConfig.validation?.unique || false;
+  const count = getCount(validation?.count || 1);
+  const unique = validation?.unique || false;
   for(let i = 0; i < count; i++){
     const index = randomItem(availableIds.length);
-    const item = available[index];
+    const id = availableIds[index];
+    const item = available.find(p => p.id === id);
+    if(!item) throw new Error(`Missing piece ${id} in roster for ${pieceType}`);
     if(unique) availableIds.splice(index, 1);
-    const selection: SelectedPiece = { id: item.id, required: {} };
-    for(const requirePieceType of definition.requires){
-      const requireDef = item.requiredPieces[requirePieceType]
-      if(!requireDef){
-        throw new Error(`Piece ${item.id} is missing required piece type ${requirePieceType}`);
-      }
-      if(requireDef.selectable){
-        selection.required[requirePieceType] = selectFromPieceType(rosterConfig, requirePieceType);
-      }
-    }
-    items.push(selection);
+    items.push(resolvePiece(rosterConfig, pieceType, item.id));
   }
   return items;
+}
+
+// Every piece a roster entry declares as "expected" for a required piece type
+// must be downloaded up front (whichever one is actually used gets decided
+// later, e.g. at play time for "on demand" pieces like moves/weather) - so
+// this always resolves the full expected set as "mandatory", never a subset.
+function resolvePiece(
+  rosterConfig: RosterLockV1Config, pieceType: string, pieceId: string
+): SelectedPiece{
+  const definition = rosterConfig.engine.pieceDefinitions[pieceType];
+  if(!definition) throw new Error(`Missing piece definition for ${pieceType}`);
+  const available = rosterConfig.rosters[pieceType];
+  if(!available) throw new Error(`Missing roster for ${pieceType}`);
+  const item = available.find(p => p.id === pieceId);
+  if(!item) throw new Error(`Missing piece ${pieceId} in roster for ${pieceType}`);
+
+  const selection: SelectedPiece = { id: item.id, required: {} };
+  for(const requirePieceType of definition.requires){
+    const requireDef = item.requiredPieces[requirePieceType];
+    if(!requireDef){
+      throw new Error(`Piece ${item.id} is missing required piece type ${requirePieceType}`);
+    }
+    selection.required[requirePieceType] = {
+      mandatory: requireDef.expected.map(expectedId => resolvePiece(rosterConfig, requirePieceType, expectedId)),
+      selectable: [],
+    };
+  }
+  return selection;
 }
 
 type CountType = NonNullable<SelectionNormalConfig["validation"]>["count"];

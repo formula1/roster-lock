@@ -1,11 +1,31 @@
-import { PeerRoom } from "./types";
+import { RosterLockV1SyncDLResult } from "@roster-lock/types";
+import { Game, PieceFilesConfig } from "@roster-lock/example-game-engine";
+import { PeerRoom } from "./datachannel-room";
+import { CurrentUser } from "../types";
+import { toGameRoom } from "./room-adapter";
+import { buildMovesForTurn } from "./moves";
 
-export async function playGame(room: PeerRoom){
-  const points: Record<string, number> = {};
-  for(let i = 0; i < 10; i++){
-    room.broadcastAction({ type: "test", value: i });
-    await new Promise(resolve => setTimeout(resolve, 1000));
-  }
+export type GameSummary = {
+  winners: Array<string>,
+  turnCount: number,
+  randomSeed: Record<string, string>,
+};
+
+export async function playGame(
+  room: PeerRoom,
+  user: CurrentUser,
+  gameResult: RosterLockV1SyncDLResult,
+  pieceFiles: PieceFilesConfig,
+): Promise<GameSummary> {
+  const gameRoom = toGameRoom(room);
+  const ownerPlayer = user.keys.publicKey;
+
+  let game: Game;
+  game = await Game.create(
+    gameRoom, gameResult, () => buildMovesForTurn(game, ownerPlayer), pieceFiles
+  );
+
+  const winners = await game.gameLoop();
+  console.log("Game finished. Winners:", winners);
+  return { winners, turnCount: game.gameState.turnCount, randomSeed: game.randomSeed };
 }
-
-

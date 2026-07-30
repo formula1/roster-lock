@@ -13,5 +13,5 @@ type SimpleSchemaType = (
 export type SelectionPieceMeta<Config extends JSONShallowObject> = {
   schema: Record<string, SimpleSchemaType>,
   defaultMeta: Config,
-  pieceMeta: Record<PieceId, Partial<Config>>,
+  values: Record<PieceId, Partial<Config>>,
 }

@@ -1,5 +1,5 @@
 
-import { UserId, PieceType, PieceId } from "../../shared";
+import { PlayerId, PieceType, PieceId } from "../../shared";
 import { SelectedPiece } from "../shared";
 
 export * from "./download-event";
@@ -10,7 +10,7 @@ export type SharedSelection = {
 };
 export type PersonalSelection = {
   type: "personal",
-  value: Record<UserId, Array<SelectedPiece>>,
+  value: Record<PlayerId, Array<SelectedPiece>>,
 };
 
 export type FinalSelection = Record<PieceType, (

@@ -1,18 +1,18 @@
 {
-  "name": "@match-lock/server",
+  "name": "@roster-lock/relay-server",
   "version": "0.0.0",
   "description": "To be used to connect multiple clients",
   "keywords": [
-    "match-lock",
+    "roster-lock",
     "game"
   ],
-  "homepage": "https://github.com/formula1/match-lock#readme",
+  "homepage": "https://github.com/formula1/roster-lock#readme",
   "bugs": {
-    "url": "https://github.com/formula1/match-lock/issues"
+    "url": "https://github.com/formula1/roster-lock/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/formula1/match-lock.git"
+    "url": "git+https://github.com/formula1/roster-lock.git"
   },
   "license": "JSON",
   "author": "Sam Tobia",
@@ -28,18 +28,20 @@
     "deploy": "pnpm run build:client && wrangler deploy",
     "deploy:production": "pnpm run build:client && wrangler deploy --env production",
     "tail": "wrangler tail",
-    "types": "wrangler types"
+    "types": "wrangler types",
+    "test": "vitest run"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260103.0",
     "@types/express": "^5.0.6",
     "@types/node": "^22.14.1",
     "rimraf": "^6.0.1",
-    "typescript": "^5.9.3",
-    "wrangler": "^4.54.0"
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.5",
+    "wrangler": "^4.110.0"
   },
   "dependencies": {
-    "@noble/ed25519": "^3.0.0",
+    "@roster-lock/utils": "workspace:*",
     "hono": "^4.11.3",
     "zod": "^4.3.5"
   }

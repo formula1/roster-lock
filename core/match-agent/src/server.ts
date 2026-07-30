@@ -10,30 +10,39 @@ export class MatchAgentServer {
   private wss: WebSocketServer;
   public wsRouter = new WebSocketRouter();
   public httpRouter = new HTTPRouter();
-  constructor(){
+  constructor(debug = true){
     this.httpServer = new Server();
-    this.wss = new WebSocketServer({ server: this.httpServer });
+    this.wss = new WebSocketServer({ noServer: true });
     this.httpServer.on('upgrade', async (request, socket, head)=>{
-      const ws = await (async ()=>{
+      const context = await (async ()=>{
         try {
           if(!request.url) throw new Error("No URL");
           const url = new URL(request.url, "ws://localhost");
-          const ws = await handleUpgrade(this.wss, request, socket, head) as WSRequest;
-          ws.httpRequest = request;
-          return ws;
+          const ws = await handleUpgrade(this.wss, request, socket, head);
+          return { ws, req: request };
         }catch(e){
           console.log("Failed to upgrade connection", e);
           socket.destroy();
           throw e;
         }
       })()
-      this.wsRouter.handleRequest(ws, (err)=>{
-        console.log("Failed to route request", err);
-        ws.terminate();
+      this.wsRouter.handleRequest(context, (err)=>{
+        debug && console.log("WS Error:", err);
+        context.ws.terminate();
       });
     });
     this.httpServer.on('request', (req, res)=>{
       this.httpRouter.handleRequest({ req, res }, (err: unknown)=>{
+        debug && console.log("HTTP Error:", err);
+        if(res.writableEnded){
+          debug && console.warn("Router threw error and response ended")
+          return;
+        }
+        if(res.headersSent){
+          debug && console.warn("Router threw error and headers already sent")
+          res.destroy();
+          return;
+        }
         const error: HTTPError = (()=>{
           if(err instanceof HTTPError) return err;
           if(!err){
@@ -52,10 +61,10 @@ export class MatchAgentServer {
         })();
 
         res.writeHead(error.statusCode, { "Content-Type": "application/json" });
-        res.end({
+        res.end(JSON.stringify({
           error: error.message,
           context: error.context,
-        });
+        }));
       });
     })
   }

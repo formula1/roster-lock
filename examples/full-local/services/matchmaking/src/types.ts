@@ -1,15 +1,16 @@
 
-export interface RoomUser {
-  userId: string;
+export interface RoomMachine {
+  machineId: string;
   publicKey: string;
   displayName: string;
+  playerCount: number;
 }
 
 export type CreateRoomBody = {
   rosterConfig: any;
 
   rosterConfigHash: string;
-  users: RoomUser[];
+  machines: RoomMachine[];
   coordinatorId: string;
 
   publicKey: string;

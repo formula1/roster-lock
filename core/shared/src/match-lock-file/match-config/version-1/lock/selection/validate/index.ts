@@ -1,5 +1,4 @@
 import { RosterLockV1Config } from "@roster-lock/types";
-import { validateSelectionPieceMeta } from "./meta";
 
 import { validateNormal } from "./selections/normal";
 import { validatePreselected } from "./selections/preselected";
@@ -16,7 +15,6 @@ export function validateSelectionConfig(
     if(!pieceDefinition){
       throw new Error(`Piece type ${pieceType} is not defined in engine`);
     }
-    validateSelectionPieceMeta(selection.pieceMeta, pieceType, config);
     switch(selection.type){
       case "preselected":
         validatePreselected(selection.pieces, pieceType, config);

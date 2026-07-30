@@ -1,0 +1,63 @@
+/* Tabs Component Default Styles */
+
+.tabs-nav {
+  display: flex;
+  border-bottom: 2px solid #e2e8f0;
+  background-color: #f8fafc;
+  padding: 0;
+  margin: 0 0 1rem 0;
+  border-radius: 8px 8px 0 0;
+}
+
+.tabs-nav > button,
+.tabs-nav > a {
+  display: inline-block;
+  background: none;
+  border: none;
+  text-decoration: none;
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #64748b;
+  transition: all 0.2s ease;
+  border-bottom: 3px solid transparent;
+  position: relative;
+  white-space: nowrap;
+}
+
+.tabs-nav > button:hover,
+.tabs-nav > a:hover {
+  background-color: #f1f5f9;
+  color: #475569;
+  text-decoration: none;
+}
+
+.tabs-nav > button:disabled, .tabs-nav > button.active,
+.tabs-nav > a.active {
+  color: #3b82f6;
+  background-color: #ffffff;
+  border-bottom-color: #3b82f6;
+  cursor: default;
+}
+
+.tabs-nav > button:disabled:hover,
+.tabs-nav > button.active:hover {
+  background-color: #ffffff;
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+  .tabs-nav {
+    flex-wrap: wrap;
+  }
+
+  .tabs-nav > button,
+  .tabs-nav > a {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+  }
+}
+
+
+

@@ -3,35 +3,44 @@
   "version": "0.0.0",
   "description": "To be used in game to ensure all peices are ready",
   "keywords": [
-    "match-lock",
+    "roster-lock",
     "game"
   ],
-  "homepage": "https://github.com/formula1/match-lock#readme",
+  "homepage": "https://github.com/formula1/roster-lock#readme",
   "bugs": {
-    "url": "https://github.com/formula1/match-lock/issues"
+    "url": "https://github.com/formula1/roster-lock/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/formula1/match-lock.git"
+    "url": "git+https://github.com/formula1/roster-lock.git"
   },
   "license": "JSON",
   "author": "Sam Tobia",
   "type": "commonjs",
   "main": "dist/index.js",
   "types": "src/index.ts",
+  "bin": {
+    "rosterlock-match-agent": "dist/index.js"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest run",
     "build": "rimraf ./dist && tsc",
     "prepare": "pnpm run build"
   },
   "devDependencies": {
+    "@roster-lock/dl-archive-tar": "workspace:*",
+    "@roster-lock/dl-compression-gzip": "workspace:*",
+    "@roster-lock/dl-protocol-http": "workspace:*",
+    "@roster-lock/piece-selection-sort-most-used-locally": "workspace:*",
+    "@roster-lock/piece-selection-sort-highest-winrate-locally": "workspace:*",
     "@types/async": "^3.2.25",
-    "@types/better-sqlite3": "^7.6.13",
+    "@types/mime-types": "^2.1.4",
     "@types/node": "^22.14.1",
     "@types/webtorrent": "^0.110.0",
     "@types/ws": "^8.18.1",
     "rimraf": "^6.1.3",
-    "typescript": "^5.8.3"
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.5"
   },
   "dependencies": {
     "@roster-lock/plugin-runtime": "workspace:^",
@@ -40,7 +49,8 @@
     "@roster-lock/utils": "workspace:*",
     "ajv": "^8.17.1",
     "async": "^3.2.6",
-    "better-sqlite3": "^12.5.0",
+    "commander": "14.0.3",
+    "mime-types": "^2.1.35",
     "node-fetch-commonjs": "^3.3.2",
     "path-to-regexp": "^8.3.0",
     "runtypes": "^7.0.4",

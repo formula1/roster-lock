@@ -5,21 +5,20 @@ import { IPFSError } from "./utils";
 
 export async function handleSingleFile(
   ipfs: IpfsHttpClient,
+  ipfsPath: string,
   cid: string,
+  fileName: string,
   folderDestination: string,
   processHandlers: ProcessHandlers
 ): Promise<DownloadResult> {
   const { onProgress, abortSignal } = processHandlers;
   if (abortSignal?.aborted) {
-    throw new IPFSError(cid, 'Download aborted');
+    throw new IPFSError(ipfsPath, 'Download aborted');
   }
-
-  // Assume it's an archive (we don't know the filename from IPFS)
-  const fileName = `${cid}.tar.gz`;
 
   try {
     const processors = processHandlers.getProcessors!(fileName);
-    const ipfsStream = ipfs.cat(cid, { signal: abortSignal });
+    const ipfsStream = ipfs.cat(ipfsPath, { signal: abortSignal });
 
     const finishPromise = saveStreamToFilesystem(
       ipfsStream,
@@ -31,25 +30,27 @@ export async function handleSingleFile(
     return {
       finishPromise,
       metaData: {
-        url: `ipfs://${cid}`,
+        url: `ipfs://${ipfsPath}`,
         cid,
         type: 'file',
       }
     };
   } catch (e) {
-    // Not an archive, just save raw
-    return handleRawFile(ipfs, cid, folderDestination, processHandlers);
+    // Not a recognized archive format, just save raw
+    return handleRawFile(ipfs, ipfsPath, cid, fileName, folderDestination, processHandlers);
   }
 }
 
 
 async function handleRawFile(
   ipfs: IpfsHttpClient,
+  ipfsPath: string,
   cid: string,
+  fileName: string,
   folderDestination: string,
   { onProgress, abortSignal }: ProcessHandlers,
 ): Promise<DownloadResult> {
-  const ipfsIterable = ipfs.cat(cid, { signal: abortSignal });
+  const ipfsIterable = ipfs.cat(ipfsPath, { signal: abortSignal });
 
   let stream: AsyncIterable<Uint8Array> = ipfsIterable;
   if (onProgress) {
@@ -64,9 +65,9 @@ async function handleRawFile(
   }
 
   return {
-    finishPromise: storeFile(folderDestination, cid, stream, { abortSignal }),
+    finishPromise: storeFile(folderDestination, fileName, stream, { abortSignal }),
     metaData: {
-      url: `ipfs://${cid}`,
+      url: `ipfs://${ipfsPath}`,
       cid,
       type: 'file',
     }

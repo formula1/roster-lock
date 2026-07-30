@@ -12,10 +12,13 @@ export async function handleDirectory(
   { onProgress, abortSignal }: ProcessHandlers,
 ) {
   const remotePath = urlObj.pathname;
-  const filePromises: Promise<void>[] = [];
   const fileList: Array<{ name: string; size?: number }> = [];
 
-  // Walk directory recursively
+  // Walk directory recursively. Downloads must happen one at a time: a
+  // single FTP control connection can only run one command at a time, so
+  // firing downloadTo() without awaiting it (the walk's next client.list()
+  // call, or another downloadTo(), would collide with it) makes basic-ftp
+  // throw "User launched a task while another one is still running."
   for await (const { relativePath, fileInfo } of walkFtpDirectory(client, remotePath, '')) {
     if (abortSignal?.aborted) {
       throw new FTPError(urlObj.href, 'Download aborted');
@@ -34,12 +37,8 @@ export async function handleDirectory(
       { abortSignal }
     );
 
-    filePromises.push(
-      Promise.all([downloadPromise, savePromise]).then(() => {})
-    );
+    await Promise.all([downloadPromise, savePromise]);
   }
-
-  await Promise.all(filePromises);
 }
 
 

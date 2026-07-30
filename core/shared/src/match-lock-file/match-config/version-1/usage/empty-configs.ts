@@ -9,6 +9,7 @@ export const EMPTY_ROSTER_LOCK: RosterLockV1Config = {
   engine: { name: "", version: "", pieceDefinitions: {} },
   rosters: {},
   selection: { piece: {}, globalValidation: [], scriptDictionary: {}, },
+  pieceMeta: {},
 }
 
 export const EMPTY_ROSTER_DRAFT: RosterLockV1Draft = {
@@ -25,24 +26,16 @@ import {
   SelectionGameControlledConfig,
   SelectionNormalConfig,
   SelectionPreselectedConfig,
-  SelectionUnselectableConfig
+  SelectionUnselectableConfig,
+  SelectionPieceMeta,
+  JSONShallowObject,
 } from "@roster-lock/types";
 export const EMPTY_ROSTER_GAME_SELECTION: SelectionGameControlledConfig = {
   type: "game-controlled",
-  pieceMeta: {
-    schema: {},
-    defaultMeta: {},
-    pieceMeta: {}
-  }
 }
 
 export const EMPTY_ROSTER_NORMAL_SELECTION: SelectionNormalConfig = {
   type: "normal",
-  pieceMeta: {
-    schema: {},
-    defaultMeta: {},
-    pieceMeta: {}
-  },
   validation: {
     count: "*",
     unique: false,
@@ -54,19 +47,15 @@ export const EMPTY_ROSTER_NORMAL_SELECTION: SelectionNormalConfig = {
 
 export const EMPTY_ROSTER_PRESELECTED_SELECTION: SelectionPreselectedConfig = {
   type: "preselected",
-  pieceMeta: {
-    schema: {},
-    defaultMeta: {},
-    pieceMeta: {}
-  },
   pieces: []
 }
 
 export const EMPTY_ROSTER_UNSELECTABLE_SELECTION: SelectionUnselectableConfig = {
   type: "unselectable",
-  pieceMeta: {
-    schema: {},
-    defaultMeta: {},
-    pieceMeta: {}
-  },
+}
+
+export const EMPTY_PIECE_META: SelectionPieceMeta<JSONShallowObject> = {
+  schema: {},
+  defaultMeta: {},
+  values: {},
 }

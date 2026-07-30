@@ -6,12 +6,11 @@ import {
   RosterLockDownloadUpdate,
 } from "@roster-lock/types";
 import WebSocket from "isomorphic-ws";
-import { MessageBridge } from "../utils/MessageBridge";
-import { signMessage } from "../utils/crypto";
+import { MessageBridge, SIGNATURE, waitForBridgeEvent } from "@roster-lock/utils";
+
+type PrivateKey = Parameters<typeof SIGNATURE.ASYMMETRIC.createSignature>[0];
 
 import { ROSTERLOCK_MATCH_AGENT_URL } from "../constants/match-agent";
-const syncDLURL = new URL("/v1/sync-dl", ROSTERLOCK_MATCH_AGENT_URL);
-syncDLURL.protocol = ROSTERLOCK_MATCH_AGENT_URL.protocol === "https:" ? "wss:" : "ws";
 
 type ProgressListeners = Partial<{
   onState: (state: string)=>void,
@@ -21,27 +20,37 @@ type ProgressListeners = Partial<{
 export async function syncDownloadOverWebSocket(
   {
     version,
-    folder,
     relay,
-    user,
+    machine,
     rosterConfig,
-    userSelection: selection,
+    playerSelections,
   }: RosterLockV1SyncDLRequestUserToClient,
-  progressListeners: ProgressListeners = {}
+  matchAgentAuth: string,
+  progressListeners: ProgressListeners = {},
+  matchAgentUrl: string | URL = ROSTERLOCK_MATCH_AGENT_URL,
 ): Promise<RosterLockV1SyncDLResult>{
   if(version !== 1) throw new Error(`Unsupported Version ${version}`);
+  const syncDLURL = new URL("/v1/sync-dl", matchAgentUrl);
+  if(!["http:", "https:"].includes(syncDLURL.protocol)){
+    throw new Error("Expecting The match agent url to be http or https");
+  }
+  syncDLURL.protocol = syncDLURL.protocol === "https:" ? "wss:" : "ws";
+  syncDLURL.searchParams.set("authorization", matchAgentAuth);
   const timestamp = Date.now();
-  const signature = await signMessage(user.keys.privateKey, {
-    service: 'room-ws',
-    roomId: relay.roomId,
-    publicKey: user.keys.publicKey,
-    timestamp: timestamp,
-  });
+  const signature = await SIGNATURE.ASYMMETRIC.createSignature(
+    machine.keys.privateKey as PrivateKey,
+    {
+      service: 'room-ws',
+      roomId: relay.roomId,
+      publicKey: machine.keys.publicKey,
+      timestamp: timestamp,
+    }
+  );
 
   const ws = new WebSocket(syncDLURL.href);
   const bridge = new MessageBridge((message)=>ws.send(JSON.stringify(message)));
-  ws.on("message", (message)=>{
-    bridge.handleMessage(JSON.parse(message.toString()));
+  ws.addEventListener("message", (event)=>{
+    bridge.handleMessage(JSON.parse(event.data.toString()));
   });
 
   bridge.onEvent("room-state", (state)=>{
@@ -56,34 +65,14 @@ export async function syncDownloadOverWebSocket(
 
     return await bridge.sendRequest(
       "connect-to-relay", {
-        folder: folder,
         relay: relay,
-        user: { timestamp, publicKey: user.keys.publicKey, signature },
+        machine: { timestamp, publicKey: machine.keys.publicKey, signature },
         rosterConfig,
-        userSelection: selection,
+        playerSelections,
       } satisfies RosterLockV1SyncDLRequestClientToAgent
     ) as RosterLockV1SyncDLResult;
 
-  }finally{ 
+  }finally{
     ws.close();
   }
-}
-
-
-function waitForBridgeEvent<T>(bridge: MessageBridge, event: string, timeout: number){
-  const { promise, resolve, reject } = Promise.withResolvers<T>();
-
-  const to = setTimeout(()=>{
-    reject(new Error("Timeout"));
-  }, timeout);
-
-  bridge.onEvent(event, (data)=>{
-    resolve(data as T);
-  });
-
-  promise.finally(()=>{
-    clearTimeout(to);
-  });
-
-  return promise;
 }

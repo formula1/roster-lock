@@ -1,5 +1,5 @@
 import { inspect } from "util";
-import { RosterLockV1Config, PieceType, UntrustedScript, ScriptStarter } from "@roster-lock/types";
+import { RosterLockV1Config, PieceType, UntrustedScript, ScriptStarter, UntrustedConfig } from "@roster-lock/types";
 import { ScriptGlobals } from "@roster-lock/types";
 import { MultiSeedPRNG } from "./random";
 import { AvailablePieces } from "./available-pieces";
@@ -8,7 +8,8 @@ import { RequiredModule } from "./require-script";
 
 export function getScriptGlobals<ScriptModule>(
   { config, randomSeeds, purpose, entryScript, debugLog }: ScriptStarter,
-  scriptType: UntrustedScript<any>
+  scriptType: UntrustedScript<any>,
+  untrustedConfigs: Array<UntrustedConfig>,
 ): ScriptGlobals<ScriptModule> {
   const scripts = config.selection.scriptDictionary;
   const availablePieces = new AvailablePieces(config);
@@ -36,7 +37,9 @@ export function getScriptGlobals<ScriptModule>(
   const allowedPieces = getAllowedPieces(config, pieceType);
   randomSeeds.sort();
   const rng = new MultiSeedPRNG(seeds.concat(randomSeeds));
-  const requiredModule = new RequiredModule<ScriptModule>(scripts, entryScript.src, scriptType);
+  const requiredModule = new RequiredModule<ScriptModule>(
+    scripts, entryScript.src, scriptType, untrustedConfigs
+  );
   return {
     randomFloat: ()=>rng.nextFloat(),
     randomInt: (min: number, max: number)=>rng.nextInt(min, max),
