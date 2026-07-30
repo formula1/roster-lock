@@ -14,7 +14,9 @@ import { MatchAgentServer } from "./server";
 import { program } from "commander";
 import { createV1Routers } from "./handle-room/version-1";
 import { getSQLite3FolderDB } from "./handle-room/version-1/globals/FolderDB";
-import { PluginManager, createPluginCommands, syncPluginsToOfficialManifest } from "@roster-lock/plugin-runtime";
+import {
+  PluginManager, createPluginCommands, syncPluginsToOfficialManifest, DEFAULT_REPO_URL, manifestUrlFromRepo,
+} from "@roster-lock/plugin-runtime";
 
 
 program
@@ -147,7 +149,7 @@ program
   .option("--piece-folder <name>", "name of the pieces folder to create, relative to the config file", "pieces")
   .option("--plugin-folder <name>", "name of the plugins folder to create, relative to the config file", "plugins")
   .option("--force", "overwrite an existing config at the target location", false)
-  .requiredOption("--manifest-url <url>", "URL of the official plugin manifest to sync plugins against")
+  .option("--manifest-url <url>", "URL of the official plugin manifest to sync plugins against", manifestUrlFromRepo(DEFAULT_REPO_URL))
   .action(async (authCode: string, options: {
     configFile?: string, pieceFolder: string, pluginFolder: string, force: boolean, manifestUrl: string,
   }) => {

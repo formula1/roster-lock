@@ -1,5 +1,5 @@
 import {
-  DEFAULT_PLUGIN_DIR,
+  DEFAULT_PLUGIN_DIR, DEFAULT_REPO_URL, manifestUrlFromRepo,
   installPlugin, updatePlugin, uninstallPlugin, setPluginPriority, getPluginPackagesOfType,
   PLUGIN_TYPES, PluginType, getInstalledPlugins, fetchOfficialManifest, diffAgainstOfficial,
   syncPluginsToOfficialManifest,
@@ -111,7 +111,7 @@ export function createPluginCommands(options: CreatePluginCommandsOptions = {}):
       "safe to run anywhere, including machines you don't otherwise trust to install plugins."
     )
     .option('-d, --plugin-dir <dir>', 'folder where the plugins are')
-    .requiredOption('--manifest-url <url>', 'URL of the official plugin manifest to check against')
+    .option('--manifest-url <url>', 'URL of the official plugin manifest to check against', manifestUrlFromRepo(DEFAULT_REPO_URL))
     .action(async (options) => {
       const pluginDir = await resolvePluginDir(options.pluginDir);
       const official = await fetchOfficialManifest(options.manifestUrl);
@@ -143,7 +143,7 @@ export function createPluginCommands(options: CreatePluginCommandsOptions = {}):
       "packages (via Arborist) - only run this on a machine you trust, not an untrusted/shared one."
     )
     .option('-d, --plugin-dir <dir>', 'folder where the plugins are')
-    .requiredOption('--manifest-url <url>', 'URL of the official plugin manifest to sync against')
+    .option('--manifest-url <url>', 'URL of the official plugin manifest to sync against', manifestUrlFromRepo(DEFAULT_REPO_URL))
     .action(async (options) => {
       const pluginDir = await resolvePluginDir(options.pluginDir);
       const { installed, priorityChanges } = await syncPluginsToOfficialManifest(pluginDir, options.manifestUrl);
