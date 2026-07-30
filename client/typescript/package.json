@@ -2,11 +2,19 @@
   "name": "@roster-lock/ts-client",
   "version": "1.0.0",
   "description": "Simple client to be used by javascript packages",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/formula1/roster-lock.git",
+    "directory": "client/typescript"
+  },
   "license": "JSON",
   "author": "Sam Tobia",
   "type": "commonjs",
   "main": "dist/index.js",
   "types": "src/index.ts",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rimraf ./dist && tsc",

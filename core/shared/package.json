@@ -12,12 +12,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/formula1/roster-lock.git"
+    "url": "git+https://github.com/formula1/roster-lock.git",
+    "directory": "core/shared"
   },
   "license": "JSON",
   "author": "Sam Tobia",
   "main": "dist/index.js",
   "types": "src/index.ts",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "test": "vitest run tests/",
     "build": "rimraf ./dist && tsc",

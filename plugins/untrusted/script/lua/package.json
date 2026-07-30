@@ -2,6 +2,11 @@
   "name": "@roster-lock/untrusted-lua",
   "version": "1.0.3",
   "description": "Run lua in an untrusted environment",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/formula1/roster-lock.git",
+    "directory": "plugins/untrusted/script/lua"
+  },
   "license": "JSON",
   "author": "Sam Tobia",
   "type": "commonjs",
@@ -9,6 +14,9 @@
   "types": "./src/index.ts",
   "roster-lock": {
     "pluginType": "untrusted-script"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "test": "vitest run",

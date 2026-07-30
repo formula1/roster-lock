@@ -2,11 +2,19 @@
   "name": "@roster-lock/plugin-runtime",
   "version": "0.0.0",
   "description": "Uses external plugins to run untrusted script lanuages and download protocols",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/formula1/roster-lock.git",
+    "directory": "core/plugin-runtime"
+  },
   "license": "JSON",
   "author": "Sam Tobia",
   "type": "commonjs",
   "main": "dist/index.js",
   "types": "./src/index.ts",
+  "publishConfig": {
+    "access": "public"
+  },
   "bin": {
     "roster-lock-plugin-manager": "dist/index.js"
   },

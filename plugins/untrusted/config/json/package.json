@@ -2,6 +2,11 @@
   "name": "@roster-lock/untrusted-config-json",
   "version": "1.0.0",
   "description": "JSON config format plugin for roster-lock untrusted scripts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/formula1/roster-lock.git",
+    "directory": "plugins/untrusted/config/json"
+  },
   "license": "JSON",
   "author": "Sam Tobia",
   "type": "commonjs",
@@ -9,6 +14,9 @@
   "types": "./src/index.ts",
   "roster-lock": {
     "pluginType": "untrusted-config"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "test": "vitest run",

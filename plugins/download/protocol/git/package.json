@@ -2,6 +2,11 @@
   "name": "@roster-lock/dl-protocol-git",
   "version": "1.0.0",
   "description": "Handle downloading over git",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/formula1/roster-lock.git",
+    "directory": "plugins/download/protocol/git"
+  },
   "license": "JSON",
   "author": "Sam Tobia",
   "type": "commonjs",
@@ -10,6 +15,9 @@
   "roster-lock": {
     "pluginType": "dl-protocol",
     "priority": 1
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "build": "rimraf ./dist && tsc",
