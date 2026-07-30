@@ -1,6 +1,7 @@
 {
   "name": "@roster-lock/piece-selection-sort-highest-winrate-total",
   "version": "1.0.0",
+  "private": true,
   "description": "Ranks pieces by everyone in the match's win-rate with them",
   "license": "JSON",
   "author": "Sam Tobia",
