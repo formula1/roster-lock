@@ -953,6 +953,95 @@ importers:
         specifier: ^4.1.5
         version: 4.1.9(@types/node@25.9.4)(vite@6.4.3(@types/node@25.9.4)(terser@5.49.0)(tsx@4.22.4))
 
+  examples/website/auth-service:
+    dependencies:
+      '@roster-lock/utils':
+        specifier: workspace:*
+        version: link:../../../core/utils
+      '@roster-lock/website-auth':
+        specifier: workspace:*
+        version: link:../auth
+      hono:
+        specifier: ^4.11.3
+        version: 4.12.27
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^4.20260103.0
+        version: 4.20260629.1
+      '@types/node':
+        specifier: ^22.14.1
+        version: 22.20.0
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^4.1.5
+        version: 4.1.9(@types/node@22.20.0)(vite@6.4.3(@types/node@22.20.0)(terser@5.49.0)(tsx@4.22.4))
+      wrangler:
+        specifier: ^4.110.0
+        version: 4.110.0(@cloudflare/workers-types@4.20260629.1)(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+
+  examples/website/client:
+    dependencies:
+      '@roster-lock/config-editor-gui':
+        specifier: workspace:*
+        version: link:../../../core/config-editor/gui
+      '@roster-lock/shared':
+        specifier: workspace:*
+        version: link:../../../core/shared
+      '@roster-lock/types':
+        specifier: workspace:*
+        version: link:../../../core/types
+      '@roster-lock/utils':
+        specifier: workspace:*
+        version: link:../../../core/utils
+      react:
+        specifier: ^19.1.0
+        version: 19.2.7
+      react-dom:
+        specifier: ^19.1.0
+        version: 19.2.7(react@19.2.7)
+      react-router:
+        specifier: ^7.6.2
+        version: 7.18.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      react-router-dom:
+        specifier: ^7.6.2
+        version: 7.18.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      react-tooltip:
+        specifier: ^5.29.1
+        version: 5.30.1(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+    devDependencies:
+      '@types/react':
+        specifier: ^19.1.2
+        version: 19.2.17
+      '@types/react-dom':
+        specifier: ^19.1.2
+        version: 19.2.3(@types/react@19.2.17)
+      '@vitejs/plugin-react':
+        specifier: ^4.4.1
+        version: 4.7.0(vite@6.4.3(@types/node@25.9.4)(terser@5.49.0)(tsx@4.22.4))
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vite:
+        specifier: ^6.3.5
+        version: 6.4.3(@types/node@25.9.4)(terser@5.49.0)(tsx@4.22.4)
+
+  examples/website/db:
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^4.20260103.0
+        version: 4.20260629.1
+      rimraf:
+        specifier: ^6.1.3
+        version: 6.1.3
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^4.1.5
+        version: 4.1.9(@types/node@25.9.4)(vite@6.4.3(@types/node@25.9.4)(terser@5.49.0)(tsx@4.22.4))
+
   examples/website/download-provider:
     dependencies:
       '@roster-lock/dl-archive-tar':
@@ -970,6 +1059,9 @@ importers:
       '@roster-lock/website-auth':
         specifier: workspace:*
         version: link:../auth
+      '@roster-lock/website-db':
+        specifier: workspace:*
+        version: link:../db
       acorn:
         specifier: ^8.15.0
         version: 8.17.0
@@ -1013,6 +1105,127 @@ importers:
       wrangler:
         specifier: ^4.110.0
         version: 4.110.0(@cloudflare/workers-types@4.20260629.1)(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+
+  examples/website/game-coordinator:
+    dependencies:
+      '@roster-lock/types':
+        specifier: workspace:*
+        version: link:../../../core/types
+      '@roster-lock/utils':
+        specifier: workspace:*
+        version: link:../../../core/utils
+      hono:
+        specifier: ^4.11.3
+        version: 4.12.27
+      zod:
+        specifier: ^4.3.5
+        version: 4.4.3
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^4.20260103.0
+        version: 4.20260629.1
+      '@types/node':
+        specifier: ^22.14.1
+        version: 22.20.0
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^4.1.5
+        version: 4.1.9(@types/node@22.20.0)(vite@6.4.3(@types/node@22.20.0)(terser@5.49.0)(tsx@4.22.4))
+      wrangler:
+        specifier: ^4.110.0
+        version: 4.110.0(@cloudflare/workers-types@4.20260629.1)(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+
+  examples/website/matchmaking:
+    dependencies:
+      '@roster-lock/types':
+        specifier: workspace:*
+        version: link:../../../core/types
+      '@roster-lock/utils':
+        specifier: workspace:*
+        version: link:../../../core/utils
+      '@roster-lock/website-auth':
+        specifier: workspace:*
+        version: link:../auth
+      hono:
+        specifier: ^4.11.3
+        version: 4.12.27
+      zod:
+        specifier: ^4.3.5
+        version: 4.4.3
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^4.20260103.0
+        version: 4.20260629.1
+      '@types/node':
+        specifier: ^22.14.1
+        version: 22.20.0
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^4.1.5
+        version: 4.1.9(@types/node@22.20.0)(vite@6.4.3(@types/node@22.20.0)(terser@5.49.0)(tsx@4.22.4))
+      wrangler:
+        specifier: ^4.110.0
+        version: 4.110.0(@cloudflare/workers-types@4.20260629.1)(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+
+  examples/website/roster-provider:
+    dependencies:
+      '@roster-lock/shared':
+        specifier: workspace:*
+        version: link:../../../core/shared
+      '@roster-lock/types':
+        specifier: workspace:*
+        version: link:../../../core/types
+      '@roster-lock/utils':
+        specifier: workspace:*
+        version: link:../../../core/utils
+      '@roster-lock/website-auth':
+        specifier: workspace:*
+        version: link:../auth
+      '@roster-lock/website-db':
+        specifier: workspace:*
+        version: link:../db
+      hono:
+        specifier: ^4.11.3
+        version: 4.12.27
+      zod:
+        specifier: ^4.3.5
+        version: 4.4.3
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^4.20260103.0
+        version: 4.20260629.1
+      '@types/node':
+        specifier: ^22.14.1
+        version: 22.20.0
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^4.1.5
+        version: 4.1.9(@types/node@22.20.0)(vite@6.4.3(@types/node@22.20.0)(terser@5.49.0)(tsx@4.22.4))
+      wrangler:
+        specifier: ^4.110.0
+        version: 4.110.0(@cloudflare/workers-types@4.20260629.1)(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+
+  examples/website/scripts:
+    dependencies:
+      '@roster-lock/utils':
+        specifier: workspace:*
+        version: link:../../../core/utils
+    devDependencies:
+      '@types/node':
+        specifier: ^22.14.1
+        version: 22.20.0
+      tsx:
+        specifier: ^4.19.2
+        version: 4.22.4
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
 
   github-pages:
     devDependencies:
