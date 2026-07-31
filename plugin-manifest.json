@@ -1,0 +1,54 @@
+{
+  "plugins": {
+    "@roster-lock/dl-archive-rar": {
+      "version": "1.0.0"
+    },
+    "@roster-lock/dl-archive-tar": {
+      "version": "1.0.0"
+    },
+    "@roster-lock/dl-archive-zip": {
+      "version": "1.0.0"
+    },
+    "@roster-lock/dl-compression-brotli": {
+      "version": "1.0.0"
+    },
+    "@roster-lock/dl-compression-gzip": {
+      "version": "1.0.0"
+    },
+    "@roster-lock/dl-protocol-ftp": {
+      "version": "1.0.0"
+    },
+    "@roster-lock/dl-protocol-git": {
+      "version": "1.0.0",
+      "priority": 1
+    },
+    "@roster-lock/dl-protocol-http": {
+      "version": "1.0.0",
+      "priority": -1
+    },
+    "@roster-lock/dl-protocol-ipfs": {
+      "version": "1.0.0"
+    },
+    "@roster-lock/dl-protocol-s3": {
+      "version": "1.0.0"
+    },
+    "@roster-lock/dl-protocol-torrent": {
+      "version": "1.0.0"
+    },
+    "@roster-lock/untrusted-config-json": {
+      "version": "1.0.0"
+    },
+    "@roster-lock/untrusted-config-json5": {
+      "version": "1.0.0"
+    },
+    "@roster-lock/untrusted-config-jsonnet": {
+      "version": "1.0.0"
+    },
+    "@roster-lock/untrusted-lua": {
+      "version": "1.0.3"
+    },
+    "@roster-lock/untrusted-ts": {
+      "version": "1.0.3"
+    }
+  }
+}

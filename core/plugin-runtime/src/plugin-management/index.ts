@@ -7,7 +7,7 @@ import { importPluginModule } from "./module";
 import { PluginType, PluginTypeMap, PLUGIN_TYPE_VALIDATORS } from "./plugin-types";
 import { fetchOfficialManifest, diffAgainstOfficial } from "./official-manifest";
 
-export { DEFAULT_PLUGIN_DIR } from "./constants";
+export { DEFAULT_PLUGIN_DIR, DEFAULT_REPO_URL, manifestUrlFromRepo } from "./constants";
 export * from "./plugin-types";
 export * from "./official-manifest";
 

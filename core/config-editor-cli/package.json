@@ -2,12 +2,20 @@
   "name": "@roster-lock/config-editor-cli",
   "version": "0.0.1",
   "description": "A cli tool to build roster lock configs",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/formula1/roster-lock.git",
+    "directory": "core/config-editor-cli"
+  },
   "license": "JSON",
   "author": "Sam Tobia",
   "type": "commonjs",
   "main": "dist/index.js",
   "bin": {
     "rosterlock-config-editor": "dist/index.js"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "prebuild": "node scripts/generate-version.js",

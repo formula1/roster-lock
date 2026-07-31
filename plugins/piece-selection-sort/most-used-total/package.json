@@ -1,6 +1,7 @@
 {
   "name": "@roster-lock/piece-selection-sort-most-used-total",
   "version": "1.0.0",
+  "private": true,
   "description": "Ranks pieces by how often anyone in the match has picked them",
   "license": "JSON",
   "author": "Sam Tobia",

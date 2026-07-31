@@ -14,14 +14,16 @@ import { MatchAgentServer } from "./server";
 import { program } from "commander";
 import { createV1Routers } from "./handle-room/version-1";
 import { getSQLite3FolderDB } from "./handle-room/version-1/globals/FolderDB";
-import { PluginManager, createPluginCommands, syncPluginsToOfficialManifest } from "@roster-lock/plugin-runtime";
+import {
+  PluginManager, createPluginCommands, syncPluginsToOfficialManifest, DEFAULT_REPO_URL, manifestUrlFromRepo,
+} from "@roster-lock/plugin-runtime";
 
 
 program
   .name("rosterlock-match-agent")
   .description("Runs the match-agent server");
 
-// Resolves the same way `run` does (sibling config next to the executable,
+// Resolves the same way `listen` does (sibling config next to the executable,
 // falling back to home), so `plugin install` without -d/--plugin-dir lands
 // in the folder a mounted USB's config actually points at, instead of
 // silently defaulting to plugin-runtime's own ~/roster-lock/plugins.
@@ -42,8 +44,8 @@ for(const command of createPluginCommands({ getDefaultPluginDir: defaultPluginDi
 }
 
 program
-  .command("run")
-  .description("Runs the match-agent server")
+  .command("listen")
+  .description("Runs the match-agent server (leave this running while you play - it can serve multiple games/matches at once)")
   .option("--port <port>", "port to listen on", "58732")
   .option("--auth-code <string>", "authentication code required for access (overrides the config file)")
   .option("--piece-folder <path>", "folder to store downloaded pieces in (overrides the config file)")
@@ -138,7 +140,7 @@ program
   .description(
     "Install match-agent for regular (non-USB) use: creates pieces/plugins folders and a " +
     CONFIG_FILE_NAME + " at the default config location, stores the given auth code, and syncs " +
-    "plugins to the official manifest. Intended as the one-time setup step before `run`."
+    "plugins to the official manifest. Intended as the one-time setup step before `listen`."
   )
   .option(
     "--config-file <path>",
@@ -147,7 +149,7 @@ program
   .option("--piece-folder <name>", "name of the pieces folder to create, relative to the config file", "pieces")
   .option("--plugin-folder <name>", "name of the plugins folder to create, relative to the config file", "plugins")
   .option("--force", "overwrite an existing config at the target location", false)
-  .requiredOption("--manifest-url <url>", "URL of the official plugin manifest to sync plugins against")
+  .option("--manifest-url <url>", "URL of the official plugin manifest to sync plugins against", manifestUrlFromRepo(DEFAULT_REPO_URL))
   .action(async (authCode: string, options: {
     configFile?: string, pieceFolder: string, pluginFolder: string, force: boolean, manifestUrl: string,
   }) => {

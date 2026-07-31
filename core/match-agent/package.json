@@ -1,6 +1,6 @@
 {
   "name": "@roster-lock/match-agent",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "To be used in game to ensure all peices are ready",
   "keywords": [
     "roster-lock",
@@ -12,13 +12,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/formula1/roster-lock.git"
+    "url": "git+https://github.com/formula1/roster-lock.git",
+    "directory": "core/match-agent"
   },
   "license": "JSON",
   "author": "Sam Tobia",
   "type": "commonjs",
   "main": "dist/index.js",
   "types": "src/index.ts",
+  "publishConfig": {
+    "access": "public"
+  },
   "bin": {
     "rosterlock-match-agent": "dist/index.js"
   },

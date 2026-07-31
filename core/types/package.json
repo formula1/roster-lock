@@ -3,13 +3,18 @@
   "version": "1.0.0",
   "description": "Types for roster lock",
   "repository": {
-    "type": "git"
+    "type": "git",
+    "url": "git+https://github.com/formula1/roster-lock.git",
+    "directory": "core/types"
   },
   "license": "JSON",
   "author": "Sam Tobia",
   "type": "commonjs",
   "main": "dist/index.js",
   "types": "src/index.ts",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "rimraf ./dist && tsc",
     "prepare": "pnpm run build"

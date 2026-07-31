@@ -69,7 +69,7 @@ export async function startMatchAgent(
     "match-agent", process.execPath,
     [
       path.join(REPO_ROOT, "core/match-agent/dist/index.js"),
-      "run",
+      "listen",
       "--port", port,
       "--auth-code", authCode,
       "--piece-folder", folder,
