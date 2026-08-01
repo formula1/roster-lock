@@ -112,4 +112,55 @@ Theres 3 major categories for plugins
 - [Sorted Indexes](/plugins/piece-selection-sort) - Used for sorting pieces for the user for easy access. For example, sort by win rate or by usage.
 
 
+## Repository Structure
+
+Roster Lock is a pnpm monorepo. The main pieces:
+
+- `core/` - the engine itself
+  - [match-agent](/core/match-agent) - the agent a player runs locally; downloads/organizes pieces and talks to the game client
+  - [relay-server](/core/relay-server) - connects clients together for selection and piece sharing
+  - [plugin-runtime](/core/plugin-runtime) - loads and runs download/untrusted-script plugins
+  - [config-editor](/core/config-editor) - GUI (`gui`, `pwa`, `tauri`) and [CLI](/core/config-editor-cli) tools for building restriction configs
+  - `shared`, `types`, `utils` - code shared across the other core packages
+- [client/typescript](/client/typescript) - the TypeScript client used by games to talk to the match agent
+- `plugins/` - installable [Download](/plugins/download) and [Untrusted Script](/plugins/untrusted) implementations, plus [piece-selection-sort](/plugins/piece-selection-sort) strategies
+- [examples/full-local](/examples/full-local) - an end-to-end reference implementation (matchmaking, game coordinator, headless game) showing how the pieces fit together
+
+
+## Developing Roster Lock
+
+This section is for working on Roster Lock itself, not for using it in a game.
+
+Requires [pnpm](https://pnpm.io/) `10.7.0` (see `packageManager` in [package.json](package.json)).
+
+1. `pnpm install` - installs dependencies and builds packages
+2. `pnpm test:core` - run the core package test suites
+3. `pnpm test:example:full-local` - run the full-local integration example
+4. `pnpm test:plugin:integration` - run download-protocol plugin integration tests
+5. `pnpm generate-plugin-manifest` - regenerate [plugin-manifest.json](plugin-manifest.json) after adding or changing a plugin
+
+
+## Roadmap
+
+Roster Lock is still pre-1.0 and evolving. Known future directions:
+
+- Skins/Mods Support
+  - Allow a roster to specify optional media overrides
+  - Allow the user to override media with local assets
+- Match Agent Environments
+  - Internet Cafe
+    - Ensure everything works from a plugged in USB or Mobile Device
+  - Arcade
+    - Update (rosters/pre-downloaded pieces) multiple arcade machines at once
+    - See Status of a machine
+    - Load pieces from a plugged in USB or mobile device
+      - Should ignore everything else on the USB
+  - Local Network
+    - Download peer to peer instead of through the internet
+  - Mobile Device
+- Relay Room
+  - Relay over Direct TCP connection
+  - A simple self-hosted HTTP relay room server, as an alternative to Cloudflare
+
+> [plugins](/plugins) supporting more download protocols, archive and compression or untrusted scripts/configurations are happilly appreciated.
 
