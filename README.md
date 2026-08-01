@@ -133,7 +133,9 @@ Roster Lock is a pnpm monorepo. The main pieces:
 
 This section is for working on Roster Lock itself, not for using it in a game.
 
-Requires [pnpm](https://pnpm.io/) `10.7.0` (see `packageManager` in [package.json](package.json)).
+- Requires [node](https://nodejs.org/en)
+- Requires [pnpm](https://pnpm.io/) `10.7.0` (see `packageManager` in [package.json](package.json)).
+- Requires [docker compose](https://docs.docker.com/compose/) for integration tests and full-local example
 
 1. `pnpm install` - installs dependencies and builds packages
 2. `pnpm test:core` - run the core package test suites
