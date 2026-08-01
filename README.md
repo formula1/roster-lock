@@ -162,6 +162,10 @@ Roster Lock is still pre-1.0 and evolving. Known future directions:
   - Local Network
     - Download peer to peer instead of through the internet
   - Mobile Device
+  - [Happy Fun Times](https://github.com/greggman/HappyFunTimes)
+    - users can select on their mobile device
+    - Controller is a user's mobile device
+    - Game is run on a centralized hub
 - Relay Room
   - Relay over Direct TCP connection
   - A simple self-hosted HTTP relay room server, as an alternative to Cloudflare
