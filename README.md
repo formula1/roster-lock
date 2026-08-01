@@ -19,10 +19,9 @@ Some characters are absurdely overpowered compared to their counter parts. In ga
 ### Too many Pieces
 As the number of possible selectable game pieces (such as characters and stages) increases, the ability for a player to download all of them ahead of time becomes a problem. By only downloading the pieces they need for a specific match, the amount of data that needs to be downloaded is reduced.
 
-Thats where Roster Lock comes in. Roster lock has a few steps
-- Engine Lock - specify PieceTypes which are the file structure of "Legal" pieces. An engine can have multiple PieceTypes such as Characters and Stages
-- Restriction Lock - Collections with their own rules for selection, the PieceType of the collection, all the pieces that can be used and where to download them
-- Selection - Recieving a player's choices from the client Game, relaying to other players using commit/reveal (to prevent counter picking), validating player's choices and running any choice algorithms like democracy or random
+- [Engine Lock](/core/types/src/v1/lock/engine.ts) - specify PieceTypes. Each piece type has a legal file structure so that when downloaded a piece can be validated. In addition there may be a require piecetypes and selection strategy. An engine can have multiple PieceTypes such as Characters and Stages
+- [Rosters](/core/types/src/v1/lock/roster.ts) - Collections of piece defintions. Each piece has versions which identify its logic and media. A single piece can have multiple media versions but only one logic version. Each piece also indicates where to download it and what pieces it requires.
+- [Selection](/core/types/src/v1/lock/selection/index.ts) - The selection of each player needs to be validated. Players use a commit/reveal (to prevent counter picking), validating player's choices and running any choice algorithms like democracy or random. This is handled in the [match agent](/core/match-agent/src/handle-room/version-1/room-handler-bridge/steps.ts).
 - Usage - Downloading/Organizing the pieces and telling the client Game download progress, when finished and the location of each piece related
 
 
