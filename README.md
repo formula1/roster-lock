@@ -88,7 +88,9 @@ Most of the heavy lifting is implemented in the [match agent](/core/match-agent)
 - Relay Room - Used to share selections and download missing pieces
   - To spin up a relay room server, can just use cloudflare. If theres enough demand, a simple version using an http server can be made.
   - Before using the services, the Match maker and Game Coordinator must be regirstered on the relay room
-
+- Download Provider - Used by players to download pieces
+  - Support for [many](/plugins/download/protocol) has attempted to be implemented
+  - You can use existing websites as the download providers. Its probably a good idea to ask for permission as people will be downloading pieces directly without seeing advertisements which will eat into costs.
 
 #### Game Related Parts
 - Client Required - [See the typescript example](/client/typescript)
