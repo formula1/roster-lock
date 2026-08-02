@@ -21,6 +21,12 @@ import {
   removePieceCommand,
 } from "./commands/roster";
 import {
+  addMediaOverrideCommand,
+  editMediaOverrideCommand,
+  removeMediaOverrideCommand,
+  rescanMediaOverrideCommand,
+} from "./commands/media-override";
+import {
   addScriptCommand,
   selectionSetCommand,
   runScriptCommand,
@@ -69,6 +75,13 @@ rosterCommand.addCommand(testDownloadCommand);
 rosterCommand.addCommand(rosterListCommand);
 rosterCommand.addCommand(removePieceCommand);
 program.addCommand(rosterCommand);
+
+const mediaOverrideCommand = new Command("media-override").description("Edit the staged lock's partial media overrides (skins)");
+mediaOverrideCommand.addCommand(addMediaOverrideCommand);
+mediaOverrideCommand.addCommand(editMediaOverrideCommand);
+mediaOverrideCommand.addCommand(removeMediaOverrideCommand);
+mediaOverrideCommand.addCommand(rescanMediaOverrideCommand);
+program.addCommand(mediaOverrideCommand);
 
 const selectionCommand = new Command("selection").description("Edit the staged lock's selection config");
 selectionCommand.addCommand(addScriptCommand);

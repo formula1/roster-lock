@@ -53,6 +53,7 @@ export function makeValidLockConfig(): RosterLockV1Config {
         requiredPieces: {},
       }],
     },
+    mediaOverrides: {},
     selection: {
       piece: {
         character: {

@@ -34,7 +34,21 @@ export async function calculatePieceVersion(
   }
 }
 
-function shaSort(a: FileWithSha, b: FileWithSha){
+// A media override's own identity is one hash over its (already asset-name-scoped)
+// files - no logic/media/doc bucketing needed, the caller has already filtered
+// `files` down to only the assets the override declares.
+export async function calculateMediaOverrideVersion(
+  files: Map<string, unknown>,
+  getFile: FileGetter,
+  onProgress?: ProgressListener
+): Promise<string>{
+  const hashedFiles = await Promise.all(Array.from(files.keys()).map(async (relativePath) => ({
+    sha: await getHashFromFile(relativePath, getFile, onProgress),
+  })));
+  return calculateComnbinedHash(hashedFiles.sort(shaSort));
+}
+
+function shaSort(a: { sha: string }, b: { sha: string }){
   return a.sha.localeCompare(b.sha);
 }
 
@@ -57,7 +71,7 @@ async function getHashFromFile(
 }
 
 
-async function calculateComnbinedHash(files: Array<FileWithSha>){
+async function calculateComnbinedHash(files: Array<{ sha: string }>){
   if (files.length === 0) {
     return toHex(await crypto.subtle.digest("SHA-256", new Uint8Array(0)));
   }

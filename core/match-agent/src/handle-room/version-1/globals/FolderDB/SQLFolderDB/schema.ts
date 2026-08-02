@@ -99,6 +99,64 @@ CREATE TABLE IF NOT EXISTS download_sources (
   FOREIGN KEY (engine_name, piece_type, logic_hash, media_hash)
     REFERENCES pieces(engine_name, piece_type, logic_hash, media_hash)
 );
+
+CREATE TABLE IF NOT EXISTS media_overrides (
+  engine_name TEXT NOT NULL,
+  piece_type TEXT NOT NULL,
+  logic_hash TEXT NOT NULL,
+  override_hash TEXT NOT NULL,
+  name TEXT NOT NULL,
+  assets TEXT NOT NULL,
+  folder_name TEXT NOT NULL,
+  status TEXT NOT NULL CHECK(status IN ('pending', 'complete', 'error')),
+  created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  completed_at INTEGER,
+  PRIMARY KEY (engine_name, piece_type, logic_hash, override_hash)
+);
+
+CREATE INDEX IF NOT EXISTS idx_media_override_status ON media_overrides(status);
+CREATE INDEX IF NOT EXISTS idx_media_override_folder ON media_overrides(folder_name);
+
+CREATE TABLE IF NOT EXISTS media_override_download_sources (
+  engine_name TEXT NOT NULL,
+  piece_type TEXT NOT NULL,
+  logic_hash TEXT NOT NULL,
+  override_hash TEXT NOT NULL,
+  source TEXT NOT NULL,
+  last_test INTEGER,
+  success INTEGER,
+  error TEXT,
+  PRIMARY KEY (engine_name, piece_type, logic_hash, override_hash, source),
+  FOREIGN KEY (engine_name, piece_type, logic_hash, override_hash)
+    REFERENCES media_overrides(engine_name, piece_type, logic_hash, override_hash)
+);
+`;
+
+export type MediaOverrideIndex = {
+  engineName: string,
+  pieceType: string,
+  logicHash: string,
+  overrideHash: string,
+}
+
+export type MediaOverrideRow = {
+  engine_name: string,
+  piece_type: string,
+  logic_hash: string,
+  override_hash: string,
+  name: string,
+  assets: string,
+  folder_name: string,
+  status: "pending" | "complete" | "error",
+  created_at: number,
+  completed_at: number | null,
+}
+
+const MEDIA_OVERRIDE_WHERE = `
+  WHERE engine_name = @engineName
+    AND piece_type = @pieceType
+    AND logic_hash = @logicHash
+    AND override_hash = @overrideHash
 `;
 
 const PIECE_WHERE = `
@@ -442,7 +500,115 @@ export function prepareDatabase(dbLocation: string){
           return parsePieceRow(piece, sourcesByPiece.get(key) ?? []);
         }),
       };
-    }
+    },
+
+    getMediaOverrideState(
+      index: MediaOverrideIndex
+    ): undefined | {
+      status: MediaOverrideRow["status"],
+      folderName: string,
+      completedAt: number | null,
+    } {
+      const item = db.prepare(
+        `SELECT status, folder_name, completed_at FROM media_overrides ${MEDIA_OVERRIDE_WHERE}`
+      ).get(index) as Pick<MediaOverrideRow, "status" | "folder_name" | "completed_at"> | undefined;
+      if(!item) return undefined;
+      return {
+        status: item.status,
+        folderName: item.folder_name,
+        completedAt: item.completed_at,
+      };
+    },
+
+    insertNewMediaOverride(
+      override: MediaOverrideIndex & { name: string, assets: Array<string>, downloadSources: Array<string> },
+      folderName: string,
+    ){
+      const result = db.prepare(
+        `INSERT INTO media_overrides (
+          engine_name, piece_type, logic_hash, override_hash,
+          name, assets, folder_name, status
+        ) VALUES (
+          @engineName, @pieceType, @logicHash, @overrideHash,
+          @name, @assets, @folderName, 'pending'
+        )`
+      ).run({
+        engineName: override.engineName,
+        pieceType: override.pieceType,
+        logicHash: override.logicHash,
+        overrideHash: override.overrideHash,
+        name: override.name,
+        assets: JSON.stringify(override.assets),
+        folderName,
+      });
+      const insertSource = db.prepare(
+        `INSERT OR IGNORE INTO media_override_download_sources (
+          engine_name, piece_type, logic_hash, override_hash, source
+        ) VALUES (@engineName, @pieceType, @logicHash, @overrideHash, @source)`
+      );
+      for(const source of override.downloadSources){
+        insertSource.run({
+          engineName: override.engineName, pieceType: override.pieceType,
+          logicHash: override.logicHash, overrideHash: override.overrideHash, source,
+        });
+      }
+      return result;
+    },
+
+    recordMediaOverrideSourceTest(
+      index: MediaOverrideIndex,
+      source: string,
+      result: { success: boolean, error?: string },
+    ){
+      return db.prepare(
+        `INSERT INTO media_override_download_sources (
+          engine_name, piece_type, logic_hash, override_hash, source,
+          last_test, success, error
+        ) VALUES (
+          @engineName, @pieceType, @logicHash, @overrideHash, @source,
+          unixepoch(), @success, @error
+        )
+        ON CONFLICT (engine_name, piece_type, logic_hash, override_hash, source)
+        DO UPDATE SET
+          last_test = excluded.last_test,
+          success = excluded.success,
+          error = excluded.error`
+      ).run({
+        ...index,
+        source,
+        success: result.success ? 1 : 0,
+        error: result.error ?? null,
+      });
+    },
+
+    resetMediaOverrideStatus(
+      index: MediaOverrideIndex
+    ){
+      db.prepare(
+        `UPDATE media_overrides SET status = 'error' ${MEDIA_OVERRIDE_WHERE}`
+      ).run(index);
+    },
+
+    mediaOverrideSuccessfullyDownloaded(
+      index: MediaOverrideIndex,
+      downloadSource: string,
+    ){
+      this.recordMediaOverrideSourceTest(index, downloadSource, { success: true });
+      return db.prepare(
+        `UPDATE media_overrides SET status = 'complete', completed_at = unixepoch() ${MEDIA_OVERRIDE_WHERE}`
+      ).run(index);
+    },
+
+    mediaOverrideFailedToDownload(
+      index: MediaOverrideIndex,
+      downloadSource: string,
+      error: string,
+    ){
+      this.recordMediaOverrideSourceTest(index, downloadSource, { success: false, error });
+      db.prepare(
+        `UPDATE media_overrides SET status = 'error' ${MEDIA_OVERRIDE_WHERE}`
+      ).run(index);
+    },
   }
 }
 

@@ -47,6 +47,17 @@ export function makeLockConfig(): RosterLockV1Config {
         requiredPieces: {},
       }],
     },
+    mediaOverrides: {
+      character: {
+        "1.0.0": {
+          "override-1.0.0": {
+            name: "Alt Hero",
+            assets: ["model"],
+            downloadSources: ["http://example.com/alt-hero.tar"],
+          },
+        },
+      },
+    },
     selection: {
       piece: {
         character: {
@@ -65,6 +76,16 @@ export function makeHeroSelection(): Record<string, Array<SelectedPiece>> {
   return {
     character: [{
       id: "hero-1",
+      required: { weapon: { mandatory: [{ id: "sword-1", required: {} }], selectable: [] } },
+    }],
+  };
+}
+
+export function makeHeroSelectionWithMediaOverride(): Record<string, Array<SelectedPiece>> {
+  return {
+    character: [{
+      id: "hero-1",
+      mediaOverrides: ["override-1.0.0"],
       required: { weapon: { mandatory: [{ id: "sword-1", required: {} }], selectable: [] } },
     }],
   };

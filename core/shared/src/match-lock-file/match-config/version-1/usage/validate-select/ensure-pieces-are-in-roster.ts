@@ -16,6 +16,7 @@ export function ensurePiecesAreInRoster(
     if(!rosterPiece){
       throw new Error(`Piece ${piece.id} is not in the roster`);
     }
+    ensureMediaOverridesAreValid(config, pieceType, rosterPiece, piece.mediaOverrides ?? []);
     const pieceRequiredKeys = Object.keys(piece.required);
     if(pieceRequiredKeys.length !== requireConfig.size){
       throw new Error(`Piece ${piece.id} has incorrect number of required keys`);
@@ -33,6 +34,31 @@ export function ensurePiecesAreInRoster(
 }
 
 type RosterPiece = RosterLockV1Config["rosters"][string][number];
+
+function ensureMediaOverridesAreValid(
+  config: RosterLockV1Config, pieceType: PieceType, rosterPiece: RosterPiece, overrideHashes: Array<string>
+){
+  if(overrideHashes.length === 0) return;
+  if(new Set(overrideHashes).size !== overrideHashes.length){
+    throw new Error(`Piece ${rosterPiece.id} selected duplicate mediaOverrides`);
+  }
+  const availableOverrides = config.mediaOverrides?.[pieceType]?.[rosterPiece.version.logic] ?? {};
+  const claimedAssets = new Set<string>();
+  for(const hash of overrideHashes){
+    const entry = availableOverrides[hash];
+    if(!entry){
+      throw new Error(`Piece ${rosterPiece.id} selected unknown mediaOverride ${hash}`);
+    }
+    for(const assetName of entry.assets){
+      if(claimedAssets.has(assetName)){
+        throw new Error(
+          `Piece ${rosterPiece.id} selected mediaOverrides that both claim asset "${assetName}"`
+        );
+      }
+      claimedAssets.add(assetName);
+    }
+  }
+}
 function ensureCorrectMandatory(
   rosterPiece: RosterPiece, requiredPieceType: string, mandatoryPieces: Array<SelectedPiece>
 ){

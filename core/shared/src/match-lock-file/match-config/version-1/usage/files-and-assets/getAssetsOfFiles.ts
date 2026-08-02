@@ -52,6 +52,42 @@ export async function getAssetsOfFiles(
   return { filesWithAssets: fileCounts, assetsWithFiles: assetCounts };
 }
 
+// Like getAssetsOfFiles, but scoped to a media override's declared asset
+// names - a file resolving to an asset outside that set is an authoring
+// error (this scanner has no notion of "not applicable to this scan"),
+// rather than silently being included the way an unmatched file is.
+export async function getAssetsOfFilesForOverride(
+  files: Iterable<string> | AsyncIterable<string>,
+  pathVariables: Record<string, string>,
+  pieceDefinition: PieceDefinition,
+  allowedAssetNames: Set<string>,
+): Promise<{
+  filesWithAssets: Map<string, { assets: Array<EngineAssetDefinition> }>
+  errors: Array<{ type: "file", id: string, message: string }>
+}>{
+  const fileCounts = new Map<string, { assets: Array<EngineAssetDefinition> }>();
+  const errors: Array<{ type: "file", id: string, message: string }> = [];
+  for await (const filePath of files){
+    if(FILES_TO_IGNORE.includes(filePath)) continue;
+
+    const assetMatching = getMatchingAssetsForFile(pieceDefinition, pathVariables, filePath);
+    const asset = assetMatching[0];
+    if(!asset){
+      errors.push({ type: "file", id: filePath, message: "File has no matching assets" });
+      continue;
+    }
+    if(!allowedAssetNames.has(asset.name)){
+      errors.push({
+        type: "file", id: filePath,
+        message: `File matches asset "${asset.name}", which this override does not declare`,
+      });
+      continue;
+    }
+    fileCounts.set(filePath, { assets: assetMatching });
+  }
+  return { filesWithAssets: fileCounts, errors };
+}
+
 import { isValidAssetFileCount, validateAssetFileCount } from "./validateAssetFileCount";
 export function collectAssetFileErrors(
   { assetsWithFiles, filesWithAssets }: Awaited<ReturnType<typeof getAssetsOfFiles>>

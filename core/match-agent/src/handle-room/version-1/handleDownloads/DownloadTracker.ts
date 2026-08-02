@@ -94,5 +94,42 @@ async function tryToDownloadAnySource(
     pieceType,
     pieceVersions,
   });
-  return { pieceType, pieceId: selectedPiece.id, pieceVersions, folder };
+
+  const mediaOverrides = selectedPiece.mediaOverrides?.length
+    ? await Promise.all(selectedPiece.mediaOverrides.map((hash)=>(
+      downloadMediaOverride(db, lockconfig, pieceType, piece, hash, progressHandlers)
+    )))
+    : undefined;
+
+  return { pieceType, pieceId: selectedPiece.id, pieceVersions, folder, mediaOverrides };
+}
+
+async function downloadMediaOverride(
+  db: IFolderDB,
+  lockconfig: RosterLockV1Config,
+  pieceType: string,
+  piece: RosterLockV1Config["rosters"][string][number],
+  overrideHash: string,
+  progressHandlers: ProgressHandlers,
+): Promise<{ hash: string, folder: string }>{
+  const entry = lockconfig.mediaOverrides?.[pieceType]?.[piece.version.logic]?.[overrideHash];
+  if(!entry){
+    throw new Error(`Missing media override ${overrideHash} for piece ${piece.id} (${pieceType})`);
+  }
+  progressHandlers.onProgress({
+    type: ROSTERLOCK_DOWNLOAD_STATE.mediaOverrideDownloadStart,
+    pieceType,
+    logic: piece.version.logic,
+    override: overrideHash,
+  });
+  const folder = await db.ensureMediaOverrideExists(
+    lockconfig.engine, pieceType, piece.version.logic, overrideHash, entry, piece.pathVariables, progressHandlers
+  );
+  progressHandlers.onProgress({
+    type: ROSTERLOCK_DOWNLOAD_STATE.mediaOverrideDownloadFinished,
+    pieceType,
+    logic: piece.version.logic,
+    override: overrideHash,
+  });
+  return { hash: overrideHash, folder };
 }

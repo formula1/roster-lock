@@ -8,6 +8,7 @@ export const EMPTY_ROSTER_LOCK: RosterLockV1Config = {
   version: "0.0.0",
   engine: { name: "", version: "", pieceDefinitions: {} },
   rosters: {},
+  mediaOverrides: {},
   selection: { piece: {}, globalValidation: [], scriptDictionary: {}, },
   pieceMeta: {},
 }
@@ -18,6 +19,7 @@ export const EMPTY_ROSTER_DRAFT: RosterLockV1Draft = {
   stagedLock: cloneJSON(EMPTY_ROSTER_LOCK),
   draft: {
     rosterPieceInfo: {},
+    mediaOverrideInfo: {},
     selectionScriptInfo: {},
   }
 };

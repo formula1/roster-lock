@@ -1,5 +1,5 @@
 
-import { PlayerId, PieceType, PieceId } from "../../shared";
+import { PlayerId, PieceType, PieceId, Sha256 } from "../../shared";
 import { SelectedPiece } from "../shared";
 
 export * from "./download-event";
@@ -23,6 +23,7 @@ export type DownloadResult = {
   pieceId: PieceId,
   pieceVersions: { logic: string, media: string },
   folder: string,
+  mediaOverrides?: Array<{ hash: Sha256, folder: string }>,
 }
 
 export type DownloadResultsMap = Record<PieceType, Record<PieceId, DownloadResult>>;

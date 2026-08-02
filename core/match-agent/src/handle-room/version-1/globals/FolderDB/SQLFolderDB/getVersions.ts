@@ -1,6 +1,6 @@
 
 import { RosterLockV1Config } from "@roster-lock/types";
-import { calculatePieceVersion, getAssetsOfFiles } from "@roster-lock/shared";
+import { calculatePieceVersion, calculateMediaOverrideVersion, getAssetsOfFiles, getAssetsOfFilesForOverride } from "@roster-lock/shared";
 import { getFilesFromFolder } from "../../../../../utils/fs";
 
 type PieceDefinition = RosterLockV1Config["engine"]["pieceDefinitions"][string];
@@ -14,6 +14,23 @@ export async function getDownloadSourceVersion(
     getFilesFromFolder(folder), pathVariables, pieceDefinition
   );
   return calculatePieceVersion(
+    filesWithAssets, (relativePath) => getFileFromRoot(folder, relativePath)
+  );
+}
+
+export async function getMediaOverrideDownloadSourceVersion(
+  folder: string,
+  pathVariables: Record<string, string>,
+  pieceDefinition: PieceDefinition,
+  assetNames: Array<string>,
+){
+  const { filesWithAssets, errors } = await getAssetsOfFilesForOverride(
+    getFilesFromFolder(folder), pathVariables, pieceDefinition, new Set(assetNames)
+  );
+  if(errors.length > 0){
+    throw new Error(`Downloaded media override contains unexpected files: ${errors.map((e)=>e.id).join(", ")}`);
+  }
+  return calculateMediaOverrideVersion(
     filesWithAssets, (relativePath) => getFileFromRoot(folder, relativePath)
   );
 }
