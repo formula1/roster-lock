@@ -10,6 +10,7 @@ import { ProgressHandlers } from "../../../src/handle-room/version-1/handleDownl
 // orchestration without a real download source.
 export class FakeFolderDB implements IFolderDB {
   public calls: Array<{ pieceType: string, pieceId: string }> = [];
+  public mediaOverrideCalls: Array<{ pieceType: string, logicHash: string, overrideHash: string }> = [];
 
   async ensurePieceExists(
     _lockConfig: RosterLockV1Config["engine"],
@@ -24,6 +25,22 @@ export class FakeFolderDB implements IFolderDB {
   async *getFilesofAsset(): AsyncIterable<string> {}
 
   async getPieceFileContents(): ReturnType<IFolderDB["getPieceFileContents"]> {
+    throw new Error("not implemented in FakeFolderDB");
+  }
+
+  async ensureMediaOverrideExists(
+    _lockConfig: RosterLockV1Config["engine"],
+    pieceType: string,
+    logicHash: string,
+    overrideHash: string,
+  ): ReturnType<IFolderDB["ensureMediaOverrideExists"]> {
+    this.mediaOverrideCalls.push({ pieceType, logicHash, overrideHash });
+    return `/fake/${pieceType}/media-overrides/${overrideHash}`;
+  }
+
+  async *getMediaOverrideFilesOfAsset(): AsyncIterable<string> {}
+
+  async getMediaOverrideFileContents(): ReturnType<IFolderDB["getMediaOverrideFileContents"]> {
     throw new Error("not implemented in FakeFolderDB");
   }
 

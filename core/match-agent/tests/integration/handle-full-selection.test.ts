@@ -4,7 +4,7 @@ import { bindStepsToBridge } from "../../src/handle-room/version-1/room-handler-
 import { wireBridgePair } from "./helpers/bridge";
 import { driveRoomProtocol } from "./helpers/room";
 import { FakeFolderDB } from "./helpers/fakeFolderDB";
-import { makeLockConfig, makeHeroSelection } from "./helpers/lockConfig";
+import { makeLockConfig, makeHeroSelection, makeHeroSelectionWithMediaOverride } from "./helpers/lockConfig";
 import { createFixturePluginDir } from "./helpers/plugin-dir";
 
 const MOST_USED_LOCALLY = "@roster-lock/piece-selection-sort-most-used-locally";
@@ -139,5 +139,55 @@ describe("bindStepsToBridge: handleFullSelection hook", () => {
     await vi.waitFor(() => {
       expect(existsSync(join(pluginDir, "data", "broken-plugin"))).toBe(true);
     });
+  });
+
+  it("downloads a selected mediaOverride alongside its piece once the room agrees on a final selection", async () => {
+    const fixture = await createFixturePluginDir([]);
+    cleanups.push(fixture.cleanup);
+    const pluginRuntime = await PluginManager.create(fixture.pluginDir);
+
+    const lockConfig = makeLockConfig();
+    const machines = [{ publicKey: "pk-a", playerCount: 1 }, { publicKey: "pk-b", playerCount: 1 }];
+
+    const pairA = wireBridgePair();
+    const pairB = wireBridgePair();
+    const fileDBA = new FakeFolderDB();
+    const fileDBB = new FakeFolderDB();
+
+    const resultAPromise = bindStepsToBridge({
+      bridge: pairA.agentSide,
+      fileDB: fileDBA,
+      pluginRuntime,
+      machines,
+      ownMachinePublicKey: "pk-a",
+      ownSelections: { 0: makeHeroSelectionWithMediaOverride() },
+      lockConfig,
+      gameControlledSelections: {},
+    });
+    const resultBPromise = bindStepsToBridge({
+      bridge: pairB.agentSide,
+      fileDB: fileDBB,
+      pluginRuntime,
+      machines,
+      ownMachinePublicKey: "pk-b",
+      ownSelections: { 0: makeHeroSelectionWithMediaOverride() },
+      lockConfig,
+      gameControlledSelections: {},
+    });
+
+    await driveRoomProtocol([
+      { bridge: pairA.roomSide, publicKey: "pk-a" },
+      { bridge: pairB.roomSide, publicKey: "pk-b" },
+    ]);
+
+    await Promise.all([resultAPromise, resultBPromise]);
+
+    // Every peer downloads the same agreed-upon selection - both sides
+    // should have fetched the override, not just the client that chose it.
+    for(const fileDB of [fileDBA, fileDBB]){
+      expect(fileDB.mediaOverrideCalls).toEqual([
+        { pieceType: "character", logicHash: "1.0.0", overrideHash: "override-1.0.0" },
+      ]);
+    }
   });
 });

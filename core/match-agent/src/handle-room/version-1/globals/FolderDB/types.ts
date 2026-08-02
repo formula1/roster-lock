@@ -1,4 +1,4 @@
-import { RosterLockPiece, RosterLockV1Config } from "@roster-lock/types";
+import { RosterLockPiece, RosterLockV1Config, MediaOverrideEntry } from "@roster-lock/types";
 import { ProgressHandlers } from "../../handleDownloads/types";
 import { Readable } from "node:stream";
 
@@ -52,6 +52,33 @@ export interface IFolderDB {
     pieceType: string,
     selectedPiece: Pick<RosterLockPiece, "version" | "pathVariables">,
     filePath: string
+  ): Promise<Readable>
+  // pathVariables is the owning piece's - a MediaOverrideEntry has none of
+  // its own, its files are assumed to follow the same glob convention as the
+  // piece it overrides.
+  ensureMediaOverrideExists(
+    engineConfig: RosterLockV1Config["engine"],
+    pieceType: string,
+    logicHash: string,
+    overrideHash: string,
+    entry: MediaOverrideEntry,
+    pathVariables: Record<string, string>,
+    progressHandlers: ProgressHandlers,
+  ): Promise<string>
+  getMediaOverrideFilesOfAsset(
+    engineConfig: RosterLockV1Config["engine"],
+    pieceType: string,
+    logicHash: string,
+    overrideHash: string,
+    pathVariables: Record<string, string>,
+    assetName: string,
+  ): AsyncIterable<string>
+  getMediaOverrideFileContents(
+    engineConfig: RosterLockV1Config["engine"],
+    pieceType: string,
+    logicHash: string,
+    overrideHash: string,
+    filePath: string,
   ): Promise<Readable>
   listPieces(
     engineName: string,

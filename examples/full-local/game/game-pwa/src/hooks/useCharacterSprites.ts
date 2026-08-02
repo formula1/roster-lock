@@ -17,7 +17,7 @@ const NO_SPRITE: Sprite = { frontUrl: null, backUrl: null };
 // Download screen's sync-dl step guarantees that before the Game screen
 // mounts), so unlike usePieceMedia there's no downloaded-pieces gate here.
 export function useCharacterSprites(rosterConfig: RosterLockV1Config, characterIds: Array<string>) {
-  const { matchAgent } = useGameSession();
+  const { matchAgent, downloadResult } = useGameSession();
   const [sprites, setSprites] = useState<Record<string, Sprite>>({});
   const started = useRef<Set<string>>(new Set());
 
@@ -29,7 +29,16 @@ export function useCharacterSprites(rosterConfig: RosterLockV1Config, characterI
       if (!piece || started.current.has(piece.id)) continue;
       started.current.add(piece.id);
 
-      const info = { version: 1 as const, engine: rosterConfig.engine, pieceType: "character", piece };
+      // downloadResult.downloadResults is the room's agreed, already-downloaded
+      // outcome (not just this player's own picks) - covers ally and enemy
+      // characters alike, keyed by piece id. See DownloadResult.mediaOverrides.
+      // match-agent figures out (per file) whether any of these actually
+      // apply - we don't need to know the "visuals" asset name here at all.
+      const mediaOverrides = (
+        downloadResult?.downloadResults?.character?.[piece.id]?.mediaOverrides ?? []
+      ).map((o) => o.hash);
+
+      const info = { version: 1 as const, engine: rosterConfig.engine, pieceType: "character", piece, mediaOverrides };
       Promise.all([
         getPieceFileBlob({ ...info, filePath: FRONT_FILE }, matchAgent.authCode, matchAgent.url).catch(() => null),
         getPieceFileBlob({ ...info, filePath: BACK_FILE }, matchAgent.authCode, matchAgent.url).catch(() => null),
@@ -38,7 +47,7 @@ export function useCharacterSprites(rosterConfig: RosterLockV1Config, characterI
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [matchAgent, rosterConfig, characterIds.join(",")]);
+  }, [matchAgent, rosterConfig, downloadResult, characterIds.join(",")]);
 
   function spriteFor(characterId: string): Sprite {
     const piece = characterPiece(rosterConfig, characterId);

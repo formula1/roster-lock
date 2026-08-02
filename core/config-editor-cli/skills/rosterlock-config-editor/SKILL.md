@@ -17,7 +17,7 @@ enough to have it.
 It edits a **draft** file (`*.rosterlock.draft.json`), which wraps a `stagedLock`
 (the config being built), a `previousLock` (the last published baseline, for
 semver diffing), and draft-only bookkeeping (`draft.rosterPieceInfo`,
-`draft.selectionScriptInfo`).
+`draft.mediaOverrideInfo`, `draft.selectionScriptInfo`).
 
 **`--help` is the source of truth for exact flags.** This doc gives you the shape
 of the CLI and the order operations need to happen in; run
@@ -46,11 +46,13 @@ test -x bin/rosterlock-config-editor || pnpm run package
 
 If you only need to run something once and don't want to package a binary, and
 you're working inside the roster-lock monorepo (this package's dependencies are
-workspace-linked there), `pnpm dev -- <args>` runs the CLI directly from source
-via `tsx` (no build/package step, slightly slower startup).
+workspace-linked there), `pnpm run dev <args>` runs the CLI directly from source
+via `tsx` (no build/package step, slightly slower startup). Don't put `--` before
+`<args>` - `pnpm run dev -- <args>` forwards a literal `--` into the CLI's own
+argv, which breaks commander's subcommand routing past the first level.
 
 All examples below assume `ROSTERLOCK=./bin/rosterlock-config-editor` (adjust the
-path if you're invoking it from elsewhere - e.g. `pnpm dev --` if running from
+path if you're invoking it from elsewhere - e.g. `pnpm run dev` if running from
 source).
 
 ## Command map
@@ -79,6 +81,11 @@ $ROSTERLOCK roster rescan <pieceType> <pieceId> [folder] [--path-variables <k=v,
 $ROSTERLOCK roster test-download <pieceType> <pieceId> <sourceUrl>   # downloads and verifies a source's hash matches
 $ROSTERLOCK roster remove-piece <pieceType> <pieceId>
 $ROSTERLOCK roster list [pieceType] [-d <draft>]
+
+$ROSTERLOCK media-override add <pieceType> <pieceId> <folder> [--asset <name> ..] [--download-source <url> ..] [--name <n>] [--json <file|->]
+$ROSTERLOCK media-override edit <pieceType> <pieceId> <overrideHash> [--name <n>] [--add-download-source <url>] [--remove-download-source <url>] [--json <file|->]
+$ROSTERLOCK media-override rescan <pieceType> <pieceId> <overrideHash> [folder]  # recomputes the content hash; moves the entry to the new hash
+$ROSTERLOCK media-override remove <pieceType> <pieceId> <overrideHash>
 
 $ROSTERLOCK selection add-script <fileOrFolder> [--key <relPath>]
 $ROSTERLOCK selection set <pieceType> --type <normal|preselected|unselectable|game-controlled> [--json <file|->]
@@ -116,12 +123,22 @@ the draft's directory.
    needs `pieces`; `unselectable`/`game-controlled` need neither - just `pieceMeta`
    if you're using per-piece metadata. Pass the type-specific fields via `--json`
    (see shape in `selection set --help`).
-5. **Validate before finishing up**: `draft validate` runs the full (non-draft)
+5. **(Optional) Add partial media overrides** ("skins" - roster-approved swaps of
+   only some of a piece's media assets, e.g. just a sprite, not its sound): `media-override
+   add <type> <pieceId> <folder> --asset <assetName>` scans `folder` for exactly the
+   named asset(s) - the folder must contain only files matching those assets' globs,
+   nothing else - and registers it under that piece's *logic hash* (so it stays valid
+   across future `roster rescan`s of the same piece, as long as the logic hash doesn't
+   change). Needs at least one download source, same as `roster add-piece`. Since the
+   override's own content hash is its map key, `media-override rescan` moves the entry
+   to a new key rather than editing in place - `media-override edit` is only for
+   name/downloadSources, not the asset files themselves.
+6. **Validate before finishing up**: `draft validate` runs the full (non-draft)
    schema against `stagedLock` and reports *every* issue in one pass (not just the
    first) - use it to iterate through problems instead of running `publish`
    repeatedly. (Plain `validate` without `draft` only checks structure - it
    deliberately allows an in-progress/incomplete draft.)
-6. **Promote and/or publish**: `draft promote` moves `stagedLock` forward as the
+7. **Promote and/or publish**: `draft promote` moves `stagedLock` forward as the
    new `previousLock` baseline (for future diffs) without producing an output file.
    `draft publish <path>` writes a standalone, semver-bumped lock file and prints
    why the version changed, without touching the draft.

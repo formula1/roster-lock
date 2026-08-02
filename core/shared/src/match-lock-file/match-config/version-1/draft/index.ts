@@ -8,6 +8,7 @@ import { RosterLockV1Schema, RosterLockV1SchemaKeywords } from "../lock";
 import { buildIdentity } from "../shared";
 
 import { rosterPieceInfoSchema } from "./roster-piece-info";
+import { mediaOverrideInfoSchema } from "./media-override-info";
 import { selectionScriptInfoSchema } from "./selection-script-info";
 
 export const RosterLockV1DraftSchema: JSONSchemaType<RosterLockV1Draft> = {
@@ -30,6 +31,16 @@ export const RosterLockV1DraftSchema: JSONSchemaType<RosterLockV1Draft> = {
           additionalProperties: {
             type: "object", required: [],
             additionalProperties: rosterPieceInfoSchema
+          }
+        },
+        mediaOverrideInfo: {
+          type: "object", nullable: true, required: [],
+          additionalProperties: {
+            type: "object", required: [],
+            additionalProperties: {
+              type: "object", required: [],
+              additionalProperties: mediaOverrideInfoSchema
+            }
           }
         },
         selectionScriptInfo: {

@@ -1,15 +1,15 @@
 import { IFolderDB, StoredPieceListing } from "../types";
-import { RosterLockV1Config, ROSTERLOCK_DOWNLOAD_STATE } from "@roster-lock/types";
+import { RosterLockV1Config, MediaOverrideEntry, ROSTERLOCK_DOWNLOAD_STATE } from "@roster-lock/types";
 
 import { existsSync as fsExists, createReadStream } from "node:fs";
-import { rm as fsRm, mkdir } from "node:fs/promises";
+import { rm as fsRm } from "node:fs/promises";
 import { join as pathJoin, isAbsolute as isAbsolutePath, relative as pathRelative } from "node:path";
 import { ProgressHandlers } from "../../../handleDownloads/types";
 
 import { PluginManager } from "@roster-lock/plugin-runtime";
-import { getDownloadSourceVersion } from "./getVersions";
+import { getDownloadSourceVersion, getMediaOverrideDownloadSourceVersion } from "./getVersions";
 import { prepareDatabase } from "./schema";
-import { MultiAbortSignal, raceWithAbort } from "./MultiAbort";
+import { DownloadCoordinator, downloadWithFallbackSources } from "./downloadHelpers";
 import { ulid } from 'ulid';
 import { HTTPError } from "../../../../../utils/http-router";
 import { getMatchingAssetsForFile } from "@roster-lock/shared";
@@ -39,12 +39,17 @@ function pieceIndexOf(
   };
 }
 
+type MediaOverrideIndex = {
+  engineName: string,
+  pieceType: string,
+  logicHash: string,
+  overrideHash: string,
+}
+
 export class SQLite3FolderDB implements IFolderDB {
   private db: ReturnType<typeof prepareDatabase>;
-  private activeDownloads = new Map<string, {
-    multiSignal: MultiAbortSignal,
-    result: Promise<string>
-  }>();
+  private pieceDownloads = new DownloadCoordinator<string>();
+  private mediaOverrideDownloads = new DownloadCoordinator<string>();
 
   constructor(public folder: string, private pluginRuntime: PluginManager){
     if(!isAbsolutePath(folder)){
@@ -65,6 +70,12 @@ export class SQLite3FolderDB implements IFolderDB {
     engine: RosterLockV1Config["engine"], pieceType: string, folderName: string
   ){
     return pathJoin(this.folder, engine.name, pieceType, folderName);
+  }
+
+  private mediaOverrideFolder(
+    engine: RosterLockV1Config["engine"], pieceType: string, folderName: string
+  ){
+    return pathJoin(this.folder, engine.name, pieceType, "media-overrides", folderName);
   }
 
   async listPieces(
@@ -155,6 +166,51 @@ export class SQLite3FolderDB implements IFolderDB {
     const folder = this.pieceFolder(
       engineConfig, pieceType, state.folderName
     );
+    return this.readFileInFolder(folder, filePath);
+  }
+
+  async* getMediaOverrideFilesOfAsset(
+    engineConfig: RosterLockV1Config["engine"],
+    pieceType: string,
+    logicHash: string,
+    overrideHash: string,
+    pathVariables: Record<string, string>,
+    assetName: string
+  ): AsyncIterable<string>{
+    const index = { engineName: engineConfig.name, pieceType, logicHash, overrideHash };
+    const state = this.db.getMediaOverrideState(index);
+    if(!state) throw new HTTPError(404, "Media override doesn't exist");
+    if(state.status !== "complete")
+      throw new HTTPError(409, "Media override not finished");
+    const folder = this.mediaOverrideFolder(engineConfig, pieceType, state.folderName);
+    for await (const path of getFilesFromFolder(folder)){
+      const assets = getMatchingAssetsForFile(
+        engineConfig.pieceDefinitions[pieceType],
+        pathVariables,
+        path
+      );
+      if(assets[0]?.name === assetName)
+        yield path;
+    }
+  }
+
+  async getMediaOverrideFileContents(
+    engineConfig: RosterLockV1Config["engine"],
+    pieceType: string,
+    logicHash: string,
+    overrideHash: string,
+    filePath: string
+  ): Promise<Readable> {
+    const index = { engineName: engineConfig.name, pieceType, logicHash, overrideHash };
+    const state = this.db.getMediaOverrideState(index);
+    if(!state) throw new HTTPError(404, "Media override doesn't exist");
+    if(state.status !== "complete")
+      throw new HTTPError(409, "Media override not finished");
+    const folder = this.mediaOverrideFolder(engineConfig, pieceType, state.folderName);
+    return this.readFileInFolder(folder, filePath);
+  }
+
+  private readFileInFolder(folder: string, filePath: string): Readable {
     const fullPath = pathJoin(folder, filePath);
     const rel = pathRelative(folder, fullPath)
     if(rel.startsWith("..") || isAbsolutePath(rel))
@@ -172,50 +228,15 @@ export class SQLite3FolderDB implements IFolderDB {
     progressHandlers: ProgressHandlers,
   ){
     const pieceIndex = pieceIndexOf(lockConfigEngine, pieceType, selectedPiece);
-    // Check if already completed
     const state = this.db.getPieceState(pieceIndex);
     if(state && state.status === "complete") return this.pieceFolder(
       lockConfigEngine, pieceType, state.folderName
     );
 
-    // Check if currently downloading
     const key = pieceToKey(pieceIndex);
-    const activePromise = this.activeDownloads.get(key);
-    if(activePromise){
-      activePromise.multiSignal.addSignal(progressHandlers);
-      try {
-        return await raceWithAbort(activePromise.result, progressHandlers.abortSignal);
-      }catch(e){
-        activePromise.multiSignal.removeSignal(progressHandlers);
-        throw e;
-      }
-    }
-
-    // Check if already exists but failed
-    if(state && state.status === "pending"){
-      this.db.resetPieceStatus(pieceIndex);
-    }
-
-    // Start a new download
-    const multiSignal = new MultiAbortSignal([progressHandlers]);
-    const promise = this.addNewPiece(lockConfigEngine, pieceType, selectedPiece, multiSignal.abortSignal);
-    this.activeDownloads.set(key, {
-      multiSignal,
-      result: promise,
-    });
-    // promise is already awaited below via raceWithAbort; catch here too so
-    // this second attached continuation doesn't count as an unhandled
-    // rejection (each .then/.finally chain is tracked independently by Node).
-    promise.finally(()=>{
-      multiSignal.clear();
-      this.activeDownloads.delete(key);
-    }).catch(()=>{});
-    try {
-      return await raceWithAbort(promise, progressHandlers.abortSignal);
-    }catch(e){
-      multiSignal.removeSignal(progressHandlers);
-      throw e;
-    }
+    return this.pieceDownloads.run(key, progressHandlers, (abortSignal)=>(
+      this.addNewPiece(lockConfigEngine, pieceType, selectedPiece, abortSignal, key)
+    ));
   }
 
   private async addNewPiece(
@@ -223,10 +244,12 @@ export class SQLite3FolderDB implements IFolderDB {
     pieceType: string,
     newPiece: RosterLockPiece,
     abortSignal: AbortSignal,
+    coordinatorKey: string,
   ){
     const pieceIndex = pieceIndexOf(lockConfigEngine, pieceType, newPiece);
+    const existingState = this.db.getPieceState(pieceIndex);
+    if(existingState) this.db.resetPieceStatus(pieceIndex);
     const { folderName }: { folderName: string } = await (async ()=>{
-      const existingState = this.db.getPieceState(pieceIndex);
       if(existingState){
         await fsRm(
           this.pieceFolder(lockConfigEngine, pieceType, existingState.folderName),
@@ -249,69 +272,135 @@ export class SQLite3FolderDB implements IFolderDB {
       return { folderName: pieceFolder };
     })();
 
-
     const fullPath = this.pieceFolder(lockConfigEngine, pieceType, folderName);
-    for(const downloadLocation of newPiece.downloadSources){
-      try {
-        await mkdir(fullPath, { recursive: true });
-        const { finishPromise } = await this.pluginRuntime.downloadToFolder(
-          {
-            url: downloadLocation,
-            destinationFolder: fullPath,
-            processHandlers: {
-              onProgress: (progress) => {
-                this.emitProgress(pieceIndex, {
-                  type: ROSTERLOCK_DOWNLOAD_STATE.downloadProgress,
-                  pieceType: pieceType,
-                  pieceVersions: { logic: pieceIndex.logic, media: pieceIndex.media },
-                  progress,
-                });
-              },
-              abortSignal,
-            }
-          }
-        );
-        await finishPromise;
-        this.emitProgress(pieceIndex, {
-          type: ROSTERLOCK_DOWNLOAD_STATE.downloadValidation,
-          pieceType: pieceIndex.pieceType,
-          pieceVersions: { logic: pieceIndex.logic, media: pieceIndex.media },
-        });
-        const downloadedVersions = await getDownloadSourceVersion(
-          fullPath, newPiece.pathVariables, lockConfigEngine.pieceDefinitions[pieceType]
-        );
-        if(downloadedVersions.logic !== pieceIndex.logic || downloadedVersions.media !== pieceIndex.media){
-          throw new Error("Version Mismatch");
-        }
-        this.db.pieceSuccessfullyDownloaded(pieceIndex, downloadLocation);
-        return fullPath;
-      }catch(e){
-        this.db.pieceFailedToDownload(pieceIndex, downloadLocation, (e as Error).message);
-        await fsRm(fullPath, { recursive: true, force: true });
-        this.emitProgress(pieceIndex, {
+    await downloadWithFallbackSources({
+      downloadSources: newPiece.downloadSources,
+      destinationFolder: fullPath,
+      abortSignal,
+      pluginRuntime: this.pluginRuntime,
+      onProgress: (progress) => this.pieceDownloads.emitProgress(coordinatorKey, {
+        type: ROSTERLOCK_DOWNLOAD_STATE.downloadProgress,
+        pieceType,
+        pieceVersions: { logic: pieceIndex.logic, media: pieceIndex.media },
+        progress,
+      }),
+      onValidating: () => this.pieceDownloads.emitProgress(coordinatorKey, {
+        type: ROSTERLOCK_DOWNLOAD_STATE.downloadValidation,
+        pieceType,
+        pieceVersions: { logic: pieceIndex.logic, media: pieceIndex.media },
+      }),
+      verify: (folder) => getDownloadSourceVersion(
+        folder, newPiece.pathVariables, lockConfigEngine.pieceDefinitions[pieceType]
+      ),
+      versionsMatch: (actual) => (
+        actual.logic === pieceIndex.logic && actual.media === pieceIndex.media
+      ),
+      onSourceSuccess: (source) => this.db.pieceSuccessfullyDownloaded(pieceIndex, source),
+      onSourceFailure: (source, message) => {
+        this.db.pieceFailedToDownload(pieceIndex, source, message);
+        this.pieceDownloads.emitProgress(coordinatorKey, {
           type: ROSTERLOCK_DOWNLOAD_STATE.downloadFailure,
           pieceType,
           pieceVersions: { logic: pieceIndex.logic, media: pieceIndex.media },
-          error: (e as Error).message,
+          error: message,
         });
-      }
-    }
-    throw new Error("Failed To Download");
+      },
+    });
+    return fullPath;
   }
 
-
-  private emitProgress(
-    pieceIndex: PieceIndex,
-    event: Parameters<ProgressHandlers["onProgress"]>[0]
+  async ensureMediaOverrideExists(
+    lockConfigEngine: RosterLockV1Config["engine"],
+    pieceType: string,
+    logicHash: string,
+    overrideHash: string,
+    entry: MediaOverrideEntry,
+    pathVariables: Record<string, string>,
+    progressHandlers: ProgressHandlers,
   ){
-    const key = pieceToKey(pieceIndex);
-    const multiSignal = this.activeDownloads.get(key)?.multiSignal;
-    if(!multiSignal) return;
-    multiSignal.emitEvent(event);
+    const index: MediaOverrideIndex = { engineName: lockConfigEngine.name, pieceType, logicHash, overrideHash };
+    const state = this.db.getMediaOverrideState(index);
+    if(state && state.status === "complete") return this.mediaOverrideFolder(
+      lockConfigEngine, pieceType, state.folderName
+    );
+
+    const key = mediaOverrideToKey(index);
+    return this.mediaOverrideDownloads.run(key, progressHandlers, (abortSignal)=>(
+      this.addNewMediaOverride(lockConfigEngine, pieceType, entry, pathVariables, index, abortSignal, key)
+    ));
+  }
+
+  private async addNewMediaOverride(
+    lockConfigEngine: RosterLockV1Config["engine"],
+    pieceType: string,
+    entry: MediaOverrideEntry,
+    pathVariables: Record<string, string>,
+    index: MediaOverrideIndex,
+    abortSignal: AbortSignal,
+    coordinatorKey: string,
+  ){
+    const existingState = this.db.getMediaOverrideState(index);
+    if(existingState) this.db.resetMediaOverrideStatus(index);
+    const { folderName }: { folderName: string } = await (async ()=>{
+      if(existingState){
+        await fsRm(
+          this.mediaOverrideFolder(lockConfigEngine, pieceType, existingState.folderName),
+          { recursive: true, force: true }
+        );
+        return { folderName: existingState.folderName };
+      }
+      const overrideFolder = ulid().toLowerCase();
+      this.db.insertNewMediaOverride(
+        { ...index, name: entry.name, assets: entry.assets, downloadSources: entry.downloadSources },
+        overrideFolder
+      );
+      return { folderName: overrideFolder };
+    })();
+
+    const fullPath = this.mediaOverrideFolder(lockConfigEngine, pieceType, folderName);
+    await downloadWithFallbackSources({
+      downloadSources: entry.downloadSources,
+      destinationFolder: fullPath,
+      abortSignal,
+      pluginRuntime: this.pluginRuntime,
+      onProgress: (progress) => this.mediaOverrideDownloads.emitProgress(coordinatorKey, {
+        type: ROSTERLOCK_DOWNLOAD_STATE.mediaOverrideDownloadProgress,
+        pieceType,
+        logic: index.logicHash,
+        override: index.overrideHash,
+        progress,
+      }),
+      onValidating: () => this.mediaOverrideDownloads.emitProgress(coordinatorKey, {
+        type: ROSTERLOCK_DOWNLOAD_STATE.mediaOverrideDownloadValidation,
+        pieceType,
+        logic: index.logicHash,
+        override: index.overrideHash,
+      }),
+      verify: (folder) => getMediaOverrideDownloadSourceVersion(
+        folder, pathVariables, lockConfigEngine.pieceDefinitions[pieceType], entry.assets
+      ),
+      versionsMatch: (actual) => actual === index.overrideHash,
+      onSourceSuccess: (source) => this.db.mediaOverrideSuccessfullyDownloaded(index, source),
+      onSourceFailure: (source, message) => {
+        this.db.mediaOverrideFailedToDownload(index, source, message);
+        this.mediaOverrideDownloads.emitProgress(coordinatorKey, {
+          type: ROSTERLOCK_DOWNLOAD_STATE.mediaOverrideDownloadFailure,
+          pieceType,
+          logic: index.logicHash,
+          override: index.overrideHash,
+          error: message,
+        });
+      },
+    });
+    return fullPath;
   }
 }
 
 
 function pieceToKey(piece: PieceIndex){
   return `${piece.engineName}-${piece.pieceType}-${piece.logic}-${piece.media}`;
+}
+
+function mediaOverrideToKey(index: MediaOverrideIndex){
+  return `${index.engineName}-${index.pieceType}-${index.logicHash}-${index.overrideHash}`;
 }

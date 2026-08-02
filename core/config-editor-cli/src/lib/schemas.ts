@@ -44,6 +44,17 @@ export const pieceOverridesSchema = z.object({
   pathVariables: z.record(z.string(), z.string()).optional(),
 }).strict();
 
+// Used by "media-override add"/"media-override edit" --json: same additive-only
+// shape convention as pieceOverridesSchema. `assets` is additive here too - to
+// remove an asset from an override's declared set, rescan after editing it out
+// of the folder rather than editing the list directly (removing one without a
+// rescan would leave the entry's hash stale for files that used to matter).
+export const mediaOverrideEntryOverridesSchema = z.object({
+  name: z.string().optional(),
+  assets: z.array(z.string()).optional(),
+  downloadSources: z.array(z.string()).optional(),
+}).strict();
+
 const untrustedScriptRefSchema = z.object({
   src: z.string(),
   method: z.string().optional(),
@@ -67,10 +78,12 @@ export const pieceMetaOverridesSchema = z.object({
 
 type SelectedPieceInput = {
   id: string,
+  mediaOverrides?: Array<string>,
   required: Record<string, { mandatory: Array<SelectedPieceInput>, selectable: Array<SelectedPieceInput> }>,
 };
 const selectedPieceSchema: z.ZodType<SelectedPieceInput> = z.lazy(() => z.object({
   id: z.string(),
+  mediaOverrides: z.array(z.string()).optional(),
   required: z.record(z.string(), z.object({
     mandatory: z.array(selectedPieceSchema),
     selectable: z.array(selectedPieceSchema),

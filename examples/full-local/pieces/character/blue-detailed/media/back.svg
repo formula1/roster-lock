@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <radialGradient id="blueBackBody" cx="60%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#93c5fd"/>
+      <stop offset="60%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </radialGradient>
+    <radialGradient id="blueBackHead" cx="62%" cy="28%" r="75%">
+      <stop offset="0%" stop-color="#bfdbfe"/>
+      <stop offset="60%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#0f1f40"/>
+    </radialGradient>
+  </defs>
+  <!-- Soft ground shadow -->
+  <ellipse cx="60" cy="114" rx="26" ry="5" fill="#0f1f40" opacity="0.15"/>
+  <!-- Body -->
+  <ellipse cx="60" cy="73" rx="20" ry="28" fill="url(#blueBackBody)"/>
+  <!-- Cape stripe down the spine -->
+  <path d="M60 48 Q57 73 60 98 Q63 73 60 48 Z" fill="#0f1f40" opacity="0.5"/>
+  <!-- Head -->
+  <circle cx="60" cy="38" r="23" fill="url(#blueBackHead)"/>
+  <!-- Back head detail -->
+  <path d="M43 27 Q60 15 77 27" stroke="#1d4ed8" stroke-width="2" fill="none"/>
+  <path d="M47 23 Q60 13 73 23" stroke="#e0f2ff" stroke-width="1.5" fill="none" opacity="0.6"/>
+  <!-- Arms -->
+  <ellipse cx="26" cy="65" rx="8" ry="15" fill="url(#blueBackBody)" transform="rotate(-10 26 65)"/>
+  <ellipse cx="94" cy="65" rx="8" ry="15" fill="url(#blueBackBody)" transform="rotate(10 94 65)"/>
+  <!-- Legs -->
+  <ellipse cx="51" cy="100" rx="9" ry="13" fill="#1d4ed8"/>
+  <ellipse cx="69" cy="100" rx="9" ry="13" fill="#1d4ed8"/>
+  <ellipse cx="51" cy="110" rx="9" ry="3" fill="#0f1f40"/>
+  <ellipse cx="69" cy="110" rx="9" ry="3" fill="#0f1f40"/>
+  <!-- Outline -->
+  <circle cx="60" cy="38" r="23" fill="none" stroke="#1d4ed8" stroke-width="2"/>
+  <ellipse cx="60" cy="73" rx="20" ry="28" fill="none" stroke="#1d4ed8" stroke-width="2"/>
+</svg>

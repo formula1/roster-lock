@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <radialGradient id="yellowBackBody" cx="60%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#fff3b0"/>
+      <stop offset="60%" stop-color="#ffe066"/>
+      <stop offset="100%" stop-color="#f5c800"/>
+    </radialGradient>
+    <radialGradient id="yellowBackHead" cx="62%" cy="28%" r="75%">
+      <stop offset="0%" stop-color="#fff6c2"/>
+      <stop offset="60%" stop-color="#ffe066"/>
+      <stop offset="100%" stop-color="#c8a000"/>
+    </radialGradient>
+  </defs>
+  <!-- Soft ground shadow -->
+  <ellipse cx="60" cy="112" rx="34" ry="5" fill="#5a4700" opacity="0.15"/>
+  <!-- Body -->
+  <ellipse cx="60" cy="70" rx="32" ry="28" fill="url(#yellowBackBody)"/>
+  <!-- Cape stripe down the spine -->
+  <path d="M60 46 Q54 70 60 94 Q66 70 60 46 Z" fill="#8a6f00" opacity="0.55"/>
+  <!-- Head -->
+  <circle cx="60" cy="38" r="26" fill="url(#yellowBackHead)"/>
+  <!-- Back head detail -->
+  <path d="M40 30 Q60 18 80 30" stroke="#c8a000" stroke-width="2" fill="none"/>
+  <path d="M44 26 Q60 16 76 26" stroke="#ffffff" stroke-width="1.5" fill="none" opacity="0.6"/>
+  <!-- Arms -->
+  <ellipse cx="24" cy="68" rx="10" ry="16" fill="url(#yellowBackBody)" transform="rotate(-15 24 68)"/>
+  <ellipse cx="96" cy="68" rx="10" ry="16" fill="url(#yellowBackBody)" transform="rotate(15 96 68)"/>
+  <ellipse cx="17" cy="56" rx="6" ry="3" fill="#ffffff" opacity="0.8" transform="rotate(-15 17 56)"/>
+  <ellipse cx="103" cy="56" rx="6" ry="3" fill="#ffffff" opacity="0.8" transform="rotate(15 103 56)"/>
+  <!-- Legs -->
+  <ellipse cx="48" cy="98" rx="10" ry="14" fill="#f5c800"/>
+  <ellipse cx="72" cy="98" rx="10" ry="14" fill="#f5c800"/>
+  <ellipse cx="48" cy="109" rx="10" ry="3" fill="#8a6f00"/>
+  <ellipse cx="72" cy="109" rx="10" ry="3" fill="#8a6f00"/>
+  <!-- Outline -->
+  <circle cx="60" cy="38" r="26" fill="none" stroke="#c8a000" stroke-width="2"/>
+  <ellipse cx="60" cy="70" rx="32" ry="28" fill="none" stroke="#c8a000" stroke-width="2"/>
+</svg>

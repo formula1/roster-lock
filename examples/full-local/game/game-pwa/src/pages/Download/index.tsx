@@ -11,6 +11,15 @@ import { describeError, humanizeServerMessage } from "../../utils/describeError"
 
 type PieceProgress = { pieceType: string; status: ROSTERLOCK_DOWNLOAD_STATE; progress: number; error?: string };
 
+// Media-override download events (ROSTERLOCK_DOWNLOAD_STATE.mediaOverrideDownload*)
+// carry {logic, override} instead of a piece's {pieceVersions: {logic, media}} -
+// an override isn't itself a piece, so it has no media/docs hashes of its own.
+function isMediaOverrideUpdate(
+  update: RosterLockDownloadUpdate,
+): update is Extract<RosterLockDownloadUpdate, { logic: string; override: string }> {
+  return "override" in update;
+}
+
 function applyUpdate(
   prev: Record<string, PieceProgress>,
   update: RosterLockDownloadUpdate,
@@ -20,6 +29,27 @@ function applyUpdate(
     update.type === ROSTERLOCK_DOWNLOAD_STATE.downloadFullFailure
   ) {
     return prev;
+  }
+
+  if (isMediaOverrideUpdate(update)) {
+    const key = `${update.pieceType}:override:${update.logic}:${update.override}`;
+    const existing = prev[key];
+    const progress =
+      update.type === ROSTERLOCK_DOWNLOAD_STATE.mediaOverrideDownloadProgress
+        ? update.progress
+        : update.type === ROSTERLOCK_DOWNLOAD_STATE.mediaOverrideDownloadFinished
+          ? 100
+          : (existing?.progress ?? 0);
+
+    return {
+      ...prev,
+      [key]: {
+        pieceType: `${update.pieceType} (skin)`,
+        status: update.type,
+        progress,
+        error: update.type === ROSTERLOCK_DOWNLOAD_STATE.mediaOverrideDownloadFailure ? update.error : undefined,
+      },
+    };
   }
 
   const key = `${update.pieceType}:${update.pieceVersions.logic}:${update.pieceVersions.media}`;

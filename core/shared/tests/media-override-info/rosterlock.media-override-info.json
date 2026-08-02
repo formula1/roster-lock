@@ -1,0 +1,6 @@
+{
+  "configIdentity": { "namespace": "roster-lock", "purpose": "media-override-info", "version": 1 },
+  "name": "Alt Sprite",
+  "assets": ["sprite"],
+  "downloadSources": ["http://localhost:7342/media-overrides/character/alt-sprite.tar"]
+}

@@ -12,6 +12,8 @@ function statusLabel(isDownloaded: boolean, downloadState: DownloadState): strin
   return isDownloaded ? "Downloaded" : "Not downloaded";
 }
 
+export type AvailableOverride = { hash: string; name: string };
+
 export function PieceCard({
   piece,
   portraitUrl,
@@ -20,6 +22,9 @@ export function PieceCard({
   selected,
   disabled,
   onToggle,
+  availableOverrides,
+  selectedOverrideHashes,
+  onToggleOverride,
 }: {
   piece: RosterLockPiece;
   portraitUrl: string | null;
@@ -28,6 +33,9 @@ export function PieceCard({
   selected: boolean;
   disabled: boolean;
   onToggle: () => void;
+  availableOverrides: Array<AvailableOverride>;
+  selectedOverrideHashes: Array<string>;
+  onToggleOverride: (hash: string) => void;
 }) {
   return (
     <div
@@ -49,6 +57,20 @@ export function PieceCard({
       )}
       <div className="name">{piece.humanInfo.name}</div>
       <div className={`download-status ${downloadState}`}>{statusLabel(isDownloaded, downloadState)}</div>
+      {selected && availableOverrides.length > 0 && (
+        <div className="piece-overrides" onClick={(e) => e.stopPropagation()}>
+          {availableOverrides.map((override) => (
+            <label key={override.hash} className="piece-override">
+              <input
+                type="checkbox"
+                checked={selectedOverrideHashes.includes(override.hash)}
+                onChange={() => onToggleOverride(override.hash)}
+              />
+              {override.name}
+            </label>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -1,5 +1,5 @@
 
-import { RosterLockPiece, RosterLockV1Config } from "@roster-lock/types";
+import { RosterLockPiece, RosterLockV1Config, Sha256 } from "@roster-lock/types";
 import { ROSTERLOCK_MATCH_AGENT_URL } from "../constants/match-agent";
 import { runFetch } from "../utils/fetch";
 
@@ -11,6 +11,13 @@ type GetPieceInfo = {
   // pathVariables) - they never need humanInfo/downloadSources/requiredPieces,
   // so callers don't have to carry a full RosterLockPiece around just to read a file.
   piece: Pick<RosterLockPiece, "version" | "pathVariables">
+  // The full set of mediaOverride hashes active for this piece's selection
+  // (SelectedPiece.mediaOverrides) - match-agent figures out which one (if
+  // any) actually covers the requested asset/file and resolves from its
+  // folder instead of the base piece. Not pre-resolved here: callers don't
+  // need to know which asset a given assetName/filePath maps to, or which
+  // override declares it - match-agent already has that glob-matching logic.
+  mediaOverrides?: Array<Sha256>
 }
 
 export function getPiece(
@@ -30,6 +37,7 @@ export async function getPieceAssetFiles(
     pieceType,
     piece,
     assetName,
+    mediaOverrides,
   }: ( GetPieceInfo & { assetName: string }),
   matchAgentAuth: string,
   matchAgentUrl: string | URL = ROSTERLOCK_MATCH_AGENT_URL,
@@ -39,7 +47,7 @@ export async function getPieceAssetFiles(
   const response = await runFetch(matchAgentAuth, url, {
     method: "POST",
     body: {
-      engine, pieceType, piece, assetName
+      engine, pieceType, piece, assetName, mediaOverrides
     }
   });
 
@@ -61,6 +69,7 @@ export async function getPieceFileContents(
     pieceType,
     piece,
     filePath,
+    mediaOverrides,
   }: ( GetPieceInfo & { filePath: string }),
   matchAgentAuth: string,
   matchAgentUrl: string | URL = ROSTERLOCK_MATCH_AGENT_URL,
@@ -70,7 +79,7 @@ export async function getPieceFileContents(
   return runFetch(matchAgentAuth, url.href, {
     method: "POST",
     body: {
-      engine, pieceType, piece, filePath
+      engine, pieceType, piece, filePath, mediaOverrides
     }
   });
 }

@@ -1,11 +1,15 @@
 import { getPieceFileContents } from "@roster-lock/ts-client";
-import { RosterLockPiece, RosterLockV1Config } from "@roster-lock/types";
+import { RosterLockPiece, RosterLockV1Config, Sha256 } from "@roster-lock/types";
 
 type GetPieceInfo = {
   version: 1;
   engine: RosterLockV1Config["engine"];
   pieceType: string;
   piece: Pick<RosterLockPiece, "version" | "pathVariables">;
+  // The full set of mediaOverride hashes active for this piece's selection -
+  // match-agent figures out which one (if any) actually covers the requested
+  // file and resolves from its folder instead of the base piece.
+  mediaOverrides?: Array<Sha256>;
 };
 
 // Fetches a single file at a known path within a piece's folder and turns it

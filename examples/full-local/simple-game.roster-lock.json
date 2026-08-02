@@ -6,7 +6,7 @@
   },
   "author": "match-lock",
   "title": "Full Local Battle",
-  "version": "10.0.0",
+  "version": "11.0.0",
   "engine": {
     "name": "full-local-battle",
     "version": "1.0.0",
@@ -657,6 +657,43 @@
       "schema": {},
       "defaultMeta": {},
       "values": {}
+    }
+  },
+  "mediaOverrides": {
+    "character": {
+      "a22cc54921bf0e3f688fd1e84658883fe5d1029408a85158c8392cbf876c3f40": {
+        "520d5741ab6163ecb7f72ac1adade499bce07eff3d89b5b9da68e8d2e4b3771e": {
+          "name": "Red - Detailed",
+          "assets": [
+            "visuals"
+          ],
+          "downloadSources": [
+            "http://localhost:7342/pieces/character/red-detailed.tar"
+          ]
+        }
+      },
+      "e2573d3d0af0316f03d47ab0bd19a498349db1bbd01047607a05ac0a572a7980": {
+        "fea0a2dcb1684a3f000d15b580d39319b2e0e6f867784bd23e8cc66553b1be3c": {
+          "name": "Yellow - Detailed",
+          "assets": [
+            "visuals"
+          ],
+          "downloadSources": [
+            "http://localhost:7342/pieces/character/yellow-detailed.tar"
+          ]
+        }
+      },
+      "376f976aadffcde7ef89596b9a6db5f5bf184b35d870604924f708a6daf9080c": {
+        "0dcbcc0b69327ba1cfdaf9f4a1b926d7dae759c5413f0c3550f29f5fb6f0f6bf": {
+          "name": "Blue - Detailed",
+          "assets": [
+            "visuals"
+          ],
+          "downloadSources": [
+            "http://localhost:7342/pieces/character/blue-detailed.tar"
+          ]
+        }
+      }
     }
   }
 }
