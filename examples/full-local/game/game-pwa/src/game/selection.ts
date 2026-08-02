@@ -7,7 +7,7 @@ import { RosterLockV1Config, SelectedPiece, UserSelection } from "@roster-lock/t
 // weather) - so this always resolves the full expected set as "mandatory",
 // never a subset.
 export function resolvePiece(
-  rosterConfig: RosterLockV1Config, pieceType: string, pieceId: string
+  rosterConfig: RosterLockV1Config, pieceType: string, pieceId: string, mediaOverrides?: Array<string>
 ): SelectedPiece {
   const definition = rosterConfig.engine.pieceDefinitions[pieceType];
   if (!definition) throw new Error(`Missing piece definition for ${pieceType}`);
@@ -17,6 +17,7 @@ export function resolvePiece(
   if (!item) throw new Error(`Missing piece ${pieceId} in roster for ${pieceType}`);
 
   const selection: SelectedPiece = { id: item.id, required: {} };
+  if (mediaOverrides && mediaOverrides.length > 0) selection.mediaOverrides = mediaOverrides;
   for (const requirePieceType of definition.requires) {
     const requireDef = item.requiredPieces[requirePieceType];
     if (!requireDef) {
@@ -71,10 +72,13 @@ export function planForPieceType(rosterConfig: RosterLockV1Config, pieceType: st
 export function buildUserSelection(
   rosterConfig: RosterLockV1Config,
   picks: Record<string, Array<string>>,
+  // Keyed by pieceId (not pieceType+id - piece ids are unique within a type,
+  // and only explicitly-picked pieces can carry overrides in the first place).
+  overridePicks: Record<string, Array<string>> = {},
 ): UserSelection {
   const selection: UserSelection = {};
   for (const [pieceType, pieceIds] of Object.entries(picks)) {
-    selection[pieceType] = pieceIds.map((id) => resolvePiece(rosterConfig, pieceType, id));
+    selection[pieceType] = pieceIds.map((id) => resolvePiece(rosterConfig, pieceType, id, overridePicks[id]));
   }
   return selection;
 }

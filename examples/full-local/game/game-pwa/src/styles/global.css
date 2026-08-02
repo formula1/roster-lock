@@ -176,6 +176,27 @@ button.secondary {
   color: #8b8fff;
 }
 
+.piece-overrides {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  text-align: left;
+  cursor: default;
+}
+
+.piece-override {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75em;
+  opacity: 0.85;
+  cursor: pointer;
+}
+
+.piece-override input {
+  cursor: pointer;
+}
+
 
 .spinner {
   display: inline-block;

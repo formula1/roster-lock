@@ -8,6 +8,11 @@ export function SelectScreen() {
   const navigate = useNavigate();
   const { rosterConfig, setSelection } = useGameSession();
   const [picks, setPicks] = useState<Record<string, Array<string>>>({});
+  // Keyed by pieceId - which mediaOverride hashes (if any) the player chose
+  // for that specific picked piece. Cleared for a piece when it's deselected
+  // (see PieceTypeSection's toggle()), so a stale choice can't resurface if
+  // the same piece gets picked again later.
+  const [overridePicks, setOverridePicks] = useState<Record<string, Array<string>>>({});
 
   const pieceTypes = useMemo(
     () => (rosterConfig ? Object.keys(rosterConfig.engine.pieceDefinitions) : []),
@@ -34,7 +39,7 @@ export function SelectScreen() {
   });
 
   function handleConfirm() {
-    const selection = buildUserSelection(rosterConfig!, picks);
+    const selection = buildUserSelection(rosterConfig!, picks, overridePicks);
     setSelection(selection);
     navigate("/matchmaking");
   }
@@ -74,6 +79,10 @@ export function SelectScreen() {
             plan={plan}
             selected={picks[pieceType] ?? []}
             onChange={(ids) => setPicks((prev) => ({ ...prev, [pieceType]: ids }))}
+            overridesByPiece={overridePicks}
+            onOverridesChange={(pieceId, hashes) =>
+              setOverridePicks((prev) => ({ ...prev, [pieceId]: hashes }))
+            }
           />
         );
       })}

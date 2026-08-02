@@ -15,12 +15,16 @@ export function PieceTypeSection({
   plan,
   selected,
   onChange,
+  overridesByPiece,
+  onOverridesChange,
 }: {
   rosterConfig: RosterLockV1Config;
   pieceType: string;
   plan: Extract<PieceTypePlan, { kind: "pickable" }>;
   selected: Array<string>;
   onChange: (ids: Array<string>) => void;
+  overridesByPiece: Record<string, Array<string>>;
+  onOverridesChange: (pieceId: string, hashes: Array<string>) => void;
 }) {
   const { matchAgent } = useGameSession();
   const pieces = (rosterConfig.rosters[pieceType] ?? []).filter((p) => !plan.banList.includes(p.id));
@@ -32,6 +36,7 @@ export function PieceTypeSection({
   function toggle(pieceId: string) {
     if (selected.includes(pieceId)) {
       onChange(selected.filter((id) => id !== pieceId));
+      if ((overridesByPiece[pieceId] ?? []).length > 0) onOverridesChange(pieceId, []);
       return;
     }
     if (selected.length >= plan.max) return;
@@ -48,6 +53,14 @@ export function PieceTypeSection({
       });
   }
 
+  function toggleOverride(pieceId: string, hash: string) {
+    const current = overridesByPiece[pieceId] ?? [];
+    onOverridesChange(
+      pieceId,
+      current.includes(hash) ? current.filter((h) => h !== hash) : [...current, hash],
+    );
+  }
+
   const countLabel =
     plan.min === plan.max
       ? `pick exactly ${plan.min}`
@@ -59,18 +72,26 @@ export function PieceTypeSection({
         {pieceType} <span style={{ opacity: 0.6, fontWeight: "normal" }}>({countLabel})</span>
       </h3>
       <div className="card-grid">
-        {pieces.map((piece) => (
-          <PieceCard
-            key={piece.id}
-            piece={piece}
-            portraitUrl={portraitUrlFor(piece.id)}
-            isDownloaded={downloaded.has(pieceVersionKey(piece))}
-            downloadState={downloadStates[piece.id] ?? "idle"}
-            selected={selected.includes(piece.id)}
-            disabled={selected.length >= plan.max}
-            onToggle={() => toggle(piece.id)}
-          />
-        ))}
+        {pieces.map((piece) => {
+          const availableOverrides = Object.entries(
+            rosterConfig.mediaOverrides?.[pieceType]?.[piece.version.logic] ?? {},
+          ).map(([hash, entry]) => ({ hash, name: entry.name }));
+          return (
+            <PieceCard
+              key={piece.id}
+              piece={piece}
+              portraitUrl={portraitUrlFor(piece.id)}
+              isDownloaded={downloaded.has(pieceVersionKey(piece))}
+              downloadState={downloadStates[piece.id] ?? "idle"}
+              selected={selected.includes(piece.id)}
+              disabled={selected.length >= plan.max}
+              onToggle={() => toggle(piece.id)}
+              availableOverrides={availableOverrides}
+              selectedOverrideHashes={overridesByPiece[piece.id] ?? []}
+              onToggleOverride={(hash) => toggleOverride(piece.id, hash)}
+            />
+          );
+        })}
       </div>
     </div>
   );
