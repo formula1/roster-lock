@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <radialGradient id="redFrontBody" cx="40%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#ff8080"/>
+      <stop offset="60%" stop-color="#ef4444"/>
+      <stop offset="100%" stop-color="#c0392b"/>
+    </radialGradient>
+    <radialGradient id="redFrontHead" cx="38%" cy="28%" r="75%">
+      <stop offset="0%" stop-color="#ff9999"/>
+      <stop offset="60%" stop-color="#ef4444"/>
+      <stop offset="100%" stop-color="#9b2335"/>
+    </radialGradient>
+  </defs>
+  <!-- Soft ground shadow -->
+  <ellipse cx="60" cy="112" rx="30" ry="5" fill="#1a0000" opacity="0.15"/>
+  <!-- Body (slimmer - fast attacker) -->
+  <ellipse cx="60" cy="72" rx="24" ry="26" fill="url(#redFrontBody)"/>
+  <!-- Chest emblem -->
+  <path d="M60 62 L64 70 L72 71 L66 77 L68 85 L60 80 L52 85 L54 77 L48 71 L56 70 Z" fill="#ffe8a3" opacity="0.9"/>
+  <!-- Head -->
+  <circle cx="60" cy="38" r="24" fill="url(#redFrontHead)"/>
+  <!-- Specular highlight -->
+  <ellipse cx="50" cy="28" rx="7" ry="5" fill="#ffffff" opacity="0.35"/>
+  <!-- Eyes (intense) -->
+  <circle cx="52" cy="34" r="5" fill="#1a0000"/>
+  <circle cx="68" cy="34" r="5" fill="#1a0000"/>
+  <circle cx="53" cy="33" r="2" fill="white"/>
+  <circle cx="69" cy="33" r="2" fill="white"/>
+  <!-- Frown / determined expression -->
+  <path d="M51 46 Q60 43 69 46" stroke="#1a0000" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <!-- Cheeks -->
+  <circle cx="44" cy="42" r="5" fill="#ff6b6b" opacity="0.5"/>
+  <circle cx="76" cy="42" r="5" fill="#ff6b6b" opacity="0.5"/>
+  <!-- Arms (raised / aggressive) -->
+  <ellipse cx="22" cy="62" rx="9" ry="14" fill="url(#redFrontBody)" transform="rotate(-25 22 62)"/>
+  <ellipse cx="98" cy="62" rx="9" ry="14" fill="url(#redFrontBody)" transform="rotate(25 98 62)"/>
+  <!-- Wrist bands -->
+  <ellipse cx="16" cy="52" rx="6" ry="3" fill="#ffe8a3" transform="rotate(-25 16 52)"/>
+  <ellipse cx="104" cy="52" rx="6" ry="3" fill="#ffe8a3" transform="rotate(25 104 52)"/>
+  <!-- Legs -->
+  <ellipse cx="50" cy="98" rx="9" ry="13" fill="#c0392b"/>
+  <ellipse cx="70" cy="98" rx="9" ry="13" fill="#c0392b"/>
+  <!-- Boot trim -->
+  <ellipse cx="50" cy="107" rx="9" ry="3" fill="#7a1c15"/>
+  <ellipse cx="70" cy="107" rx="9" ry="3" fill="#7a1c15"/>
+  <!-- Outline -->
+  <circle cx="60" cy="38" r="24" fill="none" stroke="#9b2335" stroke-width="2"/>
+  <ellipse cx="60" cy="72" rx="24" ry="26" fill="none" stroke="#9b2335" stroke-width="2"/>
+</svg>

@@ -1,0 +1,12 @@
+{
+  "configIdentity": {
+    "namespace": "roster-lock",
+    "purpose": "media-override-info",
+    "version": 1
+  },
+  "name": "Red - Detailed",
+  "assets": ["visuals"],
+  "downloadSources": [
+    "http://localhost:7342/pieces/character/red-detailed.tar"
+  ]
+}

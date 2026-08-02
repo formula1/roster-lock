@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <radialGradient id="yellowFrontBody" cx="40%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#fff3b0"/>
+      <stop offset="60%" stop-color="#ffe066"/>
+      <stop offset="100%" stop-color="#f5c800"/>
+    </radialGradient>
+    <radialGradient id="yellowFrontHead" cx="38%" cy="28%" r="75%">
+      <stop offset="0%" stop-color="#fff6c2"/>
+      <stop offset="60%" stop-color="#ffe066"/>
+      <stop offset="100%" stop-color="#c8a000"/>
+    </radialGradient>
+  </defs>
+  <!-- Soft ground shadow -->
+  <ellipse cx="60" cy="112" rx="34" ry="5" fill="#5a4700" opacity="0.15"/>
+  <!-- Body -->
+  <ellipse cx="60" cy="70" rx="32" ry="28" fill="url(#yellowFrontBody)"/>
+  <!-- Chest emblem -->
+  <path d="M60 60 L64 68 L72 69 L66 75 L68 83 L60 78 L52 83 L54 75 L48 69 L56 68 Z" fill="#ffffff" opacity="0.8"/>
+  <!-- Head -->
+  <circle cx="60" cy="38" r="26" fill="url(#yellowFrontHead)"/>
+  <!-- Specular highlight -->
+  <ellipse cx="50" cy="27" rx="8" ry="5" fill="#ffffff" opacity="0.4"/>
+  <!-- Eyes -->
+  <circle cx="52" cy="34" r="5" fill="#333"/>
+  <circle cx="68" cy="34" r="5" fill="#333"/>
+  <circle cx="53" cy="33" r="2" fill="white"/>
+  <circle cx="69" cy="33" r="2" fill="white"/>
+  <!-- Smile -->
+  <path d="M50 44 Q60 52 70 44" stroke="#333" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <!-- Cheeks -->
+  <circle cx="44" cy="42" r="6" fill="#ffb347" opacity="0.5"/>
+  <circle cx="76" cy="42" r="6" fill="#ffb347" opacity="0.5"/>
+  <!-- Arms -->
+  <ellipse cx="24" cy="68" rx="10" ry="16" fill="url(#yellowFrontBody)" transform="rotate(-15 24 68)"/>
+  <ellipse cx="96" cy="68" rx="10" ry="16" fill="url(#yellowFrontBody)" transform="rotate(15 96 68)"/>
+  <ellipse cx="17" cy="56" rx="6" ry="3" fill="#ffffff" opacity="0.8" transform="rotate(-15 17 56)"/>
+  <ellipse cx="103" cy="56" rx="6" ry="3" fill="#ffffff" opacity="0.8" transform="rotate(15 103 56)"/>
+  <!-- Legs -->
+  <ellipse cx="48" cy="98" rx="10" ry="14" fill="#f5c800"/>
+  <ellipse cx="72" cy="98" rx="10" ry="14" fill="#f5c800"/>
+  <ellipse cx="48" cy="109" rx="10" ry="3" fill="#8a6f00"/>
+  <ellipse cx="72" cy="109" rx="10" ry="3" fill="#8a6f00"/>
+  <!-- Outline -->
+  <circle cx="60" cy="38" r="26" fill="none" stroke="#c8a000" stroke-width="2"/>
+  <ellipse cx="60" cy="70" rx="32" ry="28" fill="none" stroke="#c8a000" stroke-width="2"/>
+</svg>

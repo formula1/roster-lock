@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <radialGradient id="redBackBody" cx="60%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#ff8080"/>
+      <stop offset="60%" stop-color="#ef4444"/>
+      <stop offset="100%" stop-color="#c0392b"/>
+    </radialGradient>
+    <radialGradient id="redBackHead" cx="62%" cy="28%" r="75%">
+      <stop offset="0%" stop-color="#ff9999"/>
+      <stop offset="60%" stop-color="#ef4444"/>
+      <stop offset="100%" stop-color="#9b2335"/>
+    </radialGradient>
+  </defs>
+  <!-- Soft ground shadow -->
+  <ellipse cx="60" cy="112" rx="30" ry="5" fill="#1a0000" opacity="0.15"/>
+  <!-- Body -->
+  <ellipse cx="60" cy="72" rx="24" ry="26" fill="url(#redBackBody)"/>
+  <!-- Cape stripe down the spine -->
+  <path d="M60 50 Q56 72 60 96 Q64 72 60 50 Z" fill="#7a1c15" opacity="0.6"/>
+  <!-- Head -->
+  <circle cx="60" cy="38" r="24" fill="url(#redBackHead)"/>
+  <!-- Back head detail -->
+  <path d="M42 28 Q60 16 78 28" stroke="#9b2335" stroke-width="2" fill="none"/>
+  <path d="M46 24 Q60 14 74 24" stroke="#ffe8a3" stroke-width="1.5" fill="none" opacity="0.7"/>
+  <!-- Arms -->
+  <ellipse cx="22" cy="62" rx="9" ry="14" fill="url(#redBackBody)" transform="rotate(-25 22 62)"/>
+  <ellipse cx="98" cy="62" rx="9" ry="14" fill="url(#redBackBody)" transform="rotate(25 98 62)"/>
+  <ellipse cx="16" cy="52" rx="6" ry="3" fill="#ffe8a3" transform="rotate(-25 16 52)"/>
+  <ellipse cx="104" cy="52" rx="6" ry="3" fill="#ffe8a3" transform="rotate(25 104 52)"/>
+  <!-- Legs -->
+  <ellipse cx="50" cy="98" rx="9" ry="13" fill="#c0392b"/>
+  <ellipse cx="70" cy="98" rx="9" ry="13" fill="#c0392b"/>
+  <ellipse cx="50" cy="107" rx="9" ry="3" fill="#7a1c15"/>
+  <ellipse cx="70" cy="107" rx="9" ry="3" fill="#7a1c15"/>
+  <!-- Outline -->
+  <circle cx="60" cy="38" r="24" fill="none" stroke="#9b2335" stroke-width="2"/>
+  <ellipse cx="60" cy="72" rx="24" ry="26" fill="none" stroke="#9b2335" stroke-width="2"/>
+</svg>
