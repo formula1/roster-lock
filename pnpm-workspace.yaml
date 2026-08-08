@@ -16,5 +16,6 @@ packages:
   - 'plugins/download/protocol/*'
   - 'plugins/download/shared'
   - 'plugins/piece-selection-sort/*'
+  - 'plugins/game-runner/*'
   - 'plugins/untrusted/config/*'
   - 'plugins/untrusted/script/*'

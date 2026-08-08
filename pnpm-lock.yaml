@@ -413,6 +413,9 @@ importers:
       '@roster-lock/dl-protocol-http':
         specifier: workspace:*
         version: link:../../plugins/download/protocol/http
+      '@roster-lock/game-runner-ikemen-go':
+        specifier: workspace:*
+        version: link:../../plugins/game-runner/ikemen-go
       '@roster-lock/piece-selection-sort-highest-winrate-locally':
         specifier: workspace:*
         version: link:../../plugins/piece-selection-sort/highest-winrate-locally
@@ -626,6 +629,10 @@ importers:
         version: 4.1.9(@types/node@22.20.0)(vite@6.4.3(@types/node@22.20.0)(terser@5.49.0)(tsx@4.22.4))
 
   core/types:
+    dependencies:
+      ajv:
+        specifier: ^8.20.0
+        version: 8.20.0
     devDependencies:
       rimraf:
         specifier: ^6.1.3
@@ -1207,6 +1214,28 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+
+  plugins/game-runner/ikemen-go:
+    dependencies:
+      '@roster-lock/utils':
+        specifier: workspace:*
+        version: link:../../../core/utils
+    devDependencies:
+      '@roster-lock/types':
+        specifier: workspace:*
+        version: link:../../../core/types
+      '@types/node':
+        specifier: ^25.9.1
+        version: 25.9.4
+      rimraf:
+        specifier: ^6.1.3
+        version: 6.1.3
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^4.1.5
+        version: 4.1.9(@types/node@25.9.4)(vite@6.4.3(@types/node@25.9.4)(terser@5.49.0)(tsx@4.22.4))
 
   plugins/piece-selection-sort/highest-winrate-locally:
     devDependencies:
