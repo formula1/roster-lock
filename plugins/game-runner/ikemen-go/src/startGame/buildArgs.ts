@@ -4,8 +4,8 @@ import {
 } from "@roster-lock/types";
 import {
   CHARACTER_PIECE_TYPE, STAGE_PIECE_TYPE, DEF_NAME_VARIABLE, MAX_CHARACTERS_PER_SIDE
-} from "./pieceTypes";
-import { syncSha256FromJSON } from "./hash";
+} from "../pieceTypes";
+import { syncSha256FromJSON } from "../hash";
 
 // Ikemen's TeamMode enum (src/system.go - TM_Single/TM_Simul/TM_Turns/TM_Tag).
 // -tmode1/-tmode2 are read with Lua's tonumber() (external/script/main.lua), so
