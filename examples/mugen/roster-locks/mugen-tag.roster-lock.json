@@ -1,0 +1,362 @@
+{
+  "configIdentity": {
+    "namespace": "roster-lock",
+    "purpose": "lock",
+    "version": 1
+  },
+  "author": "roster-lock",
+  "title": "MUGEN / Ikemen GO",
+  "version": "1.0.0",
+  "engine": {
+    "name": "ikemen-go",
+    "version": "1.0.0",
+    "pieceDefinitions": {
+      "character": {
+        "selectionStrategy": "personal",
+        "requires": [],
+        "pathVariables": [
+          "defName"
+        ],
+        "assets": [
+          {
+            "name": "definition",
+            "classification": "logic",
+            "count": 1,
+            "glob": [
+              "<defName>.def"
+            ]
+          },
+          {
+            "name": "storyboards",
+            "classification": "logic",
+            "count": [
+              0,
+              "*"
+            ],
+            "glob": [
+              "intro.def",
+              "ending.def"
+            ]
+          },
+          {
+            "name": "states",
+            "classification": "logic",
+            "count": [
+              1,
+              "*"
+            ],
+            "glob": [
+              "**/*.cns",
+              "**/*.cmd",
+              "**/*.air",
+              "**/*.const",
+              "**/*.zss"
+            ]
+          },
+          {
+            "name": "movelist",
+            "classification": "logic",
+            "count": [
+              0,
+              "*"
+            ],
+            "glob": [
+              "movelist.dat"
+            ]
+          },
+          {
+            "name": "sprites",
+            "classification": "media",
+            "count": [
+              1,
+              "*"
+            ],
+            "glob": [
+              "**/*.sff"
+            ]
+          },
+          {
+            "name": "sounds",
+            "classification": "media",
+            "count": [
+              0,
+              "*"
+            ],
+            "glob": [
+              "**/*.snd"
+            ]
+          },
+          {
+            "name": "palettes",
+            "classification": "media",
+            "count": [
+              0,
+              "*"
+            ],
+            "glob": [
+              "**/*.act",
+              "**/*.png",
+              "**/*.bmp"
+            ]
+          },
+          {
+            "name": "docs",
+            "classification": "doc",
+            "count": [
+              0,
+              "*"
+            ],
+            "glob": [
+              "**/*.txt"
+            ]
+          }
+        ]
+      },
+      "stage": {
+        "selectionStrategy": "shared",
+        "requires": [],
+        "pathVariables": [
+          "defName"
+        ],
+        "assets": [
+          {
+            "name": "definition",
+            "classification": "logic",
+            "count": 1,
+            "glob": [
+              "<defName>.def"
+            ]
+          },
+          {
+            "name": "sprites",
+            "classification": "media",
+            "count": [
+              1,
+              "*"
+            ],
+            "glob": [
+              "**/*.sff"
+            ]
+          }
+        ]
+      }
+    },
+    "officialSelections": [
+      {
+        "tag": "single",
+        "hash": "d9dfff34a6ba6b1a45206616e4f7b4262889a0b05634ca6095b13defbacb35d7"
+      },
+      {
+        "tag": "simul",
+        "hash": "004cbd6f1fbea7d9781235d71e0217ce89537d584622f1e0eb4f6f5c8d26f98c"
+      },
+      {
+        "tag": "tag",
+        "hash": "1be80c6130cae7f7d61373643b34d76625596f51223f77d22a2c0614d77475bd"
+      },
+      {
+        "tag": "turns",
+        "hash": "bab1b469a25cd680221f9032c5bfad26be378edf7e8606f2b2a96e4d8c75f46e"
+      }
+    ]
+  },
+  "rosters": {
+    "character": [
+      {
+        "id": "@elecbyte/kung-fu-man",
+        "version": {
+          "logic": "087c834b190aceef39b71e9bbd5c08febd4abd72f5e788605cd341eff04a2add",
+          "media": "bdb7c9ee32f2655d3dc4d18667b2825a77fe8d266cec4b8f448258614ebe596a",
+          "docs": "c032b31a722da06ce90e7b591fbd26e512c5f519a357e35177cf9949adbfb83e"
+        },
+        "humanInfo": {
+          "name": "Kung Fu Man",
+          "author": "Elecbyte",
+          "url": "https://example.local/mugen/character"
+        },
+        "downloadSources": [
+          "http://localhost:7342/pieces/character/kfm.tar"
+        ],
+        "pathVariables": {
+          "defName": "kfm"
+        },
+        "requiredPieces": {}
+      },
+      {
+        "id": "@elecbyte/kung-fu-man-720",
+        "version": {
+          "logic": "ed92b968f4fa4a15ba90a8d8841db8ab9a04d6d1aa03d4062b1facd09a27e114",
+          "media": "a68f61aa29fa9bb43cbecc39eccd08e12eb744e004dce6108493fb3dd534d50d",
+          "docs": "53c9ea41ceccfb405c83d6e09e352180f9e59f4b0d4317ffee824c86667ebcf5"
+        },
+        "humanInfo": {
+          "name": "Kung Fu Man 720",
+          "author": "Elecbyte",
+          "url": "https://example.local/mugen/character"
+        },
+        "downloadSources": [
+          "http://localhost:7342/pieces/character/kfm720.tar"
+        ],
+        "pathVariables": {
+          "defName": "kfm720"
+        },
+        "requiredPieces": {}
+      },
+      {
+        "id": "@elecbyte/kung-fu-man-z-axis",
+        "version": {
+          "logic": "b2c52bc7199fc889bccaeecc90e71b62c065e146f7aa335b3cc493308451883b",
+          "media": "5f46b6b6e939d3fac57036541e020f06fb43b2fa0b0f2cdf397e0310044e7e77",
+          "docs": "c032b31a722da06ce90e7b591fbd26e512c5f519a357e35177cf9949adbfb83e"
+        },
+        "humanInfo": {
+          "name": "Kung Fu Man Z Axis",
+          "author": "Elecbyte",
+          "url": "https://example.local/mugen/character"
+        },
+        "downloadSources": [
+          "http://localhost:7342/pieces/character/kfm_zaxis.tar"
+        ],
+        "pathVariables": {
+          "defName": "kfm_zaxis"
+        },
+        "requiredPieces": {}
+      },
+      {
+        "id": "@elecbyte/kung-fu-man-zss",
+        "version": {
+          "logic": "ee1fb3fb378f902a6d738f614c14b497e8ec2c374a517b7567bc504cf5691fd0",
+          "media": "2ed3fd3f1403fe3e9d61a46bba433369e2b615e1e9006541f0fda3c0b166b265",
+          "docs": "c032b31a722da06ce90e7b591fbd26e512c5f519a357e35177cf9949adbfb83e"
+        },
+        "humanInfo": {
+          "name": "Kung Fu Man ZSS",
+          "author": "Elecbyte",
+          "url": "https://example.local/mugen/character"
+        },
+        "downloadSources": [
+          "http://localhost:7342/pieces/character/kfm_zss.tar"
+        ],
+        "pathVariables": {
+          "defName": "kfm_zss"
+        },
+        "requiredPieces": {}
+      },
+      {
+        "id": "@tornillooxidado/baiken",
+        "version": {
+          "logic": "a4134e8c80aed4e8d19b548edaef518f989da82997d01536636cbef1f7b83f2d",
+          "media": "fa2f4248422b876ca4cc9add6b87a941e1e584c1e590c809c9296fbfe59fdab0",
+          "docs": "1c75711c0ffa55c7985c1b86a46189a4609ecfa805833e34e8107354cc03a49d"
+        },
+        "humanInfo": {
+          "name": "Baiken",
+          "author": "TornilloOxidado",
+          "url": "https://example.local/mugen/character"
+        },
+        "downloadSources": [
+          "http://localhost:7342/pieces/character/Baiken.tar"
+        ],
+        "pathVariables": {
+          "defName": "Baiken"
+        },
+        "requiredPieces": {}
+      },
+      {
+        "id": "@ikaruga/kyo-kusanagi",
+        "version": {
+          "logic": "0affdfc5e6bff6eea9f49ecc6dab6c085686347b567fcee8df3d15c32a009e76",
+          "media": "24e05ba9595835198b4af2d9f6ec432105bdae70db520dfcb10e0a85ab758f47",
+          "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "humanInfo": {
+          "name": "Kyo Kusanagi",
+          "author": "ikaruga",
+          "url": "https://example.local/mugen/character"
+        },
+        "downloadSources": [
+          "http://localhost:7342/pieces/character/Kyo.tar"
+        ],
+        "pathVariables": {
+          "defName": "Kyo"
+        },
+        "requiredPieces": {}
+      }
+    ],
+    "stage": [
+      {
+        "id": "@elecbyte/training-room",
+        "version": {
+          "logic": "d3cf12411759cb06a439f5a8c677f0ebafeee6346af328eab24b6ad993098dbc",
+          "media": "20f9f84ad03c3ee6905b551bd7c8f54a8b8cc3aa66626700a58d420816ef4453",
+          "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "humanInfo": {
+          "name": "Training Room",
+          "author": "Elecbyte",
+          "url": "https://example.local/mugen/stage"
+        },
+        "downloadSources": [
+          "http://localhost:7342/pieces/stage/stage0.tar"
+        ],
+        "pathVariables": {
+          "defName": "stage0"
+        },
+        "requiredPieces": {}
+      },
+      {
+        "id": "@gacel/training-stage",
+        "version": {
+          "logic": "1b3cce738747d1dbfb1743ab0f626f7e5a75c1cdfac5878ff23743dccc3e444c",
+          "media": "c9479c6f48a7291cca58aa2c6bc69d009aabe4c1df355b7e0d9944dff400bd4c",
+          "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "humanInfo": {
+          "name": "Training Stage",
+          "author": "Gacel",
+          "url": "https://example.local/mugen/stage"
+        },
+        "downloadSources": [
+          "http://localhost:7342/pieces/stage/stage1.tar"
+        ],
+        "pathVariables": {
+          "defName": "stage1"
+        },
+        "requiredPieces": {}
+      }
+    ]
+  },
+  "mediaOverrides": {},
+  "selection": {
+    "piece": {
+      "stage": {
+        "type": "normal",
+        "validation": {
+          "count": 1,
+          "unique": true,
+          "banList": [],
+          "customValidation": []
+        },
+        "mergeAlgorithm": {
+          "src": "democracy-random.js"
+        }
+      },
+      "character": {
+        "type": "normal",
+        "validation": {
+          "count": 3,
+          "unique": false,
+          "banList": [],
+          "customValidation": []
+        }
+      }
+    },
+    "globalValidation": [],
+    "scriptDictionary": {
+      "democracy-random.js": {
+        "content": "\n\nfunction main(){\n  // count each selected item\n  let maximum = 0;\n  const map = {};\n  const bySelection = {};\n  for(const user of users){\n    const chosen = selection[user][0];\n    const newValue = (map[chosen.id] || 0) + 1;\n    map[chosen.id] = newValue;\n    bySelection[chosen.id] = chosen;\n    if(newValue > maximum) maximum = newValue;\n  }\n\n  // log(\"map:\", map);\n\n  // get all maximum\n  const equalKeys = [];\n  for(const [k, v] of Object.entries(map)){\n    if(v === maximum){\n      equalKeys.push(k);\n    }\n  }\n\n  // if only one maximum, return it\n  // (return the winning user's full selection, not a synthesized one, so\n  // its required substructure - e.g. weather under stage - is preserved)\n  if(equalKeys.length === 1){\n    return [bySelection[equalKeys[0]]];\n  }\n  // if multiple, choose one at random\n  const index = randomInt(0, equalKeys.length - 1);\n  return [bySelection[equalKeys[index]]];\n}\n"
+      }
+    }
+  },
+  "pieceMeta": {}
+}
