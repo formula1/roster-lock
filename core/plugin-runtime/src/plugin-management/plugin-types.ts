@@ -1,17 +1,20 @@
 import {
   UntrustedScript, UntrustedConfig, ArchiveHandler, Decompressor, ProtocolHandler, PieceSelectionSortPlugin,
+  GameRunnerPlugin, ConnectionMode,
 } from "@roster-lock/types";
 
 export type PluginType = (
   | "dl-protocol" | "dl-compression" | "dl-archive"
   | "untrusted-script" | "untrusted-config"
   | "piece-selection-sort"
+  | "game-runner"
 );
 
 export const PLUGIN_TYPES = new Set<PluginType>([
   "dl-protocol", "dl-compression", "dl-archive",
   "untrusted-script", "untrusted-config",
-  "piece-selection-sort"
+  "piece-selection-sort",
+  "game-runner"
 ]);
 
 export type PluginTypeMap = {
@@ -21,7 +24,10 @@ export type PluginTypeMap = {
   "untrusted-script": UntrustedScript<any>;
   "untrusted-config": UntrustedConfig
   "piece-selection-sort": PieceSelectionSortPlugin;
+  "game-runner": GameRunnerPlugin;
 };
+
+const CONNECTION_MODES = new Set<ConnectionMode>(["direct-tcp", "room", "internal"]);
 
 export const PLUGIN_TYPE_VALIDATORS: Record<PluginType, (p: Record<string, unknown>) => boolean> = {
   "dl-protocol": (p) =>{
@@ -65,6 +71,32 @@ export const PLUGIN_TYPE_VALIDATORS: Record<PluginType, (p: Record<string, unkno
     if(typeof p.sortPieces !== "function") throw new Error("\"sortPieces\" should be a function");
     if(typeof p.handleFullSelection !== "function") throw new Error("\"handleFullSelection\" should be a function");
     if(typeof p.handleGameComplete !== "function") throw new Error("\"handleGameComplete\" should be a function");
+    return true;
+  },
+  "game-runner": (p) =>{
+    if(typeof p.name !== "string") throw new Error("\"name\" should be a string");
+    if(typeof p.publicInfo !== "object" || p.publicInfo === null) throw new Error("\"publicInfo\" should be an object");
+    const publicInfo = p.publicInfo as Record<string, unknown>;
+    if(typeof publicInfo.title !== "string") throw new Error("\"publicInfo.title\" should be a string");
+    if(typeof publicInfo.description !== "string") throw new Error("\"publicInfo.description\" should be a string");
+    if(!isStringArray(p.supportedConnectionModes)) throw new Error("\"supportedConnectionModes\" should be a string[]");
+    for(const mode of p.supportedConnectionModes as Array<string>){
+      if(!CONNECTION_MODES.has(mode as ConnectionMode)){
+        throw new Error(`"supportedConnectionModes" contains unknown mode "${mode}"`);
+      }
+    }
+    if(typeof p.engineSha !== "string") throw new Error("\"engineSha\" should be a string");
+    if(typeof p.supportedRoomVersions !== "undefined" && !isStringArray(p.supportedRoomVersions)){
+      throw new Error("\"supportedRoomVersions\" should be a string[] when set");
+    }
+    if(typeof p.gameConfigSchema === "undefined") throw new Error("\"gameConfigSchema\" should be set (use {} if the game takes no shared config)");
+    if(typeof p.localConfigSchema === "undefined") throw new Error("\"localConfigSchema\" should be set (use {} if the game takes no per-machine config)");
+    if(typeof p.getLocalVersion !== "function") throw new Error("\"getLocalVersion\" should be a function");
+    if(typeof p.getSupportedVersion !== "function") throw new Error("\"getSupportedVersion\" should be a function");
+    if(typeof p.updateBinary !== "undefined" && typeof p.updateBinary !== "function"){
+      throw new Error("\"updateBinary\" should be a function when set");
+    }
+    if(typeof p.startGame !== "function") throw new Error("\"startGame\" should be a function");
     return true;
   },
 };

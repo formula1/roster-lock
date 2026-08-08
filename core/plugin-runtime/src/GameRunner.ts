@@ -1,0 +1,179 @@
+import { mkdir, writeFile, unlink, readFile } from "node:fs/promises";
+import { join as pathJoin, dirname as pathDirname } from "node:path";
+import { randomUUID } from "node:crypto";
+import { GameRunnerPlugin, ConnectionConfig, StartGameArgs, GameProcessHandle } from "@roster-lock/types";
+import { getPluginModuleByName, getPluginFullOfType } from "./plugin-management";
+import type { PluginManager } from "./PluginHandler";
+
+// What an admin's local match-agent reports back after installing a game-runner
+// plugin, so it can be submitted to a Room Match Maker's games registry without
+// the registry ever having to install/execute the plugin itself.
+export type AvailableGameRunner = {
+  pluginName: string,
+  version: string,
+  publicInfo: GameRunnerPlugin["publicInfo"],
+  supportedConnectionModes: GameRunnerPlugin["supportedConnectionModes"],
+  supportedRoomVersions: GameRunnerPlugin["supportedRoomVersions"],
+  engineSha: GameRunnerPlugin["engineSha"],
+  // Room-shared - this is the half that gets submitted to a Room Match Maker's
+  // games registry.
+  gameConfigSchema: GameRunnerPlugin["gameConfigSchema"],
+  // Per-machine - this half never leaves the machine. It's here so a local
+  // settings UI can render a form for it (e.g. "where's your Ikemen binary?"),
+  // not for submission to any registry.
+  localConfigSchema: GameRunnerPlugin["localConfigSchema"],
+};
+
+// What a caller (e.g. match-agent) supplies to actually start a game -
+// distinct from StartGameArgs (what the plugin itself receives). The caller
+// has the real private key; startGame below is what turns it into the
+// restrictive-permission temp file plugins get instead, so a plugin is safe
+// by default without having to be trusted to handle the raw key itself.
+export type StartGameRequest = Omit<StartGameArgs, "currentMachine"> & {
+  currentMachine: {
+    machineId: string,
+    publicKey: string,
+    privateKey: string,
+  },
+};
+
+// Per-machine settings for one installed game-runner plugin - binaryLocation
+// plus whatever that plugin's own localConfigSchema describes. Lives under
+// the plugin directory (see GameRunner.configFilePath), not in match-agent's
+// own config file - it's plugin-runtime's own subtree to own, parallel to
+// data/<package> (dataDirFor-style state) and node_modules/<package> (the
+// installed code itself).
+export type GameRunnerLocalSettings = {
+  binaryLocation?: string,
+  localConfig?: unknown,
+};
+
+// Mirrors GameRunnerPlugin's version functions rather than restating their
+// shape, so the interface can't drift from what plugins actually return.
+export type GameRunnerVersion = Awaited<ReturnType<GameRunnerPlugin["getLocalVersion"]>>;
+
+export interface IGameRunner {
+  listAvailable(): Promise<Array<AvailableGameRunner>>,
+  getLocalSettings(pluginName: string): Promise<GameRunnerLocalSettings>,
+  setLocalSettings(pluginName: string, settings: GameRunnerLocalSettings): Promise<void>,
+  getLocalVersion(pluginName: string, binaryLocation: string): Promise<GameRunnerVersion>,
+  getSupportedVersion(pluginName: string, binaryLocation: string): Promise<GameRunnerVersion>,
+  // Throws if the named plugin doesn't declare an updateBinary - callers
+  // should check listAvailable/the plugin module rather than rely on catching.
+  updateBinary(pluginName: string, binaryLocation: string): Promise<void>,
+  startGame(
+    pluginName: string, binaryLocation: string, connectionConfig: ConnectionConfig, request: StartGameRequest
+  ): Promise<GameProcessHandle>,
+}
+
+export class GameRunner implements IGameRunner {
+  constructor(private pluginManager: PluginManager){}
+
+  async listAvailable(): Promise<Array<AvailableGameRunner>> {
+    const plugins = await getPluginFullOfType(this.pluginManager.pluginDir, "game-runner");
+    return plugins.map(({ entry, module })=>({
+      pluginName: entry.package,
+      version: entry.version,
+      publicInfo: module.publicInfo,
+      supportedConnectionModes: module.supportedConnectionModes,
+      supportedRoomVersions: module.supportedRoomVersions,
+      engineSha: module.engineSha,
+      gameConfigSchema: module.gameConfigSchema,
+      localConfigSchema: module.localConfigSchema,
+    }));
+  }
+
+  async getLocalSettings(pluginName: string): Promise<GameRunnerLocalSettings> {
+    try {
+      const contents = await readFile(this.configFilePath(pluginName), "utf-8");
+      return JSON.parse(contents) as GameRunnerLocalSettings;
+    } catch(e){
+      if((e as NodeJS.ErrnoException).code === "ENOENT") return {};
+      throw e;
+    }
+  }
+
+  async setLocalSettings(pluginName: string, settings: GameRunnerLocalSettings): Promise<void> {
+    const filePath = this.configFilePath(pluginName);
+    await mkdir(pathDirname(filePath), { recursive: true });
+    await writeFile(filePath, JSON.stringify(settings, null, 2) + "\n");
+  }
+
+  async getLocalVersion(pluginName: string, binaryLocation: string){
+    const plugin = await this.moduleFor(pluginName);
+    return plugin.getLocalVersion(binaryLocation);
+  }
+
+  async getSupportedVersion(pluginName: string, binaryLocation: string){
+    const plugin = await this.moduleFor(pluginName);
+    return plugin.getSupportedVersion(binaryLocation);
+  }
+
+  async updateBinary(pluginName: string, binaryLocation: string){
+    const plugin = await this.moduleFor(pluginName);
+    if(!plugin.updateBinary){
+      throw new Error(`Game Runner "${pluginName}" doesn't support in-app updates`);
+    }
+    return plugin.updateBinary(binaryLocation);
+  }
+
+  async startGame(
+    pluginName: string, binaryLocation: string, connectionConfig: ConnectionConfig, request: StartGameRequest
+  ): Promise<GameProcessHandle> {
+    const plugin = await this.moduleFor(pluginName);
+    const { filePath, cleanup } = await this.writePrivateKeyFile(pluginName, request.currentMachine.privateKey);
+
+    const args: StartGameArgs = {
+      ...request,
+      currentMachine: {
+        machineId: request.currentMachine.machineId,
+        publicKey: request.currentMachine.publicKey,
+        privateKeyFile: filePath,
+      },
+    };
+
+    let handle: GameProcessHandle;
+    try {
+      handle = await plugin.startGame(binaryLocation, connectionConfig, args);
+    } catch(e){
+      await cleanup();
+      throw e;
+    }
+
+    // Best-effort either way (see GameProcessHandle's own docs on what onExit
+    // actually guarantees) - if the plugin can't tell us the game ended,
+    // the key file just outlives the (possibly already-gone) process it was
+    // written for, same tradeoff as any other temp file cleanup relying on
+    // a lifecycle hook that isn't always fireable.
+    handle.onExit(()=>{ cleanup(); });
+    handle.onCrash(()=>{ cleanup(); });
+
+    return handle;
+  }
+
+  private moduleFor(pluginName: string){
+    return getPluginModuleByName(this.pluginManager.pluginDir, pluginName, "game-runner");
+  }
+
+  // packageName can contain "/" (scoped packages) - path.join treats that as
+  // an ordinary nested directory, same as node_modules/<scope>/<name> and the
+  // data/<package> convention already in use, so no filename escaping needed.
+  private configFilePath(pluginName: string): string {
+    return pathJoin(this.pluginManager.pluginDir, "config", pluginName, "local-config.json");
+  }
+
+  private async writePrivateKeyFile(pluginName: string, privateKey: string){
+    const dir = pathJoin(this.pluginManager.pluginDir, "data", pluginName, "keys");
+    await mkdir(dir, { recursive: true });
+    const filePath = pathJoin(dir, `${randomUUID()}.key`);
+    await writeFile(filePath, privateKey, { mode: 0o600 });
+
+    let cleaned = false;
+    const cleanup = async () => {
+      if(cleaned) return;
+      cleaned = true;
+      await unlink(filePath).catch(()=>{});
+    };
+    return { filePath, cleanup };
+  }
+}

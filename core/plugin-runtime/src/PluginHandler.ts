@@ -11,12 +11,15 @@ import { stat } from "fs/promises"
 import { runUntrustedScript, ScriptStarter } from "./run-untrusted";
 import { downloadToFolder, DownloadToFolderArg } from "./download";
 import { IPieceSort, PieceSort } from "./PieceSort";
+import { IGameRunner, GameRunner } from "./GameRunner";
 import { PluginPackageType } from "./plugin-management/package";
 
 export { IPieceSort }
+export { IGameRunner }
 export interface IPluginManager {
   readonly pluginDir: string
   pieceSort: IPieceSort,
+  gameRunner: IGameRunner,
   installPlugin(pluginName: string): Promise<void>,
   updatePlugin(pluginName: string): Promise<void>,
   uninstallPlugin(pluginName: string): Promise<void>,
@@ -36,6 +39,7 @@ export interface IPluginManager {
 
 export class PluginManager implements IPluginManager {
   public pieceSort: IPieceSort = new PieceSort(this);
+  public gameRunner: IGameRunner = new GameRunner(this);
   private constructor(public readonly pluginDir: string){}
   static async create(pluginDir: string){
     const statInfo = await tryStat(pluginDir)
