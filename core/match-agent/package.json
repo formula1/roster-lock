@@ -37,6 +37,7 @@
     "@roster-lock/dl-protocol-http": "workspace:*",
     "@roster-lock/piece-selection-sort-most-used-locally": "workspace:*",
     "@roster-lock/piece-selection-sort-highest-winrate-locally": "workspace:*",
+    "@roster-lock/game-runner-ikemen-go": "workspace:*",
     "@types/async": "^3.2.25",
     "@types/mime-types": "^2.1.4",
     "@types/node": "^22.14.1",

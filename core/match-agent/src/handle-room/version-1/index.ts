@@ -7,6 +7,7 @@ import { httpHandler } from "./room-handler-bridge/http-handler";
 import { getFilesOfAsset, getPieceFileContents } from "./file-routes";
 import { ensurePieceDownloaded, ensurePieceDownloadedWs, listDownloadedPiecesDirect } from "./select";
 import { listAvailableSortPlugins, sortListPlugin, gameComplete } from "./piece-sort";
+import { listAvailableGameRunners } from "./game-runner";
 import { IFolderDB, V1Env } from "./globals";
 import { PluginManager } from "@roster-lock/plugin-runtime";
 
@@ -23,6 +24,7 @@ export const createV1Routers = (fileDB: IFolderDB, pluginRuntime: PluginManager)
   httpRouter.get("/piece/sort-list/available", listAvailableSortPlugins.bind(env));
   httpRouter.post("/piece/sort-list/plugin/:pluginName", sortListPlugin.bind(env));
   httpRouter.post("/game-complete", gameComplete.bind(env));
+  httpRouter.get("/game-runner/available", listAvailableGameRunners.bind(env));
 
 
   wsRouter.mount("/sync-dl", wsHandler.bind(env));
