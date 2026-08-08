@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { join } from "node:path";
 import { readFileSync } from "node:fs";
 import { ConnectionConfig, StartGameArgs, RosterLockV1Config } from "@roster-lock/types";
-import { buildIkemenArgs } from "../src/buildArgs";
+import { buildIkemenArgs } from "../src/startGame/buildArgs";
 
 // The real MUGEN example config, not a hand-written stub - it's what proves the
 // defName convention survives a config the editor actually produced. Rebuild it
