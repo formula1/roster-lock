@@ -188,15 +188,18 @@ describe("buildIkemenArgs - slot numbering", () => {
 });
 
 describe("buildIkemenArgs - connection", () => {
-  it("omits -ip for the host so Ikemen listens", () => {
+  it("passes -ip with an empty value for the host, so Ikemen actually listens", () => {
+    // Ikemen's own -h output: "-ip <hostip> Connect to <hostip> for netplay;
+    // leave blank for host" - omitting the flag entirely (not the same
+    // thing) means Ikemen never engages netplay at all.
     const args = buildArgs({ alice: [KFM], bob: [KYO] });
-    expect(args).not.toContain("-ip");
+    expect(valueOf(args, "-ip")).toBe("");
     expect(valueOf(args, "-setport")).toBe("7500");
   });
 
-  it("passes -ip for a client", () => {
+  it("passes -ip for a client, using the resolved host address", () => {
     const args = buildArgs({ alice: [KFM], bob: [KYO] }, {
-      connection: { type: "direct-tcp", party: "client", ipAddress: "10.0.0.5", port: 7500 },
+      connection: { type: "direct-tcp", party: "client", port: 7500, hostIp: "10.0.0.5" },
     });
     expect(valueOf(args, "-ip")).toBe("10.0.0.5");
     expect(valueOf(args, "-setport")).toBe("7500");

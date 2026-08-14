@@ -47,9 +47,38 @@ to point at the binary *inside a complete Ikemen install*, not a copy of it some
 ## Connection modes
 
 Only `direct-tcp` is in `supportedConnectionModes`, and it's fully working: the room
-host's `connectionConfig` has `party: "host"` (Ikemen omits `-ip`, listening on
-`connectionConfig.port`); everyone else gets `party: "client"` (`-ip <ipAddress>`, same
-port).
+host's `connectionConfig` has `party: "host"` (`-ip ""` - an *empty* value, not an
+omitted flag; see below - listening on `connectionConfig.port`); everyone else gets
+`party: "client"` (`-ip connectionConfig.hostIp`, same port). This plugin never talks to
+a coordinator itself and has no dependency on `@roster-lock/direct-ip-coordinator` at
+all - `connectionConfig` here is already resolved by the time `startGame` sees it.
+Whoever called `startGame` (in practice: match-agent's own `GameRunner.startGame`, see
+`core/plugin-runtime/src/GameRunner.ts`) took a `ConnectionSetup` carrying a
+`coordinator: { host, port }` address instead, and ran the rendezvous handshake against
+it before ever invoking this plugin - the host registers once its process is spawned, a
+client blocks until the host has, then learns the host's real address from the reply.
+See `@roster-lock/direct-ip-coordinator`'s own comments and
+`docs/v2/ikemen-go/game-coordinator.md` for that handshake itself.
+
+The address handed back prefers localhost/LAN over routing out through whatever's
+reachable from outside the coordinator: the host reports its own non-internal network
+addresses when it registers, and a client the coordinator sees arriving from the same
+network as the host (same observed remote address - true both for literally the same
+machine and for two different machines behind the same NAT/router) gets one of those
+addresses instead of the host's address as seen from outside. `"127.0.0.1"` remains the
+fallback only when the host reported no usable local address.
+
+### `-ip` must be present on both sides - "omit" and "blank" are not the same
+
+Ikemen's own `-h` output is explicit: `-ip <hostip> Connect to <hostip> for netplay;
+leave blank for host`. An earlier version of this plugin took "leave blank" to mean
+"omit the flag" and never passed `-ip` for the host at all - that's wrong. Without
+`-ip` present on the command line, Ikemen doesn't engage netplay at all: it starts an
+immediate local Quick VS match with local input controlling every side, no listening,
+no handshake. That's indistinguishable from a working netplay host until you notice a
+"client" process sitting idle with nothing to connect to. `buildArgs.ts` passes
+`-ip ""` (the flag, with an empty value) for the host and `-ip <address>` for the
+client - both sides always pass the flag.
 
 `room` and `internal` are **not** claimed as supported, on purpose - `room` needs a real
 bridge that tunnels Ikemen's TCP connection over whatever the room's actual transport is

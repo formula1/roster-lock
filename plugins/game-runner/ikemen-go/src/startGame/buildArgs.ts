@@ -121,15 +121,21 @@ export function buildIkemenArgs(
   if(typeof gameConfig.roundTime === "number") cliArgs.push("-time", String(gameConfig.roundTime));
   if(typeof gameConfig.rounds === "number") cliArgs.push("-rounds", String(gameConfig.rounds));
 
-  // Per Ikemen's own docs: omitting -ip entirely makes this instance the
-  // netplay host; passing -ip <addr> makes it connect out as a peer. Exact
-  // semantics of -setport on the client side beyond "both ends agree on the
-  // same port number" aren't confirmed anywhere beyond Ikemen's own wiki -
-  // kept consistent with the host side since that's the only documented
-  // convention available.
+  // -ip has to be passed for BOTH sides, never omitted - Ikemen's own -h
+  // output says so explicitly: "-ip <hostip> Connect to <hostip> for
+  // netplay; leave blank for host". Omitting the flag entirely (this
+  // package's original assumption, based on the wiki rather than -h) is not
+  // the same as passing it with an empty value: without -ip present at all,
+  // Ikemen never engages netplay and just runs an immediate local match
+  // controlling both sides - confirmed by hand (a "host" launched without
+  // -ip starts instantly and takes local input for both characters, while
+  // its supposed client sits waiting for a connection that's never coming
+  // because nothing is actually listening).
   cliArgs.push("-setport", String(connectionConfig.port));
-  if(connectionConfig.party === "client"){
-    cliArgs.push("-ip", connectionConfig.ipAddress);
+  if(connectionConfig.party === "host"){
+    cliArgs.push("-ip", "");
+  } else {
+    cliArgs.push("-ip", connectionConfig.hostIp);
   }
 
   return cliArgs;
