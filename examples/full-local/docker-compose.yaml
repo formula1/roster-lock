@@ -11,7 +11,7 @@ services:
   download-provider:
     build:
       context: ../..
-      dockerfile: examples/full-local/services/download-provider/Dockerfile
+      dockerfile: examples/services/download-provider/folder-tar/Dockerfile
     ports:
       - "7342:80"
     environment:

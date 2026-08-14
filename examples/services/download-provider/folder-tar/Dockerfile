@@ -16,17 +16,17 @@ WORKDIR /app
 # service's dependencies, so the install layer caches independently of
 # unrelated source changes elsewhere in the monorepo.
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
-COPY examples/full-local/services/download-provider/package.json examples/full-local/services/download-provider/
+COPY examples/services/download-provider/folder-tar/package.json examples/services/download-provider/folder-tar/
 
 RUN pnpm install --filter @roster-lock/download-provider --frozen-lockfile --ignore-scripts
 
 # Copy source code
-COPY examples/full-local/services/download-provider/ examples/full-local/services/download-provider/
+COPY examples/services/download-provider/folder-tar/ examples/services/download-provider/folder-tar/
 
 # Build TypeScript
 RUN pnpm --filter @roster-lock/download-provider run build
 
-WORKDIR /app/examples/full-local/services/download-provider
+WORKDIR /app/examples/services/download-provider/folder-tar
 
 # Expose port
 EXPOSE 80
