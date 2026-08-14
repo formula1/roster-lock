@@ -2,7 +2,11 @@
 // Room Creation
 export type RoomConfig = {
   matchmakerId: string;
-  coordinatorId: string;
+  // `false` is an explicit, deliberate "this room has no game coordinator"
+  // choice (e.g. a fully-internal connection mode) - kept required rather
+  // than optional so a matchmaker can't omit it by accident and have that
+  // silently treated as an opt-out.
+  coordinatorId: string | false;
   roomId: string;
   rosterConfigHash: string;
   machines: RoomMachine[];

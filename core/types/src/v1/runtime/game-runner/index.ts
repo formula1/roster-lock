@@ -7,9 +7,9 @@ import type { AnySchema } from "ajv";
 
 export type ConnectionMode = "direct-tcp" | "room" | "internal";
 
-export type ConnectionConfig = (
-  | { type: "direct-tcp", party: "host", port: number }
-  | { type: "direct-tcp", party: "client", ipAddress: string, port: number }
+// The two variants shared as-is between ConnectionSetup and ConnectionConfig
+// below - neither needs anything resolved before a plugin can use it.
+type RoomOrInternalConnection = (
   // The room's actual connection work happens entirely on the game side -
   // `version` just tells it which of its own supported approaches to use
   // (see GameRunnerPlugin.supportedRoomVersions), `url` is where it does
@@ -19,6 +19,33 @@ export type ConnectionConfig = (
   // The game has its own online connection story - roster-lock hands it a
   // selection and gets out of the way.
   | { type: "internal" }
+);
+
+// What a matchmaker/caller hands to match-agent's start-game route - a
+// direct-tcp room's host address isn't knowable upfront by whoever builds
+// this (it may be behind NAT, or simply not yet bound its listen socket), so
+// both variants instead carry the address of a small rendezvous coordinator
+// (see plugins/shared/direct-ip-coordinator and
+// docs/v2/ikemen-go/game-coordinator.md) rather than a resolved address.
+// match-agent's GameRunner.startGame is what turns this into a
+// ConnectionConfig below before a plugin ever sees it - no plugin talks to a
+// coordinator itself.
+export type ConnectionSetup = (
+  | { type: "direct-tcp", party: "host", port: number, coordinator: { host: string, port: number } }
+  | { type: "direct-tcp", party: "client", port: number, coordinator: { host: string, port: number } }
+  | RoomOrInternalConnection
+);
+
+// What a GameRunnerPlugin's startGame actually receives - direct-tcp is
+// already resolved by this point (see ConnectionSetup above), so a plugin
+// only ever deals with an address to dial, never a coordinator of its own.
+export type ConnectionConfig = (
+  | { type: "direct-tcp", party: "host", port: number }
+  // hostIp is what a coordinator (or whatever else resolved this) reported
+  // - the same value startGame would otherwise have had to go discover
+  // itself.
+  | { type: "direct-tcp", party: "client", port: number, hostIp: string }
+  | RoomOrInternalConnection
 );
 
 export type GameProcessHandle = {
