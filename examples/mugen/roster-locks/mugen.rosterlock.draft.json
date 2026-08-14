@@ -19,7 +19,6 @@
       "pieceDefinitions": {}
     },
     "rosters": {},
-    "mediaOverrides": {},
     "selection": {
       "piece": {},
       "globalValidation": [],
@@ -201,10 +200,10 @@
           "humanInfo": {
             "name": "Kung Fu Man",
             "author": "Elecbyte",
-            "url": "https://example.local/mugen/character"
+            "url": "https://example.local/mugen/chars"
           },
           "downloadSources": [
-            "http://localhost:7342/pieces/character/kfm.tar"
+            "http://localhost:7442/pieces/chars/kfm.tar"
           ],
           "pathVariables": {
             "defName": "kfm"
@@ -221,10 +220,10 @@
           "humanInfo": {
             "name": "Kung Fu Man 720",
             "author": "Elecbyte",
-            "url": "https://example.local/mugen/character"
+            "url": "https://example.local/mugen/chars"
           },
           "downloadSources": [
-            "http://localhost:7342/pieces/character/kfm720.tar"
+            "http://localhost:7442/pieces/chars/kfm720.tar"
           ],
           "pathVariables": {
             "defName": "kfm720"
@@ -241,10 +240,10 @@
           "humanInfo": {
             "name": "Kung Fu Man Z Axis",
             "author": "Elecbyte",
-            "url": "https://example.local/mugen/character"
+            "url": "https://example.local/mugen/chars"
           },
           "downloadSources": [
-            "http://localhost:7342/pieces/character/kfm_zaxis.tar"
+            "http://localhost:7442/pieces/chars/kfm_zaxis.tar"
           ],
           "pathVariables": {
             "defName": "kfm_zaxis"
@@ -261,10 +260,10 @@
           "humanInfo": {
             "name": "Kung Fu Man ZSS",
             "author": "Elecbyte",
-            "url": "https://example.local/mugen/character"
+            "url": "https://example.local/mugen/chars"
           },
           "downloadSources": [
-            "http://localhost:7342/pieces/character/kfm_zss.tar"
+            "http://localhost:7442/pieces/chars/kfm_zss.tar"
           ],
           "pathVariables": {
             "defName": "kfm_zss"
@@ -281,10 +280,10 @@
           "humanInfo": {
             "name": "Baiken",
             "author": "TornilloOxidado",
-            "url": "https://example.local/mugen/character"
+            "url": "https://example.local/mugen/chars"
           },
           "downloadSources": [
-            "http://localhost:7342/pieces/character/Baiken.tar"
+            "http://localhost:7442/pieces/chars/Baiken.tar"
           ],
           "pathVariables": {
             "defName": "Baiken"
@@ -301,10 +300,10 @@
           "humanInfo": {
             "name": "Kyo Kusanagi",
             "author": "ikaruga",
-            "url": "https://example.local/mugen/character"
+            "url": "https://example.local/mugen/chars"
           },
           "downloadSources": [
-            "http://localhost:7342/pieces/character/Kyo.tar"
+            "http://localhost:7442/pieces/chars/Kyo.tar"
           ],
           "pathVariables": {
             "defName": "Kyo"
@@ -323,10 +322,10 @@
           "humanInfo": {
             "name": "Training Room",
             "author": "Elecbyte",
-            "url": "https://example.local/mugen/stage"
+            "url": "https://example.local/mugen/stages"
           },
           "downloadSources": [
-            "http://localhost:7342/pieces/stage/stage0.tar"
+            "http://localhost:7442/pieces/stages/stage0.tar"
           ],
           "pathVariables": {
             "defName": "stage0"
@@ -343,10 +342,10 @@
           "humanInfo": {
             "name": "Training Stage",
             "author": "Gacel",
-            "url": "https://example.local/mugen/stage"
+            "url": "https://example.local/mugen/stages"
           },
           "downloadSources": [
-            "http://localhost:7342/pieces/stage/stage1.tar"
+            "http://localhost:7442/pieces/stages/stage1.tar"
           ],
           "pathVariables": {
             "defName": "stage1"
@@ -355,7 +354,6 @@
         }
       ]
     },
-    "mediaOverrides": {},
     "selection": {
       "piece": {
         "stage": {
@@ -393,47 +391,46 @@
     "rosterPieceInfo": {
       "character": {
         "@elecbyte/kung-fu-man": {
-          "referenceFolder": "/home/sam/Programming/games/match-lock/examples/mugen/pieces/chars/kfm",
+          "referenceFolder": "/home/sam/Programming/games/match-lock/examples/mugen/roster-locks/../pieces/chars/kfm",
           "testedDownloadSources": []
         },
         "@elecbyte/kung-fu-man-720": {
-          "referenceFolder": "/home/sam/Programming/games/match-lock/examples/mugen/pieces/chars/kfm720",
+          "referenceFolder": "/home/sam/Programming/games/match-lock/examples/mugen/roster-locks/../pieces/chars/kfm720",
           "testedDownloadSources": []
         },
         "@elecbyte/kung-fu-man-z-axis": {
-          "referenceFolder": "/home/sam/Programming/games/match-lock/examples/mugen/pieces/chars/kfm_zaxis",
+          "referenceFolder": "/home/sam/Programming/games/match-lock/examples/mugen/roster-locks/../pieces/chars/kfm_zaxis",
           "testedDownloadSources": []
         },
         "@elecbyte/kung-fu-man-zss": {
-          "referenceFolder": "/home/sam/Programming/games/match-lock/examples/mugen/pieces/chars/kfm_zss",
+          "referenceFolder": "/home/sam/Programming/games/match-lock/examples/mugen/roster-locks/../pieces/chars/kfm_zss",
           "testedDownloadSources": []
         },
         "@tornillooxidado/baiken": {
-          "referenceFolder": "/home/sam/Programming/games/match-lock/examples/mugen/pieces/chars/Baiken",
+          "referenceFolder": "/home/sam/Programming/games/match-lock/examples/mugen/roster-locks/../pieces/chars/Baiken",
           "testedDownloadSources": []
         },
         "@ikaruga/kyo-kusanagi": {
-          "referenceFolder": "/home/sam/Programming/games/match-lock/examples/mugen/pieces/chars/Kyo",
+          "referenceFolder": "/home/sam/Programming/games/match-lock/examples/mugen/roster-locks/../pieces/chars/Kyo",
           "testedDownloadSources": []
         }
       },
       "stage": {
         "@elecbyte/training-room": {
-          "referenceFolder": "/home/sam/Programming/games/match-lock/examples/mugen/pieces/stages/stage0",
+          "referenceFolder": "/home/sam/Programming/games/match-lock/examples/mugen/roster-locks/../pieces/stages/stage0",
           "testedDownloadSources": []
         },
         "@gacel/training-stage": {
-          "referenceFolder": "/home/sam/Programming/games/match-lock/examples/mugen/pieces/stages/stage1",
+          "referenceFolder": "/home/sam/Programming/games/match-lock/examples/mugen/roster-locks/../pieces/stages/stage1",
           "testedDownloadSources": []
         }
       }
     },
-    "mediaOverrideInfo": {},
     "selectionScriptInfo": {
       "democracy-random.js": {
-        "lastLoad": 1786065595435,
+        "lastLoad": 1786583098819,
         "sha": "8b28b9bc958f108a525420281a41657fba4635dd5ca0f86b7932da7b2892ad2f",
-        "referencePath": "/home/sam/Programming/games/match-lock/examples/mugen/selection-scripts/democracy-random.js"
+        "referencePath": "/home/sam/Programming/games/match-lock/examples/mugen/roster-locks/selection-scripts/democracy-random.js"
       }
     }
   }

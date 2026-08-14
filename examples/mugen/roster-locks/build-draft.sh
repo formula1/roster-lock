@@ -8,13 +8,15 @@
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO="$(cd "$HERE/../.." && pwd)"
+REPO="$(cd "$HERE/../../.." && pwd)"
+PIECES_DIR="$HERE/../pieces"
 CLI="/usr/local/bin/node $REPO/core/config-editor-cli/dist/index.js"
 DRAFT="$HERE/mugen.rosterlock.draft.json"
 
-# Placeholder host - these pieces are local reference folders, but the schema
-# requires at least one download source per piece.
-BASE_URL="http://localhost:7342/pieces"
+# Placeholder host - these pieces are served by the example's dockerized
+# download-provider on port 7442, which is the public URL the relay clients
+# and sync-dl flow use.
+BASE_URL="http://localhost:7442/pieces"
 
 rm -f "$DRAFT"
 $CLI draft init "$DRAFT" --title "MUGEN / Ikemen GO" --author "roster-lock"
@@ -67,7 +69,7 @@ add_piece(){
   local type="$1" folder="$2" defName="$3" name="$4" author="$5"
   printf '{"humanInfo":{"name":"%s","author":"%s","url":"%s"}}' \
     "$name" "$author" "https://example.local/mugen/$type" \
-    | $CLI roster add-piece "$type" "$HERE/pieces/$folder" --draft "$DRAFT" \
+    | $CLI roster add-piece "$type" "$PIECES_DIR/$folder" --draft "$DRAFT" \
         --path-variables "defName=$defName" \
         --download-source "$BASE_URL/$type/$defName.tar" \
         --json -

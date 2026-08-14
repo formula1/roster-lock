@@ -172,10 +172,10 @@
         "humanInfo": {
           "name": "Kung Fu Man",
           "author": "Elecbyte",
-          "url": "https://example.local/mugen/character"
+          "url": "https://example.local/mugen/chars"
         },
         "downloadSources": [
-          "http://localhost:7342/pieces/character/kfm.tar"
+          "http://localhost:7442/pieces/chars/kfm.tar"
         ],
         "pathVariables": {
           "defName": "kfm"
@@ -192,10 +192,10 @@
         "humanInfo": {
           "name": "Kung Fu Man 720",
           "author": "Elecbyte",
-          "url": "https://example.local/mugen/character"
+          "url": "https://example.local/mugen/chars"
         },
         "downloadSources": [
-          "http://localhost:7342/pieces/character/kfm720.tar"
+          "http://localhost:7442/pieces/chars/kfm720.tar"
         ],
         "pathVariables": {
           "defName": "kfm720"
@@ -212,10 +212,10 @@
         "humanInfo": {
           "name": "Kung Fu Man Z Axis",
           "author": "Elecbyte",
-          "url": "https://example.local/mugen/character"
+          "url": "https://example.local/mugen/chars"
         },
         "downloadSources": [
-          "http://localhost:7342/pieces/character/kfm_zaxis.tar"
+          "http://localhost:7442/pieces/chars/kfm_zaxis.tar"
         ],
         "pathVariables": {
           "defName": "kfm_zaxis"
@@ -232,10 +232,10 @@
         "humanInfo": {
           "name": "Kung Fu Man ZSS",
           "author": "Elecbyte",
-          "url": "https://example.local/mugen/character"
+          "url": "https://example.local/mugen/chars"
         },
         "downloadSources": [
-          "http://localhost:7342/pieces/character/kfm_zss.tar"
+          "http://localhost:7442/pieces/chars/kfm_zss.tar"
         ],
         "pathVariables": {
           "defName": "kfm_zss"
@@ -252,10 +252,10 @@
         "humanInfo": {
           "name": "Baiken",
           "author": "TornilloOxidado",
-          "url": "https://example.local/mugen/character"
+          "url": "https://example.local/mugen/chars"
         },
         "downloadSources": [
-          "http://localhost:7342/pieces/character/Baiken.tar"
+          "http://localhost:7442/pieces/chars/Baiken.tar"
         ],
         "pathVariables": {
           "defName": "Baiken"
@@ -272,10 +272,10 @@
         "humanInfo": {
           "name": "Kyo Kusanagi",
           "author": "ikaruga",
-          "url": "https://example.local/mugen/character"
+          "url": "https://example.local/mugen/chars"
         },
         "downloadSources": [
-          "http://localhost:7342/pieces/character/Kyo.tar"
+          "http://localhost:7442/pieces/chars/Kyo.tar"
         ],
         "pathVariables": {
           "defName": "Kyo"
@@ -294,10 +294,10 @@
         "humanInfo": {
           "name": "Training Room",
           "author": "Elecbyte",
-          "url": "https://example.local/mugen/stage"
+          "url": "https://example.local/mugen/stages"
         },
         "downloadSources": [
-          "http://localhost:7342/pieces/stage/stage0.tar"
+          "http://localhost:7442/pieces/stages/stage0.tar"
         ],
         "pathVariables": {
           "defName": "stage0"
@@ -314,10 +314,10 @@
         "humanInfo": {
           "name": "Training Stage",
           "author": "Gacel",
-          "url": "https://example.local/mugen/stage"
+          "url": "https://example.local/mugen/stages"
         },
         "downloadSources": [
-          "http://localhost:7342/pieces/stage/stage1.tar"
+          "http://localhost:7442/pieces/stages/stage1.tar"
         ],
         "pathVariables": {
           "defName": "stage1"
@@ -326,7 +326,6 @@
       }
     ]
   },
-  "mediaOverrides": {},
   "selection": {
     "piece": {
       "stage": {
