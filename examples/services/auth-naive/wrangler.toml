@@ -1,0 +1,15 @@
+name = "roster-lock-auth-naive-service"
+main = "src/index.ts"
+compatibility_date = "2024-09-23"
+compatibility_flags = [ "nodejs_compat" ]
+
+[[kv_namespaces]]
+binding = "USER_STORE"
+id = "auth_naive_service_users"
+
+# D1 database - currently just display_name_counts (src/db/schema.sql is
+# the source of truth for this service's schema).
+[[d1_databases]]
+binding = "DB"
+database_name = "roster-lock-auth-naive-service-db"
+database_id = "8c0daeb7-d695-4332-9444-c5e9301ffd4c" # local dev id; any UUID works for local persistence

@@ -1,0 +1,33 @@
+{
+  "name": "@roster-lock/auth-naive-service",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Username-only Cloudflare Worker authentication service for fast local roster-lock testing - no email verification",
+  "keywords": ["roster-lock", "auth", "cloudflare-worker"],
+  "license": "JSON",
+  "author": "Sam Tobia",
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "types": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "build": "tsc",
+    "deploy": "wrangler deploy",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260103.0",
+    "@types/jsonwebtoken": "^9.0.8",
+    "@types/node": "^22.14.1",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.5",
+    "wrangler": "^4.110.0"
+  },
+  "dependencies": {
+    "@roster-lock/types": "workspace:*",
+    "@roster-lock/utils": "workspace:*",
+    "hono": "^4.11.3",
+    "jsonwebtoken": "^9.0.2",
+    "zod": "^4.3.5"
+  }
+}
