@@ -7,12 +7,17 @@ import { httpHandler } from "./room-handler-bridge/http-handler";
 import { getFilesOfAsset, getPieceFileContents } from "./file-routes";
 import { ensurePieceDownloaded, ensurePieceDownloadedWs, listDownloadedPiecesDirect } from "./select";
 import { listAvailableSortPlugins, sortListPlugin, gameComplete } from "./piece-sort";
-import { listAvailableGameRunners } from "./game-runner";
-import { IFolderDB, V1Env } from "./globals";
+import {
+  listAvailableGameRunners, getGameRunnerSettings, setGameRunnerSettings, getGameRunnerVersion,
+  updateGameRunnerBinary, startGameRunner, getGameProcessStatus, installGameRunnerPlugin,
+} from "./game-runner";
+import { IFolderDB, V1Env, MatchAgentSelfInfo } from "./globals";
 import { PluginManager } from "@roster-lock/plugin-runtime";
+import { GameProcessHandle } from "@roster-lock/types";
 
-export const createV1Routers = (fileDB: IFolderDB, pluginRuntime: PluginManager)=>{
-  const env: V1Env = { fileDB, pluginRuntime };
+export const createV1Routers = (fileDB: IFolderDB, pluginRuntime: PluginManager, matchAgent: MatchAgentSelfInfo)=>{
+  const processHandles = new Map<string, GameProcessHandle>();
+  const env: V1Env = { fileDB, pluginRuntime, matchAgent, processHandles };
   const httpRouter = new HTTPRouter();
   const wsRouter = new WebSocketRouter()
 
@@ -25,6 +30,13 @@ export const createV1Routers = (fileDB: IFolderDB, pluginRuntime: PluginManager)
   httpRouter.post("/piece/sort-list/plugin/:pluginName", sortListPlugin.bind(env));
   httpRouter.post("/game-complete", gameComplete.bind(env));
   httpRouter.get("/game-runner/available", listAvailableGameRunners.bind(env));
+  httpRouter.post("/game-runner/:pluginName/install", installGameRunnerPlugin.bind(env));
+  httpRouter.get("/game-runner/:pluginName/settings", getGameRunnerSettings.bind(env));
+  httpRouter.put("/game-runner/:pluginName/settings", setGameRunnerSettings.bind(env));
+  httpRouter.get("/game-runner/:pluginName/version", getGameRunnerVersion.bind(env));
+  httpRouter.post("/game-runner/:pluginName/update", updateGameRunnerBinary.bind(env));
+  httpRouter.post("/game-runner/:pluginName/start", startGameRunner.bind(env));
+  httpRouter.get("/game-runner/:pluginName/process/:handleId", getGameProcessStatus.bind(env));
 
 
   wsRouter.mount("/sync-dl", wsHandler.bind(env));

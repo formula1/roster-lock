@@ -22,14 +22,20 @@ export async function startTestServer(folder: string, authCode: string = randomU
 
   const pluginRuntime = await PluginManager.create(pluginDir ?? folder);
   const fileDB = getSQLite3FolderDB(folder, pluginRuntime);
-  const { httpRouter: v1HttpRouter, wsRouter: v1WsRouter } = createV1Routers(fileDB, pluginRuntime);
+  // port isn't known until the ephemeral listen() below resolves - getPort()
+  // is only ever called from a request handler, by which point `port` has
+  // already been assigned.
+  let port = 0;
+  const { httpRouter: v1HttpRouter, wsRouter: v1WsRouter } = createV1Routers(
+    fileDB, pluginRuntime, { authCode, getPort: () => port }
+  );
   server.httpRouter.use("/v1", authMiddleware(authCode), v1HttpRouter);
   server.wsRouter.use("/v1", authMiddleware(authCode), v1WsRouter);
   server.httpRouter.use("/editor/v1", authMiddleware(authCode), createEditorV1Router(pluginRuntime, fileDB));
 
   const nodeServer = server.listen(0);
   await once(nodeServer, "listening");
-  const { port } = nodeServer.address() as AddressInfo;
+  ({ port } = nodeServer.address() as AddressInfo);
 
   return {
     authCode,

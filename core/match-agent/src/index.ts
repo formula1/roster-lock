@@ -217,7 +217,9 @@ export async function startServer(port: number, authCode: string, pluginFolder: 
   });
   server.httpRouter.post("/validate-authcode", validateAuthCode(authCode))
 
-  const { httpRouter: v1HttpRouter, wsRouter: v1WsRouter } = createV1Routers(fileDB, pluginRuntime);
+  const { httpRouter: v1HttpRouter, wsRouter: v1WsRouter } = createV1Routers(
+    fileDB, pluginRuntime, { authCode, getPort: () => port }
+  );
   server.httpRouter.use("/v1", authMiddleware(authCode), v1HttpRouter);
   server.wsRouter.use("/v1", authMiddleware(authCode), v1WsRouter);
 
