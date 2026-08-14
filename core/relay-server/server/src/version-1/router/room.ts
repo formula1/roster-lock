@@ -18,7 +18,10 @@ type CreateRoomBody = {
 
   rosterConfigHash: string;
   machines: RoomMachine[];
-  coordinatorId: string;
+  // `false` is an explicit "this room has no game coordinator" choice, kept
+  // required rather than optional so a matchmaker can't omit it by accident
+  // and have that silently treated as an opt-out.
+  coordinatorId: string | false;
 
   publicKey: string;
   signature: string;
@@ -33,7 +36,7 @@ const createRoomCaster: ZodType<CreateRoomBody> = z.object({
     displayName: z.string(),
     playerCount: z.number().int().min(1),
   }).strict()),
-  coordinatorId: z.string(),
+  coordinatorId: z.union([z.string(), z.literal(false)]),
 
   publicKey: z.string(),
   signature: z.string(),
@@ -57,12 +60,17 @@ app.post('/', async (c)=> {
     return c.json({ error: 'Invalid matchmaker' }, 401);
   }
 
-  const gameCoordinator = await c.env.DB.prepare(
-    'SELECT * FROM game_coordinators WHERE id = ? AND status = ?'
-  ).bind(body.coordinatorId, 'active').first<GameCoordinatorRow>();
+  // `false` is a deliberate "no coordinator" choice - skip the lookup
+  // entirely rather than querying for a row that was never meant to exist.
+  let gameCoordinator: GameCoordinatorRow | null = null;
+  if (body.coordinatorId !== false) {
+    gameCoordinator = await c.env.DB.prepare(
+      'SELECT * FROM game_coordinators WHERE id = ? AND status = ?'
+    ).bind(body.coordinatorId, 'active').first<GameCoordinatorRow>();
 
-  if (!gameCoordinator) {
-    return c.json({ error: 'Invalid game coordinator' }, 401);
+    if (!gameCoordinator) {
+      return c.json({ error: 'Invalid game coordinator' }, 401);
+    }
   }
 
 
@@ -97,7 +105,7 @@ app.post('/', async (c)=> {
     headers: c.req.raw.headers,
     body: JSON.stringify({
       matchmakerId: matchmaker.id,
-      coordinatorId: gameCoordinator.id,
+      coordinatorId: gameCoordinator ? gameCoordinator.id : false,
       roomId,
       rosterConfigHash: full_hashBuffer,
       machines: body.machines,
@@ -132,7 +140,8 @@ app.post('/', async (c)=> {
     roomId, matchmaker.id,
     full_hashBuffer, engineId, engineVersion, rosterHash,
     machine_ids, body.machines.length,
-    gameCoordinator.id,
+    // NULL (not the string "false") - see tables.sql's comment on this column.
+    gameCoordinator ? gameCoordinator.id : null,
     new Date().toISOString(),
     'active',
   ).run();

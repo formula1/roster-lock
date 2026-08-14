@@ -7,6 +7,9 @@ type SymmetricSignatureKey = Parameters<typeof SIGNATURE.SYMMETRIC.createSignatu
 
 
 export async function successWebhook(env: RoomType['env'], config: RoomConfig){
+  // `false` is a deliberate "this room has no game coordinator" choice
+  // (see RoomConfig.coordinatorId) - nothing to notify, not an error.
+  if(config.coordinatorId === false) return;
 
   const coordinator = await env.DB.prepare(
     `SELECT success_webhook_url, api_key_encrypted FROM game_coordinators WHERE id = ?`
@@ -23,6 +26,8 @@ export async function successWebhook(env: RoomType['env'], config: RoomConfig){
 }
 
 export async function failWebhook(env: RoomType['env'], config: RoomConfig, reason: string, failedMachine: string){
+  if(config.coordinatorId === false) return;
+
   const coordinator = await env.DB.prepare(
     `SELECT failure_webhook_url, api_key_encrypted FROM game_coordinators WHERE id = ?`
   ).bind(

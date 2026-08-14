@@ -66,8 +66,11 @@ CREATE TABLE IF NOT EXISTS room_stats (
   machine_ids TEXT NOT NULL,  -- JSON: ["machine1", "machine2", "machine3"]
   machine_count INTEGER NOT NULL,
 
-  -- Webhooks
-  coordinator_id TEXT NOT NULL,
+  -- Webhooks. NULL means the room's matchmaker explicitly opted out of a
+  -- game coordinator (coordinatorId: false) - not "unset"/unknown. A NULL
+  -- value is exempt from the FOREIGN KEY check below (standard SQL FK
+  -- semantics), so this needs no separate sentinel row in game_coordinators.
+  coordinator_id TEXT,
 
   -- Timestamps
   created_at TEXT NOT NULL,

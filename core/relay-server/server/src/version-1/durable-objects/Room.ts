@@ -19,7 +19,7 @@ import { sendPing } from './bridge/ping-pong';
 import { z, ZodType } from 'zod';
 const newRoomCaster: ZodType<RoomConfig> = z.object({
   matchmakerId: z.string(),
-  coordinatorId: z.string(),
+  coordinatorId: z.union([z.string(), z.literal(false)]),
   roomId: z.string(),
   rosterConfigHash: z.string(),
   machines: z.array(z.object({
