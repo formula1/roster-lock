@@ -11,11 +11,11 @@ import { stat } from "fs/promises"
 import { runUntrustedScript, ScriptStarter } from "./run-untrusted";
 import { downloadToFolder, DownloadToFolderArg } from "./download";
 import { IPieceSort, PieceSort } from "./PieceSort";
-import { IGameRunner, GameRunner } from "./GameRunner";
+import { IGameRunner, GameRunner, GameRunnerLocalSettings, AvailableGameRunner, StartGameRequest } from "./GameRunner";
 import { PluginPackageType } from "./plugin-management/package";
 
 export { IPieceSort }
-export { IGameRunner }
+export { IGameRunner, GameRunnerLocalSettings, AvailableGameRunner, StartGameRequest }
 export interface IPluginManager {
   readonly pluginDir: string
   pieceSort: IPieceSort,

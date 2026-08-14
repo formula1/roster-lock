@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@npmcli/arborist": "^10.0.1",
+    "@roster-lock/direct-ip-coordinator": "workspace:*",
     "@roster-lock/shared": "workspace:*",
     "@roster-lock/types": "workspace:*",
     "@roster-lock/utils": "workspace:*",

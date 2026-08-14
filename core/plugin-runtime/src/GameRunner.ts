@@ -1,7 +1,8 @@
 import { mkdir, writeFile, unlink, readFile } from "node:fs/promises";
 import { join as pathJoin, dirname as pathDirname } from "node:path";
 import { randomUUID } from "node:crypto";
-import { GameRunnerPlugin, ConnectionConfig, StartGameArgs, GameProcessHandle } from "@roster-lock/types";
+import { GameRunnerPlugin, ConnectionConfig, ConnectionSetup, StartGameArgs, GameProcessHandle } from "@roster-lock/types";
+import { registerAsHost, awaitHostAddress, getLocalNetworkAddresses } from "@roster-lock/direct-ip-coordinator";
 import { getPluginModuleByName, getPluginFullOfType } from "./plugin-management";
 import type { PluginManager } from "./PluginHandler";
 
@@ -62,7 +63,7 @@ export interface IGameRunner {
   // should check listAvailable/the plugin module rather than rely on catching.
   updateBinary(pluginName: string, binaryLocation: string): Promise<void>,
   startGame(
-    pluginName: string, binaryLocation: string, connectionConfig: ConnectionConfig, request: StartGameRequest
+    pluginName: string, binaryLocation: string, connectionSetup: ConnectionSetup, request: StartGameRequest
   ): Promise<GameProcessHandle>,
 }
 
@@ -118,9 +119,10 @@ export class GameRunner implements IGameRunner {
   }
 
   async startGame(
-    pluginName: string, binaryLocation: string, connectionConfig: ConnectionConfig, request: StartGameRequest
+    pluginName: string, binaryLocation: string, connectionSetup: ConnectionSetup, request: StartGameRequest
   ): Promise<GameProcessHandle> {
     const plugin = await this.moduleFor(pluginName);
+    const connectionConfig = await this.resolveConnectionConfig(connectionSetup, request.relayRoomId);
     const { filePath, cleanup } = await this.writePrivateKeyFile(pluginName, request.currentMachine.privateKey);
 
     const args: StartGameArgs = {
@@ -149,6 +151,33 @@ export class GameRunner implements IGameRunner {
     handle.onCrash(()=>{ cleanup(); });
 
     return handle;
+  }
+
+  // A plugin only ever sees a resolved ConnectionConfig - direct-tcp's
+  // rendezvous is a coordinator concern, not something every plugin should
+  // have to reimplement (this is exactly what @roster-lock/direct-ip-coordinator
+  // exists to centralize). "room"/"internal" already are what a plugin needs
+  // as-is, nothing to resolve.
+  private async resolveConnectionConfig(
+    setup: ConnectionSetup, relayRoomId: string
+  ): Promise<ConnectionConfig> {
+    if(setup.type !== "direct-tcp") return setup;
+
+    if(setup.party === "host"){
+      // Best-effort, not awaited: registerAsHost only resolves once the
+      // coordinator has served every expected client and closed the
+      // connection, so awaiting it here would hold up this same startGame
+      // call (and whatever HTTP request is behind it) until the whole
+      // room's clients have connected, not just until the host itself is
+      // ready to run.
+      registerAsHost(setup.coordinator, {
+        roomKey: relayRoomId, listenPort: setup.port, localAddresses: getLocalNetworkAddresses(),
+      }).catch(()=>{});
+      return { type: "direct-tcp", party: "host", port: setup.port };
+    }
+
+    const hostAddress = await awaitHostAddress(setup.coordinator, relayRoomId);
+    return { type: "direct-tcp", party: "client", port: setup.port, hostIp: hostAddress.ip };
   }
 
   private moduleFor(pluginName: string){
