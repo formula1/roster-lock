@@ -1,0 +1,31 @@
+{
+  "name": "@roster-lock/titled-room",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Cloudflare Worker titled-room matchmaker service for roster-lock",
+  "keywords": ["roster-lock", "matchmaker", "titled-room", "cloudflare-worker"],
+  "license": "JSON",
+  "author": "Sam Tobia",
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "types": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "build": "tsc",
+    "deploy": "wrangler deploy",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260103.0",
+    "@types/node": "^22.14.1",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.5",
+    "wrangler": "^4.110.0"
+  },
+  "dependencies": {
+    "@roster-lock/types": "workspace:*",
+    "@roster-lock/utils": "workspace:*",
+    "hono": "^4.11.3",
+    "zod": "^4.3.5"
+  }
+}
