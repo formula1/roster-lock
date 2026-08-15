@@ -31,8 +31,8 @@ export function DownloadPage() {
   const [pieces, setPieces] = useState<Record<string, PieceProgress>>({});
   const [error, setError] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
-  const [started, setStarted] = useState(false);
   const startedDownload = useRef(false);
+  const startedGame = useRef(false);
 
   useEffect(() => {
     if (session) return;
@@ -54,7 +54,8 @@ export function DownloadPage() {
     };
 
     Promise.all([
-      getMachines({ machine: request.machine, relay: request.relay }),
+      getMachines({ machine: request.machine, relay: request.relay })
+        .catch((e) => { throw new Error(`getMachines (relay ${request.relay.url}) failed: ${(e as Error).message}`); }),
       syncDownloadOverWebSocket(
         request,
         matchAgent.settings.authCode,
@@ -85,7 +86,7 @@ export function DownloadPage() {
           },
         },
         matchAgent.settings.url,
-      ),
+      ).catch((e) => { throw new Error(`syncDownloadOverWebSocket (match-agent ${matchAgent.settings.url}) failed: ${(e as Error).message}`); }),
     ])
       .then(([users, result]) => {
         setMachines(users.map((u) => ({
@@ -98,44 +99,50 @@ export function DownloadPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session]);
 
-  if (!session) return null;
-
   const pieceEntries = Object.entries(pieces);
   const overall = pieceEntries.length
     ? pieceEntries.reduce((sum, [, p]) => sum + p.progress, 0) / pieceEntries.length
     : 0;
   const downloadComplete = pieceEntries.length > 0 && pieceEntries.every(([, p]) => p.progress >= 100);
 
-  const handleStart = async () => {
-    if (!downloadResult) return;
+  // Starts automatically as soon as the download finishes - no separate
+  // "Start Match" click needed. Guarded so it only ever attempts once, same
+  // as the download-kickoff effect above.
+  useEffect(() => {
+    if (startedGame.current) return;
+    if (!session || !downloadComplete || !downloadResult) return;
+    startedGame.current = true;
+
     if (!session.coordinator) {
       setError(`No rendezvous coordinator available for "${session.gameRunnerPlugin}" - the matchmaker didn't provide one`);
       return;
     }
     setStarting(true);
     setError(null);
-    try {
-      const connectionConfig = session.isHost
-        ? { type: "direct-tcp" as const, party: "host" as const, port: 7000, coordinator: session.coordinator }
-        : { type: "direct-tcp" as const, party: "client" as const, port: 7000, coordinator: session.coordinator };
 
-      await startGameRunner(matchAgent.settings.url, matchAgent.settings.authCode, session.gameRunnerPlugin, {
-        connectionConfig,
-        currentMachine: { machineId: identity.machineId, publicKey: identity.keys.publicKey, privateKey: identity.keys.privateKey },
-        allMachines: machines,
-        selectionResult: downloadResult,
-        rosterConfig: session.rosterConfig,
-        gameConfig: session.gameConfig,
-        relayRoomId: session.relay.roomId,
-      });
-      setStarted(true);
-      clearSession();
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setStarting(false);
-    }
-  };
+    const connectionConfig = session.isHost
+      ? { type: "direct-tcp" as const, party: "host" as const, port: 7000, coordinator: session.coordinator }
+      : { type: "direct-tcp" as const, party: "client" as const, port: 7000, coordinator: session.coordinator };
+
+    startGameRunner(matchAgent.settings.url, matchAgent.settings.authCode, session.gameRunnerPlugin, {
+      connectionConfig,
+      currentMachine: { machineId: identity.machineId, publicKey: identity.keys.publicKey, privateKey: identity.keys.privateKey },
+      allMachines: machines,
+      selectionResult: downloadResult,
+      rosterConfig: session.rosterConfig,
+      gameConfig: session.gameConfig,
+      relayRoomId: session.relay.roomId,
+    })
+      .then(() => {
+        clearSession();
+        navigate("/game");
+      })
+      .catch((e) => setError((e as Error).message))
+      .finally(() => setStarting(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session, downloadComplete, downloadResult]);
+
+  if (!session) return null;
 
   return (
     <div className="page">
@@ -158,19 +165,11 @@ export function DownloadPage() {
         </div>
       ))}
 
-      {downloadComplete && !started && (
+      {downloadComplete && (
         <div className="start-game">
-          <h2>Ready to start</h2>
-          <button
-            type="button"
-            disabled={starting}
-            onClick={handleStart}
-          >
-            {starting ? "Starting..." : "Start Match"}
-          </button>
+          <h2>{starting ? "Starting..." : "Ready to start"}</h2>
         </div>
       )}
-      {started && <p className="success">Game started via match-agent.</p>}
     </div>
   );
 }

@@ -7,6 +7,7 @@ export function NavBar() {
       <Link to="/join-settings">Join Settings</Link>
       <Link to="/game-runner">Game Runners</Link>
       <Link to="/match-making">Match Making</Link>
+      <Link to="/game">Games</Link>
     </nav>
   );
 }

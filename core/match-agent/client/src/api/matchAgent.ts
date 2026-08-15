@@ -107,3 +107,26 @@ export async function getGameProcessStatus(
   );
   return res.json();
 }
+
+export type GameProcessSummary = {
+  handleId: string,
+  pluginName: string,
+  exited: false | { code: number },
+};
+
+export async function listGameProcesses(
+  matchAgentUrl: string, authCode: string
+): Promise<Array<GameProcessSummary>> {
+  const res = await matchAgentFetch(matchAgentUrl, authCode, "/v1/game-runner/processes");
+  return res.json();
+}
+
+export async function stopGameRunner(
+  matchAgentUrl: string, authCode: string, pluginName: string, handleId: string
+): Promise<void> {
+  await matchAgentFetch(
+    matchAgentUrl, authCode,
+    `/v1/game-runner/${encodeURIComponent(pluginName)}/process/${encodeURIComponent(handleId)}/stop`,
+    { method: "POST" }
+  );
+}

@@ -29,7 +29,7 @@ type MatchAgentContextValue = {
   connecting: boolean,
   error: string | null,
   updateSettings: (settings: MatchAgentSettings) => void,
-  connect: () => Promise<void>,
+  connect: (overrideSettings?: MatchAgentSettings) => Promise<void>,
 };
 
 const MatchAgentContext = createContext<MatchAgentContextValue | null>(null);
@@ -48,11 +48,17 @@ export function MatchAgentProvider({ children }: { children: ReactNode }) {
     setConnected(false);
   }, []);
 
-  const connect = useCallback(async () => {
+  // Takes an optional override rather than always reading `settings` from
+  // this closure - a caller that just updated settings via updateSettings()
+  // and immediately calls connect() in the same handler (see ConnectPage)
+  // would otherwise race the state update and connect with the *previous*
+  // settings, since this useCallback only refreshes on the next render.
+  const connect = useCallback(async (overrideSettings?: MatchAgentSettings) => {
+    const target = overrideSettings ?? settings;
     setConnecting(true);
     setError(null);
     try {
-      const ok = await validateAuthCode(settings.authCode, settings.url);
+      const ok = await validateAuthCode(target.authCode, target.url);
       setConnected(Boolean(ok));
       if (!ok) setError("Auth code was rejected by match-agent");
     } catch (e) {

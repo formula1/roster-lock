@@ -9,8 +9,9 @@ export function ConnectPage() {
   const navigate = useNavigate();
 
   const handleConnect = async () => {
-    updateSettings({ url, authCode });
-    await connect();
+    const next = { url, authCode };
+    updateSettings(next);
+    await connect(next);
   };
 
   return (
@@ -32,7 +33,7 @@ export function ConnectPage() {
       {connected && (
         <div>
           <p className="success">Connected.</p>
-          <button type="button" onClick={() => navigate("/account")}>Continue</button>
+          <button type="button" onClick={() => navigate("/join-settings")}>Continue</button>
         </div>
       )}
     </div>

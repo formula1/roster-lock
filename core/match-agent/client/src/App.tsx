@@ -9,6 +9,7 @@ import { GameRunnerListPage } from "./pages/GameRunner";
 import { GameRunnerDetailPage } from "./pages/GameRunner/Detail";
 import { MatchMakingPage } from "./pages/MatchMaking";
 import { DownloadPage } from "./pages/Download";
+import { GameStatusPage } from "./pages/Game";
 import { NavBar } from "./NavBar";
 
 export default function App() {
@@ -27,6 +28,7 @@ export default function App() {
                 <Route path="/game-runner/:pluginName" element={<GameRunnerDetailPage />} />
                 <Route path="/match-making" element={<MatchMakingPage />} />
                 <Route path="/download" element={<DownloadPage />} />
+                <Route path="/game" element={<GameStatusPage />} />
               </Routes>
             </BrowserRouter>
           </DownloadSessionProvider>

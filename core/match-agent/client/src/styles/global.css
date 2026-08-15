@@ -166,12 +166,18 @@ button:disabled {
   align-items: center;
 }
 
-.room-list, .participant-list {
+.room-list, .participant-list, .game-process-list {
   list-style: none;
   padding: 0;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+.game-process-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
 }
 
 .room-browse-controls {
