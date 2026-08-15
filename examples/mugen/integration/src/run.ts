@@ -1,10 +1,10 @@
 import * as os from "os";
 import * as path from "path";
-import { cp } from "fs/promises";
 import { ProcessGroup, runToCompletion, waitForHttpOk } from "./lib/process-utils";
 import { loadEnvVars } from "./lib/env";
 import { dockerComposeUp, dockerComposeDown, setupServers } from "./setupServers";
 import { installGameRunnerPlugin, setGameRunnerSettings } from "./lib/matchAgentGameRunner";
+import { copyIkemenInstall } from "./lib/ikemenInstall";
 import * as player from "./players/player";
 import { REPO_ROOT, ENV_VARS_DIR, ROSTER_LOCK_PATH } from "./constants";
 import { RosterLockV1Config } from "@roster-lock/types";
@@ -49,14 +49,11 @@ export async function runIntegration(binaryLocation: string){
       await installGameRunnerPlugin(matchAgentUrl, MATCH_AGENT_CONFIG.authCode, path.join(REPO_ROOT, pluginPath));
     }
 
-    // Two Ikemen processes sharing one install directory write to its
-    // save/config files concurrently and fail to establish netplay between
-    // them (confirmed by hand: two instances pointed at the same install
-    // failed to connect; copies of the folder run separately connected
-    // fine). binaryLocation is a match-agent-wide setting, and this
+    // See copyIkemenInstall's own docs for why every simulated player needs
+    // its own copy of the install, not just its own binaryLocation setting -
+    // binaryLocation is itself a match-agent-wide setting, and this
     // integration test shares one match-agent between both simulated
-    // players (see MATCH_AGENT_CONFIG) - each needs its own copy of the
-    // install to point at instead.
+    // players (see MATCH_AGENT_CONFIG).
     console.log("Copying the Ikemen install once per simulated player (isolates save/config state)...");
     const [, hostBinaryLocation, clientBinaryLocation] = await Promise.all([
       setupServers(),
@@ -74,13 +71,6 @@ export async function runIntegration(binaryLocation: string){
     await processes.cleanup(dockerComposeDown);
     throw err;
   }
-}
-
-async function copyIkemenInstall(processes: ProcessGroup, label: string, originalBinaryLocation: string): Promise<string> {
-  const sourceDir = path.dirname(originalBinaryLocation);
-  const destDir = processes.mkTempDir(path.join(os.tmpdir(), `roster-lock-mugen-ikemen-${label}-`));
-  await cp(sourceDir, destDir, { recursive: true });
-  return path.join(destDir, path.basename(originalBinaryLocation));
 }
 
 async function startMatchAgent(processes: ProcessGroup, piecesFolder: string, pluginFolder: string): Promise<string> {
