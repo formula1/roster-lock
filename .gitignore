@@ -116,3 +116,8 @@ watch/target
 # fixtures that reference them)
 /examples/mugen/pieces/chars/
 /examples/mugen/pieces/stages/
+
+# Playwright's own generated run output (traces, screenshots, HTML reports)
+test-results/
+playwright-report/
+blob-report/
