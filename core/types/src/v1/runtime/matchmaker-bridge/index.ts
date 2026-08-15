@@ -57,7 +57,7 @@ export type InitiateRelayEvent = {
   gameRunnerPlugin: string,
   isHost: boolean,
   // A direct-tcp game runner's rendezvous coordinator (see
-  // plugins/shared/direct-ip-coordinator and
+  // plugins/game-runner/shared/direct-ip-coordinator and
   // docs/v2/ikemen-go/game-coordinator.md) - null for game runners that
   // don't use one (a matchmaker resolves this the same way it resolves
   // `relay`, e.g. titled-room's /room/start response).

@@ -22,7 +22,7 @@ WORKDIR /app
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY core/types/package.json core/types/
 COPY core/utils/package.json core/utils/
-COPY plugins/shared/direct-ip-coordinator/package.json plugins/shared/direct-ip-coordinator/
+COPY plugins/game-runner/shared/direct-ip-coordinator/package.json plugins/game-runner/shared/direct-ip-coordinator/
 COPY examples/services/coordinators/direct-ip/package.json examples/services/coordinators/direct-ip/
 
 RUN pnpm install --filter @roster-lock/direct-ip-coordinator-service... --frozen-lockfile --ignore-scripts
@@ -30,7 +30,7 @@ RUN pnpm install --filter @roster-lock/direct-ip-coordinator-service... --frozen
 # Copy source code
 COPY core/types/ core/types/
 COPY core/utils/ core/utils/
-COPY plugins/shared/direct-ip-coordinator/ plugins/shared/direct-ip-coordinator/
+COPY plugins/game-runner/shared/direct-ip-coordinator/ plugins/game-runner/shared/direct-ip-coordinator/
 COPY examples/services/coordinators/direct-ip/ examples/services/coordinators/direct-ip/
 
 # Build @roster-lock/utils, @roster-lock/direct-ip-coordinator and the

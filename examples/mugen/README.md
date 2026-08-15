@@ -48,7 +48,7 @@ This will:
    temp copy of your `--binary-location` install** (see below), one right
    after the other. The client blocks on direct-ip-coordinator until the host
    is confirmed listening before it connects (see
-   `plugins/shared/direct-ip-coordinator`).
+   `plugins/game-runner/shared/direct-ip-coordinator`).
 
 ### Why each player gets its own copy of the install
 

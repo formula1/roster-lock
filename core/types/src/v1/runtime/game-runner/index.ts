@@ -25,7 +25,7 @@ type RoomOrInternalConnection = (
 // direct-tcp room's host address isn't knowable upfront by whoever builds
 // this (it may be behind NAT, or simply not yet bound its listen socket), so
 // both variants instead carry the address of a small rendezvous coordinator
-// (see plugins/shared/direct-ip-coordinator and
+// (see plugins/game-runner/shared/direct-ip-coordinator and
 // docs/v2/ikemen-go/game-coordinator.md) rather than a resolved address.
 // match-agent's GameRunner.startGame is what turns this into a
 // ConnectionConfig below before a plugin ever sees it - no plugin talks to a
