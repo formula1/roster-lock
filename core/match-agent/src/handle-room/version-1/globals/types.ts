@@ -12,6 +12,14 @@ export type MatchAgentSelfInfo = {
   getPort: () => number,
 }
 
+// pluginName is kept alongside the handle (not just the handleId key) so a
+// process can be listed/identified without a caller having to already know
+// which plugin started it - see game-runner.ts's listGameProcesses.
+export type ProcessHandleEntry = {
+  pluginName: string,
+  handle: GameProcessHandle,
+}
+
 export type V1Env = {
   fileDB: IFolderDB,
   pluginRuntime: PluginManager,
@@ -19,5 +27,5 @@ export type V1Env = {
   // In-memory only - a match-agent restart loses track of processes it
   // started before the restart (same best-effort tradeoff as GameProcessHandle
   // itself; there's no persistent process-supervision story here).
-  processHandles: Map<string, GameProcessHandle>,
+  processHandles: Map<string, ProcessHandleEntry>,
 }

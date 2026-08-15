@@ -184,7 +184,7 @@ export const startGameRunner: HTTPRequestHandler = async function(
   });
 
   const handleId = randomUUID();
-  this.processHandles.set(handleId, handle);
+  this.processHandles.set(handleId, { pluginName, handle });
 
   res.writeHead(200, { "Content-Type": "application/json" });
   res.end(JSON.stringify({ handleId }));
@@ -194,9 +194,37 @@ export const getGameProcessStatus: HTTPRequestHandler = async function(
   this: V1Env, { res }, routeInfo
 ){
   const handleId = routeInfo.params.handleId;
-  const handle = handleId ? this.processHandles.get(handleId) : undefined;
-  if(!handle) throw new HTTPError(404, "Unknown process handle");
+  const entry = handleId ? this.processHandles.get(handleId) : undefined;
+  if(!entry) throw new HTTPError(404, "Unknown process handle");
 
   res.writeHead(200, { "Content-Type": "application/json" });
-  res.end(JSON.stringify({ exited: handle.exited }));
+  res.end(JSON.stringify({ exited: entry.handle.exited }));
+}
+
+// Every process this match-agent has started, across every game-runner
+// plugin - backs pages/Game in match-agent-client, which shows one row per
+// entry regardless of which plugin launched it.
+export const listGameProcesses: HTTPRequestHandler = async function(
+  this: V1Env, { res }
+){
+  const processes = Array.from(this.processHandles.entries()).map(([handleId, entry]) => ({
+    handleId, pluginName: entry.pluginName, exited: entry.handle.exited,
+  }));
+  res.writeHead(200, { "Content-Type": "application/json" });
+  res.end(JSON.stringify(processes));
+}
+
+// Best-effort, same as GameProcessHandle.stop() itself - see that type's own
+// docs on why a plugin may not always be able to actually stop the game.
+export const stopGameProcess: HTTPRequestHandler = async function(
+  this: V1Env, { res }, routeInfo
+){
+  const handleId = routeInfo.params.handleId;
+  const entry = handleId ? this.processHandles.get(handleId) : undefined;
+  if(!entry) throw new HTTPError(404, "Unknown process handle");
+
+  await entry.handle.stop();
+
+  res.writeHead(200, { "Content-Type": "application/json" });
+  res.end(JSON.stringify({ ok: true }));
 }

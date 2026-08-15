@@ -10,13 +10,13 @@ import { listAvailableSortPlugins, sortListPlugin, gameComplete } from "./piece-
 import {
   listAvailableGameRunners, getGameRunnerSettings, setGameRunnerSettings, getGameRunnerVersion,
   updateGameRunnerBinary, startGameRunner, getGameProcessStatus, installGameRunnerPlugin,
+  listGameProcesses, stopGameProcess,
 } from "./game-runner";
-import { IFolderDB, V1Env, MatchAgentSelfInfo } from "./globals";
+import { IFolderDB, V1Env, MatchAgentSelfInfo, ProcessHandleEntry } from "./globals";
 import { PluginManager } from "@roster-lock/plugin-runtime";
-import { GameProcessHandle } from "@roster-lock/types";
 
 export const createV1Routers = (fileDB: IFolderDB, pluginRuntime: PluginManager, matchAgent: MatchAgentSelfInfo)=>{
-  const processHandles = new Map<string, GameProcessHandle>();
+  const processHandles = new Map<string, ProcessHandleEntry>();
   const env: V1Env = { fileDB, pluginRuntime, matchAgent, processHandles };
   const httpRouter = new HTTPRouter();
   const wsRouter = new WebSocketRouter()
@@ -37,6 +37,11 @@ export const createV1Routers = (fileDB: IFolderDB, pluginRuntime: PluginManager,
   httpRouter.post("/game-runner/:pluginName/update", updateGameRunnerBinary.bind(env));
   httpRouter.post("/game-runner/:pluginName/start", startGameRunner.bind(env));
   httpRouter.get("/game-runner/:pluginName/process/:handleId", getGameProcessStatus.bind(env));
+  httpRouter.post("/game-runner/:pluginName/process/:handleId/stop", stopGameProcess.bind(env));
+  // Plugin-agnostic, unlike the routes above - lists every process this
+  // match-agent has started across every plugin (see pages/Game in
+  // match-agent-client), not just one plugin's.
+  httpRouter.get("/game-runner/processes", listGameProcesses.bind(env));
 
 
   wsRouter.mount("/sync-dl", wsHandler.bind(env));
