@@ -24,6 +24,13 @@ database_id = "8c0daeb7-d695-4332-9444-c5e9301ffd4b" # local dev id; any UUID wo
 # client-supplied. Point this at a real deployment before /room/start will
 # work.
 RELAY_SERVER_URL = "http://localhost:8788"
+# What clients are actually told to connect to (see RoomSession.ts's
+# GAME_HAS_STARTED broadcast) - distinct from RELAY_SERVER_URL above once a
+# deployment's relay server has a different internal vs. public address
+# (e.g. a docker-internal hostname vs. localhost - see examples/mugen's
+# services/env-vars/internal-urls.env). Same value here since standalone dev
+# has no such split.
+PUBLIC_RELAY_SERVER_URL = "http://localhost:8788"
 
 # Local-dev-only default (see admin/jwt.ts) - a real deployment provisions
 # this with `wrangler secret put`, same as MATCHMAKER_SECRET_KEY below.

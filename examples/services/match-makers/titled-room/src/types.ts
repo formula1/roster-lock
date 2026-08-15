@@ -7,8 +7,16 @@ export interface Env {
   DB: D1Database;
   // Fixed, deployment-known address of the relay server rooms actually run
   // on once started - never client-supplied (a client could otherwise point
-  // participants at a relay server this matchmaker never vouched for).
+  // participants at a relay server this matchmaker never vouched for). Used
+  // for this worker's own server-to-server calls to the relay (relay-client.ts).
   RELAY_SERVER_URL?: string;
+  // What RoomSession broadcasts to clients as the relay to connect to -
+  // separate from RELAY_SERVER_URL because the two can differ (a
+  // docker-internal hostname this worker reaches directly vs. a
+  // localhost/public address a browser client needs instead - see
+  // examples/mugen's internal-urls.env for exactly this split). Falls back
+  // to RELAY_SERVER_URL when unset, for deployments where they're the same.
+  PUBLIC_RELAY_SERVER_URL?: string;
   // Which game-runner plugins this deployment allows rooms to be created
   // for, what each one's roster config is expected to hash to, and which
   // (if any) game coordinator its rooms use - managed by an admin via

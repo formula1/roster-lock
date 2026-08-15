@@ -3,31 +3,20 @@ import { useNavigate } from "react-router-dom";
 import { useAccount } from "../context/AccountContext";
 
 export function AccountPage() {
-  const { token, profile, loading, error, register, validate, login, logout, setDisplayName } = useAccount();
+  const { token, profile, loading, error, register, login, logout, setDisplayName } = useAccount();
   const navigate = useNavigate();
 
-  const [mode, setMode] = useState<"login" | "register" | "validate">("login");
-  const [email, setEmail] = useState("");
+  const [mode, setMode] = useState<"login" | "register">("login");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [validationToken, setValidationToken] = useState("");
   const [displayNameInput, setDisplayNameInput] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
 
   const handleRegister = async () => {
     setFormError(null);
     try {
-      await register(email);
-      setMode("validate");
-    } catch (e) {
-      setFormError((e as Error).message);
-    }
-  };
-
-  const handleValidate = async () => {
-    setFormError(null);
-    try {
-      await validate(email, validationToken, password);
-      setMode("login");
+      await register(username, password);
+      await login(username, password);
     } catch (e) {
       setFormError((e as Error).message);
     }
@@ -36,7 +25,7 @@ export function AccountPage() {
   const handleLogin = async () => {
     setFormError(null);
     try {
-      await login(email, password);
+      await login(username, password);
     } catch (e) {
       setFormError((e as Error).message);
     }
@@ -55,7 +44,7 @@ export function AccountPage() {
           Save display name
         </button>
         <button type="button" onClick={logout}>Log out</button>
-        <button type="button" onClick={() => navigate("/rooms")}>Continue</button>
+        <button type="button" data-testid="account-continue" onClick={() => navigate("/rooms")}>Continue</button>
         {error && <p className="error">{error}</p>}
       </div>
     );
@@ -65,42 +54,25 @@ export function AccountPage() {
     <div className="page">
       <h1>Account</h1>
       <div className="tabs">
-        <button type="button" data-active={mode === "login"} onClick={() => setMode("login")}>Log in</button>
-        <button type="button" data-active={mode === "register"} onClick={() => setMode("register")}>Register</button>
-        <button type="button" data-active={mode === "validate"} onClick={() => setMode("validate")}>Verify email</button>
+        <button type="button" data-testid="account-tab-login" data-active={mode === "login"} onClick={() => setMode("login")}>Log in</button>
+        <button type="button" data-testid="account-tab-register" data-active={mode === "register"} onClick={() => setMode("register")}>Register</button>
       </div>
 
       <label>
-        Email
-        <input value={email} onChange={(e) => setEmail(e.target.value)} />
+        Username
+        <input value={username} onChange={(e) => setUsername(e.target.value)} />
+      </label>
+      <label>
+        Password
+        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
       </label>
 
       {mode === "register" && (
-        <button type="button" disabled={loading} onClick={handleRegister}>Send validation email</button>
-      )}
-
-      {mode === "validate" && (
-        <>
-          <label>
-            Validation token
-            <input value={validationToken} onChange={(e) => setValidationToken(e.target.value)} />
-          </label>
-          <label>
-            Password
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-          </label>
-          <button type="button" disabled={loading} onClick={handleValidate}>Verify and set password</button>
-        </>
+        <button type="button" data-testid="account-submit-register" disabled={loading} onClick={handleRegister}>Register</button>
       )}
 
       {mode === "login" && (
-        <>
-          <label>
-            Password
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-          </label>
-          <button type="button" disabled={loading} onClick={handleLogin}>Log in</button>
-        </>
+        <button type="button" data-testid="account-submit-login" disabled={loading} onClick={handleLogin}>Log in</button>
       )}
 
       {(formError || error) && <p className="error">{formError ?? error}</p>}

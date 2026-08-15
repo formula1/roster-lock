@@ -52,13 +52,16 @@ EXPOSE 80
 #
 # wrangler.toml ships with local-dev-only [vars] defaults for JWT_SECRET and
 # INITIAL_ADMIN_USERNAME/PASSWORD (see its own comments) - a deployment's
-# real RELAY_SERVER_URL, AUTH_SERVICE_URL and matchmaker signing keypair are
-# still provided as regular environment variables (docker-compose
-# `environment:`/`env_file:`) and written out here to `.dev.vars`, wrangler
-# dev's standard local-only vars/secrets override file.
+# real RELAY_SERVER_URL/PUBLIC_RELAY_SERVER_URL, AUTH_SERVICE_URL and
+# matchmaker signing keypair are still provided as regular environment
+# variables (docker-compose `environment:`/`env_file:`) and written out here
+# to `.dev.vars`, wrangler dev's standard local-only vars/secrets override
+# file - wrangler dev never reads plain process.env itself, so any var a
+# deployment needs to actually override has to be listed here explicitly.
 CMD ["sh", "-c", "\
   { \
     [ -n \"$RELAY_SERVER_URL\" ] && echo \"RELAY_SERVER_URL=$RELAY_SERVER_URL\"; \
+    [ -n \"$PUBLIC_RELAY_SERVER_URL\" ] && echo \"PUBLIC_RELAY_SERVER_URL=$PUBLIC_RELAY_SERVER_URL\"; \
     [ -n \"$MATCHMAKER_PUBLIC_KEY\" ] && echo \"MATCHMAKER_PUBLIC_KEY=$MATCHMAKER_PUBLIC_KEY\"; \
     [ -n \"$MATCHMAKER_SECRET_KEY\" ] && echo \"MATCHMAKER_SECRET_KEY=$MATCHMAKER_SECRET_KEY\"; \
     [ -n \"$AUTH_SERVICE_URL\" ] && echo \"AUTH_SERVICE_URL=$AUTH_SERVICE_URL\"; \

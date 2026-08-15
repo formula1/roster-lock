@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import { Env, PublicUserProfile, RoomData } from "./types";
 import { createRoomBodySchema, joinRoomBodySchema, startRoomBodySchema, destroyRoomBodySchema } from "./schema";
 import { assertGameRunnerAllowed } from "./game-runners";
@@ -8,6 +9,8 @@ import { app as adminGameRunnersApp } from "./admin/game-runners";
 export { RoomSession } from "./RoomSession";
 
 const app = new Hono<{ Bindings: Env }>();
+
+app.use('*', cors());
 
 app.get("/health", (c) => c.json({ status: "ok", service: "titled-room" }));
 

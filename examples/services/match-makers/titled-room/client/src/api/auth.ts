@@ -1,11 +1,10 @@
-// Wrapper around examples/services/auth-validated's HTTP surface.
+// Wrapper around examples/services/auth-naive's HTTP surface.
 
 export type UserProfile = {
   id: string,
   displayName?: string,
   identifier: string,
   publicKey?: string,
-  validated: boolean,
   playerCount: number,
 };
 
@@ -26,21 +25,13 @@ function authHeader(token: string): HeadersInit {
   return { Authorization: `Bearer ${token}` };
 }
 
-export async function register(authServiceUrl: string, email: string): Promise<void> {
-  await authFetch(authServiceUrl, "/auth/register", { method: "POST", body: JSON.stringify({ email }) });
+export async function register(authServiceUrl: string, username: string, password: string): Promise<void> {
+  await authFetch(authServiceUrl, "/auth/register", { method: "POST", body: JSON.stringify({ username, password }) });
 }
 
-export async function validate(
-  authServiceUrl: string, email: string, token: string, password: string
-): Promise<void> {
-  await authFetch(authServiceUrl, "/auth/validate", {
-    method: "POST", body: JSON.stringify({ email, token, password }),
-  });
-}
-
-export async function login(authServiceUrl: string, email: string, password: string): Promise<string> {
+export async function login(authServiceUrl: string, username: string, password: string): Promise<string> {
   const res = await authFetch(authServiceUrl, "/auth/login", {
-    method: "POST", body: JSON.stringify({ email, password }),
+    method: "POST", body: JSON.stringify({ username, password }),
   });
   const { token } = await res.json() as { token: string };
   return token;

@@ -14,9 +14,8 @@ type AccountContextValue = {
   identity: Identity | null,
   loading: boolean,
   error: string | null,
-  register: (email: string) => Promise<void>,
-  validate: (email: string, token: string, password: string) => Promise<void>,
-  login: (email: string, password: string) => Promise<void>,
+  register: (username: string, password: string) => Promise<void>,
+  login: (username: string, password: string) => Promise<void>,
   logout: () => void,
   setDisplayName: (displayName: string) => Promise<void>,
 };
@@ -54,19 +53,15 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
-  const register = useCallback(async (email: string) => {
-    await authApi.register(AUTH_SERVICE_URL, email);
+  const register = useCallback(async (username: string, password: string) => {
+    await authApi.register(AUTH_SERVICE_URL, username, password);
   }, []);
 
-  const validate = useCallback(async (email: string, validationToken: string, password: string) => {
-    await authApi.validate(AUTH_SERVICE_URL, email, validationToken, password);
-  }, []);
-
-  const login = useCallback(async (email: string, password: string) => {
+  const login = useCallback(async (username: string, password: string) => {
     setLoading(true);
     setError(null);
     try {
-      const newToken = await authApi.login(AUTH_SERVICE_URL, email, password);
+      const newToken = await authApi.login(AUTH_SERVICE_URL, username, password);
       localStorage.setItem(STORAGE_KEY, newToken);
       setToken(newToken);
     } catch (e) {
@@ -92,7 +87,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
 
   return (
     <AccountContext.Provider value={{
-      token, profile, identity, loading, error, register, validate, login, logout, setDisplayName,
+      token, profile, identity, loading, error, register, login, logout, setDisplayName,
     }}>
       {children}
     </AccountContext.Provider>

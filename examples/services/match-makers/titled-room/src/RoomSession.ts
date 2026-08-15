@@ -168,7 +168,7 @@ export class RoomSession implements DurableObject {
       // relayUrl - here, not through a separately configured env var per
       // client (see docs/v2/ikemen-go/game-coordinator.md).
       const startPayload = {
-        relayUrl: this.env.RELAY_SERVER_URL!,
+        relayUrl: this.env.PUBLIC_RELAY_SERVER_URL || this.env.RELAY_SERVER_URL!,
         roomId: relay.roomId,
         coordinator: coordinator ? coordinator.address : null,
       };

@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import { z } from "zod";
 import { Env } from "./types";
 import {
@@ -11,6 +12,8 @@ import {
 } from "./userStore";
 
 const app = new Hono<{ Bindings: Env; Variables: { user: { userId: string; username: string } } }>();
+
+app.use('*', cors());
 
 app.get("/health", (c) => c.json({ status: "ok", service: "auth-naive" }));
 
