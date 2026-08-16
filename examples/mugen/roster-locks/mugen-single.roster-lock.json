@@ -137,6 +137,28 @@
             "glob": [
               "**/*.sff"
             ]
+          },
+          {
+            "name": "art",
+            "classification": "media",
+            "count": [
+              0,
+              "*"
+            ],
+            "glob": [
+              "**/*.png"
+            ]
+          },
+          {
+            "name": "docs",
+            "classification": "doc",
+            "count": [
+              0,
+              "*"
+            ],
+            "glob": [
+              "**/*.txt"
+            ]
           }
         ]
       }
@@ -172,10 +194,10 @@
         "humanInfo": {
           "name": "Kung Fu Man",
           "author": "Elecbyte",
-          "url": "https://example.local/mugen/chars"
+          "url": "https://example.local/mugen/character"
         },
         "downloadSources": [
-          "http://localhost:7442/pieces/chars/kfm.tar"
+          "http://localhost:7442/pieces/character/kfm.tar"
         ],
         "pathVariables": {
           "defName": "kfm"
@@ -192,10 +214,10 @@
         "humanInfo": {
           "name": "Kung Fu Man 720",
           "author": "Elecbyte",
-          "url": "https://example.local/mugen/chars"
+          "url": "https://example.local/mugen/character"
         },
         "downloadSources": [
-          "http://localhost:7442/pieces/chars/kfm720.tar"
+          "http://localhost:7442/pieces/character/kfm720.tar"
         ],
         "pathVariables": {
           "defName": "kfm720"
@@ -212,10 +234,10 @@
         "humanInfo": {
           "name": "Kung Fu Man Z Axis",
           "author": "Elecbyte",
-          "url": "https://example.local/mugen/chars"
+          "url": "https://example.local/mugen/character"
         },
         "downloadSources": [
-          "http://localhost:7442/pieces/chars/kfm_zaxis.tar"
+          "http://localhost:7442/pieces/character/kfm_zaxis.tar"
         ],
         "pathVariables": {
           "defName": "kfm_zaxis"
@@ -232,10 +254,10 @@
         "humanInfo": {
           "name": "Kung Fu Man ZSS",
           "author": "Elecbyte",
-          "url": "https://example.local/mugen/chars"
+          "url": "https://example.local/mugen/character"
         },
         "downloadSources": [
-          "http://localhost:7442/pieces/chars/kfm_zss.tar"
+          "http://localhost:7442/pieces/character/kfm_zss.tar"
         ],
         "pathVariables": {
           "defName": "kfm_zss"
@@ -243,42 +265,42 @@
         "requiredPieces": {}
       },
       {
-        "id": "@tornillooxidado/baiken",
+        "id": "@elecbyte/kung-fu-man-thunder",
         "version": {
-          "logic": "a4134e8c80aed4e8d19b548edaef518f989da82997d01536636cbef1f7b83f2d",
-          "media": "fa2f4248422b876ca4cc9add6b87a941e1e584c1e590c809c9296fbfe59fdab0",
-          "docs": "1c75711c0ffa55c7985c1b86a46189a4609ecfa805833e34e8107354cc03a49d"
+          "logic": "ff742b83d988018eac0e67fd658128d777836432b04d497f20f5e2124d5bb8d8",
+          "media": "e138f7c02847735ea861bb478de7f50c0c44004669a0a6641fdc2b44fbac0270",
+          "docs": "00a8c9da1eeb821d5f9c7eca2126d1abb38d4680346effd55f376a9adebc738e"
         },
         "humanInfo": {
-          "name": "Baiken",
-          "author": "TornilloOxidado",
-          "url": "https://example.local/mugen/chars"
+          "name": "Kung Fu Man (Thunder)",
+          "author": "Elecbyte",
+          "url": "https://example.local/mugen/character"
         },
         "downloadSources": [
-          "http://localhost:7442/pieces/chars/Baiken.tar"
+          "http://localhost:7442/pieces/character/kfm_thunder.tar"
         ],
         "pathVariables": {
-          "defName": "Baiken"
+          "defName": "kfm_thunder"
         },
         "requiredPieces": {}
       },
       {
-        "id": "@ikaruga/kyo-kusanagi",
+        "id": "@elecbyte/kung-fu-man-shadow",
         "version": {
-          "logic": "0affdfc5e6bff6eea9f49ecc6dab6c085686347b567fcee8df3d15c32a009e76",
-          "media": "24e05ba9595835198b4af2d9f6ec432105bdae70db520dfcb10e0a85ab758f47",
-          "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          "logic": "d2cfb129a013cb6cef8d7d5da482055582511392d5e338728a5027f1e833366e",
+          "media": "6acc6a95640ad27ccd53ffa150cd783b212ae7d53355fa174c48b3291f6aa107",
+          "docs": "c5489b1c817ff1dc18d250e0f870138200fd37af79206aca6a8441d9cf536e66"
         },
         "humanInfo": {
-          "name": "Kyo Kusanagi",
-          "author": "ikaruga",
-          "url": "https://example.local/mugen/chars"
+          "name": "Kung Fu Man (Shadow)",
+          "author": "Elecbyte",
+          "url": "https://example.local/mugen/character"
         },
         "downloadSources": [
-          "http://localhost:7442/pieces/chars/Kyo.tar"
+          "http://localhost:7442/pieces/character/kfm_shadow.tar"
         ],
         "pathVariables": {
-          "defName": "Kyo"
+          "defName": "kfm_shadow"
         },
         "requiredPieces": {}
       }
@@ -294,10 +316,10 @@
         "humanInfo": {
           "name": "Training Room",
           "author": "Elecbyte",
-          "url": "https://example.local/mugen/stages"
+          "url": "https://example.local/mugen/stage"
         },
         "downloadSources": [
-          "http://localhost:7442/pieces/stages/stage0.tar"
+          "http://localhost:7442/pieces/stage/stage0.tar"
         ],
         "pathVariables": {
           "defName": "stage0"
@@ -305,22 +327,42 @@
         "requiredPieces": {}
       },
       {
-        "id": "@gacel/training-stage",
+        "id": "@elecbyte/training-room-storm",
         "version": {
-          "logic": "1b3cce738747d1dbfb1743ab0f626f7e5a75c1cdfac5878ff23743dccc3e444c",
-          "media": "c9479c6f48a7291cca58aa2c6bc69d009aabe4c1df355b7e0d9944dff400bd4c",
-          "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          "logic": "474bc91c47aff201a5c182b65c6654d28f9f0baf009397c04864db2f291cb9bc",
+          "media": "9bbf48f1cd970478a78ede746142cb4f4cf1d52f9a19606fc50194120ed33c70",
+          "docs": "6768d6098843b2f5aad33a3de933bcd168565126122b649aec56a56c5ddbc5b6"
         },
         "humanInfo": {
-          "name": "Training Stage",
-          "author": "Gacel",
-          "url": "https://example.local/mugen/stages"
+          "name": "Training Room (Storm)",
+          "author": "Elecbyte",
+          "url": "https://example.local/mugen/stage"
         },
         "downloadSources": [
-          "http://localhost:7442/pieces/stages/stage1.tar"
+          "http://localhost:7442/pieces/stage/stage0_storm.tar"
         ],
         "pathVariables": {
-          "defName": "stage1"
+          "defName": "stage0_storm"
+        },
+        "requiredPieces": {}
+      },
+      {
+        "id": "@elecbyte/training-room-rainbow",
+        "version": {
+          "logic": "47f4ba86d14a5bc36268f71426428f505a662e202fb47e4b28fc50b926b66966",
+          "media": "e14ced86db72bb3a4dc90a0f5dc618cd6e91f7fdc20b4679f9da3cefacaa53a5",
+          "docs": "4bc6edcefe3ba389253e3fd76b8cad570a203373b0c568033957329d274e13b1"
+        },
+        "humanInfo": {
+          "name": "Training Room (Rainbow)",
+          "author": "Elecbyte",
+          "url": "https://example.local/mugen/stage"
+        },
+        "downloadSources": [
+          "http://localhost:7442/pieces/stage/stage0_rainbow.tar"
+        ],
+        "pathVariables": {
+          "defName": "stage0_rainbow"
         },
         "requiredPieces": {}
       }

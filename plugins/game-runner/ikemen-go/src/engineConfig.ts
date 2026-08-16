@@ -52,6 +52,10 @@ export const IKEMEN_ENGINE_PIECE_DEFINITIONS: RosterLockEngineConfig["pieceDefin
     assets: [
       { name: "definition", classification: "logic", count: 1, glob: [`<${DEF_NAME_VARIABLE}>.def`] },
       { name: "sprites", classification: "media", count: [1, "*"], glob: ["**/*.sff"] },
+      // Optional source art (e.g. PNGs spliced into the .sff via
+      // utils/append-sff-sprites.js) kept alongside a piece for future edits.
+      { name: "art", classification: "media", count: [0, "*"], glob: ["**/*.png"] },
+      { name: "docs", classification: "doc", count: [0, "*"], glob: ["**/*.txt"] },
     ],
   },
 };

@@ -1,8 +1,26 @@
 # MUGEN / Ikemen GO example
 
 A roster-lock config built from real MUGEN content, used to drive the
-`@roster-lock/game-runner-ikemen-go` plugin. `pieces/` holds six characters and two
+`@roster-lock/game-runner-ikemen-go` plugin. `pieces/` holds six characters and three
 stages; everything else here is generated from them.
+
+The roster is deliberately all Elecbyte Kung Fu Man variants (the engine's own
+CC-BY-NC-licensed tutorial character) rather than fan-made ports of commercial
+fighting-game characters - it used to include a couple of those, but they were
+dropped since bundling ripped sprites/voices from real games isn't something
+worth risking even as an unofficial example.
+
+The stages follow the same rule. All three are Elecbyte's own Training Room;
+the second slot used to be a different author's stage (Gacel, CC BY 3.0) and
+was dropped for the same reason the characters were. `stage0_storm` and
+`stage0_rainbow` both reuse Elecbyte's floor/wall sprites unchanged and add
+their own small overlay of original sprites appended into their own copy of
+the .sff, via `utils/append-sff-sprites.js` - a small, reusable SFF v2 append
+tool (see `pieces/stages/stage0_storm/readme.txt` and
+`pieces/stages/stage0_rainbow/readme.txt` for what each overlay is and how
+it's driven; stages can't run character code, so both rely on plain `[BG]`
+params - `sin.y`/`velocity`/`tile` and `BGCtrl` scheduling - rather than
+anything PalFX-like).
 
 ## Rebuilding
 
@@ -52,14 +70,13 @@ of the characters outright:
 
 | character | v0.98.2 | v0.99.0 | v1.0.0-rc.2 |
 |---|---|---|---|
-| kfm, kfm720, Baiken | ✓ | ✓ | ✓ |
-| Kyo | ✗ | ✗ `Kyo.cns:53 Invalid data: motifstate` | ✓ |
+| kfm, kfm720 | ✓ | ✓ | ✓ |
 | kfm_zss | ✗ | ✗ `AI.zss:156 Invalid data: jugglepoints` | ✓ |
 | kfm_zaxis | ✗ | ✗ `kfm.zss:67` | ✓ |
 
 The ZSS characters use Ikemen's own scripting language, which is still moving, so they
-track the engine closely. On rc.2 all six load; Kyo, kfm720 and Baiken emit non-fatal
-warnings (unknown state-controller parameters, one missing sprite in `Baiken.sff`).
+track the engine closely. On rc.2 all four load; kfm720 emits non-fatal warnings
+(unknown state-controller parameters).
 
 This is a note about these particular pieces, not something the lock declares. A lock
 describes how its files are laid out and loaded - that's what the engine config and its

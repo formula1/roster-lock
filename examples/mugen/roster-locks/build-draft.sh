@@ -61,6 +61,13 @@ $CLI engine add-asset stage definition --draft "$DRAFT" \
   --classification logic --count 1 --glob '<defName>.def'
 $CLI engine add-asset stage sprites --draft "$DRAFT" \
   --classification media --count 1:'*' --glob '**/*.sff'
+# Optional source art (e.g. PNGs spliced into the .sff via
+# utils/append-sff-sprites.js) kept alongside the piece for future edits -
+# same idea as the character "palettes" asset below.
+$CLI engine add-asset stage art --draft "$DRAFT" \
+  --classification media --count 0:'*' --glob '**/*.png'
+$CLI engine add-asset stage docs --draft "$DRAFT" \
+  --classification doc --count 0:'*' --glob '**/*.txt'
 
 # --- rosters ---------------------------------------------------------------
 # kfm and kfm_zss both self-report as "Kung Fu Man" by Elecbyte, which would
@@ -79,11 +86,12 @@ add_piece character chars/kfm        kfm        "Kung Fu Man"          "Elecbyte
 add_piece character chars/kfm720     kfm720     "Kung Fu Man 720"      "Elecbyte"
 add_piece character chars/kfm_zaxis  kfm_zaxis  "Kung Fu Man Z Axis"   "Elecbyte"
 add_piece character chars/kfm_zss    kfm_zss    "Kung Fu Man ZSS"      "Elecbyte"
-add_piece character chars/Baiken     Baiken     "Baiken"               "TornilloOxidado"
-add_piece character chars/Kyo        Kyo        "Kyo Kusanagi"         "ikaruga"
+add_piece character chars/kfm_thunder kfm_thunder "Kung Fu Man (Thunder)" "Elecbyte"
+add_piece character chars/kfm_shadow   kfm_shadow   "Kung Fu Man (Shadow)"   "Elecbyte"
 
-add_piece stage stages/stage0 stage0 "Training Room"  "Elecbyte"
-add_piece stage stages/stage1 stage1 "Training Stage" "Gacel"
+add_piece stage stages/stage0         stage0         "Training Room"          "Elecbyte"
+add_piece stage stages/stage0_storm   stage0_storm   "Training Room (Storm)"   "Elecbyte"
+add_piece stage stages/stage0_rainbow stage0_rainbow "Training Room (Rainbow)" "Elecbyte"
 
 # --- selection -------------------------------------------------------------
 # The stage is a "shared" piece type, so every player picks one and they have to

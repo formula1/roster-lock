@@ -111,12 +111,6 @@ watch/target
 # Local runtime save-data from running the game engine (not source)
 /save/
 
-# Local MUGEN character/stage assets used to exercise the ikemen-go plugin -
-# large binaries, some not freely redistributable (see roster-locks for the
-# fixtures that reference them)
-/examples/mugen/pieces/chars/
-/examples/mugen/pieces/stages/
-
 # Playwright's own generated run output (traces, screenshots, HTML reports)
 test-results/
 playwright-report/
