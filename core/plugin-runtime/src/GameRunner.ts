@@ -1,7 +1,9 @@
 import { mkdir, writeFile, unlink, readFile } from "node:fs/promises";
-import { join as pathJoin, dirname as pathDirname } from "node:path";
+import { join as pathJoin, dirname as pathDirname, isAbsolute as pathIsAbsolute } from "node:path";
 import { randomUUID } from "node:crypto";
-import { GameRunnerPlugin, ConnectionConfig, ConnectionSetup, StartGameArgs, GameProcessHandle } from "@roster-lock/types";
+import {
+  GameRunnerPlugin, ConnectionConfig, ConnectionSetup, StartGameArgs, GameProcessHandle, PlatformTarget,
+} from "@roster-lock/types";
 import { registerAsHost, awaitHostAddress, getLocalNetworkAddresses } from "@roster-lock/direct-ip-coordinator";
 import { getPluginModuleByName, getPluginFullOfType } from "./plugin-management";
 import type { PluginManager } from "./PluginHandler";
@@ -15,6 +17,7 @@ export type AvailableGameRunner = {
   publicInfo: GameRunnerPlugin["publicInfo"],
   supportedConnectionModes: GameRunnerPlugin["supportedConnectionModes"],
   supportedRoomVersions: GameRunnerPlugin["supportedRoomVersions"],
+  supportedPlatforms: GameRunnerPlugin["supportedPlatforms"],
   engineSha: GameRunnerPlugin["engineSha"],
   // Room-shared - this is the half that gets submitted to a Room Match Maker's
   // games registry.
@@ -44,6 +47,9 @@ export type StartGameRequest = Omit<StartGameArgs, "currentMachine"> & {
 // own config file - it's plugin-runtime's own subtree to own, parallel to
 // data/<package> (dataDirFor-style state) and node_modules/<package> (the
 // installed code itself).
+//
+// binaryLocation may be absolute or relative - see GameRunner.resolveBinaryLocation
+// for what a relative value resolves against and why (docs/v2/binary-location.md).
 export type GameRunnerLocalSettings = {
   binaryLocation?: string,
   localConfig?: unknown,
@@ -57,13 +63,17 @@ export interface IGameRunner {
   listAvailable(): Promise<Array<AvailableGameRunner>>,
   getLocalSettings(pluginName: string): Promise<GameRunnerLocalSettings>,
   setLocalSettings(pluginName: string, settings: GameRunnerLocalSettings): Promise<void>,
-  getLocalVersion(pluginName: string, binaryLocation: string): Promise<GameRunnerVersion>,
+  getLocalVersion(pluginName: string, binaryLocation: string, target: PlatformTarget): Promise<GameRunnerVersion>,
   getSupportedVersion(pluginName: string, binaryLocation: string): Promise<GameRunnerVersion>,
   // Throws if the named plugin doesn't declare an updateBinary - callers
   // should check listAvailable/the plugin module rather than rely on catching.
-  updateBinary(pluginName: string, binaryLocation: string): Promise<void>,
+  updateBinary(pluginName: string, binaryLocation: string, target: PlatformTarget): Promise<void>,
+  validateBinaryLocation(
+    pluginName: string, binaryLocation: string, target: PlatformTarget
+  ): Promise<{ valid: true } | { valid: false, message: string }>,
   startGame(
-    pluginName: string, binaryLocation: string, connectionSetup: ConnectionSetup, request: StartGameRequest
+    pluginName: string, binaryLocation: string, target: PlatformTarget,
+    connectionSetup: ConnectionSetup, request: StartGameRequest
   ): Promise<GameProcessHandle>,
 }
 
@@ -78,6 +88,7 @@ export class GameRunner implements IGameRunner {
       publicInfo: module.publicInfo,
       supportedConnectionModes: module.supportedConnectionModes,
       supportedRoomVersions: module.supportedRoomVersions,
+      supportedPlatforms: module.supportedPlatforms,
       engineSha: module.engineSha,
       gameConfigSchema: module.gameConfigSchema,
       localConfigSchema: module.localConfigSchema,
@@ -100,26 +111,32 @@ export class GameRunner implements IGameRunner {
     await writeFile(filePath, JSON.stringify(settings, null, 2) + "\n");
   }
 
-  async getLocalVersion(pluginName: string, binaryLocation: string){
+  async getLocalVersion(pluginName: string, binaryLocation: string, target: PlatformTarget){
     const plugin = await this.moduleFor(pluginName);
-    return plugin.getLocalVersion(binaryLocation);
+    return plugin.getLocalVersion(this.resolveBinaryLocation(binaryLocation), target);
   }
 
   async getSupportedVersion(pluginName: string, binaryLocation: string){
     const plugin = await this.moduleFor(pluginName);
-    return plugin.getSupportedVersion(binaryLocation);
+    return plugin.getSupportedVersion(this.resolveBinaryLocation(binaryLocation));
   }
 
-  async updateBinary(pluginName: string, binaryLocation: string){
+  async updateBinary(pluginName: string, binaryLocation: string, target: PlatformTarget){
     const plugin = await this.moduleFor(pluginName);
     if(!plugin.updateBinary){
       throw new Error(`Game Runner "${pluginName}" doesn't support in-app updates`);
     }
-    return plugin.updateBinary(binaryLocation);
+    return plugin.updateBinary(this.resolveBinaryLocation(binaryLocation), target);
+  }
+
+  async validateBinaryLocation(pluginName: string, binaryLocation: string, target: PlatformTarget){
+    const plugin = await this.moduleFor(pluginName);
+    return plugin.validateBinaryLocation(this.resolveBinaryLocation(binaryLocation), target);
   }
 
   async startGame(
-    pluginName: string, binaryLocation: string, connectionSetup: ConnectionSetup, request: StartGameRequest
+    pluginName: string, binaryLocation: string, target: PlatformTarget,
+    connectionSetup: ConnectionSetup, request: StartGameRequest
   ): Promise<GameProcessHandle> {
     const plugin = await this.moduleFor(pluginName);
     const connectionConfig = await this.resolveConnectionConfig(connectionSetup, request.relayRoomId);
@@ -136,7 +153,7 @@ export class GameRunner implements IGameRunner {
 
     let handle: GameProcessHandle;
     try {
-      handle = await plugin.startGame(binaryLocation, connectionConfig, args);
+      handle = await plugin.startGame(this.resolveBinaryLocation(binaryLocation), target, connectionConfig, args);
     } catch(e){
       await cleanup();
       throw e;
@@ -182,6 +199,21 @@ export class GameRunner implements IGameRunner {
 
   private moduleFor(pluginName: string){
     return getPluginModuleByName(this.pluginManager.pluginDir, pluginName, "game-runner");
+  }
+
+  // A stored binaryLocation may be absolute (an ordinary single-machine
+  // install anywhere on disk - resolved as-is, unchanged from before) or
+  // relative, resolved against pluginDir - the same root this plugin's own
+  // settings file, installed code, and data already live under (see
+  // configFilePath/writePrivateKeyFile below). This is what lets a
+  // USB-hosted setup keep working after the USB remounts at a different
+  // path/drive letter: point --plugin-folder at the USB, store binaryLocation
+  // relative to it, and both move together - see docs/v2/binary-location.md.
+  // A plugin always receives an already-resolved absolute path; it never
+  // sees which form was actually stored.
+  private resolveBinaryLocation(binaryLocation: string): string {
+    if(pathIsAbsolute(binaryLocation)) return binaryLocation;
+    return pathJoin(this.pluginManager.pluginDir, binaryLocation);
   }
 
   // packageName can contain "/" (scoped packages) - path.join treats that as
