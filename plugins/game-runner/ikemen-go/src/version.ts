@@ -1,8 +1,9 @@
-import { GameRunnerPlugin } from "@roster-lock/types";
+import { GameRunnerPlugin, PlatformTarget } from "@roster-lock/types";
 import { handleFetch, isJSONObject, JSON_Object } from "@roster-lock/utils";
 import {
   readBinaryText, parseGoBuildInfo, findInjectedVersions, versionFromLdflags, GoBuildInfo
 } from "./goBuildInfo";
+import { resolveIkemenBinary } from "./binaryLocation";
 
 // Tied to the plugin type rather than redeclared, so the two can't drift.
 export type IkemenVersion = Awaited<ReturnType<GameRunnerPlugin["getLocalVersion"]>>;
@@ -31,8 +32,9 @@ const NIGHTLY = "nightly";
 const REPO_API = "https://api.github.com/repos/ikemen-engine/Ikemen-GO";
 const SHA = /^[0-9a-f]{40}$/;
 
-export async function readLocalVersion(binaryLocation: string): Promise<IkemenVersion> {
-  const binaryText = await readBinaryText(binaryLocation);
+export async function readLocalVersion(binaryLocation: string, target: PlatformTarget): Promise<IkemenVersion> {
+  const resolvedPath = resolveIkemenBinary(binaryLocation, target);
+  const binaryText = await readBinaryText(resolvedPath);
   const buildInfo = parseGoBuildInfo(binaryText);
 
   if(buildInfo.vcsRevision === undefined){
@@ -43,7 +45,7 @@ export async function readLocalVersion(binaryLocation: string): Promise<IkemenVe
     // with Go 1.18rc1 and are fine. Nothing this old can host a roster-lock
     // match anyway - see the engine requirements in examples/mugen.
     throw new Error(
-      `ikemen-go: "${binaryLocation}" carries no Go build info - it isn't an Ikemen GO binary, or it's an ` +
+      `ikemen-go: "${resolvedPath}" carries no Go build info - it isn't an Ikemen GO binary, or it's an ` +
       "Ikemen build old enough to predate Go stamping the commit into it (Go 1.18, so anything before " +
       "v0.99.0). Without a commit there's nothing that identifies this build across platforms, so it " +
       "can't be version-matched against other players."
@@ -83,8 +85,17 @@ function localVersionTitle(binaryText: string, buildInfo: GoBuildInfo): string |
 // constantly and calls itself "nightly" forever, so a nightly user compared
 // against the stable channel would be permanently "behind" something they
 // didn't ask for.
+//
+// No target parameter - GameRunnerPlugin.getSupportedVersion never takes
+// one (see docs/v2/binary-location.md, the answer doesn't vary by
+// platform), but picking a channel still needs *some* local binary to sniff,
+// so this reads whatever's bundled for the current host. If nothing's
+// bundled for it (or nothing at all yet), readLocalVersion's rejection
+// below is swallowed and the stable channel is assumed - same fallback as
+// "no binary configured at all".
 export async function fetchSupportedVersion(binaryLocation: string): Promise<IkemenVersion> {
-  const local = await readLocalVersion(binaryLocation).catch(() => undefined);
+  const currentHost: PlatformTarget = { platform: process.platform, arch: process.arch };
+  const local = await readLocalVersion(binaryLocation, currentHost).catch(() => undefined);
   const release = local?.title === NIGHTLY
     ? await getJSON(`${REPO_API}/releases/tags/${NIGHTLY}`)
     // Ikemen marks its release candidates prerelease:false, so /latest resolves

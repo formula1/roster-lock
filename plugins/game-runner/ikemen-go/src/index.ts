@@ -2,6 +2,7 @@ import { GameRunnerPlugin } from "@roster-lock/types";
 import { readLocalVersion, fetchSupportedVersion } from "./version";
 import { IKEMEN_ENGINE_SHA } from "./engineConfig";
 import { startGame } from "./startGame";
+import { validateBinaryLocation } from "./validateBinaryLocation";
 
 const IkemenGo: GameRunnerPlugin = {
   name: "ikemen-go",
@@ -12,6 +13,15 @@ const IkemenGo: GameRunnerPlugin = {
   // "room"/"internal" aren't handled by startGame yet - only claim modes
   // that actually work today. See this package's readme.
   supportedConnectionModes: ["direct-tcp"],
+  // Ikemen GO publishes 64-bit builds for Windows, Linux and macOS (both
+  // Intel and Apple Silicon) - see docs/v2/binary-location.md. No 32-bit
+  // entries: the Go toolchain build it ships from doesn't produce them.
+  supportedPlatforms: [
+    { platform: "win32", arch: "x64" },
+    { platform: "linux", arch: "x64" },
+    { platform: "darwin", arch: "x64" },
+    { platform: "darwin", arch: "arm64" },
+  ],
   engineSha: IKEMEN_ENGINE_SHA,
   gameConfigSchema: {
     type: "object",
@@ -38,6 +48,7 @@ const IkemenGo: GameRunnerPlugin = {
   // No updateBinary - left undefined deliberately (optional per GameRunnerPlugin).
   // A user updates by downloading a new Ikemen release and re-pointing
   // binaryLocation at it themselves.
+  validateBinaryLocation: validateBinaryLocation,
 
   startGame: startGame,
 };

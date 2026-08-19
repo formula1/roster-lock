@@ -1,9 +1,18 @@
 import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
-import { join } from "node:path";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
+import type { PlatformTarget } from "@roster-lock/types";
 import { parseGoBuildInfo, findInjectedVersions, versionFromLdflags } from "../src/goBuildInfo";
 import { readLocalVersion } from "../src/version";
+import { resolveIkemenBinary } from "../src/binaryLocation";
+
+// The current host, not a fixed platform - fetchSupportedVersion (tested
+// below) has no target parameter of its own and always sniffs whatever's
+// bundled for the current host internally, so fixtures need to live where
+// *that* lookup will actually find them regardless of which OS runs these
+// tests.
+const TARGET: PlatformTarget = { platform: process.platform, arch: process.arch };
 
 // Every buildinfo block and injected literal below is copied verbatim out of a
 // real Ikemen GO download - the point of these fixtures is that they're what
@@ -90,11 +99,20 @@ const V098_MACOS_MODULEINFO = [
 
 let fixtureDir: string;
 
+// Returns the folder (what binaryLocation now means, see
+// docs/v2/binary-location.md), not the binary path itself - resolved the
+// same way readLocalVersion/fetchSupportedVersion will resolve it, via
+// resolveIkemenBinary, so a bug in that resolution would break these tests
+// too rather than silently going untested.
 function writeFixture(name: string, ...regions: Array<string>): string {
-  const path = join(fixtureDir, name);
+  const root = join(fixtureDir, name);
+  const resolvedPath = resolveIkemenBinary(root, TARGET);
+  mkdirSync(dirname(resolvedPath), { recursive: true });
   // Wrapped in filler so nothing depends on the regions sitting at offset 0.
-  writeFileSync(path, Buffer.from("\x7fELF" + nul(3) + regions.join(nul(3)) + nul(1) + "trailing" + nul(1), "latin1"));
-  return path;
+  writeFileSync(
+    resolvedPath, Buffer.from("\x7fELF" + nul(3) + regions.join(nul(3)) + nul(1) + "trailing" + nul(1), "latin1")
+  );
+  return root;
 }
 
 beforeAll(() => {
@@ -161,21 +179,21 @@ describe("findInjectedVersions", () => {
 
 describe("readLocalVersion", () => {
   it("falls back to the padded literal when ldflags aren't recorded", async () => {
-    const path = writeFixture("rc2", RC2_BUILDINFO, RC2_LITERALS);
-    expect(await readLocalVersion(path)).toEqual({ title: "v1.0.0-rc.2", id: RC2_REVISION });
+    const root = writeFixture("rc2", RC2_BUILDINFO, RC2_LITERALS);
+    expect(await readLocalVersion(root, TARGET)).toEqual({ title: "v1.0.0-rc.2", id: RC2_REVISION });
   });
 
   it("prefers ldflags when they're there", async () => {
-    const path = writeFixture("v099", V099_BUILDINFO);
-    expect(await readLocalVersion(path)).toEqual({
+    const root = writeFixture("v099", V099_BUILDINFO);
+    expect(await readLocalVersion(root, TARGET)).toEqual({
       title: "v0.99.0",
       id: "cb4143e5c968135e42a0641d60b5d1ecb47258e9",
     });
   });
 
   it("reports the channel name for a nightly", async () => {
-    const path = writeFixture("nightly", NIGHTLY_BUILDINFO);
-    expect(await readLocalVersion(path)).toEqual({
+    const root = writeFixture("nightly", NIGHTLY_BUILDINFO);
+    expect(await readLocalVersion(root, TARGET)).toEqual({
       title: "nightly",
       // Two nightlies are only told apart by this - every one of them is
       // titled "nightly".
@@ -184,43 +202,50 @@ describe("readLocalVersion", () => {
   });
 
   it("still identifies a build that carries no version string", async () => {
-    const path = writeFixture("v098", V098_BUILDINFO);
-    expect(await readLocalVersion(path)).toEqual({
+    const root = writeFixture("v098", V098_BUILDINFO);
+    expect(await readLocalVersion(root, TARGET)).toEqual({
       title: "unknown build (38c7957)",
       id: "38c795781c9e260a361c596500c993855077f553",
     });
   });
 
   it("refuses to guess when the scan is ambiguous", async () => {
-    const path = writeFixture("ambiguous", RC2_BUILDINFO, nul(1) + "v1.0.0-rc.2" + nul(3) + "v9.9.9" + nul(1));
-    expect(await readLocalVersion(path)).toEqual({
+    const root = writeFixture("ambiguous", RC2_BUILDINFO, nul(1) + "v1.0.0-rc.2" + nul(3) + "v9.9.9" + nul(1));
+    expect(await readLocalVersion(root, TARGET)).toEqual({
       title: `unknown build (${RC2_REVISION.slice(0, 7)})`,
       id: RC2_REVISION,
     });
   });
 
   it("throws for a real Ikemen binary built before Go stamped commits", async () => {
-    const path = writeFixture("v098-macos", V098_MACOS_MODULEINFO);
-    await expect(readLocalVersion(path)).rejects.toThrow(/predate Go stamping the commit/);
+    const root = writeFixture("v098-macos", V098_MACOS_MODULEINFO);
+    await expect(readLocalVersion(root, TARGET)).rejects.toThrow(/predate Go stamping the commit/);
   });
 
   it("throws for a file with no build info at all", async () => {
-    const path = join(fixtureDir, "not-ikemen");
-    writeFileSync(path, "#!/bin/sh\necho hello\n");
-    await expect(readLocalVersion(path)).rejects.toThrow(/carries no Go build info/);
+    const root = join(fixtureDir, "not-ikemen");
+    const resolvedPath = resolveIkemenBinary(root, TARGET);
+    mkdirSync(dirname(resolvedPath), { recursive: true });
+    writeFileSync(resolvedPath, "#!/bin/sh\necho hello\n");
+    await expect(readLocalVersion(root, TARGET)).rejects.toThrow(/carries no Go build info/);
   });
 
   it("throws for a binary that isn't there", async () => {
-    await expect(readLocalVersion(join(fixtureDir, "missing"))).rejects.toThrow(/couldn't read the Ikemen binary/);
+    await expect(readLocalVersion(join(fixtureDir, "missing"), TARGET))
+      .rejects.toThrow(/couldn't read the Ikemen binary/);
   });
 });
 
-// The real thing, when there's an install to point at. Opt-in because CI has no
-// Ikemen: IKEMEN_GO_BINARY=/path/to/Ikemen_GO_Linux pnpm test
+// The real thing, when there's an install to point at. Opt-in because CI has
+// no Ikemen. IKEMEN_GO_BINARY is now the install *folder* (see
+// docs/v2/binary-location.md), not the binary itself - point it at a real
+// extracted Ikemen GO release as-is, e.g.
+// IKEMEN_GO_BINARY=~/Games/Ikemen-GO-1.0.0-rc.2 pnpm test, and
+// resolveIkemenBinary will find Ikemen_GO_Linux/.exe/_MacOS at its root.
 const realBinary = process.env["IKEMEN_GO_BINARY"];
 describe.skipIf(realBinary === undefined)("readLocalVersion against a real install", () => {
   it("reads a version and a commit out of it", async () => {
-    const version = await readLocalVersion(realBinary as string);
+    const version = await readLocalVersion(realBinary as string, TARGET);
     expect(version.id).toMatch(/^[0-9a-f]{40}$/);
     expect(version.title).not.toBe("");
   });

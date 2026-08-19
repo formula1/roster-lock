@@ -35,14 +35,46 @@ outright regardless. Absolute paths outside the Ikemen install are fine - `Searc
 tries `filepath.IsAbs(file)` before prefixing anything with `chars/`, so piece folders
 need no symlink into the Ikemen tree.
 
+## `binaryLocation` is a folder, not a binary
+
+See `docs/v2/binary-location.md` for the full design. `binaryLocation` is a folder
+holding the actual binaries - how that folder is laid out inside is this plugin's own
+business, not a roster-lock-wide convention. Ikemen GO's official releases already sit
+flat at the root of their own install folder, next to `data/`, `external/`, `save/` etc,
+so that's exactly what's expected directly inside `binaryLocation` - no extra nesting,
+no renaming:
+- `<binaryLocation>/Ikemen_GO.exe` (`win32`)
+- `<binaryLocation>/Ikemen_GO_Linux` (`linux`)
+- `<binaryLocation>/Ikemen_GO_MacOS` (`darwin`)
+
+`src/binaryLocation.ts`'s `resolveIkemenBinary` is the one place this convention is
+encoded, mapping `target.platform` to the name above - `target.arch` isn't used in
+resolution at all, since Ikemen's release filenames don't vary by architecture. Every
+function that needs a concrete binary (`getLocalVersion`, `startGame`,
+`validateBinaryLocation`) takes a required
+`target: { platform, arch }` and resolves through it rather than treating `binaryLocation`
+as a literal executable path. `getSupportedVersion` is the one exception - see its own
+section below.
+
+`supportedPlatforms` declares the four platform/arch pairs Ikemen GO officially ships for
+(`win32`/`linux`/`darwin`-x64, `darwin`-arm64, all 64-bit only - the Go toolchain it's
+built with doesn't produce 32-bit builds), independent of whether a given `binaryLocation`
+folder actually has a binary for all of them yet.
+
+`validateBinaryLocation` checks whether `binaryLocation` actually has a usable binary for
+a given `target` - existence, and on POSIX, the executable bit - returning a message a
+settings UI can show directly instead of a raw spawn/ENOENT failure from `startGame`.
+
 ## Working directory
 
-`startGame` spawns Ikemen with `cwd` set to `dirname(binaryLocation)`. Ikemen resolves
-`data/`, `external/` and `save/` against the working directory, and only chdirs to its
-own location on Android and inside macOS app bundles - so launching it from wherever
-match-agent happens to be running dies immediately on
-`external/script/main.lua: no such file or directory`. This means `binaryLocation` has
-to point at the binary *inside a complete Ikemen install*, not a copy of it somewhere.
+`startGame` spawns Ikemen with `cwd` set to `dirname` of the *resolved* binary path (see
+above) - since the binary sits at `binaryLocation`'s own root, this is just
+`binaryLocation` itself. Ikemen resolves `data/`, `external/` and `save/` against the
+working directory, and only chdirs to its own location on Android and inside macOS app
+bundles - so launching it from wherever match-agent happens to be running dies
+immediately on `external/script/main.lua: no such file or directory`. This means
+`binaryLocation` has to be a complete Ikemen install on its own, not just the binary
+copied out of one.
 
 ## Connection modes
 
@@ -137,10 +169,15 @@ binary, and its `target_commitish` is the same commit that binary records. Ikeme
 its release candidates `prerelease: false`, so `/latest` resolves to rc.2 rather than
 skipping back to v0.99.0.
 
-`binaryLocation` is read to pick the channel. The nightly release re-points constantly
-and calls itself `nightly` forever, so a nightly user compared against the stable channel
-would be permanently "behind" something they didn't ask for. **For a nightly the
-behind-check has to compare `id`, not `title`** - every nightly is titled `nightly`.
+`GameRunnerPlugin.getSupportedVersion` takes no `target` - the answer doesn't vary by
+platform (see `docs/v2/binary-location.md`) - but picking a channel still needs *some*
+local binary to sniff, so `fetchSupportedVersion` reads whatever's bundled for the
+*current host* internally. If nothing's bundled for it, the read fails and is swallowed
+the same way "no binary configured at all" already was - falls back to the stable
+channel. The nightly release re-points constantly and calls itself `nightly` forever, so
+a nightly user compared against the stable channel would be permanently "behind"
+something they didn't ask for. **For a nightly the behind-check has to compare `id`, not
+`title`** - every nightly is titled `nightly`.
 
 Responses are cached for five minutes. Unauthenticated GitHub allows 60 requests an hour
 per IP and nothing stops a settings screen from asking on every render.
@@ -218,5 +255,6 @@ where you'd notice, it quietly drops the side to single before failing later in
 
 No `updateBinary` - it's optional on `GameRunnerPlugin`, and there's no confirmed way to
 resolve "latest Ikemen release" to a downloadable artifact URL here yet. A user updates
-by downloading a new release themselves and re-pointing their local `binaryLocation`
-setting at it.
+by downloading a new release themselves and extracting it into their `binaryLocation`
+folder, replacing the executable named for their platform (see "`binaryLocation` is a
+folder, not a binary" above).
