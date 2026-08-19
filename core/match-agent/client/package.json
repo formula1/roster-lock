@@ -10,6 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@rjsf/core": "^6.8.0",
+    "@rjsf/utils": "^6.8.0",
+    "@rjsf/validator-ajv8": "^6.8.0",
     "@roster-lock/ts-client": "workspace:*",
     "@roster-lock/types": "workspace:*",
     "@roster-lock/utils": "workspace:*",

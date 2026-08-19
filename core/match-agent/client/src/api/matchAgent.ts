@@ -5,6 +5,8 @@
 // @roster-lock/ts-client - see that package's README/index.ts for the
 // asset-loading surface games actually consume.
 
+import { PlatformTarget } from "@roster-lock/types";
+
 export type GameRunnerLocalSettings = {
   binaryLocation?: string,
   localConfig?: unknown,
@@ -16,6 +18,7 @@ export type AvailableGameRunner = {
   publicInfo: { title: string, description: string },
   supportedConnectionModes: Array<string>,
   supportedRoomVersions?: Array<string>,
+  supportedPlatforms: Array<PlatformTarget>,
   engineSha: string,
   gameConfigSchema: unknown,
   localConfigSchema: unknown,
@@ -34,6 +37,17 @@ async function matchAgentFetch(
     throw new Error(body.error || `Match agent request to ${path} failed (${res.status})`);
   }
   return res;
+}
+
+// Appended as query params on any game-runner route that resolves a
+// concrete binary - see resolveTarget in game-runner.ts. Omitting `target`
+// entirely (the ordinary case) leaves match-agent to default to its own
+// current host; passing one is only for the deliberate exception (see
+// docs/v2/binary-location.md).
+function withTarget(path: string, target?: PlatformTarget): string {
+  if(!target) return path;
+  const params = new URLSearchParams({ platform: target.platform, arch: target.arch });
+  return `${path}?${params.toString()}`;
 }
 
 export async function listAvailableGameRunners(
@@ -71,30 +85,43 @@ export async function setGameRunnerSettings(
 }
 
 export async function getGameRunnerVersion(
-  matchAgentUrl: string, authCode: string, pluginName: string
+  matchAgentUrl: string, authCode: string, pluginName: string, target?: PlatformTarget
 ): Promise<{ local: { title: string, id: string }, supported: { title: string, id: string } }> {
   const res = await matchAgentFetch(
-    matchAgentUrl, authCode, `/v1/game-runner/${encodeURIComponent(pluginName)}/version`
+    matchAgentUrl, authCode, withTarget(`/v1/game-runner/${encodeURIComponent(pluginName)}/version`, target)
+  );
+  return res.json();
+}
+
+export async function validateGameRunnerBinaryLocation(
+  matchAgentUrl: string, authCode: string, pluginName: string, target?: PlatformTarget
+): Promise<{ valid: true } | { valid: false, message: string }> {
+  const res = await matchAgentFetch(
+    matchAgentUrl, authCode, withTarget(`/v1/game-runner/${encodeURIComponent(pluginName)}/validate`, target)
   );
   return res.json();
 }
 
 export async function updateGameRunnerBinary(
-  matchAgentUrl: string, authCode: string, pluginName: string
+  matchAgentUrl: string, authCode: string, pluginName: string, target?: PlatformTarget
 ): Promise<void> {
-  await matchAgentFetch(matchAgentUrl, authCode, `/v1/game-runner/${encodeURIComponent(pluginName)}/update`, {
-    method: "POST",
-  });
+  await matchAgentFetch(
+    matchAgentUrl, authCode, withTarget(`/v1/game-runner/${encodeURIComponent(pluginName)}/update`, target),
+    { method: "POST" }
+  );
 }
 
 export async function startGameRunner(
-  matchAgentUrl: string, authCode: string, pluginName: string, body: unknown
+  matchAgentUrl: string, authCode: string, pluginName: string, body: unknown, target?: PlatformTarget
 ): Promise<{ handleId: string }> {
-  const res = await matchAgentFetch(matchAgentUrl, authCode, `/v1/game-runner/${encodeURIComponent(pluginName)}/start`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
+  const res = await matchAgentFetch(
+    matchAgentUrl, authCode, withTarget(`/v1/game-runner/${encodeURIComponent(pluginName)}/start`, target),
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    }
+  );
   return res.json();
 }
 
