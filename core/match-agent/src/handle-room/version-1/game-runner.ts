@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { ConnectionSetup, StartGameArgs } from "@roster-lock/types";
+import { ConnectionSetup, StartGameArgs, PlatformTarget } from "@roster-lock/types";
 import { GameRunnerLocalSettings } from "@roster-lock/plugin-runtime";
 import { jsonBody, HTTPRequestHandler, HTTPError } from "../../utils/http-router";
 import { V1Env } from "./globals/types";
@@ -33,6 +33,23 @@ async function requireBinaryLocation(env: V1Env, pluginName: string): Promise<st
     throw new HTTPError(400, `Game runner "${pluginName}" has no binaryLocation configured`);
   }
   return settings.binaryLocation;
+}
+
+// See docs/v2/binary-location.md - every GameRunnerPlugin function that
+// resolves a concrete binary out of a (possibly multi-platform) binaryLocation
+// bundle takes a required target, with no implicit "current host" default at
+// that layer. match-agent is what decides the target value: it defaults to
+// its own process.platform/process.arch (the ordinary case - a client asking
+// match-agent to run/inspect the game it's about to run on this same host),
+// but a caller can override either via query params for the deliberate
+// exception (e.g. forcing a win32-x64 build under Wine on a Linux host).
+function resolveTarget(routeInfo: { url: URL }): PlatformTarget {
+  const platform = routeInfo.url.searchParams.get("platform");
+  const arch = routeInfo.url.searchParams.get("arch");
+  return {
+    platform: (platform || process.platform) as PlatformTarget["platform"],
+    arch: (arch || process.arch) as PlatformTarget["arch"],
+  };
 }
 
 export const getGameRunnerSettings: HTTPRequestHandler = async function(
@@ -85,9 +102,10 @@ export const getGameRunnerVersion: HTTPRequestHandler = async function(
 ){
   const pluginName = requirePluginName(routeInfo);
   const binaryLocation = await requireBinaryLocation(this, pluginName);
+  const target = resolveTarget(routeInfo);
 
   const [local, supported] = await Promise.all([
-    this.pluginRuntime.gameRunner.getLocalVersion(pluginName, binaryLocation),
+    this.pluginRuntime.gameRunner.getLocalVersion(pluginName, binaryLocation, target),
     this.pluginRuntime.gameRunner.getSupportedVersion(pluginName, binaryLocation),
   ]);
 
@@ -95,14 +113,28 @@ export const getGameRunnerVersion: HTTPRequestHandler = async function(
   res.end(JSON.stringify({ local, supported }));
 }
 
+export const validateGameRunnerBinaryLocation: HTTPRequestHandler = async function(
+  this: V1Env, { res }, routeInfo
+){
+  const pluginName = requirePluginName(routeInfo);
+  const binaryLocation = await requireBinaryLocation(this, pluginName);
+  const target = resolveTarget(routeInfo);
+
+  const result = await this.pluginRuntime.gameRunner.validateBinaryLocation(pluginName, binaryLocation, target);
+
+  res.writeHead(200, { "Content-Type": "application/json" });
+  res.end(JSON.stringify(result));
+}
+
 export const updateGameRunnerBinary: HTTPRequestHandler = async function(
   this: V1Env, { res }, routeInfo
 ){
   const pluginName = requirePluginName(routeInfo);
   const binaryLocation = await requireBinaryLocation(this, pluginName);
+  const target = resolveTarget(routeInfo);
 
   try {
-    await this.pluginRuntime.gameRunner.updateBinary(pluginName, binaryLocation);
+    await this.pluginRuntime.gameRunner.updateBinary(pluginName, binaryLocation, target);
   } catch(e){
     // updateBinary throws a plain Error when a plugin doesn't declare one at
     // all (see GameRunner.updateBinary) - that's a client-facing 400 ("this
@@ -166,6 +198,7 @@ export const startGameRunner: HTTPRequestHandler = async function(
 ){
   const pluginName = requirePluginName(routeInfo);
   const binaryLocation = await requireBinaryLocation(this, pluginName);
+  const target = resolveTarget(routeInfo);
 
   const body = await jsonBody(req);
   const parseResult = startGameBodySchema.safeParse(body);
@@ -173,7 +206,7 @@ export const startGameRunner: HTTPRequestHandler = async function(
   const { connectionConfig, currentMachine, allMachines, selectionResult, gameConfig, relayRoomId } = parseResult.data;
   const rosterConfig = castLockConfig(parseResult.data.rosterConfig);
 
-  const handle = await this.pluginRuntime.gameRunner.startGame(pluginName, binaryLocation, connectionConfig, {
+  const handle = await this.pluginRuntime.gameRunner.startGame(pluginName, binaryLocation, target, connectionConfig, {
     currentMachine,
     allMachines: allMachines as StartGameArgs["allMachines"],
     selectionResult: selectionResult as StartGameArgs["selectionResult"],

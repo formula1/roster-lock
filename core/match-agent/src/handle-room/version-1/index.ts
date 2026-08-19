@@ -9,8 +9,8 @@ import { ensurePieceDownloaded, ensurePieceDownloadedWs, listDownloadedPiecesDir
 import { listAvailableSortPlugins, sortListPlugin, gameComplete } from "./piece-sort";
 import {
   listAvailableGameRunners, getGameRunnerSettings, setGameRunnerSettings, getGameRunnerVersion,
-  updateGameRunnerBinary, startGameRunner, getGameProcessStatus, installGameRunnerPlugin,
-  listGameProcesses, stopGameProcess,
+  validateGameRunnerBinaryLocation, updateGameRunnerBinary, startGameRunner, getGameProcessStatus,
+  installGameRunnerPlugin, listGameProcesses, stopGameProcess,
 } from "./game-runner";
 import { IFolderDB, V1Env, MatchAgentSelfInfo, ProcessHandleEntry } from "./globals";
 import { PluginManager } from "@roster-lock/plugin-runtime";
@@ -34,6 +34,7 @@ export const createV1Routers = (fileDB: IFolderDB, pluginRuntime: PluginManager,
   httpRouter.get("/game-runner/:pluginName/settings", getGameRunnerSettings.bind(env));
   httpRouter.put("/game-runner/:pluginName/settings", setGameRunnerSettings.bind(env));
   httpRouter.get("/game-runner/:pluginName/version", getGameRunnerVersion.bind(env));
+  httpRouter.get("/game-runner/:pluginName/validate", validateGameRunnerBinaryLocation.bind(env));
   httpRouter.post("/game-runner/:pluginName/update", updateGameRunnerBinary.bind(env));
   httpRouter.post("/game-runner/:pluginName/start", startGameRunner.bind(env));
   httpRouter.get("/game-runner/:pluginName/process/:handleId", getGameProcessStatus.bind(env));
