@@ -7,6 +7,28 @@ import type { AnySchema } from "ajv";
 
 export type ConnectionMode = "direct-tcp" | "room" | "internal";
 
+// Mirrors NodeJS.Platform/NodeJS.Architecture (node_modules/@types/node's
+// process.d.ts) rather than importing them - this package deliberately
+// carries no @types/node dependency since it's also consumed by browser
+// code (see package.json's empty "types" compiler option). A caller with
+// @types/node can still pass process.platform/process.arch straight
+// through unchanged.
+export type PlatformName = (
+  "aix" | "android" | "darwin" | "freebsd" | "haiku" | "linux" |
+  "openbsd" | "sunos" | "win32" | "cygwin" | "netbsd"
+);
+export type ArchName = (
+  "arm" | "arm64" | "ia32" | "loong64" | "mips" | "mipsel" |
+  "ppc64" | "riscv64" | "s390x" | "x64"
+);
+
+// What a caller resolves a multi-platform binaryLocation bundle against -
+// see docs/v2/binary-location.md.
+export type PlatformTarget = {
+  platform: PlatformName,
+  arch: ArchName,
+};
+
 // The two variants shared as-is between ConnectionSetup and ConnectionConfig
 // below - neither needs anything resolved before a plugin can use it.
 type RoomOrInternalConnection = (
@@ -133,19 +155,53 @@ export type GameRunnerPlugin = {
   // preferred direct-tcp port). Excludes binaryLocation, which every Game
   // Runner has by definition - see the functions below. Set even when empty.
   localConfigSchema: AnySchema,
+  // Every platform/arch this plugin knows how to run on at all, independent
+  // of whether any particular binaryLocation currently has a binary for one
+  // of them - see docs/v2/binary-location.md. Lets a browsing/install UI
+  // warn "not supported on macOS" before the user has configured a
+  // binaryLocation to check against.
+  supportedPlatforms: Array<PlatformTarget>,
 
   // binaryLocation is resolved locally (e.g. from match-agent's own config)
   // and is what "disabled until configured" is about - every function below
-  // needs it pointed at something real to do anything useful.
-  getLocalVersion: (binaryLocation: string) => Promise<{ title: string, id: string }>,
+  // needs it pointed at something real to do anything useful. As of
+  // docs/v2/binary-location.md it's the root of a multi-platform bundle, not
+  // a path to one executable - each function below that needs a concrete
+  // binary resolves `target` against it itself; the layout convention for
+  // doing that is the plugin's own to define.
+  //
+  // `target` is required everywhere a concrete binary has to be resolved,
+  // rather than any function defaulting to "the current host" implicitly -
+  // see docs/v2/binary-location.md's "Platform targeting per function" for
+  // why (getSupportedVersion is the one exception, since it's a
+  // platform-agnostic upstream-metadata query).
+  getLocalVersion: (binaryLocation: string, target: PlatformTarget) => Promise<{ title: string, id: string }>,
   // Knowing binaryLocation can help (e.g. picking a release channel), but
-  // this is expected to mostly be a network call, not a local read.
+  // this is expected to mostly be a network call, not a local read. No
+  // target - the answer ("what's the latest upstream version") doesn't vary
+  // by platform.
   getSupportedVersion: (binaryLocation: string) => Promise<{ title: string, id: string }>,
   // Optional - a plugin without one just means no in-app update; the user
   // downloads a new version and re-points binaryLocation at it themselves.
-  updateBinary?: (binaryLocation: string) => Promise<void>,
+  // `target` is a floor, not a ceiling: the call guarantees at least that
+  // platform/arch gets updated, but a plugin may update other slots too as
+  // a side effect (e.g. one upstream artifact that already bundles every
+  // platform). Callers never loop over supportedPlatforms to force full
+  // coverage themselves - whether the bundle ends up complete for every
+  // platform after one call is entirely the plugin's own choice.
+  updateBinary?: (binaryLocation: string, target: PlatformTarget) => Promise<void>,
+  // Checks whether binaryLocation actually has a usable binary for `target`
+  // - "does the binary this host would run actually exist at the resolved
+  // path" (and on POSIX, is it executable) - so a caller can surface a
+  // plugin-authored reason (e.g. "no linux-x64 build in this folder")
+  // instead of a raw ENOENT/spawn error from startGame. Takes the same
+  // target startGame will actually receive, since that's the call it's
+  // answering for.
+  validateBinaryLocation: (
+    binaryLocation: string, target: PlatformTarget
+  ) => Promise<{ valid: true } | { valid: false, message: string }>,
 
   startGame: (
-    binaryLocation: string, connectionConfig: ConnectionConfig, args: StartGameArgs
+    binaryLocation: string, target: PlatformTarget, connectionConfig: ConnectionConfig, args: StartGameArgs
   ) => Promise<GameProcessHandle>,
 };
