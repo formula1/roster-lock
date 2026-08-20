@@ -47,14 +47,14 @@ function teamModeFromOfficialSelection(rosterConfig: RosterLockV1Config): Ikemen
 export type IkemenGameConfig = {
   // Applies to both sides. Normally left unset - it's derived from the room's
   // selection config via engine.officialSelections. Set it only to override.
-  teamMode?: IkemenTeamMode,
-  roundTime?: number,
-  rounds?: number,
+  teamMode: IkemenTeamMode,
+  roundTime: number,
+  rounds: number,
 };
 
 export function buildIkemenArgs(
   connectionConfig: ConnectionConfig,
-  args: StartGameArgs,
+  args: StartGameArgs<IkemenGameConfig>,
 ): Array<string> {
   if(connectionConfig.type !== "direct-tcp"){
     throw new Error(`ikemen-go doesn't support connection type "${connectionConfig.type}" yet`);
@@ -152,7 +152,7 @@ export function buildIkemenArgs(
 // Absolute paths outside the Ikemen install are fine: SearchFile tries
 // filepath.IsAbs(file) before it prefixes anything with "chars/", so a piece
 // folder living wherever match-agent put it needs no symlink into the tree.
-function defFileFor(args: StartGameArgs, pieceType: PieceType, pieceId: PieceId): string {
+function defFileFor(args: StartGameArgs<IkemenGameConfig>, pieceType: PieceType, pieceId: PieceId): string {
   const result = args.selectionResult.downloadResults[pieceType]?.[pieceId];
   if(!result){
     throw new Error(`No downloaded piece for ${pieceType}/${pieceId}`);

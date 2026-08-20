@@ -2,11 +2,13 @@ import { GameRunnerPlugin } from "@roster-lock/types";
 import { spawn } from "node:child_process";
 import { dirname, join } from "node:path";
 import { openSync } from "node:fs";
-import { buildIkemenArgs } from "./buildArgs";
+import { buildIkemenArgs, IkemenGameConfig } from "./buildArgs";
 import { toProcessHandle } from "./processHandle";
 import { resolveIkemenBinary } from "../binaryLocation";
 
-export const startGame: GameRunnerPlugin["startGame"] = async(
+export { IkemenGameConfig };
+
+export const startGame: GameRunnerPlugin<IkemenGameConfig>["startGame"] = async(
   binaryLocation, target, connectionConfig, args
 )=>{
   // Resolving a direct-tcp room's addresses (coordinator handshake, NAT/LAN
