@@ -4,11 +4,17 @@ type RosterLockPiece = RosterLockV1Config["rosters"][string][number];
 import { defineKeyword } from "../../../../../util-types/json-schema";
 
 
-import { validateURL } from "../validate";
+import { validateURL, validateImageDataURI } from "../validate";
 export const urlSchemaValidator = defineKeyword({
   keyword: "URL",
   type: "string",
   validate: validateURL
+});
+
+export const imageDataURISchemaValidator = defineKeyword({
+  keyword: "imageDataURI",
+  type: "string",
+  validate: validateImageDataURI
 });
 
 import { validateFriendlyString } from "../validate/human";
@@ -27,7 +33,7 @@ export const humanInfoSchema: JSONSchemaType<RosterLockPiece["humanInfo"]> = {
     name: { type: "string", [friendlyStringSchemaValidator.keyword]: true },
     author: { type: "string", [friendlyStringSchemaValidator.keyword]: true },
     url: { type: "string", [urlSchemaValidator.keyword]: true },
-    image: { type: "string", [urlSchemaValidator.keyword]: true, nullable: true },
+    image: { type: "string", [imageDataURISchemaValidator.keyword]: true, nullable: true },
   },
 }
 
