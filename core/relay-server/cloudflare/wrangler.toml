@@ -1,11 +1,11 @@
 name = "roster-lock-relay"
-main = "server/src/index.ts"
+main = "src/index.ts"
 compatibility_date = "2024-01-01"
 
 # Static assets (React client)
 [assets]
 binding = "CLIENT_ASSETS"
-directory = "./client/dist"
+directory = "../client-admin/dist"
 
 # Durable Objects
 [[durable_objects.bindings]]

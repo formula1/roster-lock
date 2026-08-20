@@ -27,24 +27,25 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 # rebuild.
 COPY core/utils/package.json core/utils/tsconfig.json core/utils/
 COPY core/utils/src/ core/utils/src/
-COPY core/relay-server/package.json core/relay-server/
-COPY core/relay-server/client/package.json core/relay-server/client/
+COPY core/relay-server/cloudflare/package.json core/relay-server/cloudflare/
+COPY core/relay-server/client-admin/package.json core/relay-server/client-admin/
 
 # Installs @roster-lock/utils (builds it via its own "prepare" script),
-# core/relay-server's own deps (including wrangler's postinstall fetch of
-# the workerd binary it needs to run), and the admin client's deps.
-RUN pnpm install --filter @roster-lock/relay-server... --filter @roster-lock/relay-client... --frozen-lockfile
+# the cloudflare relay-server's own deps (including wrangler's postinstall
+# fetch of the workerd binary it needs to run), and the admin client's deps.
+RUN pnpm install --filter @roster-lock/relay-server-cloudflare... --filter @roster-lock/relay-client... --frozen-lockfile
 
 # Now bring in the rest of the relay-server source (tests, client, etc).
 # core/utils doesn't need a second copy: package.json/tsconfig/src are already
 # in place from above and dist/ was already built by the install step's
 # "prepare" script; nothing here runs its tests.
-COPY core/relay-server/ core/relay-server/
+COPY core/relay-server/cloudflare/ core/relay-server/cloudflare/
+COPY core/relay-server/client-admin/ core/relay-server/client-admin/
 
-WORKDIR /app/core/relay-server
+WORKDIR /app/core/relay-server/cloudflare
 
 # Build the admin React client so wrangler's static asset binding (which
-# points at client/dist) has something real to serve.
+# points at ../client-admin/dist) has something real to serve.
 RUN pnpm run build:client
 
 # Expose port
@@ -53,4 +54,4 @@ EXPOSE 80
 # Start the server using wrangler dev. The local D1 database starts empty,
 # so apply the schema before starting (wrangler dev simulates D1 locally
 # and never runs migrations on its own).
-CMD ["sh", "-c", "npx wrangler d1 execute roster-lock-db --local --file=./server/src/version-1/schema/tables.sql && npx wrangler dev --ip 0.0.0.0 --port 80"]
+CMD ["sh", "-c", "npx wrangler d1 execute roster-lock-db --local --file=./src/version-1/schema/tables.sql && npx wrangler dev --ip 0.0.0.0 --port 80"]

@@ -5,9 +5,11 @@ import { WebSocketServer, WebSocket } from 'ws';
 import { HTTPRouter, HTTPError } from "./utils/http-router";
 import { WebSocketRouter } from "./utils/websocket-router";
 import { createV1Routers } from "./router";
-import { getPort } from "./globals";
+import { getPort, getClientDistDir } from "./globals";
+import { serveClientAsset } from "./static-client";
 
 const debug = !!process.env.DEBUG;
+const clientDistDir = getClientDistDir();
 const httpRouter = new HTTPRouter();
 const wsRouter = new WebSocketRouter();
 
@@ -36,7 +38,18 @@ httpServer.on('upgrade', async (request, socket, head)=>{
   });
 });
 httpServer.on('request', (req, res)=>{
-  httpRouter.handleRequest({ req, res }, (err: unknown)=>{
+  httpRouter.handleRequest({ req, res }, async (err: unknown)=>{
+    // No API route matched - fall through to the built admin client (same
+    // catch-all shape as relay-server's Cloudflare build serving
+    // CLIENT_ASSETS for any unmatched path) before treating it as a 404.
+    if(!err && (req.method === "GET" || req.method === "HEAD")){
+      const served = await serveClientAsset(req, res, clientDistDir).catch((e)=>{
+        debug && console.log("Static client error:", req.method, req.url, e);
+        return false;
+      });
+      if(served) return;
+    }
+
     debug && console.log("HTTP Error:", req.method, req.url, err);
     if(res.writableEnded){
       debug && console.warn("Router threw error and response ended")

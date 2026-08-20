@@ -3,7 +3,7 @@ import {
   makeTestRoom, startTestRoom, wireHonestResponder, waitForBridgeEvent,
 } from "./helpers/room";
 import { stubWebhookFetch } from "./helpers/env";
-import { sendPing } from "../server/src/version-1/durable-objects/bridge/ping-pong";
+import { sendPing } from "../src/version-1/durable-objects/bridge/ping-pong";
 
 // These use vitest's fake timers (rather than real waits) so we can jump
 // straight past the 1s ping interval / total-timeout deadline instead of the

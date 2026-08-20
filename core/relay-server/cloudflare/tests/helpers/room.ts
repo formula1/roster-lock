@@ -1,8 +1,8 @@
 import { MessageBridge } from "@roster-lock/utils";
-import { Room } from "../../server/src/version-1/durable-objects/Room";
-import { startRoom as startBridgeRoom, CONVO_STATE_KEY } from "../../server/src/version-1/durable-objects/bridge";
-import { TIMEOUT_CONTROLLER, TimeoutInput } from "../../server/src/version-1/durable-objects/TimeoutController";
-import { RoomConfig } from "../../server/src/version-1/types";
+import { Room } from "../../src/version-1/durable-objects/Room";
+import { startRoom as startBridgeRoom, CONVO_STATE_KEY } from "../../src/version-1/durable-objects/bridge";
+import { TIMEOUT_CONTROLLER, TimeoutInput } from "../../src/version-1/durable-objects/TimeoutController";
+import { RoomConfig } from "../../src/version-1/types";
 import { FakeDurableObjectState, FakeWebSocket } from "./fakes";
 import { makeFakeEnv, FakeCoordinatorRow } from "./env";
 

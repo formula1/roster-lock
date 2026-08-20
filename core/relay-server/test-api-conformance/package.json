@@ -1,0 +1,20 @@
+{
+  "name": "@roster-lock/relay-conformance",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Shared black-box test suite that any relay-server implementation (cloudflare, single-host, future ones) can run against a real HTTP/WS instance of itself to prove it speaks the same protocol.",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.1",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.5"
+  },
+  "dependencies": {
+    "@roster-lock/utils": "workspace:*"
+  }
+}

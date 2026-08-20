@@ -2,8 +2,8 @@ import { describe, it, expect, beforeAll } from "vitest";
 import { SIGNATURE } from "@roster-lock/utils";
 import {
   validateAuth, validateAuthFromSearch, searchParamsToUserMessage,
-} from "../server/src/version-1/durable-objects/auth";
-import { RoomConfig } from "../server/src/version-1/types";
+} from "../src/version-1/durable-objects/auth";
+import { RoomConfig } from "../src/version-1/types";
 
 type KeyPair = Awaited<ReturnType<typeof SIGNATURE.ASYMMETRIC.generateKeyPair>>;
 type SignableFields = { roomId: string, publicKey: string, timestamp: number };

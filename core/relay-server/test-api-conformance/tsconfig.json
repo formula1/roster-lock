@@ -3,7 +3,7 @@
     "target": "es2024",
     "module": "nodenext",
     "moduleResolution": "nodenext",
-    "types": ["@cloudflare/workers-types"],
+    "types": ["node"],
     "lib": ["es2024"],
     "strict": true,
     "esModuleInterop": true,
@@ -14,12 +14,8 @@
     "isolatedModules": true,
     "noEmit": true,
     "sourceMap": true,
-    "rootDir": "./server/src",
-    "outDir": "./dist",
-    "removeComments": true,
+    "rootDir": "./src",
     "noImplicitAny": true
   },
-  "files": ["server/src/index.ts"],
-  "include": ["./typings", "./types", "**/*.test.ts"],
-  "exclude": ["node_modules", "**/*.spec.ts", "tests"]
+  "include": ["src/**/*.ts"]
 }

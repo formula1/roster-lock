@@ -10,7 +10,7 @@ uploads a single script — no container involved.
 
 ## How `@roster-lock/utils` gets included
 
-`@roster-lock/utils` is a `file:../utils` workspace dependency. `pnpm install`
+`@roster-lock/utils` is a `file:../../utils` workspace dependency. `pnpm install`
 symlinks `node_modules/@roster-lock/utils` to `core/utils` and runs its
 `prepare` script (`tsc`) so `core/utils/dist/index.js` exists. When you run
 `wrangler deploy`, its esbuild bundler follows that symlink and inlines the
@@ -35,7 +35,7 @@ built utils code into the uploaded Worker script, the same way it inlines
 ### 1. Create the production D1 database
 
 ```sh
-cd core/relay-server
+cd core/relay-server/cloudflare
 npx wrangler d1 create roster-lock-db-production
 ```
 
@@ -46,7 +46,7 @@ Apply the schema to the new remote database:
 
 ```sh
 npx wrangler d1 execute roster-lock-db-production --env production --remote \
-  --file=./server/src/version-1/schema/tables.sql
+  --file=./src/version-1/schema/tables.sql
 ```
 
 ### 2. Move secrets out of `wrangler.toml`
@@ -77,7 +77,7 @@ into git.
 ## Deploying
 
 ```sh
-cd core/relay-server
+cd core/relay-server/cloudflare
 pnpm run deploy:production
 ```
 

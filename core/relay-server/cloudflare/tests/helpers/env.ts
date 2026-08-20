@@ -1,6 +1,6 @@
 import { vi } from "vitest";
 import { ENCRYPTION } from "@roster-lock/utils";
-import { Env } from "../../server/src/version-1/types";
+import { Env } from "../../src/version-1/types";
 
 export type FakeCoordinatorRow = {
   success_webhook_url: string;
