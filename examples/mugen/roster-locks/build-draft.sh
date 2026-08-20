@@ -10,8 +10,17 @@ set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO="$(cd "$HERE/../../.." && pwd)"
 PIECES_DIR="$HERE/../pieces"
+UTILS_DIR="$HERE/../utils"
 CLI="/usr/local/bin/node $REPO/core/config-editor-cli/dist/index.js"
 DRAFT="$HERE/mugen.rosterlock.draft.json"
+
+# Portrait/preview thumbnails embedded into humanInfo.image, extracted from each
+# piece's own .sff (character group 9000 = select-screen portrait, stage group
+# 9000 = stage preview - both standard MUGEN conventions). Regenerated into a
+# scratch dir every run rather than committed, same "derived from ./pieces"
+# philosophy as everything else this script builds.
+IMG_DIR="$(mktemp -d)"
+trap 'rm -rf "$IMG_DIR"' EXIT
 
 # Placeholder host - these pieces are served by the example's dockerized
 # download-provider on port 7442, which is the public URL the relay clients
@@ -69,29 +78,69 @@ $CLI engine add-asset stage art --draft "$DRAFT" \
 $CLI engine add-asset stage docs --draft "$DRAFT" \
   --classification doc --count 0:'*' --glob '**/*.txt'
 
+# --- portraits ---------------------------------------------------------------
+extract_portrait(){
+  local sffPath="$1" spriteKey="$2" outName="$3"
+  /usr/local/bin/node "$UTILS_DIR/extract-sff-sprite.js" "$sffPath" "$spriteKey" "$IMG_DIR/$outName.png"
+}
+
+# kfm's own kfm.sff stores its 9000,1 portrait as RLE8, which extract-sff-sprite.js
+# doesn't decode (see its header comment) - kfm_zaxis's copy of kfm.sff has the
+# pixel-identical portrait stored as PNG8 instead, so borrow that one for both.
+extract_portrait "$PIECES_DIR/chars/kfm_zaxis/kfm.sff" 9000,1 kfm
+extract_portrait "$PIECES_DIR/chars/kfm720/kfm720.sff" 9000,1 kfm720
+extract_portrait "$PIECES_DIR/chars/kfm_zaxis/kfm.sff" 9000,1 kfm_zaxis
+extract_portrait "$PIECES_DIR/chars/kfm_zss/kfm.sff" 9000,1 kfm_zss
+extract_portrait "$PIECES_DIR/chars/kfm_thunder/kfm_thunder.sff" 9000,1 kfm_thunder
+extract_portrait "$PIECES_DIR/chars/kfm_shadow/kfm_shadow.sff" 9000,1 kfm_shadow
+
+# All three stage variants share stage0's original sprites untouched (only group
+# 500 overlay sprites differ - see the readme), so stage0 itself uses its real
+# 9000,1 preview sprite as-is, but the storm/rainbow variants would get that exact
+# same preview if extracted the same way - not representative of what makes them
+# different. Instead, composite their own group-500 overlay art onto the base
+# preview so each variant's thumbnail actually looks distinct.
+extract_portrait "$PIECES_DIR/stages/stage0/stage0.sff" 9000,1 stage0
+
+extract_portrait "$PIECES_DIR/stages/stage0_storm/stage0_storm.sff" 500,0 storm_rain
+extract_portrait "$PIECES_DIR/stages/stage0_storm/stage0_storm.sff" 500,1 storm_flash
+/usr/local/bin/node "$UTILS_DIR/compose-stage-preview.js" storm \
+  --base "$IMG_DIR/stage0.png" --rain "$IMG_DIR/storm_rain.png" --flash "$IMG_DIR/storm_flash.png" \
+  --out "$IMG_DIR/stage0_storm.png"
+
+# stage0_rainbow's overlay sprites were appended from these same loose PNGs
+# (see readme.txt), so use them directly rather than re-extracting from the sff.
+/usr/local/bin/node "$UTILS_DIR/compose-stage-preview.js" rainbow \
+  --base "$IMG_DIR/stage0.png" --arc "$PIECES_DIR/stages/stage0_rainbow/rainbow-arc.png" \
+  --sparkle "$PIECES_DIR/stages/stage0_rainbow/rainbow-sparkle.png" --out "$IMG_DIR/stage0_rainbow.png"
+
 # --- rosters ---------------------------------------------------------------
 # kfm and kfm_zss both self-report as "Kung Fu Man" by Elecbyte, which would
 # collide on the generated @author/name id - hence the explicit names here.
 add_piece(){
-  local type="$1" folder="$2" defName="$3" name="$4" author="$5"
-  printf '{"humanInfo":{"name":"%s","author":"%s","url":"%s"}}' \
-    "$name" "$author" "https://example.local/mugen/$type" \
+  local type="$1" folder="$2" defName="$3" name="$4" author="$5" imageName="$6"
+  local imageJson=""
+  if [ -n "$imageName" ]; then
+    imageJson=",\"image\":\"data:image/png;base64,$(base64 -w0 "$IMG_DIR/$imageName.png")\""
+  fi
+  printf '{"humanInfo":{"name":"%s","author":"%s","url":"%s"%s}}' \
+    "$name" "$author" "https://example.local/mugen/$type" "$imageJson" \
     | $CLI roster add-piece "$type" "$PIECES_DIR/$folder" --draft "$DRAFT" \
         --path-variables "defName=$defName" \
         --download-source "$BASE_URL/$type/$defName.tar" \
         --json -
 }
 
-add_piece character chars/kfm        kfm        "Kung Fu Man"          "Elecbyte"
-add_piece character chars/kfm720     kfm720     "Kung Fu Man 720"      "Elecbyte"
-add_piece character chars/kfm_zaxis  kfm_zaxis  "Kung Fu Man Z Axis"   "Elecbyte"
-add_piece character chars/kfm_zss    kfm_zss    "Kung Fu Man ZSS"      "Elecbyte"
-add_piece character chars/kfm_thunder kfm_thunder "Kung Fu Man (Thunder)" "Elecbyte"
-add_piece character chars/kfm_shadow   kfm_shadow   "Kung Fu Man (Shadow)"   "Elecbyte"
+add_piece character chars/kfm        kfm        "Kung Fu Man"          "Elecbyte" kfm
+add_piece character chars/kfm720     kfm720     "Kung Fu Man 720"      "Elecbyte" kfm720
+add_piece character chars/kfm_zaxis  kfm_zaxis  "Kung Fu Man Z Axis"   "Elecbyte" kfm_zaxis
+add_piece character chars/kfm_zss    kfm_zss    "Kung Fu Man ZSS"      "Elecbyte" kfm_zss
+add_piece character chars/kfm_thunder kfm_thunder "Kung Fu Man (Thunder)" "Elecbyte" kfm_thunder
+add_piece character chars/kfm_shadow   kfm_shadow   "Kung Fu Man (Shadow)"   "Elecbyte" kfm_shadow
 
-add_piece stage stages/stage0         stage0         "Training Room"          "Elecbyte"
-add_piece stage stages/stage0_storm   stage0_storm   "Training Room (Storm)"   "Elecbyte"
-add_piece stage stages/stage0_rainbow stage0_rainbow "Training Room (Rainbow)" "Elecbyte"
+add_piece stage stages/stage0         stage0         "Training Room"          "Elecbyte" stage0
+add_piece stage stages/stage0_storm   stage0_storm   "Training Room (Storm)"   "Elecbyte" stage0_storm
+add_piece stage stages/stage0_rainbow stage0_rainbow "Training Room (Rainbow)" "Elecbyte" stage0_rainbow
 
 # --- selection -------------------------------------------------------------
 # The stage is a "shared" piece type, so every player picks one and they have to

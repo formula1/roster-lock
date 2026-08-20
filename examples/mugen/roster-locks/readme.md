@@ -22,6 +22,32 @@ it's driven; stages can't run character code, so both rely on plain `[BG]`
 params - `sin.y`/`velocity`/`tile` and `BGCtrl` scheduling - rather than
 anything PalFX-like).
 
+## Portraits and stage previews
+
+`build-draft.sh` embeds a `humanInfo.image` (a base64 `data:image/png;...` URI, per
+roster-lock's format) for every character and stage. Characters use
+`utils/extract-sff-sprite.js` to pull group `9000,1` straight out of their `.sff` -
+MUGEN's standard select-screen portrait. The tool only decodes the sprite formats
+these pieces actually use (raw-indexed and literal-PNG, including working around a
+real gotcha where the literal-PNG sprites' own embedded PLTE chunk is a degenerate
+placeholder and the real colors come from the sprite's SFF-level palette instead,
+plus another where a sprite header's `ofs` can be relative to either `lofs` or
+`tofs` depending on its `flag` bit - see the tool's header comment for both) - it
+doesn't implement MUGEN's RLE8/LZ5 sprite compression, so `kfm.sff`'s own portrait
+(stored RLE8) is skipped in favor of the pixel-identical copy bundled with
+`kfm_zaxis`/`kfm_zss`, which happens to store the same portrait as literal PNG.
+
+Stages are different: all three variants share the exact same `9000,1` preview
+sprite (they only add new sprites in group 500, see above), so extracting it
+straight would give identical, non-representative thumbnails for `stage0_storm`/
+`stage0_rainbow`. Instead `utils/compose-stage-preview.js` composites each
+variant's own group-500 overlay art onto the base Training Room preview - the rain
+streak + flash tint for storm, the arc + sparkle scatter for rainbow - so each
+stage's thumbnail actually looks like what makes it different. It's a nearest-
+neighbor, fixed-placement approximation, not a re-render of the stage.def's real
+`[BG]` animation - good enough for a selection-screen thumbnail, not meant to be
+pixel-accurate.
+
 ## Rebuilding
 
 ```sh
