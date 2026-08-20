@@ -69,7 +69,7 @@ export function useHostBridge(args: {
 
     bridge.onRequest(MATCHMAKER_BRIDGE_PATHS.getInstalledGameRunnerPlugins, async (): Promise<GetInstalledGameRunnerPluginsResponse> => {
       const runners = await listAvailableGameRunners(latest.current.matchAgent.url, latest.current.matchAgent.authCode);
-      return runners.map((r) => ({ id: r.pluginName, version: r.version }));
+      return runners.map((r) => ({ id: r.pluginName, version: r.version, gameConfigSchema: r.gameConfigSchema }));
     });
 
     bridge.onRequest(MATCHMAKER_BRIDGE_PATHS.getIdentity, (): GetIdentityResponse => ({
