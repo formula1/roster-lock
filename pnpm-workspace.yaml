@@ -4,7 +4,7 @@ packages:
   - 'core/match-agent/client'
   - 'core/config-editor/*'
   - 'core/config-editor-cli'
-  - 'core/relay-server/client'
+  - 'core/relay-server/*'
   - 'examples/full-local/game/*'
   - 'examples/full-local/integration'
   - 'examples/full-local/services/*'
