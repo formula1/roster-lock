@@ -1,0 +1,87 @@
+
+import { IncomingMessage, Server } from "http";
+import { Duplex } from "stream";
+import { WebSocketServer, WebSocket } from 'ws';
+import { HTTPRouter, HTTPError } from "./utils/http-router";
+import { WebSocketRouter } from "./utils/websocket-router";
+import { createV1Routers } from "./router";
+import { getPort } from "./globals";
+
+const debug = !!process.env.DEBUG;
+const httpRouter = new HTTPRouter();
+const wsRouter = new WebSocketRouter();
+
+const v1 = createV1Routers();
+httpRouter.use("/api/v1", v1.httpRouter);
+wsRouter.use("/api/v1", v1.wsRouter);
+
+const httpServer = new Server();
+const wss = new WebSocketServer({ noServer: true });
+httpServer.on('upgrade', async (request, socket, head)=>{
+  const context = await (async ()=>{
+    try {
+      if(!request.url) throw new Error("No URL");
+      const url = new URL(request.url, "ws://localhost");
+      const ws = await handleWSUpgrade(wss, request, socket, head);
+      return { ws, req: request };
+    }catch(e){
+      console.log("Failed to upgrade connection", e);
+      socket.destroy();
+      throw e;
+    }
+  })()
+  wsRouter.handleRequest(context, (err)=>{
+    debug && console.log("WS Error:", err);
+    context.ws.terminate();
+  });
+});
+httpServer.on('request', (req, res)=>{
+  httpRouter.handleRequest({ req, res }, (err: unknown)=>{
+    debug && console.log("HTTP Error:", req.method, req.url, err);
+    if(res.writableEnded){
+      debug && console.warn("Router threw error and response ended")
+      return;
+    }
+    if(res.headersSent){
+      debug && console.warn("Router threw error and headers already sent")
+      res.destroy();
+      return;
+    }
+    const error: HTTPError = (()=>{
+      if(err instanceof HTTPError) return err;
+      if(!err){
+        return new HTTPError(404, "Not Found");
+      } else if(typeof err === "string"){
+        return new HTTPError(500, err);
+      } else if(err instanceof Error){
+        return new HTTPError(500, err.message);
+      } else if(typeof err !== "object" || err === null || Array.isArray(err)) {
+        return new HTTPError(500, "Unknown Error");
+      }
+      return new HTTPError(
+        "statusCode" in err && typeof err.statusCode === "number" ? err.statusCode : 500,
+        "message" in err && typeof err.message === "string" ? err.message : "Unknown Error"
+      );
+    })();
+
+    res.writeHead(error.statusCode, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({
+      error: error.message,
+      context: error.context,
+    }));
+  });
+})
+
+
+function handleWSUpgrade(wss: WebSocketServer, request: IncomingMessage, socket: Duplex, head: Buffer){
+  return new Promise<WebSocket>((resolve, reject)=>{
+    wss.handleUpgrade(request, socket, head, function done(ws) {
+      resolve(ws);
+    });
+  });
+}
+
+const port = getPort();
+httpServer.listen(port, () => {
+  console.log(`relay-server-hosted listening on :${port}`);
+});
