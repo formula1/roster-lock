@@ -3,7 +3,7 @@ import { RosterLockV1Config } from "../../lock";
 import { RosterLockV1SyncDLResult } from "../../request";
 import { RoomMachine } from "../../relay";
 import { Sha256 } from "../../shared";
-import type { AnySchema } from "ajv";
+import type { AnySchema, JSONSchemaType } from "ajv";
 
 export type ConnectionMode = "direct-tcp" | "room" | "internal";
 
@@ -89,7 +89,7 @@ export type GameProcessHandle = {
   stop: () => Promise<void>,
 };
 
-export type StartGameArgs = {
+export type StartGameArgs<T> = {
   // Handed to the game coordinator on the relay room's success webhook -
   // lets a plugin correlate itself back to that room if it ever needs to.
   relayRoomId: string,
@@ -122,10 +122,10 @@ export type StartGameArgs = {
   matchAgent: { port: number, authCode: string },
   // Room-shared settings every participant agreed to at room-creation time
   // (e.g. team mode, round time). Validated against gameConfigSchema.
-  gameConfig: unknown,
+  gameConfig: T,
 };
 
-export type GameRunnerPlugin = {
+export type GameRunnerPlugin<T> = {
   name: string,
   publicInfo: {
     title: string,
@@ -150,7 +150,7 @@ export type GameRunnerPlugin = {
   // don't hold for that roster.
   engineSha: Sha256,
   // JSON Schema for StartGameArgs["gameConfig"]. Set even when empty ({}).
-  gameConfigSchema: AnySchema,
+  gameConfigSchema: JSONSchemaType<T>,
   // JSON Schema for this plugin's other per-machine settings (e.g. a
   // preferred direct-tcp port). Excludes binaryLocation, which every Game
   // Runner has by definition - see the functions below. Set even when empty.
@@ -202,6 +202,6 @@ export type GameRunnerPlugin = {
   ) => Promise<{ valid: true } | { valid: false, message: string }>,
 
   startGame: (
-    binaryLocation: string, target: PlatformTarget, connectionConfig: ConnectionConfig, args: StartGameArgs
+    binaryLocation: string, target: PlatformTarget, connectionConfig: ConnectionConfig, args: StartGameArgs<T>
   ) => Promise<GameProcessHandle>,
 };

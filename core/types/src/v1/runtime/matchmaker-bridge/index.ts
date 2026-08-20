@@ -23,7 +23,16 @@ export type InstallGameRunnerPluginResponse = {};
 // getInstalledGameRunnerPlugins() - what game-runner plugins this machine
 // already has installed, so a matchmaker's room UI can tell a user "you
 // don't have this one yet" without ever touching match-agent itself.
-export type GetInstalledGameRunnerPluginsResponse = Array<{ id: string, version: string }>;
+// gameConfigSchema is included so a matchmaker can render the room-shared
+// settings a game runner needs (e.g. ikemen-go's teamMode/roundTime/rounds)
+// as a real form (e.g. via rjsf) instead of asking the user for raw JSON -
+// it's already public (GameRunnerPlugin.gameConfigSchema, exposed by match-
+// agent's own /v1/game-runner/available route), just not previously carried
+// across this bridge. Left as `unknown` here rather than ajv's AnySchema,
+// matching how match-agent-client's own GameRunnerSettingsForm already treats
+// localConfigSchema at this same kind of boundary - a consumer narrows it
+// (e.g. an RJSFSchema type guard) at render time instead.
+export type GetInstalledGameRunnerPluginsResponse = Array<{ id: string, version: string, gameConfigSchema: unknown }>;
 
 // getIdentity() - never includes the private key, only what's safe for a
 // matchmaker to see. playerCount reflects the host's own local player-slot
