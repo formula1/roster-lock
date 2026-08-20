@@ -1,21 +1,34 @@
 import { ChangeEvent, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Form from "@rjsf/core";
+import validator from "@rjsf/validator-ajv8";
+import type { RJSFSchema } from "@rjsf/utils";
 import { RosterLockV1Config } from "@roster-lock/types";
 import { useAccount } from "../../context/AccountContext";
 import { createRoom } from "../../api/titledRoom";
 import * as bridge from "../../bridge";
 import { TITLED_ROOM_URL } from "../../config";
 
+type InstalledGameRunner = { id: string, version: string, gameConfigSchema: unknown };
+
+// A schema with no declared properties renders nothing useful in rjsf - mirrors
+// match-agent-client's own GameRunnerSettingsForm.hasProperties, which does the
+// same thing for localConfigSchema.
+function hasProperties(schema: unknown): schema is RJSFSchema {
+  return !!schema && typeof schema === "object" && !!(schema as RJSFSchema).properties
+    && Object.keys((schema as RJSFSchema).properties!).length > 0;
+}
+
 export function CreateRoomPage() {
   const navigate = useNavigate();
   const account = useAccount();
 
-  const [installed, setInstalled] = useState<Array<{ id: string, version: string }>>([]);
+  const [installed, setInstalled] = useState<Array<InstalledGameRunner>>([]);
   const [installPackage, setInstallPackage] = useState("");
   const [installing, setInstalling] = useState(false);
   const [title, setTitle] = useState("");
   const [gameRunnerPlugin, setGameRunnerPlugin] = useState("");
-  const [gameConfigText, setGameConfigText] = useState("{}");
+  const [gameConfig, setGameConfig] = useState<unknown>({});
   const [rosterConfig, setRosterConfig] = useState<RosterLockV1Config | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [maxPlayers, setMaxPlayers] = useState(2);
@@ -73,13 +86,6 @@ export function CreateRoomPage() {
     setBusy(true);
     setError(null);
     try {
-      let gameConfig: unknown = {};
-      try {
-        gameConfig = JSON.parse(gameConfigText);
-      } catch {
-        throw new Error("Game Runner Settings must be valid JSON");
-      }
-
       const room = await createRoom(TITLED_ROOM_URL, account.token, {
         title, gameRunnerPlugin, rosterConfig, gameConfig, maxPlayers, minPlayers,
         machineId: account.identity.machineId,
@@ -106,7 +112,16 @@ export function CreateRoomPage() {
 
       <label>
         Game Runner
-        <select value={gameRunnerPlugin} onChange={(e) => setGameRunnerPlugin(e.target.value)}>
+        <select
+          value={gameRunnerPlugin}
+          onChange={(e) => {
+            setGameRunnerPlugin(e.target.value);
+            // A previous plugin's gameConfig is unlikely to match the newly
+            // selected plugin's schema - start clean rather than carry over
+            // fields the new form won't recognize.
+            setGameConfig({});
+          }}
+        >
           {installed.map((r) => <option key={r.id} value={r.id}>{r.id} (v{r.version})</option>)}
         </select>
       </label>
@@ -123,10 +138,24 @@ export function CreateRoomPage() {
         </button>
       </div>
 
-      <label>
-        Game Runner Settings (JSON - e.g. ikemen-go's teamMode/roundTime/rounds)
-        <textarea rows={3} value={gameConfigText} onChange={(e) => setGameConfigText(e.target.value)} />
-      </label>
+      {(() => {
+        const gameConfigSchema = installed.find((r) => r.id === gameRunnerPlugin)?.gameConfigSchema;
+        if (!hasProperties(gameConfigSchema)) return null;
+        // Schema's own title/description (see e.g. ikemen-go's gameConfigSchema)
+        // drive rjsf's rendered heading/blurb here - no separate hardcoded
+        // label needed on top of them.
+        return (
+          <div className="game-runner-settings">
+            <Form
+              schema={gameConfigSchema}
+              formData={gameConfig}
+              validator={validator}
+              onChange={(e) => setGameConfig(e.formData)}
+              uiSchema={{ "ui:submitButtonOptions": { norender: true } }}
+            />
+          </div>
+        );
+      })()}
 
       <label>
         Roster Lock Config (.json)

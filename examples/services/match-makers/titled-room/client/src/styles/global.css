@@ -73,3 +73,34 @@ button:disabled {
   display: flex;
   gap: 0.5rem;
 }
+
+/* rjsf-rendered forms (e.g. Create Room's Game Runner Settings, driven by a
+   plugin's gameConfigSchema) - only the schema's own title/legend and
+   description text get custom treatment here; field labels/inputs already
+   pick up this file's normal label/input rules. */
+.game-runner-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.game-runner-settings legend {
+  padding: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.game-runner-settings .field-description {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border-left: 3px solid var(--accent);
+  background: var(--panel);
+  color: var(--text);
+  opacity: 0.85;
+  font-size: 0.85rem;
+  font-style: italic;
+}
