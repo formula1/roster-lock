@@ -95,6 +95,7 @@ export type RoomEvent = (
       type: "GAME_HAS_STARTED",
       payload: { relayUrl: string, roomId: string, coordinator: { host: string, port: number } | null },
     }
+  | { type: "ROOM_DESTROYED", payload: {} }
 );
 
 export type RoomSocket = {

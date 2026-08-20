@@ -1,19 +1,21 @@
 import { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { RosterLockV1Config } from "@roster-lock/types";
 import { useAccount } from "../../context/AccountContext";
-import { getRoom, joinRoom, startRoom, listenToRoom, RoomData, RoomSocket } from "../../api/titledRoom";
+import { getRoom, joinRoom, startRoom, destroyRoom, listenToRoom, RoomData, RoomSocket } from "../../api/titledRoom";
 import * as bridge from "../../bridge";
 import { TITLED_ROOM_URL } from "../../config";
 
 export function RoomDetailPage() {
   const { roomId = "" } = useParams();
   const account = useAccount();
+  const navigate = useNavigate();
 
   const [room, setRoom] = useState<RoomData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selecting, setSelecting] = useState(false);
   const [selected, setSelected] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const socketRef = useRef<RoomSocket | null>(null);
   const gameConfigSynced = useRef(false);
   const roomRef = useRef<RoomData | null>(null);
@@ -62,6 +64,13 @@ export function RoomDetailPage() {
         });
         return;
       }
+      if (event.type === "ROOM_DESTROYED") {
+        // The room's storage is already gone by the time this arrives (see
+        // RoomSession's /destroy) - refresh() would just 404, so leave
+        // straight for the list instead of showing a broken room page.
+        navigate("/rooms");
+        return;
+      }
       refresh();
     });
     socketRef.current = socket;
@@ -107,6 +116,22 @@ export function RoomDetailPage() {
     }
   };
 
+  const handleCancel = async () => {
+    if (!account.token) return;
+    setCancelling(true);
+    setError(null);
+    try {
+      await destroyRoom(TITLED_ROOM_URL, account.token, roomId);
+      // Don't wait on the room's own ROOM_DESTROYED broadcast to get here -
+      // this request already succeeded, so leave immediately rather than
+      // depending on this same session's websocket round-trip.
+      navigate("/rooms");
+    } catch (e) {
+      setError((e as Error).message);
+      setCancelling(false);
+    }
+  };
+
   return (
     <div className="page">
       <h1>{room.title}</h1>
@@ -131,6 +156,11 @@ export function RoomDetailPage() {
       {isHost && (
         <button type="button" disabled={!canStart} onClick={handleStart}>
           Start Match
+        </button>
+      )}
+      {isHost && room.status !== "started" && (
+        <button type="button" disabled={cancelling} onClick={handleCancel}>
+          {cancelling ? "Cancelling..." : "Cancel Room"}
         </button>
       )}
     </div>

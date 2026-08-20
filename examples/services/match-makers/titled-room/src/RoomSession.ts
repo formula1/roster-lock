@@ -103,6 +103,11 @@ export class RoomSession implements DurableObject {
         return new Response(JSON.stringify({ error: "Only room host can destroy room" }), { status: 403 });
       }
       this.roomData.status = "destroyed";
+      // Broadcast before deleting - once storage is gone, this instance has
+      // nothing left to tell reconnecting/late sessions (see /state above,
+      // which 404s once roomData is undefined). Any participant not
+      // currently connected only finds out by hitting that 404 on refresh.
+      this.broadcast({ type: "ROOM_DESTROYED", payload: {} });
       await this.state.storage.delete("roomData");
       return new Response(JSON.stringify({ success: true }), { headers: { "Content-Type": "application/json" } });
     }
