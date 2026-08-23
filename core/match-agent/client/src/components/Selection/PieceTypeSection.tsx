@@ -7,13 +7,14 @@ import { useCursorInput } from "../../hooks/useCursorInput";
 import { listDownloadedPiecesFromConfig } from "@roster-lock/ts-client";
 
 export function PieceTypeSection({
-  rosterConfig, pieceType, plan, picks, onTogglePick, inputSource, matchAgentUrl, matchAgentAuth,
+  rosterConfig, pieceType, plan, picks, onTogglePick, onReorderPick, inputSource, matchAgentUrl, matchAgentAuth,
 }: {
   rosterConfig: RosterLockV1Config,
   pieceType: string,
   plan: Extract<PieceTypePlan, { kind: "pickable" }>,
   picks: Array<string>,
   onTogglePick: (pieceId: string) => void,
+  onReorderPick: (fromIndex: number, toIndex: number) => void,
   inputSource: InputSource,
   matchAgentUrl: string,
   matchAgentAuth: string,
@@ -51,25 +52,61 @@ export function PieceTypeSection({
       ? `pick ${plan.min}-any`
       : `pick ${plan.min}-${plan.max}`;
 
+  const pieceById = new Map(pieces.map((piece) => [piece.id, piece]));
+
   return (
     <div className="piece-type-section">
       <div className="piece-type-header">
-        <span className="piece-type-name">{pieceType}</span>
         <span className="piece-type-count">{countLabel} ({picks.length} picked)</span>
       </div>
       <div className="card-grid">
-        {pieces.map((piece, index) => (
-          <PieceCard
-            key={piece.id}
-            piece={piece}
-            selected={picks.includes(piece.id)}
-            downloaded={downloaded[piece.id]}
-            cursored={index === cursorIndex}
-            disabled={atMax}
-            onClick={() => onTogglePick(piece.id)}
-          />
-        ))}
+        {pieces.map((piece, index) => {
+          const orderIndex = picks.indexOf(piece.id);
+          return (
+            <PieceCard
+              key={piece.id}
+              piece={piece}
+              selected={orderIndex !== -1}
+              orderNumber={orderIndex === -1 ? undefined : orderIndex + 1}
+              downloaded={downloaded[piece.id]}
+              cursored={index === cursorIndex}
+              disabled={atMax}
+              onClick={() => onTogglePick(piece.id)}
+            />
+          );
+        })}
       </div>
+      {picks.length > 0 && (
+        <ol className="pick-order-list">
+          {picks.map((pieceId, index) => (
+            <li key={pieceId} className="pick-order-item">
+              <span className="pick-order-index">{index + 1}</span>
+              <span className="pick-order-name">{pieceById.get(pieceId)?.humanInfo.name ?? pieceId}</span>
+              <button
+                type="button"
+                className="pick-order-move"
+                disabled={index === 0}
+                onClick={() => onReorderPick(index, index - 1)}
+                aria-label="Move earlier"
+              >
+                ↑
+              </button>
+              <button
+                type="button"
+                className="pick-order-move"
+                disabled={index === picks.length - 1}
+                onClick={() => onReorderPick(index, index + 1)}
+                aria-label="Move later"
+              >
+                ↓
+              </button>
+              <button type="button" className="pick-order-remove" onClick={() => onTogglePick(pieceId)}>
+                Remove
+              </button>
+            </li>
+          ))}
+        </ol>
+      )}
     </div>
   );
 }

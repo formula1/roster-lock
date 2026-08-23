@@ -1,8 +1,9 @@
 import { RosterLockPiece } from "@roster-lock/types";
 
-export function PieceCard({ piece, selected, downloaded, cursored, disabled, onClick }: {
+export function PieceCard({ piece, selected, orderNumber, downloaded, cursored, disabled, onClick }: {
   piece: RosterLockPiece,
   selected: boolean,
+  orderNumber: number | undefined,
   downloaded: boolean | undefined,
   cursored: boolean,
   disabled: boolean,
@@ -19,6 +20,7 @@ export function PieceCard({ piece, selected, downloaded, cursored, disabled, onC
       title={piece.humanInfo.author ? `by ${piece.humanInfo.author}` : undefined}
     >
       <div className="piece-card-image">
+        {orderNumber !== undefined && <span className="piece-card-order-badge">{orderNumber}</span>}
         {piece.humanInfo.image ? (
           <img src={piece.humanInfo.image} alt={piece.humanInfo.name} />
         ) : (
