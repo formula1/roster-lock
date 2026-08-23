@@ -59,12 +59,12 @@ describe("POST /admin/login", () => {
   });
 });
 
-describe("/admin/game-runners", () => {
-  const PLUGIN_NAME = "@roster-lock/game-runner-ikemen-go";
+describe("/admin/game-launchers", () => {
+  const PLUGIN_NAME = "@roster-lock/game-launcher-ikemen-go";
 
   it("requires admin auth", async () => {
     const db = new FakeAdminD1();
-    const res = await app.request(`/admin/game-runners/${encodeURIComponent(PLUGIN_NAME)}`, {
+    const res = await app.request(`/admin/game-launchers/${encodeURIComponent(PLUGIN_NAME)}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ engineSha: "sha1", coordinator: false }),
@@ -77,7 +77,7 @@ describe("/admin/game-runners", () => {
     const env = makeEnv(db);
     const token = await bootstrapAdmin(env);
 
-    const putRes = await app.request(`/admin/game-runners/${encodeURIComponent(PLUGIN_NAME)}`, {
+    const putRes = await app.request(`/admin/game-launchers/${encodeURIComponent(PLUGIN_NAME)}`, {
       method: "PUT",
       headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -87,7 +87,7 @@ describe("/admin/game-runners", () => {
     }, env);
     expect(putRes.status).toBe(200);
 
-    const listRes = await app.request("/admin/game-runners", { headers: { Authorization: `Bearer ${token}` } }, env);
+    const listRes = await app.request("/admin/game-launchers", { headers: { Authorization: `Bearer ${token}` } }, env);
     const list = await listRes.json() as Array<{ plugin_name: string, coordinator_id: string | null }>;
     expect(list).toHaveLength(1);
     expect(list[0].plugin_name).toBe(PLUGIN_NAME);
@@ -99,20 +99,20 @@ describe("/admin/game-runners", () => {
     const env = makeEnv(db);
     const token = await bootstrapAdmin(env);
 
-    const putRes = await app.request(`/admin/game-runners/${encodeURIComponent(PLUGIN_NAME)}`, {
+    const putRes = await app.request(`/admin/game-launchers/${encodeURIComponent(PLUGIN_NAME)}`, {
       method: "PUT",
       headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
       body: JSON.stringify({ engineSha: "sha1", coordinator: false }),
     }, env);
     expect(putRes.status).toBe(200);
-    expect(db.gameRunnerConfigs.get(PLUGIN_NAME)).toMatchObject({ coordinator_id: null });
+    expect(db.gameLauncherConfigs.get(PLUGIN_NAME)).toMatchObject({ coordinator_id: null });
   });
 
   it("updates an existing entry on a second PUT rather than duplicating it", async () => {
     const db = new FakeAdminD1();
     const env = makeEnv(db);
     const token = await bootstrapAdmin(env);
-    const put = (body: unknown) => app.request(`/admin/game-runners/${encodeURIComponent(PLUGIN_NAME)}`, {
+    const put = (body: unknown) => app.request(`/admin/game-launchers/${encodeURIComponent(PLUGIN_NAME)}`, {
       method: "PUT",
       headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -121,26 +121,26 @@ describe("/admin/game-runners", () => {
     await put({ engineSha: "sha1", coordinator: false });
     await put({ engineSha: "sha2", coordinator: false });
 
-    expect(db.gameRunnerConfigs.size).toBe(1);
-    expect(db.gameRunnerConfigs.get(PLUGIN_NAME)).toMatchObject({ engine_sha: "sha2" });
+    expect(db.gameLauncherConfigs.size).toBe(1);
+    expect(db.gameLauncherConfigs.get(PLUGIN_NAME)).toMatchObject({ engine_sha: "sha2" });
   });
 
   it("removes an entry", async () => {
     const db = new FakeAdminD1();
     const env = makeEnv(db);
     const token = await bootstrapAdmin(env);
-    await app.request(`/admin/game-runners/${encodeURIComponent(PLUGIN_NAME)}`, {
+    await app.request(`/admin/game-launchers/${encodeURIComponent(PLUGIN_NAME)}`, {
       method: "PUT",
       headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
       body: JSON.stringify({ engineSha: "sha1", coordinator: false }),
     }, env);
 
-    const deleteRes = await app.request(`/admin/game-runners/${encodeURIComponent(PLUGIN_NAME)}`, {
+    const deleteRes = await app.request(`/admin/game-launchers/${encodeURIComponent(PLUGIN_NAME)}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     }, env);
     expect(deleteRes.status).toBe(204);
-    expect(db.gameRunnerConfigs.has(PLUGIN_NAME)).toBe(false);
+    expect(db.gameLauncherConfigs.has(PLUGIN_NAME)).toBe(false);
   });
 
   it("404s deleting a plugin that was never added", async () => {
@@ -148,7 +148,7 @@ describe("/admin/game-runners", () => {
     const env = makeEnv(db);
     const token = await bootstrapAdmin(env);
 
-    const res = await app.request(`/admin/game-runners/${encodeURIComponent(PLUGIN_NAME)}`, {
+    const res = await app.request(`/admin/game-launchers/${encodeURIComponent(PLUGIN_NAME)}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     }, env);

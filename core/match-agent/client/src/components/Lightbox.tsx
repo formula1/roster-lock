@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 
 // Generic overlay used by pages/MatchMaking to host whichever bridge request
-// is currently pending (installGameRunnerPlugin or requestSelection) -
+// is currently pending (installGameLauncherPlugin or requestSelection) -
 // rendered by the host shell, on top of the matchmaker <iframe>, never
 // inside it.
 export function Lightbox({ children, onClose }: { children: ReactNode, onClose?: () => void }) {

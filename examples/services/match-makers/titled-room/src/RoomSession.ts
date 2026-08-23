@@ -3,7 +3,7 @@ import { createShaFromJSON } from "@roster-lock/utils";
 import { RoomMachine } from "@roster-lock/types";
 import { Env, RoomData, RoomParticipant, PublicUserProfile } from "./types";
 import { createRelayRoom } from "./relay-client";
-import { gameCoordinatorFor, GameCoordinatorConfig } from "./game-runners";
+import { gameCoordinatorFor, GameCoordinatorConfig } from "./game-launchers";
 
 type JoinRequest = PublicUserProfile & { machineId: string };
 
@@ -23,7 +23,7 @@ export class RoomSession implements DurableObject {
 
     if (url.pathname === "/init" && request.method === "POST") {
       const body = await request.json<any>();
-      const { hostUser, machineId, title, gameRunnerPlugin, rosterConfig, gameConfig, maxPlayers, minPlayers } = body;
+      const { hostUser, machineId, title, gameLauncherPlugin, rosterConfig, gameConfig, maxPlayers, minPlayers } = body;
 
       const hostParticipant: RoomParticipant = {
         userId: hostUser.id,
@@ -40,7 +40,7 @@ export class RoomSession implements DurableObject {
         id: url.searchParams.get("roomId")!,
         title,
         hostUserId: hostUser.id,
-        gameRunnerPlugin,
+        gameLauncherPlugin,
         rosterConfig,
         gameConfig,
         maxPlayers: maxPlayers || 2,
@@ -142,7 +142,7 @@ export class RoomSession implements DurableObject {
       // straight through to createRelayRoom below.
       let coordinator: GameCoordinatorConfig | false;
       try {
-        coordinator = await gameCoordinatorFor(this.env, this.roomData.gameRunnerPlugin);
+        coordinator = await gameCoordinatorFor(this.env, this.roomData.gameLauncherPlugin);
       } catch (e) {
         return new Response(JSON.stringify({ error: (e as Error).message }), { status: 400 });
       }

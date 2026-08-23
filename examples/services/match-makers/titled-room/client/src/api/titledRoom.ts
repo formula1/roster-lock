@@ -15,7 +15,7 @@ export type RoomData = {
   id: string,
   title: string,
   hostUserId: string,
-  gameRunnerPlugin: string,
+  gameLauncherPlugin: string,
   rosterConfig: any,
   gameConfig: any,
   maxPlayers: number,
@@ -29,7 +29,7 @@ export type RoomIndexEntry = {
   id: string,
   title: string,
   hostUserId: string,
-  gameRunnerPlugin: string,
+  gameLauncherPlugin: string,
   rosterConfigHash: string,
   status: string,
   maxPlayers: number,
@@ -52,7 +52,7 @@ async function roomFetch(titledRoomUrl: string, token: string, path: string, ini
 }
 
 export async function createRoom(titledRoomUrl: string, token: string, body: {
-  title: string, gameRunnerPlugin: string, rosterConfig: unknown, gameConfig: unknown,
+  title: string, gameLauncherPlugin: string, rosterConfig: unknown, gameConfig: unknown,
   maxPlayers?: number, minPlayers?: number, machineId: string,
 }): Promise<RoomData> {
   const res = await roomFetch(titledRoomUrl, token, "/room/create", { method: "POST", body: JSON.stringify(body) });

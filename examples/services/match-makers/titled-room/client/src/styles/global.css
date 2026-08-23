@@ -78,7 +78,7 @@ button:disabled {
    plugin's gameConfigSchema) - only the schema's own title/legend and
    description text get custom treatment here; field labels/inputs already
    pick up this file's normal label/input rules. */
-.game-runner-settings {
+.game-launcher-settings {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -87,14 +87,14 @@ button:disabled {
   border-radius: 6px;
 }
 
-.game-runner-settings legend {
+.game-launcher-settings legend {
   padding: 0;
   font-size: 1.1rem;
   font-weight: 600;
   color: var(--text);
 }
 
-.game-runner-settings .field-description {
+.game-launcher-settings .field-description {
   margin: 0;
   padding: 0.5rem 0.75rem;
   border-left: 3px solid var(--accent);

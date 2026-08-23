@@ -1,20 +1,20 @@
 import {
   UntrustedScript, UntrustedConfig, ArchiveHandler, Decompressor, ProtocolHandler, PieceSelectionSortPlugin,
-  GameRunnerPlugin, ConnectionMode,
+  GameLauncherPlugin, ConnectionMode,
 } from "@roster-lock/types";
 
 export type PluginType = (
   | "dl-protocol" | "dl-compression" | "dl-archive"
   | "untrusted-script" | "untrusted-config"
   | "piece-selection-sort"
-  | "game-runner"
+  | "game-launcher"
 );
 
 export const PLUGIN_TYPES = new Set<PluginType>([
   "dl-protocol", "dl-compression", "dl-archive",
   "untrusted-script", "untrusted-config",
   "piece-selection-sort",
-  "game-runner"
+  "game-launcher"
 ]);
 
 export type PluginTypeMap = {
@@ -24,7 +24,7 @@ export type PluginTypeMap = {
   "untrusted-script": UntrustedScript<any>;
   "untrusted-config": UntrustedConfig
   "piece-selection-sort": PieceSelectionSortPlugin;
-  "game-runner": GameRunnerPlugin;
+  "game-launcher": GameLauncherPlugin;
 };
 
 const CONNECTION_MODES = new Set<ConnectionMode>(["direct-tcp", "room", "internal"]);
@@ -73,7 +73,7 @@ export const PLUGIN_TYPE_VALIDATORS: Record<PluginType, (p: Record<string, unkno
     if(typeof p.handleGameComplete !== "function") throw new Error("\"handleGameComplete\" should be a function");
     return true;
   },
-  "game-runner": (p) =>{
+  "game-launcher": (p) =>{
     if(typeof p.name !== "string") throw new Error("\"name\" should be a string");
     if(typeof p.publicInfo !== "object" || p.publicInfo === null) throw new Error("\"publicInfo\" should be an object");
     const publicInfo = p.publicInfo as Record<string, unknown>;

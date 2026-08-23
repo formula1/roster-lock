@@ -9,10 +9,10 @@ import { createRoom } from "../../api/titledRoom";
 import * as bridge from "../../bridge";
 import { TITLED_ROOM_URL } from "../../config";
 
-type InstalledGameRunner = { id: string, version: string, gameConfigSchema: unknown };
+type InstalledGameLauncher = { id: string, version: string, gameConfigSchema: unknown };
 
 // A schema with no declared properties renders nothing useful in rjsf - mirrors
-// match-agent-client's own GameRunnerSettingsForm.hasProperties, which does the
+// match-agent-client's own GameLauncherSettingsForm.hasProperties, which does the
 // same thing for localConfigSchema.
 function hasProperties(schema: unknown): schema is RJSFSchema {
   return !!schema && typeof schema === "object" && !!(schema as RJSFSchema).properties
@@ -23,11 +23,11 @@ export function CreateRoomPage() {
   const navigate = useNavigate();
   const account = useAccount();
 
-  const [installed, setInstalled] = useState<Array<InstalledGameRunner>>([]);
+  const [installed, setInstalled] = useState<Array<InstalledGameLauncher>>([]);
   const [installPackage, setInstallPackage] = useState("");
   const [installing, setInstalling] = useState(false);
   const [title, setTitle] = useState("");
-  const [gameRunnerPlugin, setGameRunnerPlugin] = useState("");
+  const [gameLauncherPlugin, setGameLauncherPlugin] = useState("");
   const [gameConfig, setGameConfig] = useState<unknown>({});
   const [rosterConfig, setRosterConfig] = useState<RosterLockV1Config | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
@@ -37,16 +37,16 @@ export function CreateRoomPage() {
   const [busy, setBusy] = useState(false);
 
   const refreshInstalled = () => {
-    bridge.getInstalledGameRunnerPlugins()
+    bridge.getInstalledGameLauncherPlugins()
       .then((plugins) => {
         setInstalled(plugins);
-        if (!gameRunnerPlugin && plugins[0]) setGameRunnerPlugin(plugins[0].id);
+        if (!gameLauncherPlugin && plugins[0]) setGameLauncherPlugin(plugins[0].id);
       })
       .catch((e) => setError(e.message));
   };
 
-  // Before creating a room, confirm this machine actually has a game-runner
-  // plugin installed - the host mediates this (getInstalledGameRunnerPlugins),
+  // Before creating a room, confirm this machine actually has a game-launcher
+  // plugin installed - the host mediates this (getInstalledGameLauncherPlugins),
   // this app never talks to match-agent directly.
   useEffect(refreshInstalled, []);
 
@@ -55,7 +55,7 @@ export function CreateRoomPage() {
     setInstalling(true);
     setError(null);
     try {
-      await bridge.installGameRunnerPlugin(installPackage);
+      await bridge.installGameLauncherPlugin(installPackage);
       refreshInstalled();
     } catch (e) {
       setError((e as Error).message);
@@ -87,13 +87,13 @@ export function CreateRoomPage() {
     setError(null);
     try {
       const room = await createRoom(TITLED_ROOM_URL, account.token, {
-        title, gameRunnerPlugin, rosterConfig, gameConfig, maxPlayers, minPlayers,
+        title, gameLauncherPlugin, rosterConfig, gameConfig, maxPlayers, minPlayers,
         machineId: account.identity.machineId,
       });
       // The host is the one that eventually calls match-agent's start route,
       // so it needs to know this room's gameConfig ahead of time - see
-      // core/types' matchmaker-bridge docs on updateGameRunnerSettings.
-      await bridge.updateGameRunnerSettings(gameRunnerPlugin, gameConfig);
+      // core/types' matchmaker-bridge docs on updateGameLauncherSettings.
+      await bridge.updateGameLauncherSettings(gameLauncherPlugin, gameConfig);
       navigate(`/rooms/${room.id}`);
     } catch (e) {
       setError((e as Error).message);
@@ -113,9 +113,9 @@ export function CreateRoomPage() {
       <label>
         Game Runner
         <select
-          value={gameRunnerPlugin}
+          value={gameLauncherPlugin}
           onChange={(e) => {
-            setGameRunnerPlugin(e.target.value);
+            setGameLauncherPlugin(e.target.value);
             // A previous plugin's gameConfig is unlikely to match the newly
             // selected plugin's schema - start clean rather than carry over
             // fields the new form won't recognize.
@@ -125,11 +125,11 @@ export function CreateRoomPage() {
           {installed.map((r) => <option key={r.id} value={r.id}>{r.id} (v{r.version})</option>)}
         </select>
       </label>
-      {installed.length === 0 && <p>No game-runner plugins installed on this machine yet.</p>}
+      {installed.length === 0 && <p>No game-launcher plugins installed on this machine yet.</p>}
 
       <div className="install-plugin-row">
         <input
-          placeholder="Package name to install (e.g. @roster-lock/game-runner-ikemen-go)"
+          placeholder="Package name to install (e.g. @roster-lock/game-launcher-ikemen-go)"
           value={installPackage}
           onChange={(e) => setInstallPackage(e.target.value)}
         />
@@ -139,13 +139,13 @@ export function CreateRoomPage() {
       </div>
 
       {(() => {
-        const gameConfigSchema = installed.find((r) => r.id === gameRunnerPlugin)?.gameConfigSchema;
+        const gameConfigSchema = installed.find((r) => r.id === gameLauncherPlugin)?.gameConfigSchema;
         if (!hasProperties(gameConfigSchema)) return null;
         // Schema's own title/description (see e.g. ikemen-go's gameConfigSchema)
         // drive rjsf's rendered heading/blurb here - no separate hardcoded
         // label needed on top of them.
         return (
-          <div className="game-runner-settings">
+          <div className="game-launcher-settings">
             <Form
               schema={gameConfigSchema}
               formData={gameConfig}
@@ -170,7 +170,7 @@ export function CreateRoomPage() {
         Max players
         <input type="number" min={2} value={maxPlayers} onChange={(e) => setMaxPlayers(Number(e.target.value))} />
       </label>
-      <button type="button" disabled={busy || !title || !gameRunnerPlugin || !rosterConfig} onClick={handleCreate}>
+      <button type="button" disabled={busy || !title || !gameLauncherPlugin || !rosterConfig} onClick={handleCreate}>
         Create Room
       </button>
       {error && <p className="error">{error}</p>}

@@ -1,6 +1,6 @@
 # Mugen / Ikemen GO end-to-end example
 
-Drives `@roster-lock/game-runner-ikemen-go` all the way through match-agent:
+Drives `@roster-lock/game-launcher-ikemen-go` all the way through match-agent:
 login, create/join a room, make a selection, sync + download over the relay,
 and **launch two real Ikemen GO windows** on your machine, one connecting to
 the other over direct-tcp via a small rendezvous coordinator.
@@ -34,9 +34,9 @@ This will:
 4. Register titled-room as a matchmaker and direct-ip-coordinator as a game
    coordinator with relay-room's admin API, then register ikemen-go as an
    allowed game runner with **titled-room's own admin API**
-   (`PUT /admin/game-runners/:pluginName` - engineSha + coordinator id/address)
+   (`PUT /admin/game-launchers/:pluginName` - engineSha + coordinator id/address)
    - not a static env var (see
-   `examples/services/match-makers/titled-room/src/admin/game-runners.ts`).
+   `examples/services/match-makers/titled-room/src/admin/game-launchers.ts`).
 5. Register and log in two simulated players against auth-naive, create/join
    a room on titled-room, make a random selection each (matching
    `roster-locks/mugen-simul.roster-lock.json`'s selection config), and mark
@@ -48,7 +48,7 @@ This will:
    temp copy of your `--binary-location` install** (see below), one right
    after the other. The client blocks on direct-ip-coordinator until the host
    is confirmed listening before it connects (see
-   `plugins/game-runner/shared/direct-ip-coordinator`).
+   `plugins/game-launcher/shared/direct-ip-coordinator`).
 
 ### Why each player gets its own copy of the install
 

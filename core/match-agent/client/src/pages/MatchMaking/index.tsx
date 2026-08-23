@@ -6,7 +6,7 @@ import { useJoinSettings } from "../../context/JoinSettingsContext";
 import { useDownloadSession } from "../../context/DownloadSessionContext";
 import { useHostBridge } from "../../bridge/hostBridge";
 import { Lightbox } from "../../components/Lightbox";
-import { InstallGameRunnerLightbox } from "../../components/InstallGameRunnerLightbox";
+import { InstallGameLauncherLightbox } from "../../components/InstallGameLauncherLightbox";
 import { SelectionBoard } from "../../components/Selection";
 
 const STORAGE_KEY = "match-agent-client:matchmaker-url";
@@ -70,7 +70,7 @@ export function MatchMakingPage() {
 
       {pendingLightbox?.type === "install" && (
         <Lightbox>
-          <InstallGameRunnerLightbox pluginName={pendingLightbox.pluginName} onDone={resolveInstallLightbox} />
+          <InstallGameLauncherLightbox pluginName={pendingLightbox.pluginName} onDone={resolveInstallLightbox} />
         </Lightbox>
       )}
 

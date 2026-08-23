@@ -8,7 +8,7 @@ function makeRoom(overrides: Partial<RoomData> = {}): RoomData {
     id: "room-1",
     title: "Friday Night Fights",
     hostUserId: "host-1",
-    gameRunnerPlugin: "@roster-lock/game-runner-ikemen-go",
+    gameLauncherPlugin: "@roster-lock/game-launcher-ikemen-go",
     rosterConfig: { engine: { pieceDefinitions: { character: {} } } },
     gameConfig: {},
     maxPlayers: 2,

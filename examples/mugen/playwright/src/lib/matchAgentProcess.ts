@@ -1,11 +1,11 @@
 import * as os from "os";
 import * as path from "path";
 import { ProcessGroup, runToCompletion, waitForHttpOk } from "../../../integration/src/lib/process-utils";
-import { installGameRunnerPlugin, setGameRunnerSettings } from "../../../integration/src/lib/matchAgentGameRunner";
+import { installGameLauncherPlugin, setGameLauncherSettings } from "../../../integration/src/lib/matchAgentGameLauncher";
 import { copyIkemenInstall } from "../../../integration/src/lib/ikemenInstall";
 import { REPO_ROOT } from "../../../integration/src/constants";
 
-const IKEMEN_PLUGIN_NAME = "@roster-lock/game-runner-ikemen-go";
+const IKEMEN_PLUGIN_NAME = "@roster-lock/game-launcher-ikemen-go";
 
 // Same set run.ts installs - dl-protocol/dl-archive plugins so
 // downloadToFolder can actually fetch+extract a piece's .tar over http://,
@@ -13,7 +13,7 @@ const IKEMEN_PLUGIN_NAME = "@roster-lock/game-runner-ikemen-go";
 const REQUIRED_PLUGINS = [
   "plugins/untrusted/script/ts", "plugins/untrusted/config/json",
   "plugins/download/protocol/http", "plugins/download/archive/tar",
-  "plugins/game-runner/ikemen-go",
+  "plugins/game-launcher/ikemen-go",
 ];
 
 export type PlayerMatchAgent = {
@@ -82,11 +82,11 @@ export async function startPlayerMatchAgent(
   await waitForHttpOk(url, 15_000);
 
   for (const pluginPath of REQUIRED_PLUGINS) {
-    await installGameRunnerPlugin(url, authCode, path.join(REPO_ROOT, pluginPath));
+    await installGameLauncherPlugin(url, authCode, path.join(REPO_ROOT, pluginPath));
   }
 
   const binaryLocation = await copyIkemenInstall(processes, label, originalBinaryLocation);
-  await setGameRunnerSettings(url, authCode, IKEMEN_PLUGIN_NAME, { binaryLocation });
+  await setGameLauncherSettings(url, authCode, IKEMEN_PLUGIN_NAME, { binaryLocation });
 
   return { label, url, authCode, binaryLocation };
 }

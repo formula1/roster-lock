@@ -26,7 +26,7 @@ export function deriveHostAddress(req: Request): string {
 //
 // direct-tcp itself is currently unsupported here: ConnectionConfig's
 // direct-tcp variants now require a `coordinator` address (see
-// plugins/game-runner/shared/direct-ip-coordinator and
+// plugins/game-launcher/shared/direct-ip-coordinator and
 // docs/v2/ikemen-go/game-coordinator.md) - a real rendezvous service a
 // client blocks on until the host is confirmed listening. This matchmaker's
 // deriveHostAddress predates that design (it resolves an address at

@@ -1,7 +1,7 @@
 # MUGEN / Ikemen GO example
 
 A roster-lock config built from real MUGEN content, used to drive the
-`@roster-lock/game-runner-ikemen-go` plugin. `pieces/` holds six characters and three
+`@roster-lock/game-launcher-ikemen-go` plugin. `pieces/` holds six characters and three
 stages; everything else here is generated from them.
 
 The roster is deliberately all Elecbyte Kung Fu Man variants (the engine's own
@@ -62,7 +62,7 @@ the way it would in the real editor.
 ## The `defName` path variable
 
 Both piece types declare a `defName` path variable, and the `definition` asset is
-`count: 1` with glob `<defName>.def`. That's what the game-runner plugin reads to build
+`count: 1` with glob `<defName>.def`. That's what the game-launcher plugin reads to build
 `-p<n>` and `-s`, and it can't be inferred from anything else:
 
 - match-agent names downloaded piece folders with a ULID, so the folder never carries

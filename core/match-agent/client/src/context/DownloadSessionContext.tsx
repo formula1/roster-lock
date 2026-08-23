@@ -9,7 +9,7 @@ import { RosterLockV1Config, UserSelection } from "@roster-lock/types";
 export type DownloadSession = {
   relay: { url: string, roomId: string },
   rosterConfig: RosterLockV1Config,
-  gameRunnerPlugin: string,
+  gameLauncherPlugin: string,
   gameConfig: unknown,
   playerSelections: Record<number, UserSelection>,
   // Which side of a direct-tcp connection this machine is.

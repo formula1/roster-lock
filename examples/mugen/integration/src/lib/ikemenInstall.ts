@@ -13,7 +13,7 @@ import { ProcessGroup } from "./process-utils";
  * unambiguously identifies both "which install" and its containing folder;
  * the copy keeps the executable under its original (official) name, which
  * is exactly what ikemen-go's resolveIkemenBinary
- * (plugins/game-runner/ikemen-go/src/binaryLocation.ts) looks for at the
+ * (plugins/game-launcher/ikemen-go/src/binaryLocation.ts) looks for at the
  * folder's root, so no renaming is needed here.
  *
  * Two real Ikemen processes sharing one install directory write to its
@@ -22,7 +22,7 @@ import { ProcessGroup } from "./process-utils";
  * copies of the folder run separately don't have either problem. The
  * plugin itself also relies on this: it runs Ikemen with cwd set to the
  * resolved binary's dirname (see
- * plugins/game-runner/ikemen-go/src/startGame/index.ts - Ikemen resolves
+ * plugins/game-launcher/ikemen-go/src/startGame/index.ts - Ikemen resolves
  * data/save/external relative to cwd, not its own executable), so a fresh
  * copy per player is also what gives each process its own unique cwd, not
  * just its own binary path. Every simulated player needs its own copy of

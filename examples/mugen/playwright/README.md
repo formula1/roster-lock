@@ -59,7 +59,7 @@ time; `titled-room/client` only exists inside its
    "Connected." confirmation, click **Continue**.
 2. **Join settings** (`/join-settings`) - click **Continue** with nothing
    else to fill in. This page is normally where a real player points their
-   own game-runner plugin at a local binary; for this test that's already
+   own game-launcher plugin at a local binary; for this test that's already
    done by `startPlayerMatchAgent` before the browser ever opens.
 3. **Match making** (`/match-making`) - click **Connect**, which loads
    `titled-room/client` into this page's matchmaker `<iframe>`.
@@ -72,7 +72,7 @@ time; `titled-room/client` only exists inside its
 5. **Rooms list** (iframe) - the host clicks **Create Room**, fills in a
    title, and uploads the example's published roster lock JSON as the
    room's file. Min/max players and the game runner are left at their
-   defaults (2 players; whichever single game-runner plugin is pre-installed
+   defaults (2 players; whichever single game-launcher plugin is pre-installed
    on this player's match-agent - see `REQUIRED_PLUGINS` in
    `matchAgentProcess.ts`). Submitting lands on that room's detail page. The
    client player instead clicks the room's own title link from the list -

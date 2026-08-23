@@ -31,7 +31,7 @@ export function removeGame(engineSha: string): boolean {
 
 // Cheap existence check via the public registry API - this only confirms the
 // package name/version is publishable, not that it's actually a valid
-// game-runner plugin (that was already validated locally by whichever admin
+// game-launcher plugin (that was already validated locally by whichever admin
 // installed it to derive gameConfigSchema in the first place).
 export async function packageExistsOnNpm(packageName: string, version: string): Promise<boolean> {
   const response = await fetch(`https://registry.npmjs.org/${encodeURIComponent(packageName)}/${encodeURIComponent(version)}`);

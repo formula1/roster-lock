@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useMatchAgent } from "../../context/MatchAgentContext";
-import { listGameProcesses, stopGameRunner, GameProcessSummary } from "../../api/matchAgent";
+import { listGameProcesses, stopGameLauncher, GameProcessSummary } from "../../api/matchAgent";
 
 const POLL_INTERVAL_MS = 2000;
 
@@ -30,7 +30,7 @@ export function GameStatusPage() {
     setStoppingId(proc.handleId);
     setError(null);
     try {
-      await stopGameRunner(settings.url, settings.authCode, proc.pluginName, proc.handleId);
+      await stopGameLauncher(settings.url, settings.authCode, proc.pluginName, proc.handleId);
       const next = await listGameProcesses(settings.url, settings.authCode);
       setProcesses(next);
     } catch (e) {

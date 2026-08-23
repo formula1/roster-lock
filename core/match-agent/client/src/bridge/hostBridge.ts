@@ -2,15 +2,15 @@ import { RefObject, useEffect, useRef, useState } from "react";
 import { MessageBridge, waitForBridgeEvent } from "@roster-lock/utils";
 import {
   MATCHMAKER_BRIDGE_PATHS,
-  InstallGameRunnerPluginRequest, InstallGameRunnerPluginResponse,
-  GetInstalledGameRunnerPluginsResponse,
+  InstallGameLauncherPluginRequest, InstallGameLauncherPluginResponse,
+  GetInstalledGameLauncherPluginsResponse,
   GetIdentityResponse,
   RequestSelectionRequest, RequestSelectionResponse,
-  UpdateGameRunnerSettingsRequest, UpdateGameRunnerSettingsResponse,
+  UpdateGameLauncherSettingsRequest, UpdateGameLauncherSettingsResponse,
   InitiateRelayEvent,
 } from "@roster-lock/types";
 import { UserKeyPair } from "@roster-lock/ts-client";
-import { listAvailableGameRunners } from "../api/matchAgent";
+import { listAvailableGameLaunchers } from "../api/matchAgent";
 import { PlayerSlot } from "../context/JoinSettingsContext";
 import { DownloadSession } from "../context/DownloadSessionContext";
 
@@ -61,14 +61,14 @@ export function useHostBridge(args: {
     };
     window.addEventListener("message", onMessage);
 
-    bridge.onRequest(MATCHMAKER_BRIDGE_PATHS.installGameRunnerPlugin, ({ pluginName }: InstallGameRunnerPluginRequest) => {
-      return new Promise<InstallGameRunnerPluginResponse>((resolve) => {
+    bridge.onRequest(MATCHMAKER_BRIDGE_PATHS.installGameLauncherPlugin, ({ pluginName }: InstallGameLauncherPluginRequest) => {
+      return new Promise<InstallGameLauncherPluginResponse>((resolve) => {
         setPendingLightbox({ type: "install", pluginName, resolve: () => resolve({}) });
       });
     });
 
-    bridge.onRequest(MATCHMAKER_BRIDGE_PATHS.getInstalledGameRunnerPlugins, async (): Promise<GetInstalledGameRunnerPluginsResponse> => {
-      const runners = await listAvailableGameRunners(latest.current.matchAgent.url, latest.current.matchAgent.authCode);
+    bridge.onRequest(MATCHMAKER_BRIDGE_PATHS.getInstalledGameLauncherPlugins, async (): Promise<GetInstalledGameLauncherPluginsResponse> => {
+      const runners = await listAvailableGameLaunchers(latest.current.matchAgent.url, latest.current.matchAgent.authCode);
       return runners.map((r) => ({ id: r.pluginName, version: r.version, gameConfigSchema: r.gameConfigSchema }));
     });
 
@@ -97,8 +97,8 @@ export function useHostBridge(args: {
     );
 
     bridge.onRequest(
-      MATCHMAKER_BRIDGE_PATHS.updateGameRunnerSettings,
-      ({ gameConfig }: UpdateGameRunnerSettingsRequest): UpdateGameRunnerSettingsResponse => {
+      MATCHMAKER_BRIDGE_PATHS.updateGameLauncherSettings,
+      ({ gameConfig }: UpdateGameLauncherSettingsRequest): UpdateGameLauncherSettingsResponse => {
         pendingGameConfigRef.current = gameConfig;
         return {};
       }
@@ -109,7 +109,7 @@ export function useHostBridge(args: {
       latest.current.onInitiateRelay({
         relay: payload.relay,
         rosterConfig: payload.rosterConfig,
-        gameRunnerPlugin: payload.gameRunnerPlugin,
+        gameLauncherPlugin: payload.gameLauncherPlugin,
         gameConfig: pendingGameConfigRef.current,
         playerSelections: pendingSelectionRef.current as DownloadSession["playerSelections"],
         isHost: payload.isHost,

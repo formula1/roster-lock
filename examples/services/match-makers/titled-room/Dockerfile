@@ -46,9 +46,9 @@ EXPOSE 80
 
 # Start the server using wrangler dev. The local D1 database starts empty,
 # so apply the schema before starting (wrangler dev simulates D1 locally
-# and never runs migrations on its own). Which game-runner plugins are
+# and never runs migrations on its own). Which game-launcher plugins are
 # allowed (and their coordinator setup) is admin-managed at runtime via
-# POST/PUT /admin/game-runners (see src/admin/), not env-configured here.
+# POST/PUT /admin/game-launchers (see src/admin/), not env-configured here.
 #
 # wrangler.toml ships with local-dev-only [vars] defaults for JWT_SECRET and
 # INITIAL_ADMIN_USERNAME/PASSWORD (see its own comments) - a deployment's

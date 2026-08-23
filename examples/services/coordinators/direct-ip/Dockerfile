@@ -1,6 +1,6 @@
 # Direct-IP Coordinator Dockerfile
 # Standalone game coordinator service for roster-lock's direct-tcp
-# connection mode - not tied to any one game-runner plugin, only to
+# connection mode - not tied to any one game-launcher plugin, only to
 # @roster-lock/direct-ip-coordinator's rendezvous protocol.
 #
 # Build context must be the repo root: this package depends on the local
@@ -22,7 +22,7 @@ WORKDIR /app
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY core/types/package.json core/types/
 COPY core/utils/package.json core/utils/
-COPY plugins/game-runner/shared/direct-ip-coordinator/package.json plugins/game-runner/shared/direct-ip-coordinator/
+COPY plugins/game-launcher/shared/direct-ip-coordinator/package.json plugins/game-launcher/shared/direct-ip-coordinator/
 COPY examples/services/coordinators/direct-ip/package.json examples/services/coordinators/direct-ip/
 
 RUN pnpm install --filter @roster-lock/direct-ip-coordinator-service... --frozen-lockfile --ignore-scripts
@@ -30,7 +30,7 @@ RUN pnpm install --filter @roster-lock/direct-ip-coordinator-service... --frozen
 # Copy source code
 COPY core/types/ core/types/
 COPY core/utils/ core/utils/
-COPY plugins/game-runner/shared/direct-ip-coordinator/ plugins/game-runner/shared/direct-ip-coordinator/
+COPY plugins/game-launcher/shared/direct-ip-coordinator/ plugins/game-launcher/shared/direct-ip-coordinator/
 COPY examples/services/coordinators/direct-ip/ examples/services/coordinators/direct-ip/
 
 # Build @roster-lock/utils, @roster-lock/direct-ip-coordinator and the
@@ -40,7 +40,7 @@ RUN pnpm --filter @roster-lock/direct-ip-coordinator-service... run build
 WORKDIR /app/examples/services/coordinators/direct-ip
 
 # HTTP (webhooks) and TCP (rendezvous) both need to be reachable from the
-# host, since match-agent (running a direct-tcp game-runner plugin) is a
+# host, since match-agent (running a direct-tcp game-launcher plugin) is a
 # host process, not another docker-compose service.
 EXPOSE 80
 EXPOSE 9010

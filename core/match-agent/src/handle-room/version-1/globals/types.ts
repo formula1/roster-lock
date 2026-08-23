@@ -14,7 +14,7 @@ export type MatchAgentSelfInfo = {
 
 // pluginName is kept alongside the handle (not just the handleId key) so a
 // process can be listed/identified without a caller having to already know
-// which plugin started it - see game-runner.ts's listGameProcesses.
+// which plugin started it - see game-launcher.ts's listGameProcesses.
 export type ProcessHandleEntry = {
   pluginName: string,
   handle: GameProcessHandle,

@@ -32,7 +32,7 @@ $CLI draft init "$DRAFT" --title "MUGEN / Ikemen GO" --author "roster-lock"
 $CLI engine set-info --draft "$DRAFT" --name ikemen-go --engine-version 1.0.0
 
 # --- character -------------------------------------------------------------
-# `defName` is what the ikemen-go game-runner plugin reads to build the -p<n>
+# `defName` is what the ikemen-go game-launcher plugin reads to build the -p<n>
 # argument. It's a separate variable from the character's other asset names on
 # purpose: in kfm_zss the def is kfm_zss.def while every asset it references is
 # kfm.* (kfm.sff, kfm.snd, kfm.air), so one name can't cover both.
@@ -155,7 +155,7 @@ printf '{"validation":{"count":1,"unique":true,"banList":[],"customValidation":[
 # engine.officialSelections, which lists all four hashes under their tags so a
 # matchmaker (or the ikemen-go plugin) can tell which mode a room is running.
 #
-# The tags are Ikemen's own TeamMode names on purpose: the game-runner plugin
+# The tags are Ikemen's own TeamMode names on purpose: the game-launcher plugin
 # looks the room's selection hash up in this list and uses the tag as -tmode.
 MODES="single:1 simul:2 tag:3 turns:4"
 

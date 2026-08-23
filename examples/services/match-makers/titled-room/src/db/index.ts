@@ -6,7 +6,7 @@ export type RoomIndexEntry = {
   id: string,
   title: string,
   hostUserId: string,
-  gameRunnerPlugin: string,
+  gameLauncherPlugin: string,
   rosterConfigHash: string,
   status: string,
   maxPlayers: number,
@@ -33,7 +33,7 @@ function rowToEntry(row: RoomRow): RoomIndexEntry {
     id: row.id,
     title: row.title,
     hostUserId: row.host_user_id,
-    gameRunnerPlugin: row.game_runner_plugin,
+    gameLauncherPlugin: row.game_runner_plugin,
     rosterConfigHash: row.roster_config_hash,
     status: row.status,
     maxPlayers: row.max_players,
@@ -59,7 +59,7 @@ export async function upsertRoomIndex(db: D1Database, room: RoomData): Promise<v
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(id) DO UPDATE SET status = excluded.status, participant_count = excluded.participant_count
   `).bind(
-    room.id, room.title, room.hostUserId, room.gameRunnerPlugin, rosterConfigHash,
+    room.id, room.title, room.hostUserId, room.gameLauncherPlugin, rosterConfigHash,
     room.status, room.maxPlayers, room.minPlayers, totalPlayers(room), room.createdAt,
   ).run();
 }

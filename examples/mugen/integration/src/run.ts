@@ -3,7 +3,7 @@ import * as path from "path";
 import { ProcessGroup, runToCompletion, waitForHttpOk } from "./lib/process-utils";
 import { loadEnvVars } from "./lib/env";
 import { dockerComposeUp, dockerComposeDown, setupServers } from "./setupServers";
-import { installGameRunnerPlugin, setGameRunnerSettings } from "./lib/matchAgentGameRunner";
+import { installGameLauncherPlugin, setGameLauncherSettings } from "./lib/matchAgentGameLauncher";
 import { copyIkemenInstall } from "./lib/ikemenInstall";
 import * as player from "./players/player";
 import { REPO_ROOT, ENV_VARS_DIR, ROSTER_LOCK_PATH } from "./constants";
@@ -15,7 +15,7 @@ const MATCH_AGENT_CONFIG = {
   authCode: "mugen-abc123",
 };
 
-const IKEMEN_PLUGIN_NAME = "@roster-lock/game-runner-ikemen-go";
+const IKEMEN_PLUGIN_NAME = "@roster-lock/game-launcher-ikemen-go";
 const IKEMEN_PORT = 7500;
 
 /** Full pipeline: docker compose up, match-agent, server setup, two real Ikemen GO processes, teardown. */
@@ -31,7 +31,7 @@ export async function runIntegration(binaryLocation: string){
     const matchAgentUrl = await startMatchAgent(processes, piecesFolder, pluginFolder);
 
     console.log("Installing required plugin runtime dependencies into match-agent...");
-    // Sequential, not Promise.all: installGameRunnerPlugin's arborist-based
+    // Sequential, not Promise.all: installGameLauncherPlugin's arborist-based
     // install writes to match-agent's shared plugin manifest/node_modules -
     // concurrent installs race on that write and corrupt each other's
     // package.json (arborist/npm installs were never designed to run
@@ -43,10 +43,10 @@ export async function runIntegration(binaryLocation: string){
       // core/plugin-runtime/src/download/index.ts's getURLProtocol, which
       // throws "No protocol to handle url" without one installed).
       "plugins/download/protocol/http", "plugins/download/archive/tar",
-      "plugins/game-runner/ikemen-go",
+      "plugins/game-launcher/ikemen-go",
     ];
     for(const pluginPath of requiredPlugins){
-      await installGameRunnerPlugin(matchAgentUrl, MATCH_AGENT_CONFIG.authCode, path.join(REPO_ROOT, pluginPath));
+      await installGameLauncherPlugin(matchAgentUrl, MATCH_AGENT_CONFIG.authCode, path.join(REPO_ROOT, pluginPath));
     }
 
     // See copyIkemenInstall's own docs for why every simulated player needs
@@ -144,22 +144,22 @@ async function runPlayers(matchAgentUrl: string, hostBinaryLocation: string, cli
   ]);
 
   if(!started.coordinator){
-    throw new Error("titled-room didn't return a coordinator address - check /admin/game-runners registration");
+    throw new Error("titled-room didn't return a coordinator address - check /admin/game-launchers registration");
   }
 
   console.log("Launching Ikemen GO for both players...");
   // Sequential, not Promise.all: binaryLocation is a match-agent-wide
   // setting (both simulated players share one match-agent), so each
   // player's own copy of the install needs to be in place before *that
-  // player's* startGameRunner call reads it - racing the two
-  // setGameRunnerSettings writes against each other would make one player
+  // player's* startGameLauncher call reads it - racing the two
+  // setGameLauncherSettings writes against each other would make one player
   // launch from the wrong (or the other player's) copy.
-  await setGameRunnerSettings(matchAgentUrl, MATCH_AGENT_CONFIG.authCode, IKEMEN_PLUGIN_NAME, { binaryLocation: hostBinaryLocation });
+  await setGameLauncherSettings(matchAgentUrl, MATCH_AGENT_CONFIG.authCode, IKEMEN_PLUGIN_NAME, { binaryLocation: hostBinaryLocation });
   await player.launchIkemen(
     matchAgentUrl, MATCH_AGENT_CONFIG.authCode, host, "host", IKEMEN_PORT, started.coordinator,
     hostSync.users, hostSync.downloadResult, rosterConfig, gameConfig, started.roomId,
   );
-  await setGameRunnerSettings(matchAgentUrl, MATCH_AGENT_CONFIG.authCode, IKEMEN_PLUGIN_NAME, { binaryLocation: clientBinaryLocation });
+  await setGameLauncherSettings(matchAgentUrl, MATCH_AGENT_CONFIG.authCode, IKEMEN_PLUGIN_NAME, { binaryLocation: clientBinaryLocation });
   await player.launchIkemen(
     matchAgentUrl, MATCH_AGENT_CONFIG.authCode, client, "client", IKEMEN_PORT, started.coordinator,
     clientSync.users, clientSync.downloadResult, rosterConfig, gameConfig, started.roomId,

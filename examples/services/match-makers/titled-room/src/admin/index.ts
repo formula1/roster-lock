@@ -15,7 +15,7 @@ function getPasswordExpiration(): string {
   return new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 }
 
-// Exported for use by other admin routers (game-runners.ts).
+// Exported for use by other admin routers (game-launchers.ts).
 export async function requireAdminAuth(c: any, next: () => Promise<void>) {
   const authHeader = c.req.header("Authorization");
   if (!authHeader?.startsWith("Bearer ")) {

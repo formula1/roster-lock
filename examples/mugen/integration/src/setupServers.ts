@@ -2,9 +2,9 @@ import { runToCompletion } from "./lib/process-utils";
 import { MUGEN_DIR, ENV_VARS_DIR } from "./constants";
 import { loadEnvVars } from "./lib/env";
 import { loginIntoRelayRoom, ensureMatchMakerRegistered, ensureGameCoordinatorRegistered } from "./lib/relayAdmin";
-import { adminLogin, upsertGameRunner } from "./lib/titledRoomAdmin";
+import { adminLogin, upsertGameLauncher } from "./lib/titledRoomAdmin";
 
-const IKEMEN_PLUGIN_NAME = "@roster-lock/game-runner-ikemen-go";
+const IKEMEN_PLUGIN_NAME = "@roster-lock/game-launcher-ikemen-go";
 
 export async function dockerComposeUp(){
   console.log("Starting docker compose services (download-provider, relay-room, auth-naive, titled-room, direct-ip-coordinator)...");
@@ -25,7 +25,7 @@ export function dockerComposeDown(){
  * allowed game runner with titled-room's own admin API (engineSha +
  * coordinator id/address) - replacing what used to be static
  * ALLOWED_GAME_RUNNERS/GAME_COORDINATORS env vars (see titled-room's
- * src/admin/game-runners.ts).
+ * src/admin/game-launchers.ts).
  */
 export async function setupServers(){
   const env = loadEnvVars(ENV_VARS_DIR);
@@ -62,7 +62,7 @@ export async function setupServers(){
   );
 
   console.log("Registering ikemen-go as an allowed game runner with titled-room...");
-  await upsertGameRunner(publicTitledRoomUrl, titledRoomAdminToken, IKEMEN_PLUGIN_NAME, {
+  await upsertGameLauncher(publicTitledRoomUrl, titledRoomAdminToken, IKEMEN_PLUGIN_NAME, {
     engineSha: requireEnv2(env, "IKEMEN_ENGINE_SHA"),
     coordinator: {
       id: coordinatorId,

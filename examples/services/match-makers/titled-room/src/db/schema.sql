@@ -38,8 +38,8 @@ CREATE TABLE IF NOT EXISTS admins (
 
 -- ============================================
 -- Game runner configs
--- Which game-runner plugins this deployment allows rooms to be created for,
--- managed by an admin (see src/admin/game-runners.ts) rather than by
+-- Which game-launcher plugins this deployment allows rooms to be created for,
+-- managed by an admin (see src/admin/game-launchers.ts) rather than by
 -- redeploying with different env vars. Replaces the old ALLOWED_GAME_RUNNERS/
 -- GAME_COORDINATORS env vars entirely.
 --

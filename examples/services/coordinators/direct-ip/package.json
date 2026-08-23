@@ -2,7 +2,7 @@
   "name": "@roster-lock/direct-ip-coordinator-service",
   "version": "1.0.0",
   "private": true,
-  "description": "Standalone game coordinator service for roster-lock's direct-tcp connection mode - registers as a relay-server Game Coordinator and runs the TCP rendezvous any direct-tcp game-runner plugin talks to. Not game-specific - reusable across game-runner plugins.",
+  "description": "Standalone game coordinator service for roster-lock's direct-tcp connection mode - registers as a relay-server Game Coordinator and runs the TCP rendezvous any direct-tcp game-launcher plugin talks to. Not game-specific - reusable across game-launcher plugins.",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",

@@ -1,11 +1,11 @@
 import { MessageBridge } from "@roster-lock/utils";
 import {
   MATCHMAKER_BRIDGE_PATHS,
-  InstallGameRunnerPluginRequest, InstallGameRunnerPluginResponse,
-  GetInstalledGameRunnerPluginsResponse,
+  InstallGameLauncherPluginRequest, InstallGameLauncherPluginResponse,
+  GetInstalledGameLauncherPluginsResponse,
   GetIdentityResponse,
   RequestSelectionRequest, RequestSelectionResponse,
-  UpdateGameRunnerSettingsRequest, UpdateGameRunnerSettingsResponse,
+  UpdateGameLauncherSettingsRequest, UpdateGameLauncherSettingsResponse,
   InitiateRelayEvent,
 } from "@roster-lock/types";
 
@@ -28,15 +28,15 @@ export function announceReady(): void {
   bridge.sendEvent(MATCHMAKER_BRIDGE_PATHS.ready, {});
 }
 
-export async function installGameRunnerPlugin(pluginName: string): Promise<void> {
+export async function installGameLauncherPlugin(pluginName: string): Promise<void> {
   await bridge.sendRequest(
-    MATCHMAKER_BRIDGE_PATHS.installGameRunnerPlugin,
-    { pluginName } satisfies InstallGameRunnerPluginRequest
-  ) as InstallGameRunnerPluginResponse;
+    MATCHMAKER_BRIDGE_PATHS.installGameLauncherPlugin,
+    { pluginName } satisfies InstallGameLauncherPluginRequest
+  ) as InstallGameLauncherPluginResponse;
 }
 
-export async function getInstalledGameRunnerPlugins(): Promise<GetInstalledGameRunnerPluginsResponse> {
-  return await bridge.sendRequest(MATCHMAKER_BRIDGE_PATHS.getInstalledGameRunnerPlugins, {});
+export async function getInstalledGameLauncherPlugins(): Promise<GetInstalledGameLauncherPluginsResponse> {
+  return await bridge.sendRequest(MATCHMAKER_BRIDGE_PATHS.getInstalledGameLauncherPlugins, {});
 }
 
 export async function getIdentity(): Promise<GetIdentityResponse> {
@@ -52,11 +52,11 @@ export async function requestSelection(
   );
 }
 
-export async function updateGameRunnerSettings(pluginName: string, gameConfig: unknown): Promise<void> {
+export async function updateGameLauncherSettings(pluginName: string, gameConfig: unknown): Promise<void> {
   await bridge.sendRequest(
-    MATCHMAKER_BRIDGE_PATHS.updateGameRunnerSettings,
-    { pluginName, gameConfig } satisfies UpdateGameRunnerSettingsRequest
-  ) as UpdateGameRunnerSettingsResponse;
+    MATCHMAKER_BRIDGE_PATHS.updateGameLauncherSettings,
+    { pluginName, gameConfig } satisfies UpdateGameLauncherSettingsRequest
+  ) as UpdateGameLauncherSettingsResponse;
 }
 
 export function initiateRelay(payload: InitiateRelayEvent): void {

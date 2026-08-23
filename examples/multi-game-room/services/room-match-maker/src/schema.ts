@@ -27,7 +27,7 @@ export const addGameBodySchema = z.object({
   supportedConnectionModes: z.array(connectionModeSchema).min(1),
   // Only meaningful if "room" is one of supportedConnectionModes.
   supportedRoomVersions: z.array(z.string().min(1)).optional(),
-  // Set even when empty ({}) - see GameRunnerPlugin.gameConfigSchema.
+  // Set even when empty ({}) - see GameLauncherPlugin.gameConfigSchema.
   gameConfigSchema: z.unknown(),
   publicInfo: z.object({
     title: z.string().min(1),

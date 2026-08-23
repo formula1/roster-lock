@@ -5,8 +5,8 @@ import { JoinSettingsProvider } from "./context/JoinSettingsContext";
 import { DownloadSessionProvider } from "./context/DownloadSessionContext";
 import { ConnectPage } from "./pages/Connect";
 import { JoinSettingsPage } from "./pages/JoinSettings";
-import { GameRunnerListPage } from "./pages/GameRunner";
-import { GameRunnerDetailPage } from "./pages/GameRunner/Detail";
+import { GameLauncherListPage } from "./pages/GameLauncher";
+import { GameLauncherDetailPage } from "./pages/GameLauncher/Detail";
 import { MatchMakingPage } from "./pages/MatchMaking";
 import { DownloadPage } from "./pages/Download";
 import { GameStatusPage } from "./pages/Game";
@@ -24,8 +24,8 @@ export default function App() {
                 <Route path="/" element={<Navigate to="/connect" replace />} />
                 <Route path="/connect" element={<ConnectPage />} />
                 <Route path="/join-settings" element={<JoinSettingsPage />} />
-                <Route path="/game-runner" element={<GameRunnerListPage />} />
-                <Route path="/game-runner/:pluginName" element={<GameRunnerDetailPage />} />
+                <Route path="/game-launcher" element={<GameLauncherListPage />} />
+                <Route path="/game-launcher/:pluginName" element={<GameLauncherDetailPage />} />
                 <Route path="/match-making" element={<MatchMakingPage />} />
                 <Route path="/download" element={<DownloadPage />} />
                 <Route path="/game" element={<GameStatusPage />} />

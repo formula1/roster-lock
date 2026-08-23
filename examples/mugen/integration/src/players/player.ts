@@ -6,9 +6,9 @@ import { RosterLockV1Config, RosterLockV1SyncDLResult, UserSelection, Connection
 import * as authClient from "../lib/authClient";
 import * as titledRoom from "../lib/titledRoomClient";
 import { selectPiecesAtRandom } from "../lib/randomSelect";
-import { startGameRunner, getGameProcessStatus } from "../lib/matchAgentGameRunner";
+import { startGameLauncher, getGameProcessStatus } from "../lib/matchAgentGameLauncher";
 
-const IKEMEN_PLUGIN_NAME = "@roster-lock/game-runner-ikemen-go";
+const IKEMEN_PLUGIN_NAME = "@roster-lock/game-launcher-ikemen-go";
 
 export type PlayerIdentity = {
   username: string,
@@ -33,7 +33,7 @@ export async function hostCreateRoom(
 ): Promise<string> {
   const room = await titledRoom.createRoom(titledRoomUrl, host.token, {
     title: "Mugen Integration Run",
-    gameRunnerPlugin: IKEMEN_PLUGIN_NAME,
+    gameLauncherPlugin: IKEMEN_PLUGIN_NAME,
     rosterConfig,
     gameConfig,
     maxPlayers: 2,
@@ -112,11 +112,11 @@ export async function launchIkemen(
   selectionResult: RosterLockV1SyncDLResult, rosterConfig: RosterLockV1Config, gameConfig: unknown, relayRoomId: string,
 ): Promise<string> {
   // match-agent resolves direct-tcp's coordinator handshake itself (see
-  // core/plugin-runtime/src/GameRunner.ts) before ever invoking the ikemen-go
+  // core/plugin-runtime/src/GameLauncher.ts) before ever invoking the ikemen-go
   // plugin - this is the pre-resolution shape it expects on the wire, not
   // what the plugin ends up running with.
   const connectionSetup: ConnectionSetup = { type: "direct-tcp", party, port, coordinator };
-  const { handleId } = await startGameRunner(matchAgentUrl, matchAgentAuthCode, IKEMEN_PLUGIN_NAME, {
+  const { handleId } = await startGameLauncher(matchAgentUrl, matchAgentAuthCode, IKEMEN_PLUGIN_NAME, {
     connectionConfig: connectionSetup,
     currentMachine: { machineId: identity.machineId, publicKey: identity.keys.publicKey, privateKey: identity.keys.privateKey },
     allMachines,

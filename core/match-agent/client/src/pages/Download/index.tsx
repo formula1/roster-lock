@@ -8,7 +8,7 @@ import {
 import { useIdentity } from "../../context/IdentityContext";
 import { useMatchAgent } from "../../context/MatchAgentContext";
 import { useDownloadSession } from "../../context/DownloadSessionContext";
-import { startGameRunner } from "../../api/matchAgent";
+import { startGameLauncher } from "../../api/matchAgent";
 
 type PieceProgress = { pieceType: string, status: ROSTERLOCK_DOWNLOAD_STATE, progress: number, error?: string };
 type MachineRow = { machineId: string, publicKey: string, displayName: string, playerCount: number, connected: boolean };
@@ -114,7 +114,7 @@ export function DownloadPage() {
     startedGame.current = true;
 
     if (!session.coordinator) {
-      setError(`No rendezvous coordinator available for "${session.gameRunnerPlugin}" - the matchmaker didn't provide one`);
+      setError(`No rendezvous coordinator available for "${session.gameLauncherPlugin}" - the matchmaker didn't provide one`);
       return;
     }
     setStarting(true);
@@ -124,7 +124,7 @@ export function DownloadPage() {
       ? { type: "direct-tcp" as const, party: "host" as const, port: 7000, coordinator: session.coordinator }
       : { type: "direct-tcp" as const, party: "client" as const, port: 7000, coordinator: session.coordinator };
 
-    startGameRunner(matchAgent.settings.url, matchAgent.settings.authCode, session.gameRunnerPlugin, {
+    startGameLauncher(matchAgent.settings.url, matchAgent.settings.authCode, session.gameLauncherPlugin, {
       connectionConfig,
       currentMachine: { machineId: identity.machineId, publicKey: identity.keys.publicKey, privateKey: identity.keys.privateKey },
       allMachines: machines,

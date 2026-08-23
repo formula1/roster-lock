@@ -44,7 +44,7 @@ export function RoomDetailPage() {
         // own match-agent's start route later.
         if (!gameConfigSynced.current) {
           gameConfigSynced.current = true;
-          bridge.updateGameRunnerSettings(withUser.gameRunnerPlugin, withUser.gameConfig).catch(() => {});
+          bridge.updateGameLauncherSettings(withUser.gameLauncherPlugin, withUser.gameConfig).catch(() => {});
         }
       } catch (e) {
         if (!cancelled) setError((e as Error).message);
@@ -58,7 +58,7 @@ export function RoomDetailPage() {
         bridge.initiateRelay({
           relay: { url: event.payload.relayUrl, roomId: event.payload.roomId },
           rosterConfig: currentRoom.rosterConfig as RosterLockV1Config,
-          gameRunnerPlugin: currentRoom.gameRunnerPlugin,
+          gameLauncherPlugin: currentRoom.gameLauncherPlugin,
           isHost: currentRoom.hostUserId === account.profile!.id,
           coordinator: event.payload.coordinator,
         });
@@ -135,7 +135,7 @@ export function RoomDetailPage() {
   return (
     <div className="page">
       <h1>{room.title}</h1>
-      <p>{room.gameRunnerPlugin} - {totalPlayers}/{room.maxPlayers} players (min {room.minPlayers})</p>
+      <p>{room.gameLauncherPlugin} - {totalPlayers}/{room.maxPlayers} players (min {room.minPlayers})</p>
 
       <ul className="participant-list">
         {participants.map((p) => (

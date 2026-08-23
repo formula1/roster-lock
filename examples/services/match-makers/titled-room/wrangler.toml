@@ -36,8 +36,8 @@ PUBLIC_RELAY_SERVER_URL = "http://localhost:8788"
 # this with `wrangler secret put`, same as MATCHMAKER_SECRET_KEY below.
 JWT_SECRET = "local-dev-titled-room-jwt-secret"
 # Bootstraps the first `admins` row on its first successful login (see
-# admin/index.ts) - which game-runner plugins this deployment allows is then
-# managed via POST/PUT /admin/game-runners, not an env var.
+# admin/index.ts) - which game-launcher plugins this deployment allows is then
+# managed via POST/PUT /admin/game-launchers, not an env var.
 INITIAL_ADMIN_USERNAME = "hello"
 INITIAL_ADMIN_PASSWORD = "world"
 

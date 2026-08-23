@@ -1,9 +1,9 @@
-import { IPluginManager, IPieceSort, IGameRunner } from "@roster-lock/plugin-runtime";
+import { IPluginManager, IPieceSort, IGameLauncher } from "@roster-lock/plugin-runtime";
 
 export class FakePluginManager implements IPluginManager {
   readonly pluginDir = "hello-world";
   pieceSort = new FakePieceSort()
-  gameRunner = new FakeGameRunner()
+  gameLauncher = new FakeGameLauncher()
   uninstallPlugin(): ReturnType<IPluginManager["uninstallPlugin"]>{
     throw new Error("Not implemented");
   }
@@ -46,26 +46,26 @@ class FakePieceSort implements IPieceSort {
   }
 }
 
-class FakeGameRunner implements IGameRunner {
-  listAvailable(): ReturnType<IGameRunner["listAvailable"]>{
+class FakeGameLauncher implements IGameLauncher {
+  listAvailable(): ReturnType<IGameLauncher["listAvailable"]>{
     throw new Error("Not Implemented");
   }
-  getLocalSettings(): ReturnType<IGameRunner["getLocalSettings"]>{
+  getLocalSettings(): ReturnType<IGameLauncher["getLocalSettings"]>{
     throw new Error("Not Implemented");
   }
-  setLocalSettings(): ReturnType<IGameRunner["setLocalSettings"]>{
+  setLocalSettings(): ReturnType<IGameLauncher["setLocalSettings"]>{
     throw new Error("Not Implemented");
   }
-  getLocalVersion(): ReturnType<IGameRunner["getLocalVersion"]>{
+  getLocalVersion(): ReturnType<IGameLauncher["getLocalVersion"]>{
     throw new Error("Not Implemented");
   }
-  getSupportedVersion(): ReturnType<IGameRunner["getSupportedVersion"]>{
+  getSupportedVersion(): ReturnType<IGameLauncher["getSupportedVersion"]>{
     throw new Error("Not Implemented");
   }
-  updateBinary(): ReturnType<IGameRunner["updateBinary"]>{
+  updateBinary(): ReturnType<IGameLauncher["updateBinary"]>{
     throw new Error("Not Implemented");
   }
-  startGame(): ReturnType<IGameRunner["startGame"]>{
+  startGame(): ReturnType<IGameLauncher["startGame"]>{
     throw new Error("Not Implemented");
   }
 }

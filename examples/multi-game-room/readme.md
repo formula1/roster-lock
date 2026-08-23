@@ -20,7 +20,7 @@ may move into `core/` once the design settles. Design notes live in
   creator-supplied connection setup, but the creator (always host) and every
   other participant (always client) need a *different* `ConnectionConfig`
   resolved from it - see `src/utils/connection.ts`.
-- **`@roster-lock/game-runner-ikemen-go`** (`plugins/game-runner/ikemen-go`) -
+- **`@roster-lock/game-launcher-ikemen-go`** (`plugins/game-launcher/ikemen-go`) -
   the plugin this registry points rooms at for Ikemen. Not part of this
   package, but the two are meant to be exercised together.
 - **relay room + game coordinator** - intentionally *not* duplicated here.
@@ -45,7 +45,7 @@ player's own machine. The last mile is a client-side responsibility, mirroring
 3. Run the existing relay+download flow against the relay room (unchanged -
    same `@roster-lock/ts-client` sync-download used by every other example)
    to get a `RosterLockV1SyncDLResult`.
-4. Call `pluginManager.gameRunner.startGame("ikemen-go", binaryLocation,
+4. Call `pluginManager.gameLauncher.startGame("ikemen-go", binaryLocation,
    connectionConfig, args)`, where `args` (`StartGameArgs`) is built from the
    relay room id, this machine's identity/keys, the room's player list,
    the sync-download result, the roster config, local match-agent connection

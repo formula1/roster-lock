@@ -1,0 +1,30 @@
+{
+  "name": "@roster-lock/game-launcher-ikemen-go",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Runs Ikemen GO matches via its Quick-VS command line, driven by a roster-lock selection",
+  "license": "JSON",
+  "author": "Sam Tobia",
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "types": "./src/index.ts",
+  "roster-lock": {
+    "pluginType": "game-launcher",
+    "priority": 0
+  },
+  "scripts": {
+    "build": "rimraf ./dist && tsc",
+    "prepare": "pnpm run build",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@roster-lock/utils": "workspace:*"
+  },
+  "devDependencies": {
+    "@roster-lock/types": "workspace:*",
+    "@types/node": "^25.9.1",
+    "rimraf": "^6.1.3",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.5"
+  }
+}

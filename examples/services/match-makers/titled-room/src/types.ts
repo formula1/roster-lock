@@ -17,11 +17,11 @@ export interface Env {
   // examples/mugen's internal-urls.env for exactly this split). Falls back
   // to RELAY_SERVER_URL when unset, for deployments where they're the same.
   PUBLIC_RELAY_SERVER_URL?: string;
-  // Which game-runner plugins this deployment allows rooms to be created
+  // Which game-launcher plugins this deployment allows rooms to be created
   // for, what each one's roster config is expected to hash to, and which
   // (if any) game coordinator its rooms use - managed by an admin via
-  // src/admin/game-runners.ts against the game_runner_configs D1 table, not
-  // an env var (see that file and game-runners.ts).
+  // src/admin/game-launchers.ts against the game_runner_configs D1 table, not
+  // an env var (see that file and game-launchers.ts).
   //
   // Secret for signing admin JWTs (src/admin/jwt.ts) - separate from
   // MATCHMAKER_SECRET_KEY below, which signs create-room calls to relay
@@ -78,7 +78,7 @@ export interface RoomData {
   id: string;
   title: string;
   hostUserId: string;
-  gameRunnerPlugin: string;
+  gameLauncherPlugin: string;
   rosterConfig: any;
   gameConfig: any;
   maxPlayers: number;

@@ -1,5 +1,5 @@
-// Thin wrappers around match-agent's own /v1/game-runner/* control routes
-// (see core/match-agent/src/handle-room/version-1/game-runner.ts). These are
+// Thin wrappers around match-agent's own /v1/game-launcher/* control routes
+// (see core/match-agent/src/handle-room/version-1/game-launcher.ts). These are
 // specific to this app (configuring/launching a local game runner) rather
 // than something a game itself needs, so they live here instead of
 // @roster-lock/ts-client - see that package's README/index.ts for the
@@ -7,12 +7,12 @@
 
 import { PlatformTarget } from "@roster-lock/types";
 
-export type GameRunnerLocalSettings = {
+export type GameLauncherLocalSettings = {
   binaryLocation?: string,
   localConfig?: unknown,
 };
 
-export type AvailableGameRunner = {
+export type AvailableGameLauncher = {
   pluginName: string,
   version: string,
   publicInfo: { title: string, description: string },
@@ -39,8 +39,8 @@ async function matchAgentFetch(
   return res;
 }
 
-// Appended as query params on any game-runner route that resolves a
-// concrete binary - see resolveTarget in game-runner.ts. Omitting `target`
+// Appended as query params on any game-launcher route that resolves a
+// concrete binary - see resolveTarget in game-launcher.ts. Omitting `target`
 // entirely (the ordinary case) leaves match-agent to default to its own
 // current host; passing one is only for the deliberate exception (see
 // docs/v2/binary-location.md).
@@ -50,72 +50,72 @@ function withTarget(path: string, target?: PlatformTarget): string {
   return `${path}?${params.toString()}`;
 }
 
-export async function listAvailableGameRunners(
+export async function listAvailableGameLaunchers(
   matchAgentUrl: string, authCode: string
-): Promise<Array<AvailableGameRunner>> {
-  const res = await matchAgentFetch(matchAgentUrl, authCode, "/v1/game-runner/available");
+): Promise<Array<AvailableGameLauncher>> {
+  const res = await matchAgentFetch(matchAgentUrl, authCode, "/v1/game-launcher/available");
   return res.json();
 }
 
-export async function installGameRunnerPlugin(
+export async function installGameLauncherPlugin(
   matchAgentUrl: string, authCode: string, pluginName: string
 ): Promise<void> {
-  await matchAgentFetch(matchAgentUrl, authCode, `/v1/game-runner/${encodeURIComponent(pluginName)}/install`, {
+  await matchAgentFetch(matchAgentUrl, authCode, `/v1/game-launcher/${encodeURIComponent(pluginName)}/install`, {
     method: "POST",
   });
 }
 
-export async function getGameRunnerSettings(
+export async function getGameLauncherSettings(
   matchAgentUrl: string, authCode: string, pluginName: string
-): Promise<GameRunnerLocalSettings> {
+): Promise<GameLauncherLocalSettings> {
   const res = await matchAgentFetch(
-    matchAgentUrl, authCode, `/v1/game-runner/${encodeURIComponent(pluginName)}/settings`
+    matchAgentUrl, authCode, `/v1/game-launcher/${encodeURIComponent(pluginName)}/settings`
   );
   return res.json();
 }
 
-export async function setGameRunnerSettings(
-  matchAgentUrl: string, authCode: string, pluginName: string, settings: GameRunnerLocalSettings
+export async function setGameLauncherSettings(
+  matchAgentUrl: string, authCode: string, pluginName: string, settings: GameLauncherLocalSettings
 ): Promise<void> {
-  await matchAgentFetch(matchAgentUrl, authCode, `/v1/game-runner/${encodeURIComponent(pluginName)}/settings`, {
+  await matchAgentFetch(matchAgentUrl, authCode, `/v1/game-launcher/${encodeURIComponent(pluginName)}/settings`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(settings),
   });
 }
 
-export async function getGameRunnerVersion(
+export async function getGameLauncherVersion(
   matchAgentUrl: string, authCode: string, pluginName: string, target?: PlatformTarget
 ): Promise<{ local: { title: string, id: string }, supported: { title: string, id: string } }> {
   const res = await matchAgentFetch(
-    matchAgentUrl, authCode, withTarget(`/v1/game-runner/${encodeURIComponent(pluginName)}/version`, target)
+    matchAgentUrl, authCode, withTarget(`/v1/game-launcher/${encodeURIComponent(pluginName)}/version`, target)
   );
   return res.json();
 }
 
-export async function validateGameRunnerBinaryLocation(
+export async function validateGameLauncherBinaryLocation(
   matchAgentUrl: string, authCode: string, pluginName: string, target?: PlatformTarget
 ): Promise<{ valid: true } | { valid: false, message: string }> {
   const res = await matchAgentFetch(
-    matchAgentUrl, authCode, withTarget(`/v1/game-runner/${encodeURIComponent(pluginName)}/validate`, target)
+    matchAgentUrl, authCode, withTarget(`/v1/game-launcher/${encodeURIComponent(pluginName)}/validate`, target)
   );
   return res.json();
 }
 
-export async function updateGameRunnerBinary(
+export async function updateGameLauncherBinary(
   matchAgentUrl: string, authCode: string, pluginName: string, target?: PlatformTarget
 ): Promise<void> {
   await matchAgentFetch(
-    matchAgentUrl, authCode, withTarget(`/v1/game-runner/${encodeURIComponent(pluginName)}/update`, target),
+    matchAgentUrl, authCode, withTarget(`/v1/game-launcher/${encodeURIComponent(pluginName)}/update`, target),
     { method: "POST" }
   );
 }
 
-export async function startGameRunner(
+export async function startGameLauncher(
   matchAgentUrl: string, authCode: string, pluginName: string, body: unknown, target?: PlatformTarget
 ): Promise<{ handleId: string }> {
   const res = await matchAgentFetch(
-    matchAgentUrl, authCode, withTarget(`/v1/game-runner/${encodeURIComponent(pluginName)}/start`, target),
+    matchAgentUrl, authCode, withTarget(`/v1/game-launcher/${encodeURIComponent(pluginName)}/start`, target),
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -130,7 +130,7 @@ export async function getGameProcessStatus(
 ): Promise<{ exited: false | { code: number } }> {
   const res = await matchAgentFetch(
     matchAgentUrl, authCode,
-    `/v1/game-runner/${encodeURIComponent(pluginName)}/process/${encodeURIComponent(handleId)}`
+    `/v1/game-launcher/${encodeURIComponent(pluginName)}/process/${encodeURIComponent(handleId)}`
   );
   return res.json();
 }
@@ -144,16 +144,16 @@ export type GameProcessSummary = {
 export async function listGameProcesses(
   matchAgentUrl: string, authCode: string
 ): Promise<Array<GameProcessSummary>> {
-  const res = await matchAgentFetch(matchAgentUrl, authCode, "/v1/game-runner/processes");
+  const res = await matchAgentFetch(matchAgentUrl, authCode, "/v1/game-launcher/processes");
   return res.json();
 }
 
-export async function stopGameRunner(
+export async function stopGameLauncher(
   matchAgentUrl: string, authCode: string, pluginName: string, handleId: string
 ): Promise<void> {
   await matchAgentFetch(
     matchAgentUrl, authCode,
-    `/v1/game-runner/${encodeURIComponent(pluginName)}/process/${encodeURIComponent(handleId)}/stop`,
+    `/v1/game-launcher/${encodeURIComponent(pluginName)}/process/${encodeURIComponent(handleId)}/stop`,
     { method: "POST" }
   );
 }

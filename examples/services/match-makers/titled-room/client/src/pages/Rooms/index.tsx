@@ -31,7 +31,7 @@ export function RoomsBrowsePage() {
         {rooms.map((r) => (
           <li key={r.id}>
             <Link to={`/rooms/${r.id}`}>{r.title}</Link>
-            {" - "}{r.gameRunnerPlugin} - {r.participantCount}/{r.maxPlayers} players
+            {" - "}{r.gameLauncherPlugin} - {r.participantCount}/{r.maxPlayers} players
           </li>
         ))}
       </ul>

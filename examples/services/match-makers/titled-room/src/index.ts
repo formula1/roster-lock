@@ -2,10 +2,10 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { Env, PublicUserProfile, RoomData } from "./types";
 import { createRoomBodySchema, joinRoomBodySchema, startRoomBodySchema, destroyRoomBodySchema } from "./schema";
-import { assertGameRunnerAllowed } from "./game-runners";
+import { assertGameLauncherAllowed } from "./game-launchers";
 import { upsertRoomIndex, deleteRoomIndex, listOpenRooms } from "./db";
 import { app as adminApp } from "./admin";
-import { app as adminGameRunnersApp } from "./admin/game-runners";
+import { app as adminGameLaunchersApp } from "./admin/game-launchers";
 export { RoomSession } from "./RoomSession";
 
 const app = new Hono<{ Bindings: Env }>();
@@ -14,12 +14,12 @@ app.use('*', cors());
 
 app.get("/health", (c) => c.json({ status: "ok", service: "titled-room" }));
 
-// Which game-runner plugins this deployment allows and their coordinator
+// Which game-launcher plugins this deployment allows and their coordinator
 // setup - managed by an admin instead of redeploying with different env
-// vars (see admin/game-runners.ts and game-runners.ts's reads of the
+// vars (see admin/game-launchers.ts and game-launchers.ts's reads of the
 // game_runner_configs table this manages).
 app.route("/admin", adminApp);
-app.route("/admin/game-runners", adminGameRunnersApp);
+app.route("/admin/game-launchers", adminGameLaunchersApp);
 
 const verifyAuthToken = async (c: any): Promise<PublicUserProfile | null> => {
   const authHeader = c.req.header("Authorization");
@@ -46,7 +46,7 @@ app.post("/room/create", async (c) => {
   }
 
   try {
-    await assertGameRunnerAllowed(c.env, body.gameRunnerPlugin, body.rosterConfig);
+    await assertGameLauncherAllowed(c.env, body.gameLauncherPlugin, body.rosterConfig);
   } catch (err: any) {
     return c.json({ error: err.message }, 400);
   }
