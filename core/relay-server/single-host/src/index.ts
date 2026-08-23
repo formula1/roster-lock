@@ -7,6 +7,7 @@ import { WebSocketRouter } from "./utils/websocket-router";
 import { createV1Routers } from "./router";
 import { getPort, getClientDistDir } from "./globals";
 import { serveClientAsset } from "./static-client";
+import { migrateModels } from "./models";
 
 const debug = !!process.env.DEBUG;
 const clientDistDir = getClientDistDir();
@@ -95,6 +96,14 @@ function handleWSUpgrade(wss: WebSocketServer, request: IncomingMessage, socket:
 }
 
 const port = getPort();
-httpServer.listen(port, () => {
-  console.log(`relay-server-hosted listening on :${port}`);
+// Waits for MODELS_VERSION=postgres's schema migrations before accepting
+// connections, so no request can race a table that doesn't exist yet
+// (no-op for the in-memory version).
+migrateModels().then(() => {
+  httpServer.listen(port, () => {
+    console.log(`relay-server-hosted listening on :${port}`);
+  });
+}).catch((e) => {
+  console.error("Failed to run model migrations", e);
+  process.exit(1);
 });

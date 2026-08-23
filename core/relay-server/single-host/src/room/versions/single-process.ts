@@ -1,10 +1,10 @@
 import { WebSocket } from "ws";
 import { MessageBridge } from "@roster-lock/utils";
 import { RoomConfig, RoomMachine } from "@roster-lock/types";
-import { RoomTimeouts } from "./timeouts";
-import { runRoomSteps, RoomUser, errorMessage } from "./steps";
-import { successWebhook, failWebhook } from "./webhook";
-import { roomStatsModel } from "../models";
+import { RoomTimeouts } from "../timeouts";
+import { runRoomSteps, RoomUser, errorMessage } from "../steps";
+import { successWebhook, failWebhook } from "../webhook";
+import { IRoomStatsModel } from "../../models";
 
 // Once a machine's WebSocket is open, the ping/pong loop in steps.ts keeps
 // noticing a dead connection on its own - this is only the "did the last
@@ -31,10 +31,14 @@ type RoomRuntime = {
   messageCount: number;
 };
 
-export type MachineInfo = RoomMachine & { connected: boolean, connectedAt?: string };
+type MachineInfo = RoomMachine & { connected: boolean, connectedAt?: string };
 
-export class RoomManager {
+export class RoomManager_SingleProcess {
   private rooms = new Map<string, RoomRuntime>();
+
+  constructor(private roomStats: IRoomStatsModel){
+
+  }
 
   create(config: RoomConfig): RoomConfig {
     if (this.rooms.has(config.roomId)) throw new Error("Room already exists");
@@ -136,7 +140,7 @@ export class RoomManager {
     this.closeAllSockets(runtime, 1000, "completed");
     this.rooms.delete(roomId);
 
-    await roomStatsModel.markCompleted(roomId, {
+    await this.roomStats.markCompleted(roomId, {
       finishedAt: new Date().toISOString(),
       messageCount: runtime.messageCount,
     });
@@ -166,7 +170,7 @@ export class RoomManager {
     this.closeAllSockets(runtime, 1000, reason);
     this.rooms.delete(roomId);
 
-    await roomStatsModel.markFailed(roomId, {
+    await this.roomStats.markFailed(roomId, {
       finishedAt: new Date().toISOString(),
       messageCount: runtime.messageCount,
       failedReason: reason,
@@ -196,5 +200,3 @@ export class RoomManager {
     }
   }
 }
-
-export const roomManager = new RoomManager();

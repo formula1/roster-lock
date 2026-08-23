@@ -5,8 +5,16 @@ import { SIGNATURE_ASYMMETRIC, createShaFromJSON } from "@roster-lock/utils";
 import { jsonBody, HTTPError, HTTPRequestHandler } from "../utils/http-router";
 import { WebSocketHandlerCallback } from "../utils/websocket-router";
 import { matchmakersModel, gameCoordinatorsModel, roomStatsModel } from "../models";
-import { roomManager } from "../room/manager";
+import { messageQueue } from "../message-queue";
+import { getServerId } from "../globals";
+import { RoomManager_MessageQueue } from "../room";
 import { validateAuthFromSearch } from "../room/auth";
+
+// Always the message-queue-backed manager, even for a single process - it
+// runs fine against the in-memory queue (MESSAGE_QUEUE_VERSION's default),
+// so there's one code path instead of two. RoomManager_SingleProcess is
+// kept around for reference, not wired up.
+const roomManager = new RoomManager_MessageQueue(roomStatsModel, messageQueue, getServerId());
 
 type PublicKey = Parameters<typeof SIGNATURE_ASYMMETRIC.verifySignature>[0];
 
@@ -90,7 +98,7 @@ export const createRoom: HTTPRequestHandler = async ({ req, res }, params, next)
     };
     // Create the in-memory room first - if this fails, we don't want an
     // orphaned room-stats record.
-    roomManager.create(config);
+    await roomManager.create(config);
 
     const rosterHash = await createShaFromJSON(body.rosterConfig.rosters);
     await roomStatsModel.create({
@@ -114,13 +122,13 @@ export const createRoom: HTTPRequestHandler = async ({ req, res }, params, next)
 export const getMachines: HTTPRequestHandler = async ({ req, res }, params, next) => {
   try {
     const roomId = params.params.roomId;
-    const config = roomManager.getConfig(roomId);
+    const config = await roomManager.getConfig(roomId);
     if (!config) throw new HTTPError(404, "Room not found");
 
     const machine = await validateAuthFromSearch(params.url.searchParams, config, "room-machines");
     if (!machine) throw new HTTPError(403, "Invalid token");
 
-    return sendJSON(res, 200, roomManager.getMachines(roomId));
+    return sendJSON(res, 200, await roomManager.getMachines(roomId));
   } catch (e) {
     next(e);
   }
@@ -129,7 +137,7 @@ export const getMachines: HTTPRequestHandler = async ({ req, res }, params, next
 export const roomWebSocket: WebSocketHandlerCallback = async ({ ws }, params, next) => {
   try {
     const roomId = params.params.roomId;
-    const config = roomManager.getConfig(roomId);
+    const config = await roomManager.getConfig(roomId);
     if (!config) {
       ws.close(4404, "Room not found");
       return;
@@ -141,7 +149,7 @@ export const roomWebSocket: WebSocketHandlerCallback = async ({ ws }, params, ne
       return;
     }
 
-    const connected = roomManager.connectMachine(roomId, machine, ws);
+    const connected = await roomManager.connectMachine(roomId, machine, ws);
     if (!connected) {
       ws.close(4409, "Duplicate connection");
       return;
