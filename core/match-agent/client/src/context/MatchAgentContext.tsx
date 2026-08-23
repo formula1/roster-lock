@@ -29,7 +29,7 @@ type MatchAgentContextValue = {
   connecting: boolean,
   error: string | null,
   updateSettings: (settings: MatchAgentSettings) => void,
-  connect: (overrideSettings?: MatchAgentSettings) => Promise<void>,
+  connect: (overrideSettings?: MatchAgentSettings) => Promise<boolean>,
 };
 
 const MatchAgentContext = createContext<MatchAgentContextValue | null>(null);
@@ -58,12 +58,14 @@ export function MatchAgentProvider({ children }: { children: ReactNode }) {
     setConnecting(true);
     setError(null);
     try {
-      const ok = await validateAuthCode(target.authCode, target.url);
-      setConnected(Boolean(ok));
+      const ok = Boolean(await validateAuthCode(target.authCode, target.url));
+      setConnected(ok);
       if (!ok) setError("Auth code was rejected by match-agent");
+      return ok;
     } catch (e) {
       setConnected(false);
       setError((e as Error).message);
+      return false;
     } finally {
       setConnecting(false);
     }

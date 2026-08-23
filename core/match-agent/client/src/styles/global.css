@@ -38,6 +38,12 @@ body {
   gap: 0.75rem;
 }
 
+.page form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
 label {
   display: flex;
   flex-direction: column;

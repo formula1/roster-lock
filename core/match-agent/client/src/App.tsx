@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { MatchAgentProvider } from "./context/MatchAgentContext";
+import { MatchAgentProvider, useMatchAgent } from "./context/MatchAgentContext";
 import { IdentityProvider } from "./context/IdentityContext";
 import { JoinSettingsProvider } from "./context/JoinSettingsContext";
 import { DownloadSessionProvider } from "./context/DownloadSessionContext";
@@ -11,6 +11,7 @@ import { MatchMakingPage } from "./pages/MatchMaking";
 import { DownloadPage } from "./pages/Download";
 import { GameStatusPage } from "./pages/Game";
 import { NavBar } from "./NavBar";
+import { RequireConnection } from "./components/RequireConnection";
 
 export default function App() {
   return (
@@ -18,22 +19,38 @@ export default function App() {
       <IdentityProvider>
         <JoinSettingsProvider>
           <DownloadSessionProvider>
-            <BrowserRouter>
-              <NavBar />
-              <Routes>
-                <Route path="/" element={<Navigate to="/connect" replace />} />
-                <Route path="/connect" element={<ConnectPage />} />
-                <Route path="/join-settings" element={<JoinSettingsPage />} />
-                <Route path="/game-launcher" element={<GameLauncherListPage />} />
-                <Route path="/game-launcher/:pluginName" element={<GameLauncherDetailPage />} />
-                <Route path="/match-making" element={<MatchMakingPage />} />
-                <Route path="/download" element={<DownloadPage />} />
-                <Route path="/game" element={<GameStatusPage />} />
-              </Routes>
-            </BrowserRouter>
+            <ConnectOrApp />
           </DownloadSessionProvider>
         </JoinSettingsProvider>
       </IdentityProvider>
     </MatchAgentProvider>
   );
+}
+
+
+function ConnectOrApp(){
+  const { connected } = useMatchAgent()
+
+  if(!connected){
+    return <ConnectPage autoSubmit />
+  };
+
+  return (
+  <BrowserRouter>
+    <NavBar />
+    <Routes>
+      <Route path="/" element={<Navigate to="/match-making" replace />} />
+      <Route path="/connect" element={<ConnectPage />} />
+      <Route path="/join-settings" element={<RequireConnection><JoinSettingsPage /></RequireConnection>} />
+      <Route path="/game-launcher" element={<RequireConnection><GameLauncherListPage /></RequireConnection>} />
+      <Route
+        path="/game-launcher/:pluginName"
+        element={<RequireConnection><GameLauncherDetailPage /></RequireConnection>}
+      />
+      <Route path="/match-making" element={<RequireConnection><MatchMakingPage /></RequireConnection>} />
+      <Route path="/download" element={<RequireConnection><DownloadPage /></RequireConnection>} />
+      <Route path="/game" element={<RequireConnection><GameStatusPage /></RequireConnection>} />
+    </Routes>
+  </BrowserRouter>
+  )
 }
