@@ -2,7 +2,7 @@ import { mkdir, writeFile, unlink, readFile } from "node:fs/promises";
 import { join as pathJoin, dirname as pathDirname, isAbsolute as pathIsAbsolute } from "node:path";
 import { randomUUID } from "node:crypto";
 import {
-  GameLauncherPlugin, ConnectionConfig, ConnectionSetup, StartGameArgs, GameProcessHandle, PlatformTarget,
+  AnyGameLauncherPlugin, ConnectionConfig, ConnectionSetup, StartGameArgs, GameProcessHandle, PlatformTarget,
 } from "@roster-lock/types";
 import { registerAsHost, awaitHostAddress, getLocalNetworkAddresses } from "@roster-lock/direct-ip-coordinator";
 import { getPluginModuleByName, getPluginFullOfType } from "./plugin-management";
@@ -14,18 +14,18 @@ import type { PluginManager } from "./PluginHandler";
 export type AvailableGameLauncher = {
   pluginName: string,
   version: string,
-  publicInfo: GameLauncherPlugin["publicInfo"],
-  supportedConnectionModes: GameLauncherPlugin["supportedConnectionModes"],
-  supportedRoomVersions: GameLauncherPlugin["supportedRoomVersions"],
-  supportedPlatforms: GameLauncherPlugin["supportedPlatforms"],
-  engineSha: GameLauncherPlugin["engineSha"],
+  publicInfo: AnyGameLauncherPlugin["publicInfo"],
+  supportedConnectionModes: AnyGameLauncherPlugin["supportedConnectionModes"],
+  supportedRoomVersions: AnyGameLauncherPlugin["supportedRoomVersions"],
+  supportedPlatforms: AnyGameLauncherPlugin["supportedPlatforms"],
+  engineSha: AnyGameLauncherPlugin["engineSha"],
   // Room-shared - this is the half that gets submitted to a Room Match Maker's
   // games registry.
-  gameConfigSchema: GameLauncherPlugin["gameConfigSchema"],
+  gameConfigSchema: AnyGameLauncherPlugin["gameConfigSchema"],
   // Per-machine - this half never leaves the machine. It's here so a local
   // settings UI can render a form for it (e.g. "where's your Ikemen binary?"),
   // not for submission to any registry.
-  localConfigSchema: GameLauncherPlugin["localConfigSchema"],
+  localConfigSchema: AnyGameLauncherPlugin["localConfigSchema"],
 };
 
 // What a caller (e.g. match-agent) supplies to actually start a game -
@@ -33,7 +33,7 @@ export type AvailableGameLauncher = {
 // has the real private key; startGame below is what turns it into the
 // restrictive-permission temp file plugins get instead, so a plugin is safe
 // by default without having to be trusted to handle the raw key itself.
-export type StartGameRequest = Omit<StartGameArgs, "currentMachine"> & {
+export type StartGameRequest = Omit<StartGameArgs<unknown>, "currentMachine"> & {
   currentMachine: {
     machineId: string,
     publicKey: string,
@@ -57,7 +57,7 @@ export type GameLauncherLocalSettings = {
 
 // Mirrors GameLauncherPlugin's version functions rather than restating their
 // shape, so the interface can't drift from what plugins actually return.
-export type GameLauncherVersion = Awaited<ReturnType<GameLauncherPlugin["getLocalVersion"]>>;
+export type GameLauncherVersion = Awaited<ReturnType<AnyGameLauncherPlugin["getLocalVersion"]>>;
 
 export interface IGameLauncher {
   listAvailable(): Promise<Array<AvailableGameLauncher>>,
@@ -142,7 +142,7 @@ export class GameLauncher implements IGameLauncher {
     const connectionConfig = await this.resolveConnectionConfig(connectionSetup, request.relayRoomId);
     const { filePath, cleanup } = await this.writePrivateKeyFile(pluginName, request.currentMachine.privateKey);
 
-    const args: StartGameArgs = {
+    const args: StartGameArgs<unknown> = {
       ...request,
       currentMachine: {
         machineId: request.currentMachine.machineId,
