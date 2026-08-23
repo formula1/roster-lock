@@ -1,6 +1,6 @@
 import {
   UntrustedScript, UntrustedConfig, ArchiveHandler, Decompressor, ProtocolHandler, PieceSelectionSortPlugin,
-  GameLauncherPlugin, ConnectionMode,
+  AnyGameLauncherPlugin, ConnectionMode,
 } from "@roster-lock/types";
 
 export type PluginType = (
@@ -24,7 +24,7 @@ export type PluginTypeMap = {
   "untrusted-script": UntrustedScript<any>;
   "untrusted-config": UntrustedConfig
   "piece-selection-sort": PieceSelectionSortPlugin;
-  "game-launcher": GameLauncherPlugin;
+  "game-launcher": AnyGameLauncherPlugin;
 };
 
 const CONNECTION_MODES = new Set<ConnectionMode>(["direct-tcp", "room", "internal"]);
