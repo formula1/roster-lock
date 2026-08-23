@@ -72,7 +72,7 @@ describe("/admin/game-launchers", () => {
     expect(res.status).toBe(401);
   });
 
-  it("adds a game runner with a real coordinator, then lists and reads it back", async () => {
+  it("adds a game launcher with a real coordinator, then lists and reads it back", async () => {
     const db = new FakeAdminD1();
     const env = makeEnv(db);
     const token = await bootstrapAdmin(env);
@@ -94,7 +94,7 @@ describe("/admin/game-launchers", () => {
     expect(list[0].coordinator_id).toBe("ikemen-coordinator-1");
   });
 
-  it("adds a game runner with no coordinator (false)", async () => {
+  it("adds a game launcher with no coordinator (false)", async () => {
     const db = new FakeAdminD1();
     const env = makeEnv(db);
     const token = await bootstrapAdmin(env);

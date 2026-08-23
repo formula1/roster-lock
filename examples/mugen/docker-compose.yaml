@@ -99,7 +99,7 @@ services:
 
   # ========================================================================
   # DIRECT-IP COORDINATOR - Direct-tcp rendezvous game coordinator (generic,
-  # reused here for the ikemen-go game runner)
+  # reused here for the ikemen-go game launcher)
   # ========================================================================
   direct-ip-coordinator:
     build:

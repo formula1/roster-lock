@@ -24,7 +24,7 @@ export type InstallGameLauncherPluginResponse = {};
 // already has installed, so a matchmaker's room UI can tell a user "you
 // don't have this one yet" without ever touching match-agent itself.
 // gameConfigSchema is included so a matchmaker can render the room-shared
-// settings a game runner needs (e.g. ikemen-go's teamMode/roundTime/rounds)
+// settings a game launcher needs (e.g. ikemen-go's teamMode/roundTime/rounds)
 // as a real form (e.g. via rjsf) instead of asking the user for raw JSON -
 // it's already public (GameLauncherPlugin.gameConfigSchema, exposed by match-
 // agent's own /v1/game-launcher/available route), just not previously carried
@@ -48,7 +48,7 @@ export type RequestSelectionRequest = { rosterLockConfig: RosterLockV1Config, nu
 export type RequestSelectionResponse = Record<number, UserSelection>;
 
 // updateGameLauncherSettings(pluginName, gameConfig) - room-shared settings a
-// game runner needs before it can start (e.g. ikemen-go's teamMode). The
+// game launcher needs before it can start (e.g. ikemen-go's teamMode). The
 // host holds onto this and folds it into the eventual
 // /v1/game-launcher/:pluginName/start call it makes later, since the host
 // (not the guest) is the one that ends up calling that route.
@@ -65,9 +65,9 @@ export type InitiateRelayEvent = {
   rosterConfig: RosterLockV1Config,
   gameLauncherPlugin: string,
   isHost: boolean,
-  // A direct-tcp game runner's rendezvous coordinator (see
+  // A direct-tcp game launcher's rendezvous coordinator (see
   // plugins/game-launcher/shared/direct-ip-coordinator and
-  // docs/v2/ikemen-go/game-coordinator.md) - null for game runners that
+  // docs/v2/ikemen-go/game-coordinator.md) - null for game launchers that
   // don't use one (a matchmaker resolves this the same way it resolves
   // `relay`, e.g. titled-room's /room/start response).
   coordinator: { host: string, port: number } | null,

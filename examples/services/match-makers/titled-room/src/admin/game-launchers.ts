@@ -70,7 +70,7 @@ app.delete("/:pluginName", async (c) => {
   ).bind(pluginName).run();
 
   if (!result.meta.changes) {
-    return c.json({ error: "No game runner config found" }, 404);
+    return c.json({ error: "No game launcher config found" }, 404);
   }
   return c.body(null, 204);
 });

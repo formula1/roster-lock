@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS admins (
 );
 
 -- ============================================
--- Game runner configs
+-- Game launcher configs
 -- Which game-launcher plugins this deployment allows rooms to be created for,
 -- managed by an admin (see src/admin/game-launchers.ts) rather than by
 -- redeploying with different env vars. Replaces the old ALLOWED_GAME_RUNNERS/

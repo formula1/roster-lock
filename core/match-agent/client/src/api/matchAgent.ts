@@ -1,6 +1,6 @@
 // Thin wrappers around match-agent's own /v1/game-launcher/* control routes
 // (see core/match-agent/src/handle-room/version-1/game-launcher.ts). These are
-// specific to this app (configuring/launching a local game runner) rather
+// specific to this app (configuring/launching a local game launcher) rather
 // than something a game itself needs, so they live here instead of
 // @roster-lock/ts-client - see that package's README/index.ts for the
 // asset-loading surface games actually consume.

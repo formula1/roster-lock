@@ -31,6 +31,6 @@ export async function upsertGameLauncher(
   });
   if (!res.ok) {
     const json = await res.json().catch(() => ({}));
-    throw new Error(json.error || `Failed to register game runner "${pluginName}" (${res.status})`);
+    throw new Error(json.error || `Failed to register game launcher "${pluginName}" (${res.status})`);
   }
 }

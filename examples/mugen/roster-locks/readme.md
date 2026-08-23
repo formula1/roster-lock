@@ -107,6 +107,6 @@ track the engine closely. On rc.2 all four load; kfm720 emits non-fatal warnings
 This is a note about these particular pieces, not something the lock declares. A lock
 describes how its files are laid out and loaded - that's what the engine config and its
 sha are for - and says nothing about which engine build a player runs. Engine versions
-are handled by the game runner: `getLocalVersion` reads what a player has installed, and
+are handled by the game launcher: `getLocalVersion` reads what a player has installed, and
 matching it across a room happens there. What belongs here is the loading contract; if
 Ikemen ever changes how it loads these files, that's an engine config change.

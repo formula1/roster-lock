@@ -124,7 +124,7 @@ export class GameLauncher implements IGameLauncher {
   async updateBinary(pluginName: string, binaryLocation: string, target: PlatformTarget){
     const plugin = await this.moduleFor(pluginName);
     if(!plugin.updateBinary){
-      throw new Error(`Game Runner "${pluginName}" doesn't support in-app updates`);
+      throw new Error(`Game Launcher "${pluginName}" doesn't support in-app updates`);
     }
     return plugin.updateBinary(this.resolveBinaryLocation(binaryLocation), target);
   }

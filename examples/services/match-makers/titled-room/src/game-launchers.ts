@@ -30,7 +30,7 @@ export async function assertGameLauncherAllowed(
 ): Promise<void> {
   const config = await getGameLauncherConfig(env, pluginName);
   if (!config) {
-    throw new Error(`Game runner "${pluginName}" is not allowed on this matchmaker`);
+    throw new Error(`Game launcher "${pluginName}" is not allowed on this matchmaker`);
   }
 
   const pieceDefinitions = rosterConfig?.engine?.pieceDefinitions;

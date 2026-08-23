@@ -16,7 +16,7 @@ export function GameLauncherListPage() {
 
   return (
     <div className="page">
-      <h1>Game Runners</h1>
+      <h1>Game Launchers</h1>
       {error && <p className="error">{error}</p>}
       <ul>
         {runners.map((r) => (

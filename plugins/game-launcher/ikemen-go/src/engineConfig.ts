@@ -6,7 +6,7 @@ import { syncSha256FromJSON } from "./hash";
 // exactly (see engineSha below) - not just "character" and "stage" existing,
 // but declaring the same defName path variable and the same asset shape.
 //
-// This is the thing general-plan.md calls comparing "the Game Runner's Engine
+// This is the thing general-plan.md calls comparing "the Game Launcher's Engine
 // Sha with the Roster Config Engine Sha": before a room can be created, the
 // roster's engine.pieceDefinitions has to be byte-identical to this, or
 // buildArgs.ts's assumptions (a single <defName>.def, and everything Ikemen

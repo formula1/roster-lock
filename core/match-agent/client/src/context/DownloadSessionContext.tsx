@@ -14,10 +14,10 @@ export type DownloadSession = {
   playerSelections: Record<number, UserSelection>,
   // Which side of a direct-tcp connection this machine is.
   isHost: boolean,
-  // A direct-tcp game runner's rendezvous coordinator address, resolved by
+  // A direct-tcp game launcher's rendezvous coordinator address, resolved by
   // the matchmaker the same way it resolves `relay` (see
   // core/types's InitiateRelayEvent and
-  // docs/v2/ikemen-go/game-coordinator.md) - null for game runners that
+  // docs/v2/ikemen-go/game-coordinator.md) - null for game launchers that
   // don't use one.
   coordinator: { host: string, port: number } | null,
 };

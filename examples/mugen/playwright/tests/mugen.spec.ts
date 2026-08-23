@@ -165,7 +165,7 @@ async function hostCreateRoom(frame: FrameLocator): Promise<void> {
   await frame.getByLabel("Title").fill(ROOM_TITLE);
   await frame.locator('input[type="file"]').setInputFiles(ROSTER_LOCK_PATH);
   // Min/max players both default to 2, matching mugen-simul's 2-player lock -
-  // nothing to fill there. Game Runner is auto-selected to the one plugin
+  // nothing to fill there. Game Launcher is auto-selected to the one plugin
   // pre-installed on this player's own match-agent (see matchAgentProcess.ts).
 
   await frame.getByRole("button", { name: "Create Room" }).click();

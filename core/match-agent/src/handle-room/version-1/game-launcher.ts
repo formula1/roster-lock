@@ -30,7 +30,7 @@ function requirePluginName(routeInfo: { params: Record<string, string | undefine
 async function requireBinaryLocation(env: V1Env, pluginName: string): Promise<string> {
   const settings = await env.pluginRuntime.gameLauncher.getLocalSettings(pluginName);
   if(!settings.binaryLocation){
-    throw new HTTPError(400, `Game runner "${pluginName}" has no binaryLocation configured`);
+    throw new HTTPError(400, `Game launcher "${pluginName}" has no binaryLocation configured`);
   }
   return settings.binaryLocation;
 }

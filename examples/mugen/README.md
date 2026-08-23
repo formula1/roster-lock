@@ -33,7 +33,7 @@ This will:
    the npm registry) and point it at `--binary-location`.
 4. Register titled-room as a matchmaker and direct-ip-coordinator as a game
    coordinator with relay-room's admin API, then register ikemen-go as an
-   allowed game runner with **titled-room's own admin API**
+   allowed game launcher with **titled-room's own admin API**
    (`PUT /admin/game-launchers/:pluginName` - engineSha + coordinator id/address)
    - not a static env var (see
    `examples/services/match-makers/titled-room/src/admin/game-launchers.ts`).

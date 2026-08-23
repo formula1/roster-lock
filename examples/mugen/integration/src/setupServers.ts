@@ -22,7 +22,7 @@ export function dockerComposeDown(){
 /**
  * Registers titled-room as a matchmaker and direct-ip-coordinator as a game
  * coordinator with relay-room's admin API, then registers ikemen-go as an
- * allowed game runner with titled-room's own admin API (engineSha +
+ * allowed game launcher with titled-room's own admin API (engineSha +
  * coordinator id/address) - replacing what used to be static
  * ALLOWED_GAME_RUNNERS/GAME_COORDINATORS env vars (see titled-room's
  * src/admin/game-launchers.ts).
@@ -61,7 +61,7 @@ export async function setupServers(){
     requireEnv2(env, "TITLED_ROOM_ADMIN_PASSWORD"),
   );
 
-  console.log("Registering ikemen-go as an allowed game runner with titled-room...");
+  console.log("Registering ikemen-go as an allowed game launcher with titled-room...");
   await upsertGameLauncher(publicTitledRoomUrl, titledRoomAdminToken, IKEMEN_PLUGIN_NAME, {
     engineSha: requireEnv2(env, "IKEMEN_ENGINE_SHA"),
     coordinator: {

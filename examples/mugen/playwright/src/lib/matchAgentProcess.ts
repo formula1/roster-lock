@@ -9,7 +9,7 @@ const IKEMEN_PLUGIN_NAME = "@roster-lock/game-launcher-ikemen-go";
 
 // Same set run.ts installs - dl-protocol/dl-archive plugins so
 // downloadToFolder can actually fetch+extract a piece's .tar over http://,
-// plus the untrusted script/config runtimes and the game runner itself.
+// plus the untrusted script/config runtimes and the game launcher itself.
 const REQUIRED_PLUGINS = [
   "plugins/untrusted/script/ts", "plugins/untrusted/config/json",
   "plugins/download/protocol/http", "plugins/download/archive/tar",

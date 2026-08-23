@@ -111,7 +111,7 @@ export function CreateRoomPage() {
       </label>
 
       <label>
-        Game Runner
+        Game Launcher
         <select
           value={gameLauncherPlugin}
           onChange={(e) => {

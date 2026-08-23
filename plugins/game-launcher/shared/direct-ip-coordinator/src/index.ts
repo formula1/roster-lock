@@ -1,4 +1,4 @@
-// A small rendezvous protocol for game runners that connect two machines by
+// A small rendezvous protocol for game launchers that connect two machines by
 // raw IP (roster-lock's ConnectionConfig["type"] === "direct-tcp"): the host
 // doesn't necessarily know its own reachable address upfront (NAT, or it
 // hasn't bound its listen socket yet), so both sides register with a

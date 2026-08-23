@@ -71,7 +71,7 @@ time; `titled-room/client` only exists inside its
    that out.
 5. **Rooms list** (iframe) - the host clicks **Create Room**, fills in a
    title, and uploads the example's published roster lock JSON as the
-   room's file. Min/max players and the game runner are left at their
+   room's file. Min/max players and the game launcher are left at their
    defaults (2 players; whichever single game-launcher plugin is pre-installed
    on this player's match-agent - see `REQUIRED_PLUGINS` in
    `matchAgentProcess.ts`). Submitting lands on that room's detail page. The
