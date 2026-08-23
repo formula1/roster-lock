@@ -4,9 +4,10 @@ import {
   readBinaryText, parseGoBuildInfo, findInjectedVersions, versionFromLdflags, GoBuildInfo
 } from "./goBuildInfo";
 import { resolveIkemenBinary } from "./binaryLocation";
+import { IkemenGameConfig } from "./startGame/buildArgs";
 
 // Tied to the plugin type rather than redeclared, so the two can't drift.
-export type IkemenVersion = Awaited<ReturnType<GameLauncherPlugin["getLocalVersion"]>>;
+export type IkemenVersion = Awaited<ReturnType<GameLauncherPlugin<IkemenGameConfig>["getLocalVersion"]>>;
 
 // The two halves answer different questions, and both are needed:
 //

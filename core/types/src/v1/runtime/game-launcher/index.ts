@@ -205,3 +205,24 @@ export type GameLauncherPlugin<T> = {
     binaryLocation: string, target: PlatformTarget, connectionConfig: ConnectionConfig, args: StartGameArgs<T>
   ) => Promise<GameProcessHandle>,
 };
+
+// GameLauncherPlugin<T> is for *implementing* a plugin, where T (the plugin's
+// own gameConfig shape) is known and worth enforcing at both
+// gameConfigSchema and startGame. A caller that's just routing to *some*
+// installed plugin by name (match-agent, plugin-runtime's GameLauncher) never
+// knows T - it received the plugin dynamically, and gameConfig is exactly
+// what gameConfigSchema exists to describe/validate at runtime instead.
+//
+// GameLauncherPlugin<any> alone doesn't work for that: T=any is right for the
+// startGame/StartGameArgs positions (the usual erasure for storing/calling
+// a value whose real generic argument varies per plugin instance - see
+// PluginTypeMap["untrusted-script"]'s UntrustedScript<any> for the same
+// pattern elsewhere), but it also leaks into gameConfigSchema, turning it
+// into JSONSchemaType<any> - not the same thing as "some JSON Schema", and
+// not what a caller that never touches T actually wants. localConfigSchema
+// (AnySchema, no generic) is already the right shape for "opaque schema a
+// caller passes through" - gameConfigSchema needs that same shape once T
+// isn't known, hence the override below rather than just GameLauncherPlugin<any>.
+export type AnyGameLauncherPlugin = Omit<GameLauncherPlugin<any>, "gameConfigSchema"> & {
+  gameConfigSchema: AnySchema,
+};

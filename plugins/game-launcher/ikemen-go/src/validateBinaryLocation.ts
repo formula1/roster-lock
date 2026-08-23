@@ -1,8 +1,9 @@
 import { access, constants } from "node:fs/promises";
 import { GameLauncherPlugin } from "@roster-lock/types";
 import { resolveIkemenBinary } from "./binaryLocation";
+import { IkemenGameConfig } from "./startGame/buildArgs";
 
-export const validateBinaryLocation: GameLauncherPlugin["validateBinaryLocation"] = async(
+export const validateBinaryLocation: GameLauncherPlugin<IkemenGameConfig>["validateBinaryLocation"] = async(
   binaryLocation, target
 )=>{
   const resolvedPath = resolveIkemenBinary(binaryLocation, target);
