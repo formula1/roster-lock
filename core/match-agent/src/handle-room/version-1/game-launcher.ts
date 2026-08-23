@@ -208,8 +208,8 @@ export const startGameLauncher: HTTPRequestHandler = async function(
 
   const handle = await this.pluginRuntime.gameLauncher.startGame(pluginName, binaryLocation, target, connectionConfig, {
     currentMachine,
-    allMachines: allMachines as StartGameArgs["allMachines"],
-    selectionResult: selectionResult as StartGameArgs["selectionResult"],
+    allMachines: allMachines as StartGameArgs<unknown>["allMachines"],
+    selectionResult: selectionResult as StartGameArgs<unknown>["selectionResult"],
     rosterConfig,
     gameConfig,
     relayRoomId,
