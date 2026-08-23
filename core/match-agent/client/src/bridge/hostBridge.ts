@@ -37,6 +37,7 @@ export function useHostBridge(args: {
 
   const [pendingLightbox, setPendingLightbox] = useState<PendingLightbox | null>(null);
   const [connected, setConnected] = useState(false);
+  const [connectionError, setConnectionError] = useState(false);
   const bridgeRef = useRef<MessageBridge | null>(null);
   const pendingGameConfigRef = useRef<unknown>(undefined);
   const pendingSelectionRef = useRef<Record<number, unknown> | null>(null);
@@ -49,6 +50,7 @@ export function useHostBridge(args: {
   useEffect(() => {
     if (!iframeLoaded) return;
     setConnected(false);
+    setConnectionError(false);
 
     const bridge = new MessageBridge((message) => {
       iframeRef.current?.contentWindow?.postMessage(message, "*");
@@ -119,7 +121,7 @@ export function useHostBridge(args: {
 
     waitForBridgeEvent(bridge, MATCHMAKER_BRIDGE_PATHS.ready, 15_000)
       .then(() => setConnected(true))
-      .catch(() => {});
+      .catch(() => setConnectionError(true));
 
     return () => {
       window.removeEventListener("message", onMessage);
@@ -143,5 +145,5 @@ export function useHostBridge(args: {
     setPendingLightbox(null);
   };
 
-  return { connected, pendingLightbox, resolveInstallLightbox, resolveSelectionLightbox, cancelSelectionLightbox };
+  return { connected, connectionError, pendingLightbox, resolveInstallLightbox, resolveSelectionLightbox, cancelSelectionLightbox };
 }
