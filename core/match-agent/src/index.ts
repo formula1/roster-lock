@@ -11,6 +11,7 @@ import { generateAuthCode, authMiddleware, validateAuthCode } from "./authentica
 import { corsMiddleware } from "./cors";
 import { createEditorV1Router } from "./editor-support";
 import { MatchAgentServer } from "./server";
+import { createDevClientHandler, createStaticClientHandler } from "./serve-client";
 import { program } from "commander";
 import { createV1Routers } from "./handle-room/version-1";
 import { getSQLite3FolderDB } from "./handle-room/version-1/globals/FolderDB";
@@ -55,8 +56,13 @@ program
     "config file to read/persist the auth code and folders from " +
     "(defaults to a config next to this executable, falling back to the home directory)"
   )
+  .option(
+    "--dev",
+    "serve the match-agent-client from its Vite dev server (live source, HMR) instead of the prebuilt client/dist",
+    false
+  )
   .action(async (options: {
-    port: string, authCode?: string, pieceFolder?: string, pluginFolder?: string, configFile?: string,
+    port: string, authCode?: string, pieceFolder?: string, pluginFolder?: string, configFile?: string, dev: boolean,
   }) => {
     const port = Number(options.port);
     if (!Number.isInteger(port) || port < 0 || port > 65535) {
@@ -84,7 +90,7 @@ program
     await mkdir(pieceFolder, { recursive: true });
     await mkdir(pluginFolder, { recursive: true });
 
-    startServer(port, authCode, pluginFolder, pieceFolder);
+    startServer(port, authCode, pluginFolder, pieceFolder, { dev: options.dev });
   });
 
 program
@@ -203,7 +209,10 @@ if (require.main === module) {
   program.parse();
 }
 
-export async function startServer(port: number, authCode: string, pluginFolder: string, piecesFolder: string){
+export async function startServer(
+  port: number, authCode: string, pluginFolder: string, piecesFolder: string,
+  options: { dev?: boolean } = {}
+){
   const pluginRuntime = await PluginManager.create(pluginFolder);
   const fileDB = getSQLite3FolderDB(piecesFolder, pluginRuntime);
 
@@ -211,7 +220,7 @@ export async function startServer(port: number, authCode: string, pluginFolder: 
   // "{/*path}" = path-to-regexp v8 catch-all; a bare "/" only matches the
   // root exactly, which would skip CORS on every real route.
   server.httpRouter.use("{/*path}", corsMiddleware);
-  server.httpRouter.get("/", ({ res })=>{
+  server.httpRouter.get("/health", ({ res })=>{
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ "hello": "world" }));
   });
@@ -226,6 +235,15 @@ export async function startServer(port: number, authCode: string, pluginFolder: 
   // Config-editor support lives on its own version axis (/editor/v1) so the
   // room protocol (/v1) can move to /v2 without dragging the editor API along.
   server.httpRouter.use("/editor/v1", authMiddleware(authCode), createEditorV1Router(pluginRuntime, fileDB));
+
+  // Mounted last so it only ever sees requests the routes above didn't
+  // claim - match-agent-client stays Vite's, this just puts it behind the
+  // same origin/port as the API instead of a separately-run `vite dev`.
+  // .all (not .use) - .use's prefix-mount semantics strip the matched
+  // portion off the pathname for nested routing, which for a "{/*path}"
+  // catch-all is the entire path, leaving the client handler unable to
+  // tell one route from another.
+  server.httpRouter.all("{/*path}", options.dev ? createDevClientHandler() : createStaticClientHandler());
 
   server.listen(port, () => {
     console.log(`match-agent listening on port ${port}`);
