@@ -1,6 +1,6 @@
 {
   "name": "@roster-lock/match-agent",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "To be used in game to ensure all peices are ready",
   "keywords": [
     "roster-lock",
