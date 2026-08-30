@@ -1,6 +1,6 @@
-// Thin wrapper around examples/services/match-makers/titled-room's player
+// Thin wrapper around examples/mugen/services/titled-room's player
 // HTTP/WS surface - mirrors
-// examples/services/match-makers/titled-room/client/src/api/titledRoom.ts,
+// examples/mugen/services/titled-room/client/src/api/titledRoom.ts,
 // which is the browser equivalent (this script plays both host and client
 // itself, so it talks to titled-room directly rather than through that
 // React app).

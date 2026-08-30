@@ -1,10 +1,10 @@
 import * as os from "os";
 import * as path from "path";
-import { ProcessGroup, runToCompletion, waitForHttpOk } from "./lib/process-utils";
+import { ProcessGroup, runToCompletion, waitForHttpOk, cleanSpawnEnv } from "./lib/process-utils";
 import { loadEnvVars } from "./lib/env";
 import { dockerComposeUp, dockerComposeDown, setupServers } from "./setupServers";
 import { installGameLauncherPlugin, setGameLauncherSettings } from "./lib/matchAgentGameLauncher";
-import { copyIkemenInstall } from "./lib/ikemenInstall";
+import { copyIkemenInstall, setIkemenWindowSize } from "./lib/ikemenInstall";
 import * as player from "./players/player";
 import { REPO_ROOT, ENV_VARS_DIR, ROSTER_LOCK_PATH } from "./constants";
 import { RosterLockV1Config } from "@roster-lock/types";
@@ -61,6 +61,16 @@ export async function runIntegration(binaryLocation: string){
       copyIkemenInstall(processes, "client", binaryLocation),
     ]);
 
+    // Opt-in, for side-by-side recording (e.g. a demo video) - see setIkemenWindowSize's own
+    // docs for why this has to happen before launch, not as a post-launch resize. Half-width so
+    // xdotool windowmove can then place both windows side by side without overlapping.
+    if(process.env.IKEMEN_DEMO_LAYOUT){
+      await Promise.all([
+        setIkemenWindowSize(hostBinaryLocation, 960, 1040),
+        setIkemenWindowSize(clientBinaryLocation, 960, 1040),
+      ]);
+    }
+
     await runPlayers(matchAgentUrl, hostBinaryLocation, clientBinaryLocation);
 
     console.log("\nBoth Ikemen GO windows should now be running - this script leaves them up for you to play.");
@@ -91,7 +101,8 @@ async function startMatchAgent(processes: ProcessGroup, piecesFolder: string, pl
       "--auth-code", MATCH_AGENT_CONFIG.authCode,
       "--piece-folder", piecesFolder,
       "--plugin-folder", pluginFolder,
-    ]
+    ],
+    { env: cleanSpawnEnv() }
   );
   await waitForHttpOk(matchAgentUrl, 15_000);
   console.log("match-agent is up.");
@@ -109,11 +120,14 @@ async function runPlayers(matchAgentUrl: string, hostBinaryLocation: string, cli
   };
 
   const rosterConfig = JSON.parse(readFileSync(ROSTER_LOCK_PATH, "utf-8")) as RosterLockV1Config;
-  // No explicit teamMode override - left for buildIkemenArgs to resolve from
-  // the roster's own engine.officialSelections (this lock's selection hash
-  // matches the "tag" entry) - see ikemen-go's readme, "Team mode comes from
-  // the selection config".
-  const gameConfig = {};
+  // teamMode/roundTime/rounds are all schema-required (see ikemen-go's gameConfigSchema.ts) -
+  // an empty {} here used to reach titled-room's /room/create fine, but now fails outright
+  // since assertGameConfigValid actually runs the schema check server-side. A real browser
+  // client never hits this: rjsf pre-fills these from the schema's own "default"s before a
+  // room-creation submit is even possible. teamMode explicitly matches ROSTER_LOCK_PATH's own
+  // "tag" officialSelections entry - could be left as an override-free {} once teamMode alone
+  // is optional, but it isn't (see selectionValidation.test.ts's own required-fields coverage).
+  const gameConfig = { teamMode: "tag", roundTime: -1, rounds: 3 };
 
   console.log("Registering and logging in both simulated players...");
   const runId = Date.now();
@@ -144,7 +158,7 @@ async function runPlayers(matchAgentUrl: string, hostBinaryLocation: string, cli
   ]);
 
   if(!started.coordinator){
-    throw new Error("titled-room didn't return a coordinator address - check /admin/game-launchers registration");
+    throw new Error("titled-room didn't return a coordinator address - check GAME_COORDINATOR_ID/IKEMEN_COORDINATOR_TCP_HOST/PORT in internal-urls.env");
   }
 
   console.log("Launching Ikemen GO for both players...");

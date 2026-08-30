@@ -1,5 +1,5 @@
 // Thin wrapper around examples/services/auth-naive's HTTP surface - see
-// examples/services/match-makers/titled-room/client/src/api/auth.ts for the
+// examples/mugen/services/titled-room/client/src/api/auth.ts for the
 // email-verified equivalent this mirrors.
 
 async function authFetch(authServiceUrl: string, path: string, init: RequestInit = {}): Promise<Response> {

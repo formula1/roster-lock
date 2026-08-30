@@ -2,7 +2,7 @@
 
 Drives the *real* browser UIs through the mugen example, for two simulated
 players: `core/match-agent/client` (the host shell each player runs locally)
-with `examples/services/match-makers/titled-room/client` loaded in its
+with `examples/mugen/services/titled-room/client` loaded in its
 matchmaker `<iframe>`. Unlike `examples/mugen/integration/src/run.ts`, which
 simulates both players with direct HTTP calls, this suite clicks through the
 same pages a real player would - connect, join settings, log in, create/join
@@ -52,24 +52,27 @@ blocks. Each step below names which app/page it happens on -
 time; `titled-room/client` only exists inside its
 `<iframe title="Matchmaker">`.
 
-1. **Connect** (`match-agent-client`, `/connect`) - fill in this player's
-   own match-agent URL + auth code (each simulated player gets its own
+1. **Connect** (`match-agent-client`) - fill in this player's own
+   match-agent URL + auth code (each simulated player gets its own
    match-agent process on its own port, already running by this point - see
-   `src/lib/matchAgentProcess.ts`), click **Connect**, wait for the
-   "Connected." confirmation, click **Continue**.
-2. **Join settings** (`/join-settings`) - click **Continue** with nothing
-   else to fill in. This page is normally where a real player points their
-   own game-launcher plugin at a local binary; for this test that's already
-   done by `startPlayerMatchAgent` before the browser ever opens.
-3. **Match making** (`/match-making`) - click **Connect**, which loads
+   `src/lib/matchAgentProcess.ts`) and click **Connect**. There's no
+   dedicated `/connect` URL or "Continue" step anymore - `App.tsx`'s
+   `ConnectOrApp` renders the connect form standalone (outside the router)
+   until connected, then mounts the router for the first time, whose root
+   route redirects straight to `/match-making`. The join-settings page
+   (normally where a real player points their own game-launcher plugin at a
+   local binary) isn't part of this auto-flow at all anymore - for this test
+   that's already done by `startPlayerMatchAgent` before the browser ever
+   opens, so there's nothing to visit there.
+2. **Match making** (`/match-making`) - click **Connect**, which loads
    `titled-room/client` into this page's matchmaker `<iframe>`.
-4. **Register/login** (`titled-room/client`, inside the iframe) - switch to
+3. **Register/login** (`titled-room/client`, inside the iframe) - switch to
    the register tab, fill in a per-run username/password, submit.
    Registration auto-logs the new account in; a following bridge round-trip
    syncs identity back to the host page before the signed-in Rooms view
    appears, so the click on **Continue** carries a generous timeout to wait
    that out.
-5. **Rooms list** (iframe) - the host clicks **Create Room**, fills in a
+4. **Rooms list** (iframe) - the host clicks **Create Room**, fills in a
    title, and uploads the example's published roster lock JSON as the
    room's file. Min/max players and the game launcher are left at their
    defaults (2 players; whichever single game-launcher plugin is pre-installed
@@ -77,7 +80,7 @@ time; `titled-room/client` only exists inside its
    `matchAgentProcess.ts`). Submitting lands on that room's detail page. The
    client player instead clicks the room's own title link from the list -
    `RoomDetailPage` auto-joins on mount, there's no separate "Join" button.
-6. **Room detail, make a selection** (iframe) - both players click **Make
+5. **Room detail, make a selection** (iframe) - both players click **Make
    Selection**. This doesn't open anything inside the iframe:
    `bridge.requestSelection` becomes the *host page's* own
    `pendingLightbox` state (`core/match-agent/client/src/bridge/hostBridge.ts`),
@@ -89,21 +92,21 @@ time; `titled-room/client` only exists inside its
    lock's `selection` config), then **Confirm Selection**. The room detail
    page then shows "Waiting for other players..." until both sides have
    confirmed.
-7. **Start the match** (iframe, host only) - once both players are ready,
+6. **Start the match** (iframe, host only) - once both players are ready,
    the host's **Start Match** button (only the room creator sees it -
    `RoomDetailPage`'s `isHost` check) becomes enabled; clicking it also
-   implicitly waits out step 6 finishing on both sides, since the button
+   implicitly waits out step 5 finishing on both sides, since the button
    stays disabled until then.
-8. **Download** (`match-agent-client`, `/download`) - no click needed.
+7. **Download** (`match-agent-client`, `/download`) - no click needed.
    Each player's own websocket receives `GAME_HAS_STARTED`,
    `bridge.initiateRelay` fires automatically, and `onInitiateRelay`
    navigates here, showing a "Downloading" heading while the real roster
    pieces (characters/stage) come down over the relay as a tar archive.
-9. **Game running** (`match-agent-client`, the "Games" heading) - once the
+8. **Game running** (`match-agent-client`, the "Games" heading) - once the
    download finishes, `DownloadPage` starts the real Ikemen process itself,
    no click needed. The test waits for a `.game-process-row` to report
    "Running".
-10. **Close the game** - after a 15s pause (so the real Ikemen window
+9. **Close the game** - after a 15s pause (so the real Ikemen window
     visibly runs for a bit), the test clicks **Close** on that row and
     waits for it to report "Exited". Set `SKIP_CLOSE=1` to skip this step
     and leave both real Ikemen windows open for manual inspection instead

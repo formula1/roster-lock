@@ -14,7 +14,7 @@ export function parseEnvFile(filePath: string): Record<string, string> {
   return result;
 }
 
-const ENV_FILES = ["internal-urls.env", "relay.env", "titled-room.env", "coordinator.env", "game-launchers.env"];
+const ENV_FILES = ["internal-urls.env", "relay.env", "titled-room.env", "coordinator.env"];
 
 /** Loads and merges every env file the mugen example's services are configured from. */
 export function loadEnvVars(envVarsDir: string): Record<string, string> {

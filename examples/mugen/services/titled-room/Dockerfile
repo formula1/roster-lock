@@ -23,14 +23,19 @@ WORKDIR /app
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 
 # Copy only what's needed to resolve the workspace graph and run install-time
-# scripts (@roster-lock/types and @roster-lock/utils build themselves via
-# their own "prepare" scripts). Keeping this separate from the full source
-# COPY below means editing this service's source doesn't bust the install
-# layer's cache.
+# scripts (@roster-lock/types, @roster-lock/utils, and
+# @roster-lock/game-launcher-ikemen-go all build themselves via their own
+# "prepare" scripts - game-launchers.ts imports ikemen-go's
+# "./selection-validation" and "./package.json" directly, a real
+# "workspace:*" dependency, not something an npm registry needs to provide).
+# Keeping this separate from the full source COPY below means editing this
+# service's source doesn't bust the install layer's cache.
 COPY core/types/package.json core/types/tsconfig.json core/types/
 COPY core/types/src/ core/types/src/
 COPY core/utils/package.json core/utils/tsconfig.json core/utils/
 COPY core/utils/src/ core/utils/src/
+COPY plugins/game-launcher/ikemen-go/package.json plugins/game-launcher/ikemen-go/tsconfig.json plugins/game-launcher/ikemen-go/
+COPY plugins/game-launcher/ikemen-go/src/ plugins/game-launcher/ikemen-go/src/
 COPY examples/mugen/services/titled-room/package.json examples/mugen/services/titled-room/
 COPY examples/mugen/services/titled-room/client/package.json examples/mugen/services/titled-room/client/
 

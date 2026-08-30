@@ -1,6 +1,24 @@
 import { spawn, ChildProcess, SpawnOptions } from "child_process";
 import * as fs from "fs";
 
+// match-agent spawns Ikemen as its own child, inheriting whatever environment launched
+// match-agent itself - fine normally, but this repo is often run from inside an IDE's own
+// snap-packaged terminal (e.g. VS Code's snap build), whose GTK/GIO/pixbuf module-path env vars
+// get picked up by Ikemen's (transitive) libgtk-3 dependency and load a mismatched snap-bundled
+// libstdc++/libpthread over the system ones - confirmed by hand: the same binary copy runs fine
+// under `env -i`, and crashes (exit 127) with a libpthread symbol-lookup error when these vars
+// are inherited. Stripping them here, rather than in the ikemen-go plugin itself, since a real
+// deployment's match-agent won't be launched from a snap-sandboxed terminal in the first place -
+// this is dev-environment hygiene for scripts that spawn match-agent, not a product fix. Used by
+// both run.ts's own match-agent spawn and examples/mugen/playwright's matchAgentProcess.ts.
+export function cleanSpawnEnv(): NodeJS.ProcessEnv {
+  const env = { ...process.env };
+  for (const key of Object.keys(env)) {
+    if (key.startsWith("SNAP") || (env[key] ?? "").includes("/snap/")) delete env[key];
+  }
+  return env;
+}
+
 export function log(prefix: string, message: string){
   for(const line of message.split("\n")){
     if(line.length === 0) continue;

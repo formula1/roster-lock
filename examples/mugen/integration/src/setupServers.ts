@@ -2,9 +2,6 @@ import { runToCompletion } from "./lib/process-utils";
 import { MUGEN_DIR, ENV_VARS_DIR } from "./constants";
 import { loadEnvVars } from "./lib/env";
 import { loginIntoRelayRoom, ensureMatchMakerRegistered, ensureGameCoordinatorRegistered } from "./lib/relayAdmin";
-import { adminLogin, upsertGameLauncher } from "./lib/titledRoomAdmin";
-
-const IKEMEN_PLUGIN_NAME = "@roster-lock/game-launcher-ikemen-go";
 
 export async function dockerComposeUp(){
   console.log("Starting docker compose services (download-provider, relay-room, auth-naive, titled-room, direct-ip-coordinator)...");
@@ -21,16 +18,16 @@ export function dockerComposeDown(){
 
 /**
  * Registers titled-room as a matchmaker and direct-ip-coordinator as a game
- * coordinator with relay-room's admin API, then registers ikemen-go as an
- * allowed game launcher with titled-room's own admin API (engineSha +
- * coordinator id/address) - replacing what used to be static
- * ALLOWED_GAME_RUNNERS/GAME_COORDINATORS env vars (see titled-room's
- * src/admin/game-launchers.ts).
+ * coordinator with relay-room's admin API. titled-room itself no longer has
+ * an admin API of its own - which game launcher it allows (ikemen-go, the
+ * only one it'll ever offer now that this service lives at
+ * examples/mugen/services/titled-room) and its coordinator address are
+ * hardcoded/env-configured (see titled-room's own game-launchers.ts and
+ * internal-urls.env's GAME_COORDINATOR_ID/IKEMEN_COORDINATOR_TCP_HOST/PORT).
  */
 export async function setupServers(){
   const env = loadEnvVars(ENV_VARS_DIR);
   const publicRelayServerUrl = requireEnv2(env, "PUBLIC_RELAY_SERVER_URL");
-  const publicTitledRoomUrl = requireEnv2(env, "PUBLIC_TITLED_ROOM_URL");
 
   console.log("Logging into relay-room admin...");
   const { token: relayJwt } = await loginIntoRelayRoom(publicRelayServerUrl, {
@@ -45,32 +42,12 @@ export async function setupServers(){
   });
 
   console.log("Registering direct-ip-coordinator as a game coordinator with relay-room...");
-  const coordinatorId = requireEnv2(env, "GAME_COORDINATOR_ID");
   await ensureGameCoordinatorRegistered(publicRelayServerUrl, relayJwt, {
-    id: coordinatorId,
+    id: requireEnv2(env, "GAME_COORDINATOR_ID"),
     name: "Ikemen Direct-TCP Coordinator",
     success_webhook_url: `${requireEnv2(env, "IKEMEN_COORDINATOR_WEBHOOK_URL")}/webhook/room-complete`,
     failure_webhook_url: `${requireEnv2(env, "IKEMEN_COORDINATOR_WEBHOOK_URL")}/webhook/room-failure`,
     api_key: requireEnv2(env, "COORDINATOR_API_KEY"),
-  });
-
-  console.log("Logging into titled-room admin...");
-  const titledRoomAdminToken = await adminLogin(
-    publicTitledRoomUrl,
-    requireEnv2(env, "TITLED_ROOM_ADMIN_USERNAME"),
-    requireEnv2(env, "TITLED_ROOM_ADMIN_PASSWORD"),
-  );
-
-  console.log("Registering ikemen-go as an allowed game launcher with titled-room...");
-  await upsertGameLauncher(publicTitledRoomUrl, titledRoomAdminToken, IKEMEN_PLUGIN_NAME, {
-    engineSha: requireEnv2(env, "IKEMEN_ENGINE_SHA"),
-    coordinator: {
-      id: coordinatorId,
-      address: {
-        host: requireEnv2(env, "IKEMEN_COORDINATOR_TCP_HOST"),
-        port: Number(requireEnv2(env, "IKEMEN_COORDINATOR_TCP_PORT")),
-      },
-    },
   });
 
   console.log("Server setup complete.");

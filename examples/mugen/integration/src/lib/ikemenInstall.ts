@@ -1,6 +1,6 @@
 import * as os from "os";
 import * as path from "path";
-import { cp } from "fs/promises";
+import { cp, readFile, writeFile } from "fs/promises";
 import { ProcessGroup } from "./process-utils";
 
 /**
@@ -35,4 +35,28 @@ export async function copyIkemenInstall(
   const destDir = processes.mkTempDir(path.join(os.tmpdir(), `roster-lock-mugen-ikemen-${label}-`));
   await cp(sourceDir, destDir, { recursive: true });
   return destDir;
+}
+
+/**
+ * Overrides save/config.ini's WindowWidth/WindowHeight/WindowCentered for one player's copy of
+ * the install - opt-in (see run.ts's IKEMEN_DEMO_LAYOUT), not part of the normal test flow.
+ *
+ * The default WindowWidth/WindowHeight = 0 (defers to GameWidth/GameHeight) produces a window
+ * whose WM_NORMAL_HINTS reports a stale, degenerate "10x10" fixed size - confirmed by hand via
+ * xprop - which blocks every WM-level move/resize/tile operation (Mutter correctly refuses to
+ * touch a window that's declared itself fixed-size, even though what's on screen is clearly
+ * larger). A window launched with explicit non-zero WindowWidth/WindowHeight instead reports
+ * correct hints from the start and _NET_WM_ACTION_MOVE/_NET_WM_ACTION_RESIZE in its allowed
+ * actions - xdotool windowmove then works normally. This has to happen before Ikemen's first
+ * window-creation call, i.e. by editing config on disk before spawning, not by resizing after -
+ * these are two different code paths inside Ikemen/GLFW, not the same thing done at two times.
+ */
+export async function setIkemenWindowSize(installDir: string, width: number, height: number): Promise<void> {
+  const configPath = path.join(installDir, "save/config.ini");
+  const config = await readFile(configPath, "utf-8");
+  const patched = config
+    .replace(/^WindowWidth(\s*)=.*/m, `WindowWidth$1= ${width}`)
+    .replace(/^WindowHeight(\s*)=.*/m, `WindowHeight$1= ${height}`)
+    .replace(/^WindowCentered(\s*)=.*/m, `WindowCentered$1= 0`);
+  await writeFile(configPath, patched);
 }

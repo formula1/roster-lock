@@ -13,7 +13,7 @@ program
 program
   .command("run")
   .description(
-    "Full pipeline: docker compose up, match-agent, server setup (relay/coordinator/titled-room admin registration), " +
+    "Full pipeline: docker compose up, match-agent, server setup (titled-room/coordinator registration with relay), " +
     "two simulated players, and two real Ikemen GO windows"
   )
   .requiredOption(
@@ -26,7 +26,7 @@ program
 
 program
   .command("server-setup")
-  .description("docker compose up, then register titled-room/direct-ip-coordinator with relay and ikemen-go with titled-room (assumes docker services aren't already up)")
+  .description("docker compose up, then register titled-room/direct-ip-coordinator with relay-room's admin API (assumes docker services aren't already up)")
   .action(async ()=>{
     await dockerComposeUp();
     await setupServers();

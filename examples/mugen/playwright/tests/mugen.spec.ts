@@ -1,5 +1,5 @@
 import * as fs from "fs";
-import { test, expect, Page, FrameLocator, BrowserContext } from "@playwright/test";
+import { test, expect, Page, FrameLocator, Locator, BrowserContext } from "@playwright/test";
 import { RosterLockV1Config } from "@roster-lock/types";
 import { ProcessGroup } from "../../integration/src/lib/process-utils";
 import { dockerComposeUp, dockerComposeDown, setupServers } from "../../integration/src/setupServers";
@@ -126,25 +126,58 @@ test("mugen example end-to-end through the real match-agent-client and titled-ro
   });
 });
 
+// Waits for `locator` to become visible, calling `retryAction` (e.g. re-clicking a "Connect"
+// button) between attempts if it doesn't - up to `attempts` total waits. The first wait covers
+// whatever's already in flight (e.g. an auto-connect-on-mount effect); `retryAction` only fires
+// before subsequent attempts.
+async function retryUntilVisible(
+  retryAction: () => Promise<void>, locator: Locator, attempts = 3, perAttemptMs = 20_000
+): Promise<void> {
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    const visible = await locator.waitFor({ state: "visible", timeout: perAttemptMs }).then(() => true).catch(() => false);
+    if (visible) return;
+    if (attempt < attempts) await retryAction();
+  }
+  throw new Error(`Locator never became visible after ${attempts} attempts`);
+}
+
 async function connectAndLogin(
   page: Page, matchAgent: PlayerMatchAgent, credentials: { username: string, password: string }
 ): Promise<FrameLocator> {
   await page.goto(MATCH_AGENT_CLIENT_URL);
 
-  await expect(page).toHaveURL(/\/connect$/);
+  // No dedicated /connect URL to wait for - App.tsx's ConnectOrApp renders
+  // ConnectPage standalone (outside the router entirely) whenever
+  // disconnected, at whatever URL got loaded, and its autoSubmit effect
+  // retries the last-saved (or default) settings first; only once that
+  // attempt fails does the form actually become visible (ConnectPage's own
+  // `if (autoSubmit && (connecting || !error)) return null`) - a fresh
+  // browser context has no saved settings, so this always fails against the
+  // default localhost:58732 before this player's real match-agent gets filled
+  // in below. fill()'s own actionability wait covers that delay.
   await page.getByLabel("Match Agent URL").fill(matchAgent.url);
   await page.getByLabel("Auth Code").fill(matchAgent.authCode);
   await page.getByRole("button", { name: "Connect", exact: true }).click();
-  await expect(page.getByText("Connected.", { exact: true })).toBeVisible({ timeout: 15_000 });
-  await page.getByRole("button", { name: "Continue" }).click();
 
-  await expect(page).toHaveURL(/\/join-settings$/);
-  await page.getByRole("button", { name: "Continue" }).click();
+  // A successful connect flips `connected` to true, which mounts
+  // <BrowserRouter> for the first time - its root route redirects straight
+  // to /match-making now (no "Connected." confirmation or /join-settings
+  // stop in between anymore - see App.tsx's ConnectOrApp).
+  await expect(page).toHaveURL(/\/match-making$/, { timeout: 15_000 });
 
-  await expect(page).toHaveURL(/\/match-making$/);
-  await page.getByRole("button", { name: "Connect", exact: true }).click();
-
+  // MatchMakingPage auto-connects to the saved/default matchmaker on mount
+  // and its own UI explicitly supports retrying via this same Connect button
+  // if that first attempt fails (see its own comment: "A manual Connect
+  // button remains below in case this first attempt fails") - a cold vite
+  // dev server's very first hit can take long enough (esbuild dependency
+  // pre-bundling) to blow through hostBridge.ts's 15s ready-handshake
+  // timeout, so retry the same way a real user would rather than assume the
+  // very first attempt wins that race.
   const frame = page.frameLocator('iframe[title="Matchmaker"]');
+  await retryUntilVisible(
+    () => page.getByRole("button", { name: "Connect", exact: true }).click(),
+    frame.getByTestId("account-tab-register"),
+  );
   await frame.getByTestId("account-tab-register").click();
   await frame.getByLabel("Username").fill(credentials.username);
   await frame.getByLabel("Password").fill(credentials.password);
@@ -164,9 +197,14 @@ async function hostCreateRoom(frame: FrameLocator): Promise<void> {
 
   await frame.getByLabel("Title").fill(ROOM_TITLE);
   await frame.locator('input[type="file"]').setInputFiles(ROSTER_LOCK_PATH);
-  // Min/max players both default to 2, matching mugen-simul's 2-player lock -
-  // nothing to fill there. Game Launcher is auto-selected to the one plugin
-  // pre-installed on this player's own match-agent (see matchAgentProcess.ts).
+  // Min/max players both default to 2 - nothing to fill there. Game Launcher
+  // is auto-selected to the one plugin pre-installed on this player's own
+  // match-agent (see matchAgentProcess.ts). Team Mode defaults to "single"
+  // (gameConfigSchema's own default) regardless of which roster got
+  // uploaded - ROSTER_LOCK_PATH's mugen-tag.roster-lock.json needs exactly
+  // 3 picks per side, so "single" (1 pick) fails validateSelectionCount
+  // unless explicitly overridden here to match.
+  await frame.getByLabel("Team Mode").selectOption("tag");
 
   await frame.getByRole("button", { name: "Create Room" }).click();
   await expect(frame.getByRole("heading", { name: ROOM_TITLE })).toBeVisible({ timeout: 15_000 });
@@ -189,10 +227,16 @@ async function makeSelection(page: Page, frame: FrameLocator): Promise<void> {
   const board = page.locator(".selection-board");
   await expect(board).toBeVisible({ timeout: 15_000 });
 
+  // Only one piece type's cards are mounted at a time now - SelectionBoard
+  // tabs between them (PieceTypeTabs) instead of stacking every type's
+  // section in the DOM simultaneously, and there's no ".piece-type-name"
+  // anymore (the type name is just the tab button's own text, aside from
+  // its aria-hidden ready-dot). Switch to each type's tab before clicking
+  // its cards - only one ".piece-type-section" exists at a time, so no
+  // further scoping by type is needed once its tab is active.
   for (const [pieceType, count] of Object.entries(pickCounts)) {
-    const section = board.locator(".piece-type-section")
-      .filter({ has: page.locator(".piece-type-name", { hasText: new RegExp(`^${pieceType}$`) }) });
-    const cards = section.locator(".piece-card");
+    await board.getByRole("button", { name: pieceType, exact: true }).click();
+    const cards = board.locator(".piece-type-section .piece-card");
     for (let i = 0; i < count; i++) {
       await cards.nth(i).click();
     }

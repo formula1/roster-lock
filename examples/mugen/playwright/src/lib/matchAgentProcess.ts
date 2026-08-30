@@ -1,11 +1,12 @@
 import * as os from "os";
 import * as path from "path";
-import { ProcessGroup, runToCompletion, waitForHttpOk } from "../../../integration/src/lib/process-utils";
+import { ProcessGroup, runToCompletion, waitForHttpOk, cleanSpawnEnv } from "../../../integration/src/lib/process-utils";
 import { installGameLauncherPlugin, setGameLauncherSettings } from "../../../integration/src/lib/matchAgentGameLauncher";
-import { copyIkemenInstall } from "../../../integration/src/lib/ikemenInstall";
+import { copyIkemenInstall, setIkemenWindowSize } from "../../../integration/src/lib/ikemenInstall";
 import { REPO_ROOT } from "../../../integration/src/constants";
 
-const IKEMEN_PLUGIN_NAME = "@roster-lock/game-launcher-ikemen-go";
+export const IKEMEN_PLUGIN_NAME = "@roster-lock/game-launcher-ikemen-go";
+const IKEMEN_PLUGIN_PATH = "plugins/game-launcher/ikemen-go";
 
 // Same set run.ts installs - dl-protocol/dl-archive plugins so
 // downloadToFolder can actually fetch+extract a piece's .tar over http://,
@@ -13,7 +14,7 @@ const IKEMEN_PLUGIN_NAME = "@roster-lock/game-launcher-ikemen-go";
 const REQUIRED_PLUGINS = [
   "plugins/untrusted/script/ts", "plugins/untrusted/config/json",
   "plugins/download/protocol/http", "plugins/download/archive/tar",
-  "plugins/game-launcher/ikemen-go",
+  IKEMEN_PLUGIN_PATH,
 ];
 
 export type PlayerMatchAgent = {
@@ -23,25 +24,6 @@ export type PlayerMatchAgent = {
   binaryLocation: string,
 };
 
-// match-agent spawns Ikemen as its own child, inheriting whatever
-// environment launched match-agent itself - fine normally, but this suite
-// is typically run from inside an IDE's own snap-packaged terminal (e.g.
-// VS Code's snap build), whose GTK/GIO/pixbuf module-path env vars get
-// picked up by Ikemen's (transitive) libgtk-3 dependency and load a
-// mismatched snap-bundled libstdc++/libpthread over the system ones -
-// confirmed by hand: the same binary copy runs fine under `env -i`, and
-// crashes (exit 127) with a libpthread symbol-lookup error when these vars
-// are inherited. Stripping them here, rather than in the ikemen-go plugin
-// itself, since a real deployment's match-agent won't be launched from a
-// snap-sandboxed terminal in the first place - this is dev-environment
-// hygiene for this suite, not a product fix.
-function cleanSpawnEnv(): NodeJS.ProcessEnv {
-  const env = { ...process.env };
-  for (const key of Object.keys(env)) {
-    if (key.startsWith("SNAP") || (env[key] ?? "").includes("/snap/")) delete env[key];
-  }
-  return env;
-}
 
 /** Builds match-agent once - shared by every simulated player's own process. */
 export async function buildMatchAgent(): Promise<void> {
@@ -61,7 +43,11 @@ export async function buildMatchAgent(): Promise<void> {
  * corrupt each other's save/config state - see copyIkemenInstall).
  */
 export async function startPlayerMatchAgent(
-  processes: ProcessGroup, label: string, port: number, authCode: string, originalBinaryLocation: string
+  processes: ProcessGroup, label: string, port: number, authCode: string, originalBinaryLocation: string,
+  // Opt-in, for side-by-side recording (e.g. a demo video) - see setIkemenWindowSize's own docs
+  // for why this has to happen before launch (patching save/config.ini) rather than as a
+  // post-launch resize.
+  windowSize?: { width: number, height: number },
 ): Promise<PlayerMatchAgent> {
   const piecesFolder = processes.mkTempDir(path.join(os.tmpdir(), `roster-lock-mugen-pw-${label}-pieces-`));
   const pluginFolder = processes.mkTempDir(path.join(os.tmpdir(), `roster-lock-mugen-pw-${label}-plugins-`));
@@ -86,7 +72,48 @@ export async function startPlayerMatchAgent(
   }
 
   const binaryLocation = await copyIkemenInstall(processes, label, originalBinaryLocation);
+  if (windowSize) await setIkemenWindowSize(binaryLocation, windowSize.width, windowSize.height);
   await setGameLauncherSettings(url, authCode, IKEMEN_PLUGIN_NAME, { binaryLocation });
+
+  return { label, url, authCode, binaryLocation };
+}
+
+export type PreparePlayerMatchAgentOptions = {
+  windowSize?: { width: number, height: number },
+  // Skips both the ikemen-go plugin install and its binaryLocation settings write here - for a
+  // demo recording where that install is instead driven live through titled-room/client's Create
+  // Room page ("missing" game launcher -> Install button), which opens
+  // InstallGameLauncherLightbox on this same match-agent-client page and does both of those
+  // itself (see scripts/record-demo.ts's installIkemenPluginViaUI). The other REQUIRED_PLUGINS
+  // (script/config runtimes, download protocol/archive) have no such UI anywhere in the real app,
+  // so those still get installed programmatically either way.
+  installIkemenViaUI?: boolean,
+};
+
+/**
+ * Same post-launch setup as startPlayerMatchAgent (plugin installs, Ikemen install copy +
+ * config.ini window sizing, binaryLocation settings) but for a match-agent process that's already
+ * running - started externally (e.g. in its own terminal window, for a recording) rather than
+ * spawned by this process - so this waits for it to come up instead of spawning it itself.
+ */
+export async function preparePlayerMatchAgent(
+  processes: ProcessGroup, label: string, url: string, authCode: string, originalBinaryLocation: string,
+  options: PreparePlayerMatchAgentOptions = {},
+): Promise<PlayerMatchAgent> {
+  const { windowSize, installIkemenViaUI = false } = options;
+
+  await waitForHttpOk(url, 30_000);
+
+  for (const pluginPath of REQUIRED_PLUGINS) {
+    if (installIkemenViaUI && pluginPath === IKEMEN_PLUGIN_PATH) continue;
+    await installGameLauncherPlugin(url, authCode, path.join(REPO_ROOT, pluginPath));
+  }
+
+  const binaryLocation = await copyIkemenInstall(processes, label, originalBinaryLocation);
+  if (windowSize) await setIkemenWindowSize(binaryLocation, windowSize.width, windowSize.height);
+  if (!installIkemenViaUI) {
+    await setGameLauncherSettings(url, authCode, IKEMEN_PLUGIN_NAME, { binaryLocation });
+  }
 
   return { label, url, authCode, binaryLocation };
 }

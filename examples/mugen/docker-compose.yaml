@@ -34,7 +34,7 @@ services:
   relay-room:
     build:
       context: ../..
-      dockerfile: core/relay-server/Dockerfile
+      dockerfile: core/relay-server/cloudflare/Dockerfile
     ports:
       - "7443:80"
     environment:
@@ -76,7 +76,14 @@ services:
   titled-room:
     build:
       context: ../..
-      dockerfile: examples/services/match-makers/titled-room/Dockerfile
+      dockerfile: examples/mugen/services/titled-room/Dockerfile
+      # Baked into titled-room/client's built JS at image-build time (see
+      # client/src/config.ts) - must match auth-naive/titled-room's own
+      # PUBLIC_* addresses below in internal-urls.env, since this is the URL
+      # a browser loading titled-room's served client actually hits.
+      args:
+        VITE_AUTH_SERVICE_URL: http://localhost:7444
+        VITE_TITLED_ROOM_URL: http://localhost:7445
     ports:
       - "7445:80"
     environment:

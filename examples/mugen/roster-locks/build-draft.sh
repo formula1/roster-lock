@@ -127,7 +127,7 @@ add_piece(){
     "$name" "$author" "https://example.local/mugen/$type" "$imageJson" \
     | $CLI roster add-piece "$type" "$PIECES_DIR/$folder" --draft "$DRAFT" \
         --path-variables "defName=$defName" \
-        --download-source "$BASE_URL/$type/$defName.tar" \
+        --download-source "$BASE_URL/$folder.tar" \
         --json -
 }
 

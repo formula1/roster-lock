@@ -6,7 +6,7 @@
 // Ikemen GO binary (IKEMEN_BINARY_LOCATION just needs to point at *some*
 // existing file for copyIkemenInstall's cp -r to succeed).
 import * as fs from "fs";
-import { test, expect } from "@playwright/test";
+import { test, expect, Locator } from "@playwright/test";
 import { RosterLockV1Config } from "@roster-lock/types";
 import { ProcessGroup } from "../../integration/src/lib/process-utils";
 import { dockerComposeUp, dockerComposeDown, setupServers } from "../../integration/src/setupServers";
@@ -23,6 +23,20 @@ const MATCH_AGENT_CLIENT_URL = `http://localhost:${MATCH_AGENT_CLIENT_PORT}`;
 
 const rosterConfig = JSON.parse(fs.readFileSync(ROSTER_LOCK_PATH, "utf-8")) as RosterLockV1Config;
 const pickCounts = requiredPickCounts(rosterConfig);
+
+// See mugen.spec.ts's own copy of this helper for why it exists (a cold vite dev server's first
+// hit can blow through hostBridge.ts's 15s bridge-ready timeout during esbuild's dependency
+// pre-bundling - MatchMakingPage's own UI already supports retrying via the same Connect button).
+async function retryUntilVisible(
+  retryAction: () => Promise<void>, locator: Locator, attempts = 3, perAttemptMs = 20_000
+): Promise<void> {
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    const visible = await locator.waitFor({ state: "visible", timeout: perAttemptMs }).then(() => true).catch(() => false);
+    if (visible) return;
+    if (attempt < attempts) await retryAction();
+  }
+  throw new Error(`Locator never became visible after ${attempts} attempts`);
+}
 
 test("view the selection board's portraits in the real match-agent-client UI", async ({ browser }) => {
   test.setTimeout(20 * 60 * 1000);
@@ -45,20 +59,20 @@ test("view the selection board's portraits in the real match-agent-client UI", a
   const page = await context.newPage();
 
   await page.goto(MATCH_AGENT_CLIENT_URL);
-  await expect(page).toHaveURL(/\/connect$/);
+  // See mugen.spec.ts's connectAndLogin for why there's no /connect URL to
+  // wait for and no "Connected."/join-settings stop anymore - App.tsx's
+  // ConnectOrApp renders ConnectPage standalone until connected, then
+  // redirects straight to /match-making.
   await page.getByLabel("Match Agent URL").fill(agent.url);
   await page.getByLabel("Auth Code").fill(agent.authCode);
   await page.getByRole("button", { name: "Connect", exact: true }).click();
-  await expect(page.getByText("Connected.", { exact: true })).toBeVisible({ timeout: 15_000 });
-  await page.getByRole("button", { name: "Continue" }).click();
-
-  await expect(page).toHaveURL(/\/join-settings$/);
-  await page.getByRole("button", { name: "Continue" }).click();
-
-  await expect(page).toHaveURL(/\/match-making$/);
-  await page.getByRole("button", { name: "Connect", exact: true }).click();
+  await expect(page).toHaveURL(/\/match-making$/, { timeout: 15_000 });
 
   const frame = page.frameLocator('iframe[title="Matchmaker"]');
+  await retryUntilVisible(
+    () => page.getByRole("button", { name: "Connect", exact: true }).click(),
+    frame.getByTestId("account-tab-register"),
+  );
   await frame.getByTestId("account-tab-register").click();
   await frame.getByLabel("Username").fill(`solo-${Date.now()}`);
   await frame.getByLabel("Password").fill("Password1");
@@ -70,6 +84,10 @@ test("view the selection board's portraits in the real match-agent-client UI", a
   await expect(frame.getByRole("heading", { name: "Create Room" })).toBeVisible();
   await frame.getByLabel("Title").fill(ROOM_TITLE);
   await frame.locator('input[type="file"]').setInputFiles(ROSTER_LOCK_PATH);
+  // Team Mode defaults to "single" (gameConfigSchema's own default) regardless
+  // of which roster got uploaded - ROSTER_LOCK_PATH's mugen-tag.roster-lock.json
+  // needs exactly 3 picks per side, so this must be set explicitly to match.
+  await frame.getByLabel("Team Mode").selectOption("tag");
   await frame.getByRole("button", { name: "Create Room" }).click();
   await expect(frame.getByRole("heading", { name: ROOM_TITLE })).toBeVisible({ timeout: 15_000 });
 
@@ -80,11 +98,12 @@ test("view the selection board's portraits in the real match-agent-client UI", a
   await page.screenshot({ path: "/tmp/claude-1000/-home-sam-Programming-games-match-lock/2f853665-696d-47ef-b99d-e1137724015a/scratchpad/selection-board.png" });
 
   // Click one card per pickable piece type too, then screenshot the
-  // "selected" state (portrait still visible, card highlighted).
+  // "selected" state (portrait still visible, card highlighted). Only one
+  // type's cards are mounted at a time - switch to each type's tab first
+  // (see mugen.spec.ts's makeSelection for why).
   for (const [pieceType, count] of Object.entries(pickCounts)) {
-    const section = board.locator(".piece-type-section")
-      .filter({ has: page.locator(".piece-type-name", { hasText: new RegExp(`^${pieceType}$`) }) });
-    const cards = section.locator(".piece-card");
+    await board.getByRole("button", { name: pieceType, exact: true }).click();
+    const cards = board.locator(".piece-type-section .piece-card");
     for (let i = 0; i < count; i++) await cards.nth(i).click();
   }
   await page.screenshot({ path: "/tmp/claude-1000/-home-sam-Programming-games-match-lock/2f853665-696d-47ef-b99d-e1137724015a/scratchpad/selection-board-picked.png" });

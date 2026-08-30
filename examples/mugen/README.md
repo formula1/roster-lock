@@ -28,15 +28,16 @@ This will:
    titled-room, and direct-ip-coordinator.
 2. Build and start a single match-agent (shared by both simulated players,
    same as `examples/full-local`'s own integration script).
-3. Install the ikemen-go plugin into match-agent from its local path (it's
-   `"private": true`, so this uses `installPlugin`'s local-path install, not
-   the npm registry) and point it at `--binary-location`.
+3. Install the ikemen-go plugin into match-agent from its local path (via
+   `installPlugin`'s local-path install, not the npm registry) and point it
+   at `--binary-location`.
 4. Register titled-room as a matchmaker and direct-ip-coordinator as a game
-   coordinator with relay-room's admin API, then register ikemen-go as an
-   allowed game launcher with **titled-room's own admin API**
-   (`PUT /admin/game-launchers/:pluginName` - engineSha + coordinator id/address)
-   - not a static env var (see
-   `examples/services/match-makers/titled-room/src/admin/game-launchers.ts`).
+   coordinator with relay-room's admin API. titled-room itself has no admin
+   API of its own - it only ever offers ikemen-go, so which game launcher
+   it allows and its coordinator address are hardcoded/env-configured (see
+   `examples/mugen/services/titled-room/src/game-launchers.ts` and
+   `services/env-vars/internal-urls.env`'s `GAME_COORDINATOR_ID`/
+   `IKEMEN_COORDINATOR_TCP_HOST`/`IKEMEN_COORDINATOR_TCP_PORT`).
 5. Register and log in two simulated players against auth-naive, create/join
    a room on titled-room, make a random selection each (matching
    `roster-locks/mugen-simul.roster-lock.json`'s selection config), and mark
@@ -70,11 +71,12 @@ docker compose. The two Ikemen windows keep running independently.
 ## Fast iteration
 
 ```sh
-pnpm run cli server-setup   # docker compose up + relay/coordinator/titled-room registration only
+pnpm run cli server-setup   # docker compose up + relay/coordinator registration only
 ```
 
 Useful when you only want the backing services up (e.g. to poke at
-titled-room's admin API directly) without running the full player flow.
+titled-room's own room/matchmaking API directly) without running the full
+player flow.
 
 ## Cleaning up
 
