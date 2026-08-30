@@ -45,8 +45,10 @@ export function MatchMakingPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  const { connectionError, pendingLightbox, resolveInstallLightbox, resolveSelectionLightbox, cancelSelectionLightbox } =
-    useHostBridge({
+  const {
+    connectionError, pendingLightbox,
+    resolveInstallLightbox, cancelInstallLightbox, resolveSelectionLightbox, cancelSelectionLightbox,
+  } = useHostBridge({
       iframeRef,
       iframeLoaded,
       matchAgent: matchAgent.settings,
@@ -169,8 +171,10 @@ export function MatchMakingPage() {
       )}
 
       {pendingLightbox?.type === "install" && (
-        <Lightbox>
-          <InstallGameLauncherLightbox pluginName={pendingLightbox.pluginName} onDone={resolveInstallLightbox} />
+        <Lightbox onClose={cancelInstallLightbox}>
+          <InstallGameLauncherLightbox
+            pluginName={pendingLightbox.pluginName} onDone={resolveInstallLightbox} onCancel={cancelInstallLightbox}
+          />
         </Lightbox>
       )}
 

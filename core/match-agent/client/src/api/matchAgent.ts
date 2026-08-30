@@ -102,6 +102,21 @@ export async function validateGameLauncherBinaryLocation(
   return res.json();
 }
 
+export async function validateGameLauncherGameConfig(
+  matchAgentUrl: string, authCode: string, pluginName: string, gameConfig: unknown, rosterConfig: unknown
+): Promise<Array<string>> {
+  const res = await matchAgentFetch(
+    matchAgentUrl, authCode, `/v1/game-launcher/${encodeURIComponent(pluginName)}/validate-game-config`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ gameConfig, rosterConfig }),
+    }
+  );
+  const { problems } = await res.json();
+  return problems;
+}
+
 export async function updateGameLauncherBinary(
   matchAgentUrl: string, authCode: string, pluginName: string, target?: PlatformTarget
 ): Promise<void> {

@@ -7,15 +7,16 @@ import {
   GetIdentityResponse,
   RequestSelectionRequest, RequestSelectionResponse,
   UpdateGameLauncherSettingsRequest, UpdateGameLauncherSettingsResponse,
+  ValidateGameConfigRequest, ValidateGameConfigResponse,
   InitiateRelayEvent,
 } from "@roster-lock/types";
 import { UserKeyPair } from "@roster-lock/ts-client";
-import { listAvailableGameLaunchers } from "../api/matchAgent";
+import { listAvailableGameLaunchers, validateGameLauncherGameConfig } from "../api/matchAgent";
 import { PlayerSlot } from "../context/JoinSettingsContext";
 import { DownloadSession } from "../context/DownloadSessionContext";
 
 export type PendingLightbox = (
-  | { type: "install", pluginName: string, resolve: () => void }
+  | { type: "install", pluginName: string, resolve: () => void, reject: (e: Error) => void }
   | { type: "selection", rosterConfig: RequestSelectionRequest["rosterLockConfig"], numPlayers: number, resolve: (v: RequestSelectionResponse) => void, reject: (e: Error) => void }
 );
 
@@ -64,8 +65,8 @@ export function useHostBridge(args: {
     window.addEventListener("message", onMessage);
 
     bridge.onRequest(MATCHMAKER_BRIDGE_PATHS.installGameLauncherPlugin, ({ pluginName }: InstallGameLauncherPluginRequest) => {
-      return new Promise<InstallGameLauncherPluginResponse>((resolve) => {
-        setPendingLightbox({ type: "install", pluginName, resolve: () => resolve({}) });
+      return new Promise<InstallGameLauncherPluginResponse>((resolve, reject) => {
+        setPendingLightbox({ type: "install", pluginName, resolve: () => resolve({}), reject: (e) => reject(e) });
       });
     });
 
@@ -106,6 +107,16 @@ export function useHostBridge(args: {
       }
     );
 
+    bridge.onRequest(
+      MATCHMAKER_BRIDGE_PATHS.validateGameConfig,
+      async ({ pluginName, gameConfig, rosterConfig }: ValidateGameConfigRequest): Promise<ValidateGameConfigResponse> => {
+        const problems = await validateGameLauncherGameConfig(
+          latest.current.matchAgent.url, latest.current.matchAgent.authCode, pluginName, gameConfig, rosterConfig
+        );
+        return { problems };
+      }
+    );
+
     bridge.onEvent(MATCHMAKER_BRIDGE_PATHS.initiateRelay, (payload: InitiateRelayEvent) => {
       if (!pendingSelectionRef.current) return;
       latest.current.onInitiateRelay({
@@ -135,6 +146,11 @@ export function useHostBridge(args: {
     setPendingLightbox(null);
   };
 
+  const cancelInstallLightbox = () => {
+    if (pendingLightbox?.type === "install") pendingLightbox.reject(new Error("cancelled"));
+    setPendingLightbox(null);
+  };
+
   const resolveSelectionLightbox = (selection: RequestSelectionResponse) => {
     if (pendingLightbox?.type === "selection") pendingLightbox.resolve(selection);
     setPendingLightbox(null);
@@ -145,5 +161,8 @@ export function useHostBridge(args: {
     setPendingLightbox(null);
   };
 
-  return { connected, connectionError, pendingLightbox, resolveInstallLightbox, resolveSelectionLightbox, cancelSelectionLightbox };
+  return {
+    connected, connectionError, pendingLightbox,
+    resolveInstallLightbox, cancelInstallLightbox, resolveSelectionLightbox, cancelSelectionLightbox,
+  };
 }
