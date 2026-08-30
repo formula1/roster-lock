@@ -3,6 +3,8 @@ import { readLocalVersion, fetchSupportedVersion } from "./version";
 import { IKEMEN_ENGINE_SHA } from "./engineConfig";
 import { startGame, IkemenGameConfig } from "./startGame";
 import { validateBinaryLocation } from "./validateBinaryLocation";
+import { gameConfigSchema } from "./gameConfigSchema";
+import { validateGameConfig } from "./selectionValidation";
 
 const IkemenGo: GameLauncherPlugin<IkemenGameConfig> = {
   name: "ikemen-go",
@@ -23,35 +25,7 @@ const IkemenGo: GameLauncherPlugin<IkemenGameConfig> = {
     { platform: "darwin", arch: "arm64" },
   ],
   engineSha: IKEMEN_ENGINE_SHA,
-  gameConfigSchema: {
-    type: "object",
-    title: "Ikemen GO Match Settings",
-    description: "Room-shared settings every participant agrees to before the match starts.",
-    properties: {
-      teamMode: {
-        type: "string",
-        title: "Team Mode",
-        enum: ["single", "simul", "tag", "turns"],
-        default: "single",
-        description: "Applies to both sides. Defaults to \"single\" for a solo character pick, \"simul\" otherwise.",
-      },
-      roundTime: {
-        type: "integer",
-        minimum: -1,
-        default: -1,
-        title: "Round Time",
-        description: "Round time in ticks; -1 disables the timer.",
-      },
-      rounds: {
-        type: "integer",
-        minimum: 1,
-        default: 3,
-        title: "Rounds",
-        description: "Number of rounds before Ikemen quits.",
-      },
-    },
-    required: ["teamMode", "roundTime", "rounds"],
-  },
+  gameConfigSchema,
   // Nothing beyond binaryLocation is configurable yet - a preferred port only
   // matters once "room" mode has a real bridge (direct-tcp's port is chosen
   // at room-creation time and arrives via connectionConfig, not here).
@@ -68,6 +42,7 @@ const IkemenGo: GameLauncherPlugin<IkemenGameConfig> = {
   validateBinaryLocation: validateBinaryLocation,
 
   startGame: startGame,
+  validateGameConfig,
 };
 
 export default IkemenGo;

@@ -5,6 +5,7 @@ import { openSync } from "node:fs";
 import { buildIkemenArgs, IkemenGameConfig } from "./buildArgs";
 import { toProcessHandle } from "./processHandle";
 import { resolveIkemenBinary } from "../binaryLocation";
+import { resolveOfficialTeamMode } from "../selectionValidation";
 
 export { IkemenGameConfig };
 
@@ -16,7 +17,8 @@ export const startGame: GameLauncherPlugin<IkemenGameConfig>["startGame"] = asyn
   // GameLauncher.startGame), not this plugin's - by the time startGame is
   // called, connectionConfig.hostIp (client) is already the address to dial,
   // and a host has nothing left to resolve at all.
-  const cliArgs = buildIkemenArgs(connectionConfig, args);
+  const officialTeamMode = await resolveOfficialTeamMode(args.rosterConfig);
+  const cliArgs = buildIkemenArgs(connectionConfig, args, officialTeamMode);
   const resolvedPath = resolveIkemenBinary(binaryLocation, target);
 
   // Ikemen resolves data/, external/ and save/ relative to the working

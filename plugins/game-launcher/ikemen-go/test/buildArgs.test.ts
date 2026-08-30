@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { readFileSync } from "node:fs";
 import { ConnectionConfig, StartGameArgs, RosterLockV1Config } from "@roster-lock/types";
 import { buildIkemenArgs, IkemenGameConfig } from "../src/startGame/buildArgs";
+import { resolveOfficialTeamMode } from "../src/selectionValidation";
 
 // The real MUGEN example config, not a hand-written stub - it's what proves the
 // defName convention survives a config the editor actually produced. Rebuild it
@@ -22,8 +23,12 @@ const KFM = "@elecbyte/kung-fu-man";
 // def references is kfm.* - so anything inferring the def name from the folder
 // or from a sibling asset gets this one wrong.
 const KFM_ZSS = "@elecbyte/kung-fu-man-zss";
-const BAIKEN = "@tornillooxidado/baiken";
-const KYO = "@ikaruga/kyo-kusanagi";
+// Baiken/Kyo were dropped from the mugen example fixtures in favor of
+// content built entirely from Elecbyte's own Kung Fu Man - reuse two of
+// those variants here instead, keeping the "same defName convention as
+// something the config-editor actually produced" spirit of this file.
+const BAIKEN = "@elecbyte/kung-fu-man-thunder";
+const KYO = "@elecbyte/kung-fu-man-shadow";
 const TRAINING_ROOM = "@elecbyte/training-room";
 
 const HOST: ConnectionConfig = { type: "direct-tcp", party: "host", port: 7500 };
@@ -41,7 +46,7 @@ function downloadFor(pieceType: string, pieceId: string){
   };
 }
 
-function buildArgs(
+async function buildArgs(
   sides: Record<string, Array<string>>,
   options: {
     stage?: string,
@@ -51,11 +56,12 @@ function buildArgs(
   } = {},
 ){
   const characterIds = Object.values(sides).flat();
+  const config = options.config ?? rosterConfig;
   const args = {
     relayRoomId: "room-1",
     currentMachine: { machineId: "m1", publicKey: "pk", privateKeyFile: "/tmp/key" },
     allMachines: [],
-    rosterConfig: options.config ?? rosterConfig,
+    rosterConfig: config,
     matchAgent: { port: 9000, authCode: "auth" },
     gameConfig: options.gameConfig,
     selectionResult: {
@@ -74,7 +80,8 @@ function buildArgs(
       },
     },
   } as unknown as StartGameArgs<IkemenGameConfig>;
-  return buildIkemenArgs(options.connection ?? HOST, args);
+  const officialTeamMode = await resolveOfficialTeamMode(config);
+  return buildIkemenArgs(options.connection ?? HOST, args, officialTeamMode);
 }
 
 // Reads the value Ikemen would see for a flag, e.g. valueOf(args, "-p1").
@@ -84,43 +91,43 @@ function valueOf(args: Array<string>, flag: string){
 }
 
 describe("buildIkemenArgs - character def paths", () => {
-  it("points -p<n> at the .def file inside the piece folder, not the folder", () => {
-    const args = buildArgs({ alice: [KFM], bob: [BAIKEN] });
+  it("points -p<n> at the .def file inside the piece folder, not the folder", async () => {
+    const args = await buildArgs({ alice: [KFM], bob: [BAIKEN] });
     expect(valueOf(args, "-p1")).toBe(join(folderFor(KFM), "kfm.def"));
-    expect(valueOf(args, "-p2")).toBe(join(folderFor(BAIKEN), "Baiken.def"));
+    expect(valueOf(args, "-p2")).toBe(join(folderFor(BAIKEN), "kfm_thunder.def"));
   });
 
-  it("uses the defName path variable rather than anything derivable from the folder", () => {
-    const args = buildArgs({ alice: [KFM_ZSS], bob: [KYO] });
+  it("uses the defName path variable rather than anything derivable from the folder", async () => {
+    const args = await buildArgs({ alice: [KFM_ZSS], bob: [KYO] });
     // The folder is a ULID and the piece's other assets are all kfm.* - only
     // pathVariables.defName knows this file is kfm_zss.def.
     expect(valueOf(args, "-p1")).toBe(join(folderFor(KFM_ZSS), "kfm_zss.def"));
     expect(valueOf(args, "-p1")).not.toContain("kfm.def");
-    expect(valueOf(args, "-p2")).toBe(join(folderFor(KYO), "Kyo.def"));
+    expect(valueOf(args, "-p2")).toBe(join(folderFor(KYO), "kfm_shadow.def"));
   });
 
-  it("never passes a bare folder to Ikemen", () => {
-    const args = buildArgs({ alice: [KFM], bob: [KYO] }, { stage: TRAINING_ROOM });
+  it("never passes a bare folder to Ikemen", async () => {
+    const args = await buildArgs({ alice: [KFM], bob: [KYO] }, { stage: TRAINING_ROOM });
     for(const flag of ["-p1", "-p2", "-s"]){
       expect(valueOf(args, flag)).toMatch(/\.def$/);
     }
   });
 
-  it("resolves the stage's def the same way", () => {
-    const args = buildArgs({ alice: [KFM], bob: [KYO] }, { stage: TRAINING_ROOM });
+  it("resolves the stage's def the same way", async () => {
+    const args = await buildArgs({ alice: [KFM], bob: [KYO] }, { stage: TRAINING_ROOM });
     expect(valueOf(args, "-s")).toBe(join(folderFor(TRAINING_ROOM), "stage0.def"));
   });
 
-  it("omits -s entirely when nothing picked a stage", () => {
-    expect(buildArgs({ alice: [KFM], bob: [KYO] })).not.toContain("-s");
+  it("omits -s entirely when nothing picked a stage", async () => {
+    expect(await buildArgs({ alice: [KFM], bob: [KYO] })).not.toContain("-s");
   });
 });
 
 describe("buildIkemenArgs - team modes", () => {
-  it("emits the numeric TeamMode, since Ikemen reads -tmode with tonumber()", () => {
-    const cases = { single: "0", simul: "1", turns: "2", tag: "3" } as const;
+  it("emits the numeric TeamMode, since Ikemen reads -tmode with tonumber()", async () => {
+    const cases = { single: "0", turns: "2", tag: "3" } as const;
     for(const [name, expected] of Object.entries(cases)){
-      const args = buildArgs({ alice: [KFM], bob: [KYO] }, { gameConfig: { teamMode: name } });
+      const args = await buildArgs({ alice: [KFM], bob: [KYO] }, { gameConfig: { teamMode: name } });
       expect(valueOf(args, "-tmode1")).toBe(expected);
       expect(valueOf(args, "-tmode2")).toBe(expected);
     }
@@ -131,116 +138,134 @@ describe("buildIkemenArgs - team modes", () => {
   // whichever one the room agreed on.
   it.each([
     ["single", "0", 1],
-    ["simul", "1", 2],
     ["tag", "3", 3],
     ["turns", "2", 4],
-  ])("derives %s from the room's selection config", (mode, expected, count) => {
+  ])("derives %s from the room's selection config", async (mode, expected, count) => {
     const lock = loadLock(mode);
     const picks = [KFM, BAIKEN, KYO, KFM_ZSS].slice(0, count);
-    const args = buildArgs({ alice: picks, bob: picks }, { config: lock });
+    const args = await buildArgs({ alice: picks, bob: picks }, { config: lock });
     expect(valueOf(args, "-tmode1")).toBe(expected);
     expect(valueOf(args, "-tmode2")).toBe(expected);
     // ...and that config really does ask for this many characters.
     expect(lock.selection.piece.character.validation.count).toBe(count);
   });
 
-  it("lets gameConfig override the selection config's mode", () => {
-    const args = buildArgs({ alice: [KFM, BAIKEN, KYO], bob: [KFM, BAIKEN, KYO] }, {
+  it("lets gameConfig override the selection config's mode", async () => {
+    const args = await buildArgs({ alice: [KFM, BAIKEN, KYO], bob: [KFM, BAIKEN, KYO] }, {
       config: loadLock("tag"),
       gameConfig: { teamMode: "turns" },
     });
     expect(valueOf(args, "-tmode1")).toBe("2");
   });
 
-  it("falls back to the character count when no official selection matches", () => {
+  it("falls back to the character count when no official selection matches", async () => {
     // A custom selection config is still valid, it just isn't one of the
     // engine's registered ones - so there's no tag to read a mode off.
     const config = JSON.parse(JSON.stringify(rosterConfig)) as RosterLockV1Config;
     // 1-2 picks isn't any of the four registered counts, so it hashes to
     // something officialSelections has never heard of.
     config.selection.piece.character.validation.count = [1, 2];
-    expect(valueOf(buildArgs({ alice: [KFM], bob: [KYO] }, { config }), "-tmode1")).toBe("0");
-    expect(valueOf(buildArgs({ alice: [KFM, BAIKEN], bob: [KYO, KFM_ZSS] }, { config }), "-tmode1")).toBe("1");
+    expect(valueOf(await buildArgs({ alice: [KFM], bob: [KYO] }, { config }), "-tmode1")).toBe("0");
+    // Guessed as "tag" (not "simul" - that's not a supported mode at all), since
+    // it can't tell tag from turns once more than one character is picked.
+    expect(valueOf(await buildArgs({ alice: [KFM, BAIKEN], bob: [KYO, KFM_ZSS] }, { config }), "-tmode1")).toBe("3");
+  });
+
+  it("rejects \"simul\" as an explicit gameConfig override", async () => {
+    await expect(buildArgs({ alice: [KFM], bob: [KYO] }, { gameConfig: { teamMode: "simul" } }))
+      .rejects.toThrow(/doesn't support "simul" team mode yet/);
+  });
+
+  it("rejects a selection config officially tagged \"simul\"", async () => {
+    await expect(buildArgs({ alice: [KFM, BAIKEN], bob: [KYO, KFM_ZSS] }, { config: loadLock("simul") }))
+      .rejects.toThrow(/doesn't support "simul" team mode yet/);
+  });
+
+  it("rejects \"single\" with more than one character picked", async () => {
+    await expect(buildArgs({ alice: [KFM, BAIKEN], bob: [KYO] }, { gameConfig: { teamMode: "single" } }))
+      .rejects.toThrow(/"single" team mode expects exactly 1 character.*player "alice" has 2/);
   });
 });
 
 describe("buildIkemenArgs - slot numbering", () => {
-  it("interleaves slots by side, because Ikemen derives the side from parity", () => {
-    const args = buildArgs({ alice: [KFM, BAIKEN], bob: [KYO, KFM_ZSS] });
+  it("interleaves slots by side, because Ikemen derives the side from parity", async () => {
+    const args = await buildArgs({ alice: [KFM, BAIKEN], bob: [KYO, KFM_ZSS] }, {
+      gameConfig: { teamMode: "tag" },
+    });
     // Odd slots are side 1 (alice), even are side 2 (bob) - main.f_playerSide.
     expect(valueOf(args, "-p1")).toContain("kfm.def");
-    expect(valueOf(args, "-p3")).toContain("Baiken.def");
-    expect(valueOf(args, "-p2")).toContain("Kyo.def");
+    expect(valueOf(args, "-p3")).toContain("kfm_thunder.def");
+    expect(valueOf(args, "-p2")).toContain("kfm_shadow.def");
     expect(valueOf(args, "-p4")).toContain("kfm_zss.def");
   });
 
-  it("keeps a full 4v4 inside -p1..-p8", () => {
+  it("keeps a full 4v4 inside -p1..-p8", async () => {
     const four = [KFM, BAIKEN, KYO, KFM_ZSS];
-    const args = buildArgs({ alice: four, bob: four });
+    const args = await buildArgs({ alice: four, bob: four }, { gameConfig: { teamMode: "tag" } });
     expect(args.filter((a) => /^-p\d+$/.test(a)).sort())
       .toEqual(["-p1", "-p2", "-p3", "-p4", "-p5", "-p6", "-p7", "-p8"]);
   });
 
-  it("rejects more characters than Ikemen's MaxSimul", () => {
+  it("rejects more characters than Ikemen's MaxSimul", async () => {
     const five = [KFM, BAIKEN, KYO, KFM_ZSS, "@elecbyte/kung-fu-man-720"];
-    expect(() => buildArgs({ alice: five, bob: [KYO] })).toThrow(/at most 4 characters per side/);
+    await expect(buildArgs({ alice: five, bob: [KYO] })).rejects.toThrow(/at most 4 characters per side/);
   });
 });
 
 describe("buildIkemenArgs - connection", () => {
-  it("passes -ip with an empty value for the host, so Ikemen actually listens", () => {
+  it("passes -ip with an empty value for the host, so Ikemen actually listens", async () => {
     // Ikemen's own -h output: "-ip <hostip> Connect to <hostip> for netplay;
     // leave blank for host" - omitting the flag entirely (not the same
     // thing) means Ikemen never engages netplay at all.
-    const args = buildArgs({ alice: [KFM], bob: [KYO] });
+    const args = await buildArgs({ alice: [KFM], bob: [KYO] });
     expect(valueOf(args, "-ip")).toBe("");
     expect(valueOf(args, "-setport")).toBe("7500");
   });
 
-  it("passes -ip for a client, using the resolved host address", () => {
-    const args = buildArgs({ alice: [KFM], bob: [KYO] }, {
+  it("passes -ip for a client, using the resolved host address", async () => {
+    const args = await buildArgs({ alice: [KFM], bob: [KYO] }, {
       connection: { type: "direct-tcp", party: "client", port: 7500, hostIp: "10.0.0.5" },
     });
     expect(valueOf(args, "-ip")).toBe("10.0.0.5");
     expect(valueOf(args, "-setport")).toBe("7500");
   });
 
-  it("refuses connection types it can't actually drive", () => {
-    expect(() => buildArgs({ alice: [KFM], bob: [KYO] }, {
+  it("refuses connection types it can't actually drive", async () => {
+    await expect(buildArgs({ alice: [KFM], bob: [KYO] }, {
       connection: { type: "internal" },
-    })).toThrow(/doesn't support connection type "internal"/);
+    })).rejects.toThrow(/doesn't support connection type "internal"/);
   });
 });
 
 describe("buildIkemenArgs - failures", () => {
-  it("names the piece missing a defName rather than building a bad path", () => {
+  it("names the piece missing a defName rather than building a bad path", async () => {
     const config = JSON.parse(JSON.stringify(rosterConfig)) as RosterLockV1Config;
     const piece = config.rosters.character.find((p) => p.id === KFM)!;
     delete piece.pathVariables.defName;
-    expect(() => buildArgs({ alice: [KFM], bob: [KYO] }, { config }))
-      .toThrow(/character\/@elecbyte\/kung-fu-man to set a "defName" path variable/);
+    await expect(buildArgs({ alice: [KFM], bob: [KYO] }, { config }))
+      .rejects.toThrow(/character\/@elecbyte\/kung-fu-man to set a "defName" path variable/);
   });
 
-  it("rejects a defName that would escape the piece folder", () => {
+  it("rejects a defName that would escape the piece folder", async () => {
     const config = JSON.parse(JSON.stringify(rosterConfig)) as RosterLockV1Config;
     config.rosters.character.find((p) => p.id === KFM)!.pathVariables.defName = "../../etc/passwd";
-    expect(() => buildArgs({ alice: [KFM], bob: [KYO] }, { config }))
-      .toThrow(/expects "defName" to be a bare file name/);
+    await expect(buildArgs({ alice: [KFM], bob: [KYO] }, { config }))
+      .rejects.toThrow(/expects "defName" to be a bare file name/);
   });
 
-  it("reports a piece that isn't in the roster", () => {
-    expect(() => buildArgs({ alice: ["@elecbyte/not-downloaded"], bob: [KYO] }))
-      .toThrow(/No roster entry for character\/@elecbyte\/not-downloaded/);
+  it("reports a piece that isn't in the roster", async () => {
+    await expect(buildArgs({ alice: ["@elecbyte/not-downloaded"], bob: [KYO] }))
+      .rejects.toThrow(/No roster entry for character\/@elecbyte\/not-downloaded/);
   });
 
-  it("rejects a side with no characters", () => {
-    expect(() => buildArgs({ alice: [], bob: [KYO] })).toThrow(/no characters selected/);
+  it("rejects a side with no characters", async () => {
+    await expect(buildArgs({ alice: [], bob: [KYO] })).rejects.toThrow(/no characters selected/);
   });
 
-  it("rejects anything other than two sides", () => {
-    expect(() => buildArgs({ alice: [KFM] })).toThrow(/only supports 2-side matches/);
-    expect(() => buildArgs({ alice: [KFM], bob: [KYO], carol: [BAIKEN] }))
-      .toThrow(/only supports 2-side matches/);
+  it("rejects anything other than two sides", async () => {
+    await expect(buildArgs({ alice: [KFM] })).rejects.toThrow(/only supports 2-side matches/);
+    await expect(buildArgs({ alice: [KFM], bob: [KYO], carol: [BAIKEN] }))
+      .rejects.toThrow(/only supports 2-side matches/);
   });
 });
 

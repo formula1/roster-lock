@@ -1,16 +1,22 @@
 import { join } from "node:path";
 import {
-  ConnectionConfig, StartGameArgs, PieceType, PieceId, RosterLockV1Config
+  ConnectionConfig, StartGameArgs, PieceType, PieceId
 } from "@roster-lock/types";
 import {
   CHARACTER_PIECE_TYPE, STAGE_PIECE_TYPE, DEF_NAME_VARIABLE, MAX_CHARACTERS_PER_SIDE
 } from "../pieceTypes";
-import { syncSha256FromJSON } from "../hash";
+import {
+  IkemenGameConfig, IkemenTeamMode, TEAM_MODE_SELECTION_COUNTS, assertSupportedTeamMode
+} from "../selectionValidation";
+
+export { IkemenGameConfig };
 
 // Ikemen's TeamMode enum (src/system.go - TM_Single/TM_Simul/TM_Turns/TM_Tag).
 // -tmode1/-tmode2 are read with Lua's tonumber() (external/script/main.lua), so
 // they have to be the numbers - a name like "simul" becomes nil and silently
-// drops the side back to single before erroring out in setTeamMode.
+// drops the side back to single before erroring out in setTeamMode. Includes
+// "simul" even though it's not a supported IkemenTeamMode (see
+// selectionValidation.ts) purely to document the engine's real numeric mapping.
 const TEAM_MODE_NUMBERS = {
   single: 0,
   simul: 1,
@@ -18,56 +24,33 @@ const TEAM_MODE_NUMBERS = {
   tag: 3,
 } as const;
 
-export type IkemenTeamMode = keyof typeof TEAM_MODE_NUMBERS;
-
-function isTeamMode(tag: string): tag is IkemenTeamMode {
-  return tag in TEAM_MODE_NUMBERS;
-}
-
-// An Ikemen engine config is expected to publish one selection config per team
-// mode - the "single" one lets a player pick 1 character, "simul" 2, "tag" 3,
-// "turns" 4 - and register each under engine.officialSelections tagged with the
-// mode's name. The room everyone joined already agreed on one of those
-// selection configs, so the mode follows from it rather than being a separate
-// setting that can disagree with how many characters people actually picked.
-//
-// Hashed the same way the config editor does it (canonical JSON of the
-// selection subtree alone), so this matches what "selection hash" prints.
-function teamModeFromOfficialSelection(rosterConfig: RosterLockV1Config): IkemenTeamMode | undefined {
-  const official = rosterConfig.engine.officialSelections;
-  if(!official || official.length === 0) return undefined;
-  const hash = syncSha256FromJSON(rosterConfig.selection);
-  const tag = official.find((entry) => entry.hash === hash)?.tag;
-  if(tag === undefined || !isTeamMode(tag)) return undefined;
-  return tag;
-}
-
-// Room-shared - every participant agreed to these at room-creation time, so
-// this is what a room creator picks and other players inherit unchanged.
-export type IkemenGameConfig = {
-  // Applies to both sides. Normally left unset - it's derived from the room's
-  // selection config via engine.officialSelections. Set it only to override.
-  teamMode: IkemenTeamMode,
-  roundTime: number,
-  rounds: number,
-};
-
 export function buildIkemenArgs(
   connectionConfig: ConnectionConfig,
   args: StartGameArgs<IkemenGameConfig>,
+  officialTeamMode: IkemenTeamMode | undefined,
 ): Array<string> {
   if(connectionConfig.type !== "direct-tcp"){
     throw new Error(`ikemen-go doesn't support connection type "${connectionConfig.type}" yet`);
   }
 
-  const gameConfig = (args.gameConfig ?? {}) as IkemenGameConfig;
+  const gameConfig = (args.gameConfig ?? {}) as Partial<IkemenGameConfig>;
   const { finalSelection } = args.selectionResult;
-  const officialTeamMode = teamModeFromOfficialSelection(args.rosterConfig);
+  // gameConfig arrives as loosely-typed JSON (never schema-validated at this layer - see
+  // selectionValidation.ts's validateGameConfig for the call that does), so even though
+  // IkemenGameConfig["teamMode"] excludes "simul" at the type level, runtime data can still smuggle
+  // it through - hence the explicit assert rather than trusting the cast above.
+  if(gameConfig.teamMode !== undefined) assertSupportedTeamMode(gameConfig.teamMode);
 
-  // Temporary: hardcoded windowed size so two instances can sit side by side
-  // on one screen for recording. Not wired to any config yet - remove once
-  // that's no longer needed.
-  const cliArgs: Array<string> = ["-windowed", "-width", "940", "-height", "680"];
+  // No forced -windowed/-width/-height here - Ikemen's own save/config.ini (Fullscreen/
+  // WindowWidth/WindowHeight) already controls this per-install, and a previous "just hardcode
+  // -width/-height so two instances fit on screen for recording" attempt turned out to actively
+  // break window management: passing explicit -width/-height on the command line makes Ikemen's
+  // window report a stale, degenerate WM_NORMAL_HINTS "fixed 10x10" size (confirmed by hand via
+  // xprop) that blocks every WM-level move/resize/tile afterward, even though the rendered
+  // window is clearly much larger - a real GLFW/Ikemen bug in that specific code path. Sizing via
+  // config.ini instead (see examples/mugen/integration/src/lib/ikemenInstall.ts's
+  // setIkemenWindowSize, used for exactly this recording scenario) doesn't hit it.
+  const cliArgs: Array<string> = [];
 
   const characterSelection = finalSelection[CHARACTER_PIECE_TYPE];
   if(!characterSelection){
@@ -82,8 +65,10 @@ export function buildIkemenArgs(
     throw new Error(`ikemen-go only supports 2-side matches, got ${playerIds.length} player(s)`);
   }
 
-  playerIds.forEach((playerId, sideIndex) => {
-    const pieces = characterSelection.value[playerId];
+  const picksBySide = playerIds.map((playerId) => ({
+    playerId, pieces: characterSelection.value[playerId],
+  }));
+  for(const { playerId, pieces } of picksBySide){
     if(pieces.length === 0){
       throw new Error(`Player "${playerId}" has no characters selected`);
     }
@@ -93,11 +78,24 @@ export function buildIkemenArgs(
         `player "${playerId}" has ${pieces.length}`
       );
     }
-    // Explicit gameConfig wins, then the room's selection config, and only as a
-    // last resort the character count - which can't tell simul from tag/turns.
-    const teamMode = gameConfig.teamMode
-      ?? officialTeamMode
-      ?? (pieces.length > 1 ? "simul" : "single");
+  }
+
+  // Explicit gameConfig wins, then the room's selection config, and only as a last resort a guess
+  // from character count - which can't tell tag from turns (both just mean "more than one"; simul
+  // is never guessed, since it isn't a supported mode at all - see selectionValidation.ts).
+  // Resolved once, not per side: it's documented as applying to both sides equally.
+  const teamMode: IkemenTeamMode = gameConfig.teamMode
+    ?? officialTeamMode
+    ?? (picksBySide.every(({ pieces }) => pieces.length === 1) ? "single" : "tag");
+
+  picksBySide.forEach(({ playerId, pieces }, sideIndex) => {
+    const { min, max } = TEAM_MODE_SELECTION_COUNTS[teamMode];
+    if(pieces.length < min || pieces.length > max){
+      throw new Error(
+        `"${teamMode}" team mode expects ${min === max ? `exactly ${min}` : `${min}-${max}`} ` +
+        `character(s) per side, player "${playerId}" has ${pieces.length}`
+      );
+    }
     cliArgs.push(`-tmode${sideIndex + 1}`, String(TEAM_MODE_NUMBERS[teamMode]));
     pieces.forEach((piece, indexOnSide) => {
       // -p<n> slots interleave between sides rather than running consecutively:

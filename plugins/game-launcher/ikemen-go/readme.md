@@ -215,41 +215,68 @@ already resolved on `connectionConfig`, so it isn't a local setting this plugin 
 
 ## Team mode comes from the selection config
 
-An Ikemen engine config is expected to publish one selection config per team mode -
-`single` lets a player pick 1 character, `simul` 2, `tag` 3, `turns` 4 - and register
-each one in `engine.officialSelections` tagged with **Ikemen's own TeamMode name**. This
-plugin hashes the room's `selection` (canonical JSON of that subtree alone, matching the
-config editor's `selection hash`), looks the hash up in that list, and uses the tag as
-the team mode.
+This plugin supports three of Ikemen's four team modes: `single` (1 character), `tag`
+(up to 4), and `turns` (up to 4). **`simul` is rejected outright**, not just unimplemented
+- it needs more than one human player per side, and this plugin only ever drives exactly
+2 sides, one player each (`buildArgs.ts`'s 2-side requirement). A `gameConfig.teamMode`
+override of `"simul"`, or a selection config officially tagged `"simul"`, both fail with
+an explicit error naming the reason, rather than being silently downgraded or guessed
+around - see `selectionValidation.ts`'s `assertSupportedTeamMode`.
+
+An Ikemen engine config is expected to publish one selection config per supported team
+mode and register each one in `engine.officialSelections` tagged with **Ikemen's own
+TeamMode name**. This plugin hashes the room's `selection` (canonical JSON of that
+subtree alone, matching the config editor's `selection hash`), looks the hash up in that
+list, and uses the tag as the team mode.
 
 That's the point of the tags: the room everyone joined already agreed on one selection
 config, so the mode follows from it instead of being a separate setting that can
-contradict how many characters people actually picked.
+contradict how many characters people actually picked. `single` requires *exactly* 1
+character; `tag`/`turns` accept anywhere from 1 up to the 4-character cap - a selection
+config that could hand out more characters than a resolved mode allows (e.g. a `single`
+room paired with a selection config that lets someone pick 3) is rejected too, via
+`validateSelectionCount`.
 
 Resolution order is `gameConfig.teamMode` (an explicit override), then the official
 selection's tag, then a last-resort guess from the character count. That last fallback
 only fires for a selection config the engine hasn't registered, and it's a poor guess -
-it can't tell `simul` from `tag` or `turns`, since all three just mean "more than one".
-Registering your selection configs is what makes it accurate.
+it can't tell `tag` from `turns`, since both just mean "more than one" (it's never
+guessed as `simul`, since that's not a supported mode at all).
 
 `gameConfig.teamMode` applies to both sides (Ikemen's `-tmode1`/`-tmode2` don't have to
 match, but this plugin doesn't yet expose per-side config).
 
-See `examples/mugen/build-draft.sh` for a worked example that builds all four.
+See `examples/mugen/build-draft.sh` for a worked example that builds all four selection
+configs (including the `simul` one, kept as a fixture for testing the rejection path).
+
+### Where this is checked
+
+`selectionValidation.ts` exports `validateGameConfig(gameConfig, rosterConfig)` - a pure,
+Node-free async function (also wired up as this plugin's `GameLauncherPlugin.validateGameConfig`
+hook, and published under this package's `./selection-validation` subpath export) that
+reports every problem with a proposed config *before* a room exists: JSON-Schema shape
+errors against `gameConfigSchema`, plus the teamMode/selection-count checks above. It's
+called from three places - the room-creation client and, for matchmakers that opt in
+(see titled-room's `pluginValidators.ts`), the matchmaker server itself, both via this
+same function, and `buildArgs.ts`'s dynamic per-match check at match-start (the only place
+actual final picks exist, so the last line of defense even if the earlier two are skipped
+or bypassed).
 
 Characters are dealt into `-p<n>` slots **interleaved by side**, not consecutively:
 Ikemen derives a slot's side from its parity (`main.f_playerSide` - odd is side 1, even
 is side 2), so side 1 gets 1/3/5/7 and side 2 gets 2/4/6/8. Numbering them consecutively
 looks correct for a 1v1 and hands every side's second pick to the opponent in a
-simul/tag match. Four per side is the cap (Ikemen's `MaxSimul`, and all `-p1..-p8` has
+tag/turns match. Four per side is the cap (Ikemen's `MaxSimul`, and all `-p1..-p8` has
 room for).
 
 The schema takes the readable names, but `-tmode1`/`-tmode2` are emitted as the numbers
-Ikemen's `TeamMode` enum uses (`single`=0, `simul`=1, `turns`=2, `tag`=3). Ikemen reads
-those flags through Lua's `tonumber()`, so a name arrives as `nil` - which doesn't error
-where you'd notice, it quietly drops the side to single before failing later in
-`setTeamMode`. Keep the mapping in `buildArgs.ts` in sync with `TM_*` in Ikemen's
-`src/system.go` if that enum ever gains a mode.
+Ikemen's `TeamMode` enum uses (`single`=0, `simul`=1, `turns`=2, `tag`=3 - `buildArgs.ts`
+keeps this full 4-value mapping even though `simul` is rejected before it's ever used,
+purely to document Ikemen's real numeric enum). Ikemen reads those flags through Lua's
+`tonumber()`, so a name arrives as `nil` - which doesn't error where you'd notice, it
+quietly drops the side to single before failing later in `setTeamMode`. Keep the mapping
+in `buildArgs.ts` in sync with `TM_*` in Ikemen's `src/system.go` if that enum ever gains
+a mode.
 
 ## No update support
 
