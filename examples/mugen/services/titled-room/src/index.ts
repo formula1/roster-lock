@@ -2,10 +2,8 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { Env, PublicUserProfile, RoomData } from "./types";
 import { createRoomBodySchema, joinRoomBodySchema, startRoomBodySchema, destroyRoomBodySchema } from "./schema";
-import { assertGameLauncherAllowed } from "./game-launchers";
+import { assertGameLauncherAllowed, assertGameConfigValid, listAllowedGameLaunchers } from "./game-launchers";
 import { upsertRoomIndex, deleteRoomIndex, listOpenRooms } from "./db";
-import { app as adminApp } from "./admin";
-import { app as adminGameLaunchersApp } from "./admin/game-launchers";
 export { RoomSession } from "./RoomSession";
 
 const app = new Hono<{ Bindings: Env }>();
@@ -14,12 +12,13 @@ app.use('*', cors());
 
 app.get("/health", (c) => c.json({ status: "ok", service: "titled-room" }));
 
-// Which game-launcher plugins this deployment allows and their coordinator
-// setup - managed by an admin instead of redeploying with different env
-// vars (see admin/game-launchers.ts and game-launchers.ts's reads of the
-// game_runner_configs table this manages).
-app.route("/admin", adminApp);
-app.route("/admin/game-launchers", adminGameLaunchersApp);
+// Which game-launcher plugin(s) this deployment allows - see
+// game-launchers.ts, which just hardcodes ikemen-go now that this service
+// lives at examples/mugen/services/titled-room instead of as a
+// game-agnostic reference service.
+app.get("/game-launchers", async (c) => {
+  return c.json(await listAllowedGameLaunchers());
+});
 
 const verifyAuthToken = async (c: any): Promise<PublicUserProfile | null> => {
   const authHeader = c.req.header("Authorization");
@@ -46,7 +45,8 @@ app.post("/room/create", async (c) => {
   }
 
   try {
-    await assertGameLauncherAllowed(c.env, body.gameLauncherPlugin, body.rosterConfig);
+    await assertGameLauncherAllowed(body.gameLauncherPlugin, body.rosterConfig);
+    await assertGameConfigValid(body.gameLauncherPlugin, body.gameConfig, body.rosterConfig);
   } catch (err: any) {
     return c.json({ error: err.message }, 400);
   }
@@ -193,6 +193,13 @@ app.get("/room/:roomId", async (c) => {
   const stub = c.env.ROOM_SESSION.get(id);
   const res = await stub.fetch(new Request("https://do/state", { method: "GET" }) as any);
   return new Response(res.body as any, { status: res.status, headers: res.headers as any });
+});
+
+// Serve titled-room/client's built static assets for everything else -
+// registered last so it never shadows the API routes above. Mirrors
+// core/relay-server/cloudflare's CLIENT_ASSETS catch-all.
+app.all("*", async (c) => {
+  return c.env.CLIENT_ASSETS.fetch(c.req.raw as any) as any;
 });
 
 export default app;

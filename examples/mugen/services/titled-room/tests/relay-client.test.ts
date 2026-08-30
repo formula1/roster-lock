@@ -9,7 +9,6 @@ function makeEnv(overrides: Partial<Env> = {}): Env {
   return {
     ROOM_SESSION: {} as any,
     DB: {} as any,
-    JWT_SECRET: "test-secret" as any,
     RELAY_SERVER_URL: "http://relay.example.com",
     MATCHMAKER_PUBLIC_KEY: TEST_KEYS.publicVerificationKey,
     MATCHMAKER_SECRET_KEY: TEST_KEYS.privateSigningKey,

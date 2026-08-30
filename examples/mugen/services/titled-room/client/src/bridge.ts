@@ -6,6 +6,7 @@ import {
   GetIdentityResponse,
   RequestSelectionRequest, RequestSelectionResponse,
   UpdateGameLauncherSettingsRequest, UpdateGameLauncherSettingsResponse,
+  ValidateGameConfigRequest, ValidateGameConfigResponse,
   InitiateRelayEvent,
 } from "@roster-lock/types";
 
@@ -57,6 +58,19 @@ export async function updateGameLauncherSettings(pluginName: string, gameConfig:
     MATCHMAKER_BRIDGE_PATHS.updateGameLauncherSettings,
     { pluginName, gameConfig } satisfies UpdateGameLauncherSettingsRequest
   ) as UpdateGameLauncherSettingsResponse;
+}
+
+// Asks the host to run the installed plugin's own validateGameConfig (if it has one) against a
+// proposed gameConfig/rosterConfig pairing - so a room can be rejected before it's ever created,
+// using the real plugin logic running locally rather than a copy of its rules re-implemented here.
+export async function validateGameConfig(
+  pluginName: string, gameConfig: unknown, rosterConfig: ValidateGameConfigRequest["rosterConfig"]
+): Promise<Array<string>> {
+  const response: ValidateGameConfigResponse = await bridge.sendRequest(
+    MATCHMAKER_BRIDGE_PATHS.validateGameConfig,
+    { pluginName, gameConfig, rosterConfig } satisfies ValidateGameConfigRequest
+  );
+  return response.problems;
 }
 
 export function initiateRelay(payload: InitiateRelayEvent): void {

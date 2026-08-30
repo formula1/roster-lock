@@ -1,10 +1,13 @@
-import type { DurableObjectNamespace, D1Database } from "@cloudflare/workers-types";
-import type { SymmetricSignatureKey } from "@roster-lock/utils";
+import type { DurableObjectNamespace, D1Database, Fetcher } from "@cloudflare/workers-types";
 
 export interface Env {
   ROOM_SESSION: DurableObjectNamespace;
   AUTH_SERVICE_URL?: string;
   DB: D1Database;
+  // Static assets binding for serving titled-room/client's built React app
+  // (see wrangler.toml's [assets] and index.ts's catch-all route) - mirrors
+  // core/relay-server/cloudflare's CLIENT_ASSETS binding for client-admin.
+  CLIENT_ASSETS: Fetcher;
   // Fixed, deployment-known address of the relay server rooms actually run
   // on once started - never client-supplied (a client could otherwise point
   // participants at a relay server this matchmaker never vouched for). Used
@@ -17,21 +20,6 @@ export interface Env {
   // examples/mugen's internal-urls.env for exactly this split). Falls back
   // to RELAY_SERVER_URL when unset, for deployments where they're the same.
   PUBLIC_RELAY_SERVER_URL?: string;
-  // Which game-launcher plugins this deployment allows rooms to be created
-  // for, what each one's roster config is expected to hash to, and which
-  // (if any) game coordinator its rooms use - managed by an admin via
-  // src/admin/game-launchers.ts against the game_runner_configs D1 table, not
-  // an env var (see that file and game-launchers.ts).
-  //
-  // Secret for signing admin JWTs (src/admin/jwt.ts) - separate from
-  // MATCHMAKER_SECRET_KEY below, which signs create-room calls to relay
-  // rather than authenticating this deployment's own admin.
-  JWT_SECRET: SymmetricSignatureKey;
-  // Bootstrap credentials for the first admin login (src/admin/index.ts) -
-  // mirrors core/relay-server's own admin bootstrap flow exactly. Once an
-  // `admins` row exists these are only checked as a fallback.
-  INITIAL_ADMIN_USERNAME?: string;
-  INITIAL_ADMIN_PASSWORD?: string;
   // This matchmaker's own signing identity, used to prove create-room calls
   // to the relay server come from a legitimate, admin-registered matchmaker
   // (see core/relay-server's matchmakers table). Provisioned as Worker
@@ -40,6 +28,16 @@ export interface Env {
   // filesystem to persist a generated keypair to across restarts.
   MATCHMAKER_PUBLIC_KEY?: string;
   MATCHMAKER_SECRET_KEY?: string;
+  // ikemen-go's game coordinator (rendezvous address for direct-tcp netplay)
+  // - deployment-configured env vars, not admin-managed (see game-launchers.ts's
+  // gameCoordinatorFor). Names match examples/mugen's own
+  // IKEMEN_COORDINATOR_TCP_HOST/PORT (see internal-urls.env) rather than a
+  // separate GAME_COORDINATOR_HOST/PORT pair, since this deployment already
+  // has those. Unset entirely means "no coordinator" (false); setting
+  // GAME_COORDINATOR_ID requires both HOST and PORT too.
+  GAME_COORDINATOR_ID?: string;
+  IKEMEN_COORDINATOR_TCP_HOST?: string;
+  IKEMEN_COORDINATOR_TCP_PORT?: string;
 }
 
 // Opaque login-identity string handed back by whichever auth backend a

@@ -1,4 +1,4 @@
-// Wrapper around examples/services/match-makers/titled-room's HTTP/WS surface.
+// Wrapper around examples/mugen/services/titled-room's HTTP/WS surface.
 
 export type RoomParticipant = {
   userId: string,
@@ -75,6 +75,17 @@ export async function startRoom(
 
 export async function destroyRoom(titledRoomUrl: string, token: string, roomId: string): Promise<void> {
   await roomFetch(titledRoomUrl, token, "/room/destroy", { method: "POST", body: JSON.stringify({ roomId }) });
+}
+
+// Unauthenticated (no Authorization header, unlike roomFetch above) - GET
+// /game-launchers is public, see index.ts. Just the plugin names this
+// deployment allows rooms to be created for, so the client can offer to
+// install whatever's missing via the host bridge before the user has to
+// find a package name themselves.
+export async function listAllowedGameLaunchers(titledRoomUrl: string): Promise<Array<{ pluginName: string }>> {
+  const res = await fetch(new URL("/game-launchers", titledRoomUrl));
+  if (!res.ok) throw new Error(`Failed to fetch allowed game launchers (${res.status})`);
+  return res.json();
 }
 
 export async function listRooms(titledRoomUrl: string, token: string, title?: string): Promise<Array<RoomIndexEntry>> {

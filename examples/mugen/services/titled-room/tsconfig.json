@@ -5,6 +5,7 @@
     "moduleResolution": "nodenext",
     "types": ["@cloudflare/workers-types"],
     "lib": ["es2024"],
+    "resolveJsonModule": true,
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,

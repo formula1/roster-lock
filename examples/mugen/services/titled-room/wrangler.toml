@@ -3,6 +3,13 @@ main = "src/index.ts"
 compatibility_date = "2024-09-23"
 compatibility_flags = [ "nodejs_compat" ]
 
+# Static assets (titled-room/client's own React matchmaker UI) - see
+# index.ts's catch-all route. Mirrors core/relay-server/cloudflare's
+# CLIENT_ASSETS binding for client-admin.
+[assets]
+binding = "CLIENT_ASSETS"
+directory = "./client/dist"
+
 [durable_objects]
 bindings = [
   { name = "ROOM_SESSION", class_name = "RoomSession" }
@@ -32,16 +39,11 @@ RELAY_SERVER_URL = "http://localhost:8788"
 # has no such split.
 PUBLIC_RELAY_SERVER_URL = "http://localhost:8788"
 
-# Local-dev-only default (see admin/jwt.ts) - a real deployment provisions
-# this with `wrangler secret put`, same as MATCHMAKER_SECRET_KEY below.
-JWT_SECRET = "local-dev-titled-room-jwt-secret"
-# Bootstraps the first `admins` row on its first successful login (see
-# admin/index.ts) - which game-launcher plugins this deployment allows is then
-# managed via POST/PUT /admin/game-launchers, not an env var.
-INITIAL_ADMIN_USERNAME = "hello"
-INITIAL_ADMIN_PASSWORD = "world"
-
 # MATCHMAKER_PUBLIC_KEY / MATCHMAKER_SECRET_KEY are this matchmaker's own
 # signing identity (see relay-client.ts) - provision them with
 # `wrangler secret put`, not here, and register the public half in
 # relay-server's matchmakers table before /room/start will succeed.
+
+# ikemen-go's game coordinator - see game-launchers.ts's gameCoordinatorFor.
+# Unset entirely (the default here) means "no coordinator"; a deployment that
+# needs one sets all three (see examples/mugen's internal-urls.env).

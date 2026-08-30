@@ -10,9 +10,12 @@
   "main": "dist/index.js",
   "types": "src/index.ts",
   "scripts": {
-    "dev": "wrangler dev",
-    "build": "tsc",
-    "deploy": "wrangler deploy",
+    "dev": "pnpm run build:client && wrangler dev",
+    "dev:client": "pnpm --filter @roster-lock/titled-room-client run dev",
+    "dev:client:watch": "pnpm --filter @roster-lock/titled-room-client run build -- --watch",
+    "build": "tsc && pnpm run build:client",
+    "build:client": "pnpm --filter @roster-lock/titled-room-client run build",
+    "deploy": "pnpm run build:client && wrangler deploy",
     "test": "vitest run"
   },
   "devDependencies": {
@@ -23,6 +26,7 @@
     "wrangler": "^4.110.0"
   },
   "dependencies": {
+    "@roster-lock/game-launcher-ikemen-go": "workspace:*",
     "@roster-lock/types": "workspace:*",
     "@roster-lock/utils": "workspace:*",
     "hono": "^4.11.3",
