@@ -201,6 +201,16 @@ export type GameLauncherPlugin<T> = {
     binaryLocation: string, target: PlatformTarget
   ) => Promise<{ valid: true } | { valid: false, message: string }>,
 
+  // Reports problems with a gameConfig/rosterConfig combination before a room is created (e.g. a
+  // team-mode override incompatible with the selection config's declared character count) - empty
+  // array means no problems found. Optional: a plugin with no meaningful pre-creation checks (or
+  // nothing beyond what gameConfigSchema already covers) just omits it. Unlike every other function
+  // here, this one may run somewhere other than the local host - both the matchmaker client
+  // (running in a browser via match-agent's bridge) and, for plugins that opt in, the matchmaker
+  // server itself may call it directly, so a plugin implementing this must keep its own module
+  // free of Node-only (or otherwise non-portable) imports.
+  validateGameConfig?: (gameConfig: T, rosterConfig: RosterLockV1Config) => Promise<Array<string>>,
+
   startGame: (
     binaryLocation: string, target: PlatformTarget, connectionConfig: ConnectionConfig, args: StartGameArgs<T>
   ) => Promise<GameProcessHandle>,

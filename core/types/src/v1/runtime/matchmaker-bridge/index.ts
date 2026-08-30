@@ -2,7 +2,7 @@ import { RosterLockV1Config } from "../../lock";
 import { UserSelection } from "../../request";
 
 // The wire protocol between a matchmaker UI (loaded in an <iframe>, e.g.
-// examples/services/match-makers/titled-room/client) and its host shell (e.g.
+// examples/mugen/services/titled-room/client) and its host shell (e.g.
 // core/match-agent/client), carried over a postMessage-backed MessageBridge
 // (@roster-lock/utils). All six calls are iframe -> host; the host never
 // initiates. MessageBridge itself is untyped (see its own docs) - these
@@ -55,6 +55,15 @@ export type RequestSelectionResponse = Record<number, UserSelection>;
 export type UpdateGameLauncherSettingsRequest = { pluginName: string, gameConfig: unknown };
 export type UpdateGameLauncherSettingsResponse = {};
 
+// validateGameConfig(pluginName, gameConfig, rosterConfig) - asks the host to run the installed
+// plugin's own GameLauncherPlugin.validateGameConfig (if it has one) against a proposed
+// gameConfig/rosterConfig pairing, before a room is created - e.g. catching a teamMode override
+// that's incompatible with the roster's selection config. problems is empty both when the plugin
+// has no such hook and when it found nothing wrong - a matchmaker UI doesn't need to tell those
+// apart, only whether it's safe to proceed.
+export type ValidateGameConfigRequest = { pluginName: string, gameConfig: unknown, rosterConfig: RosterLockV1Config };
+export type ValidateGameConfigResponse = { problems: Array<string> };
+
 // initiateRelay(...) - fire-and-forget event, not a request: the guest is
 // about to be torn down (host navigates away from the iframe entirely), so
 // there's nothing useful to await. Host merges this with whatever it already
@@ -81,6 +90,7 @@ export const MATCHMAKER_BRIDGE_PATHS = {
   getIdentity: "getIdentity",
   requestSelection: "requestSelection",
   updateGameLauncherSettings: "updateGameLauncherSettings",
+  validateGameConfig: "validateGameConfig",
   initiateRelay: "initiateRelay",
   ready: "ready",
 } as const;
