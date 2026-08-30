@@ -125,7 +125,7 @@ export const getMachines: HTTPRequestHandler = async ({ req, res }, params, next
     const config = await roomManager.getConfig(roomId);
     if (!config) throw new HTTPError(404, "Room not found");
 
-    const machine = await validateAuthFromSearch(params.url.searchParams, config, "room-machines");
+    const machine = await validateAuthFromSearch(params.url.searchParams, config, "room-ws");
     if (!machine) throw new HTTPError(403, "Invalid token");
 
     return sendJSON(res, 200, await roomManager.getMachines(roomId));
