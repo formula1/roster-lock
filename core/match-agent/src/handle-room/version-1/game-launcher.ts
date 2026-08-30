@@ -126,6 +126,30 @@ export const validateGameLauncherBinaryLocation: HTTPRequestHandler = async func
   res.end(JSON.stringify(result));
 }
 
+// No binaryLocation involved (unlike every other route above) - this is a pre-room-creation check,
+// not a local-machine one, so it's callable before a binaryLocation is even configured.
+export const validateGameLauncherGameConfig: HTTPRequestHandler = async function(
+  this: V1Env, { req, res }, routeInfo
+){
+  const pluginName = requirePluginName(routeInfo);
+  const body = await jsonBody(req);
+  const parseResult = validateGameConfigBodySchema.safeParse(body);
+  if(!parseResult.success) throw new HTTPError(400, "Bad Form", parseResult.error);
+  const rosterConfig = castLockConfig(parseResult.data.rosterConfig);
+
+  const problems = await this.pluginRuntime.gameLauncher.validateGameConfig(
+    pluginName, parseResult.data.gameConfig, rosterConfig
+  );
+
+  res.writeHead(200, { "Content-Type": "application/json" });
+  res.end(JSON.stringify({ problems }));
+}
+
+const validateGameConfigBodySchema = z.object({
+  gameConfig: z.unknown(),
+  rosterConfig: z.unknown(),
+}).strict();
+
 export const updateGameLauncherBinary: HTTPRequestHandler = async function(
   this: V1Env, { res }, routeInfo
 ){
