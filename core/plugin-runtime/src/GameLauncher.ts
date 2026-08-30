@@ -3,6 +3,7 @@ import { join as pathJoin, dirname as pathDirname, isAbsolute as pathIsAbsolute 
 import { randomUUID } from "node:crypto";
 import {
   AnyGameLauncherPlugin, ConnectionConfig, ConnectionSetup, StartGameArgs, GameProcessHandle, PlatformTarget,
+  RosterLockV1Config,
 } from "@roster-lock/types";
 import { registerAsHost, awaitHostAddress, getLocalNetworkAddresses } from "@roster-lock/direct-ip-coordinator";
 import { getPluginModuleByName, getPluginFullOfType } from "./plugin-management";
@@ -71,6 +72,10 @@ export interface IGameLauncher {
   validateBinaryLocation(
     pluginName: string, binaryLocation: string, target: PlatformTarget
   ): Promise<{ valid: true } | { valid: false, message: string }>,
+  // Empty array when the plugin has no validateGameConfig hook at all - same "nothing to report"
+  // result as a plugin that implements the hook and finds no problems, so a caller doesn't need to
+  // special-case "unsupported" vs "valid".
+  validateGameConfig(pluginName: string, gameConfig: unknown, rosterConfig: RosterLockV1Config): Promise<Array<string>>,
   startGame(
     pluginName: string, binaryLocation: string, target: PlatformTarget,
     connectionSetup: ConnectionSetup, request: StartGameRequest
@@ -132,6 +137,12 @@ export class GameLauncher implements IGameLauncher {
   async validateBinaryLocation(pluginName: string, binaryLocation: string, target: PlatformTarget){
     const plugin = await this.moduleFor(pluginName);
     return plugin.validateBinaryLocation(this.resolveBinaryLocation(binaryLocation), target);
+  }
+
+  async validateGameConfig(pluginName: string, gameConfig: unknown, rosterConfig: RosterLockV1Config){
+    const plugin = await this.moduleFor(pluginName);
+    if(!plugin.validateGameConfig) return [];
+    return plugin.validateGameConfig(gameConfig, rosterConfig);
   }
 
   async startGame(
