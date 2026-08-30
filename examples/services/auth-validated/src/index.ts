@@ -134,7 +134,7 @@ app.get("/auth/verify", authMiddleware, async (c) => {
       displayName: user.displayName,
       // titled-room and other matchmakers read this as an opaque login
       // identity string, never as a real email specifically - see
-      // examples/services/match-makers/titled-room/src/types.ts.
+      // examples/mugen/services/titled-room/src/types.ts.
       identifier: user.email,
       publicKey: user.publicKey,
       validated: user.validated,
