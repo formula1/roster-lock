@@ -1,5 +1,5 @@
 import { beforeEach, afterEach, vi } from "vitest";
-import { InMemoryMessageQueue } from "../src/message-queue/memory";
+import { InMemoryMessageQueue } from "../src/message-queue/versions/memory";
 import { runMessageQueueSuite } from "../src/message-queue/suite";
 
 beforeEach(() => {
