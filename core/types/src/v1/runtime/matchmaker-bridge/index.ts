@@ -1,0 +1,96 @@
+import { RosterLockV1Config } from "../../lock";
+import { UserSelection } from "../../request";
+
+// The wire protocol between a matchmaker UI (loaded in an <iframe>, e.g.
+// examples/mugen/services/titled-room/client) and its host shell (e.g.
+// core/match-agent/client), carried over a postMessage-backed MessageBridge
+// (@roster-lock/utils). All six calls are iframe -> host; the host never
+// initiates. MessageBridge itself is untyped (see its own docs) - these
+// types exist purely so both sides' thin bridge wrapper modules agree on
+// shape, not because MessageBridge enforces it.
+//
+// Deliberately excludes any raw-signing/private-key primitive - titled-room
+// (the first matchmaker built against this protocol) uses JWT/bearer auth,
+// not signatures, so nothing needs one yet. A future signature-auth
+// matchmaker would need a new request added here, not a workaround.
+
+// installGameLauncherPlugin(pluginName) - host installs the plugin package and
+// opens a lightbox that also lets the user finish local config
+// (binaryLocation) before resolving.
+export type InstallGameLauncherPluginRequest = { pluginName: string };
+export type InstallGameLauncherPluginResponse = {};
+
+// getInstalledGameLauncherPlugins() - what game-launcher plugins this machine
+// already has installed, so a matchmaker's room UI can tell a user "you
+// don't have this one yet" without ever touching match-agent itself.
+// gameConfigSchema is included so a matchmaker can render the room-shared
+// settings a game launcher needs (e.g. ikemen-go's teamMode/roundTime/rounds)
+// as a real form (e.g. via rjsf) instead of asking the user for raw JSON -
+// it's already public (GameLauncherPlugin.gameConfigSchema, exposed by match-
+// agent's own /v1/game-launcher/available route), just not previously carried
+// across this bridge. Left as `unknown` here rather than ajv's AnySchema,
+// matching how match-agent-client's own GameLauncherSettingsForm already treats
+// localConfigSchema at this same kind of boundary - a consumer narrows it
+// (e.g. an RJSFSchema type guard) at render time instead.
+export type GetInstalledGameLauncherPluginsResponse = Array<{ id: string, version: string, gameConfigSchema: unknown }>;
+
+// getIdentity() - never includes the private key, only what's safe for a
+// matchmaker to see. playerCount reflects the host's own local player-slot
+// count (Join Settings), not anything the guest can set.
+export type GetIdentityResponse = { publicKey: string, machineId: string, playerCount: number };
+
+// requestSelection(rosterLockConfig, numPlayers) - host opens the Selection
+// lightbox for exactly `numPlayers` local player slots and resolves with the
+// built selection once confirmed. Unlike the other calls, the selection
+// *content* does cross back to the guest here - it isn't secret, only the
+// private key is.
+export type RequestSelectionRequest = { rosterLockConfig: RosterLockV1Config, numPlayers: number };
+export type RequestSelectionResponse = Record<number, UserSelection>;
+
+// updateGameLauncherSettings(pluginName, gameConfig) - room-shared settings a
+// game launcher needs before it can start (e.g. ikemen-go's teamMode). The
+// host holds onto this and folds it into the eventual
+// /v1/game-launcher/:pluginName/start call it makes later, since the host
+// (not the guest) is the one that ends up calling that route.
+export type UpdateGameLauncherSettingsRequest = { pluginName: string, gameConfig: unknown };
+export type UpdateGameLauncherSettingsResponse = {};
+
+// validateGameConfig(pluginName, gameConfig, rosterConfig) - asks the host to run the installed
+// plugin's own GameLauncherPlugin.validateGameConfig (if it has one) against a proposed
+// gameConfig/rosterConfig pairing, before a room is created - e.g. catching a teamMode override
+// that's incompatible with the roster's selection config. problems is empty both when the plugin
+// has no such hook and when it found nothing wrong - a matchmaker UI doesn't need to tell those
+// apart, only whether it's safe to proceed.
+export type ValidateGameConfigRequest = { pluginName: string, gameConfig: unknown, rosterConfig: RosterLockV1Config };
+export type ValidateGameConfigResponse = { problems: Array<string> };
+
+// initiateRelay(...) - fire-and-forget event, not a request: the guest is
+// about to be torn down (host navigates away from the iframe entirely), so
+// there's nothing useful to await. Host merges this with whatever it already
+// has from requestSelection/updateGameLauncherSettings and navigates to
+// wherever it runs its own download/start-game flow.
+export type InitiateRelayEvent = {
+  relay: { url: string, roomId: string },
+  rosterConfig: RosterLockV1Config,
+  gameLauncherPlugin: string,
+  isHost: boolean,
+  // A direct-tcp game launcher's rendezvous coordinator (see
+  // plugins/game-launcher/shared/direct-ip-coordinator and
+  // docs/v2/ikemen-go/game-coordinator.md) - null for game launchers that
+  // don't use one (a matchmaker resolves this the same way it resolves
+  // `relay`, e.g. titled-room's /room/start response).
+  coordinator: { host: string, port: number } | null,
+};
+
+// Bridge message/event path names, so both sides reference the same literal
+// strings instead of hand-typing them.
+export const MATCHMAKER_BRIDGE_PATHS = {
+  installGameLauncherPlugin: "installGameLauncherPlugin",
+  getInstalledGameLauncherPlugins: "getInstalledGameLauncherPlugins",
+  getIdentity: "getIdentity",
+  requestSelection: "requestSelection",
+  updateGameLauncherSettings: "updateGameLauncherSettings",
+  validateGameConfig: "validateGameConfig",
+  initiateRelay: "initiateRelay",
+  ready: "ready",
+} as const;

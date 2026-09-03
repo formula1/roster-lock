@@ -1,6 +1,6 @@
 {
   "name": "@roster-lock/shared",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Shared utilities, variables, etc between client and server",
   "keywords": [
     "roster-lock",

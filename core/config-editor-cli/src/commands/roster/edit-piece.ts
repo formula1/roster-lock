@@ -7,6 +7,7 @@ import { parseKeyValueList } from "../../lib/parse";
 import { readJsonInput } from "../../lib/json-input";
 import { pieceOverridesSchema } from "../../lib/schemas";
 import { describeSchemaShape } from "../../lib/schema-help";
+import { encodeImageFile } from "../../lib/image";
 
 function collect(value: string, previous: Array<string>){
   previous.push(value);
@@ -20,7 +21,7 @@ export const editPieceCommand = withDraftOption(new Command("edit-piece"))
   .option("--name <name>", "human-readable name")
   .option("--author <author>", "author name")
   .option("--url <url>", "info url")
-  .option("--image <url>", "image url")
+  .option("--image <path>", "path to a local image file (png/jpg/gif/webp/svg) to embed, or \"-\" to remove it")
   .option("--add-download-source <url>", "download source url to add (repeatable)", collect, [] as Array<string>)
   .option("--remove-download-source <url>", "download source url to remove (repeatable)", collect, [] as Array<string>)
   .option("--path-variables <k=v,...>", "path variable values to set (existing keys not mentioned are left alone)")
@@ -72,7 +73,10 @@ export const editPieceCommand = withDraftOption(new Command("edit-piece"))
     if(opts.name !== undefined) piece.humanInfo.name = opts.name;
     if(opts.author !== undefined) piece.humanInfo.author = opts.author;
     if(opts.url !== undefined) piece.humanInfo.url = opts.url;
-    if(opts.image !== undefined) piece.humanInfo.image = opts.image;
+    if(opts.image !== undefined){
+      if(opts.image === "-") delete piece.humanInfo.image;
+      else piece.humanInfo.image = encodeImageFile(opts.image);
+    }
 
     for(const source of opts.addDownloadSource){
       if(!piece.downloadSources.includes(source)) piece.downloadSources.push(source);

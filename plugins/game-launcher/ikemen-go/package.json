@@ -1,0 +1,46 @@
+{
+  "name": "@roster-lock/game-launcher-ikemen-go",
+  "version": "1.1.0",
+  "description": "Runs Ikemen GO matches via its Quick-VS command line, driven by a roster-lock selection",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/formula1/roster-lock.git",
+    "directory": "plugins/game-launcher/ikemen-go"
+  },
+  "license": "JSON",
+  "author": "Sam Tobia",
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": { "types": "./src/index.ts", "default": "./dist/index.js" },
+    "./selection-validation": { "types": "./src/selectionValidation.ts", "default": "./dist/selectionValidation.js" },
+    "./engine-config": { "types": "./src/engineConfig.ts", "default": "./dist/engineConfig.js" },
+    "./package.json": "./package.json"
+  },
+  "roster-lock": {
+    "pluginType": "game-launcher",
+    "priority": 0,
+    "engineSha": "cb2badbe0d7f9b9f52e18b52239a18aaafdad9405472e6108ec1bf1eb27f9f25"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "rimraf ./dist && tsc",
+    "prepare": "pnpm run build",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@roster-lock/utils": "workspace:*",
+    "@cfworker/json-schema": "^4.1.1"
+  },
+  "devDependencies": {
+    "@roster-lock/types": "workspace:*",
+    "@types/node": "^25.9.1",
+    "ajv": "^8.20.0",
+    "rimraf": "^6.1.3",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.5"
+  }
+}

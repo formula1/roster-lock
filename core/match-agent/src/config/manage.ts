@@ -13,7 +13,11 @@ const initializeConfig = Promise.resolve().then(()=>{
 // they're mounted - a drive letter on one machine, a different mount point
 // on another. Absent (e.g. the pre-existing home config), they default to
 // "pieces"/"plugins" siblings of the config file.
-export type MatchAgentConfig = { authCode: string, pieceFolder?: string, pluginFolder?: string };
+export type MatchAgentConfig = {
+  authCode: string,
+  pieceFolder?: string,
+  pluginFolder?: string,
+};
 
 import { z, ZodType } from "zod";
 

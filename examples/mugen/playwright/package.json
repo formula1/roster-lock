@@ -1,0 +1,20 @@
+{
+  "name": "@roster-lock/mugen-playwright",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Browser-driven end-to-end test for the mugen example - drives match-agent-client and titled-room/client (the real UIs) for two simulated players through connect, login, room create/join, selection, download, and starting a real Ikemen GO process, then closes it again.",
+  "license": "JSON",
+  "author": "",
+  "type": "commonjs",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "dependencies": {
+    "@roster-lock/types": "workspace:*"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0",
+    "@types/node": "^22.14.1",
+    "typescript": "^7.0.2"
+  }
+}

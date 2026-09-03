@@ -11,12 +11,15 @@ import { stat } from "fs/promises"
 import { runUntrustedScript, ScriptStarter } from "./run-untrusted";
 import { downloadToFolder, DownloadToFolderArg } from "./download";
 import { IPieceSort, PieceSort } from "./PieceSort";
+import { IGameLauncher, GameLauncher, GameLauncherLocalSettings, AvailableGameLauncher, StartGameRequest } from "./GameLauncher";
 import { PluginPackageType } from "./plugin-management/package";
 
 export { IPieceSort }
+export { IGameLauncher, GameLauncherLocalSettings, AvailableGameLauncher, StartGameRequest }
 export interface IPluginManager {
   readonly pluginDir: string
   pieceSort: IPieceSort,
+  gameLauncher: IGameLauncher,
   installPlugin(pluginName: string): Promise<void>,
   updatePlugin(pluginName: string): Promise<void>,
   uninstallPlugin(pluginName: string): Promise<void>,
@@ -36,6 +39,7 @@ export interface IPluginManager {
 
 export class PluginManager implements IPluginManager {
   public pieceSort: IPieceSort = new PieceSort(this);
+  public gameLauncher: IGameLauncher = new GameLauncher(this);
   private constructor(public readonly pluginDir: string){}
   static async create(pluginDir: string){
     const statInfo = await tryStat(pluginDir)

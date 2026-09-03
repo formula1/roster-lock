@@ -1,0 +1,50 @@
+{
+  "name": "@roster-lock/relay-server-cloudflare",
+  "version": "0.0.0",
+  "private": true,
+  "description": "To be used to connect multiple clients",
+  "keywords": [
+    "roster-lock",
+    "game"
+  ],
+  "homepage": "https://github.com/formula1/roster-lock#readme",
+  "bugs": {
+    "url": "https://github.com/formula1/roster-lock/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/formula1/roster-lock.git"
+  },
+  "license": "JSON",
+  "author": "Sam Tobia",
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "types": "src/index.ts",
+  "scripts": {
+    "dev": "pnpm run build:client && wrangler dev",
+    "dev:client": "pnpm --filter @roster-lock/relay-client run dev",
+    "dev:client:watch": "pnpm --filter @roster-lock/relay-client run build -- --watch",
+    "build": "pnpm run build:client",
+    "build:client": "pnpm --filter @roster-lock/relay-client run build",
+    "deploy": "pnpm run build:client && wrangler deploy",
+    "deploy:production": "pnpm run build:client && wrangler deploy --env production",
+    "tail": "wrangler tail",
+    "types": "wrangler types",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260103.0",
+    "@roster-lock/relay-conformance": "workspace:*",
+    "@types/express": "^5.0.6",
+    "@types/node": "^22.14.1",
+    "rimraf": "^6.0.1",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.5",
+    "wrangler": "^4.110.0"
+  },
+  "dependencies": {
+    "@roster-lock/utils": "workspace:*",
+    "hono": "^4.11.3",
+    "zod": "^4.3.5"
+  }
+}

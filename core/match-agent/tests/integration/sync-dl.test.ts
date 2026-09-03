@@ -54,7 +54,7 @@ describe("WS /v1/sync-dl", () => {
       await readyPromise;
 
       await expect(bridge.sendRequest("connect-to-relay", { not: "a valid room request" }))
-        .rejects.toBe("Invalid request");
+        .rejects.toThrow("Invalid request");
     } finally {
       ws.close();
     }

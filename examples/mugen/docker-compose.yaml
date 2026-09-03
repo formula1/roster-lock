@@ -1,0 +1,129 @@
+name: mugen-example
+
+networks:
+  match-lock-network:
+    driver: bridge
+
+services:
+  # ========================================================================
+  # DOWNLOAD PROVIDER - Serves piece tarballs and file listings
+  # ========================================================================
+  download-provider:
+    build:
+      context: ../..
+      dockerfile: examples/services/download-provider/folder-tar/Dockerfile
+    ports:
+      - "7442:80"
+    environment:
+      - NODE_ENV=development
+      - PORT=80
+      - PIECES_DIR=/pieces
+    networks:
+      - match-lock-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    volumes:
+      - ./pieces:/pieces:ro
+
+  # ========================================================================
+  # RELAY SERVER - Cloudflare Workers-compatible relay using Hono
+  # ========================================================================
+  relay-room:
+    build:
+      context: ../..
+      dockerfile: core/relay-server/cloudflare/Dockerfile
+    ports:
+      - "7443:80"
+    environment:
+      - NODE_ENV=development
+      - PORT=80
+      - ENVIRONMENT=development
+    env_file:
+      - ./services/env-vars/relay.env
+    networks:
+      - match-lock-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/api/v1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # ========================================================================
+  # AUTH NAIVE - Username-only auth, no email verification
+  # ========================================================================
+  auth-naive:
+    build:
+      context: ../..
+      dockerfile: examples/services/auth-naive/Dockerfile
+    ports:
+      - "7444:80"
+    environment:
+      - PORT=80
+    networks:
+      - match-lock-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # ========================================================================
+  # TITLED ROOM - Match maker: rooms, selection, and handing off to relay
+  # ========================================================================
+  titled-room:
+    build:
+      context: ../..
+      dockerfile: examples/mugen/services/titled-room/Dockerfile
+      # Baked into titled-room/client's built JS at image-build time (see
+      # client/src/config.ts) - must match auth-naive/titled-room's own
+      # PUBLIC_* addresses below in internal-urls.env, since this is the URL
+      # a browser loading titled-room's served client actually hits.
+      args:
+        VITE_AUTH_SERVICE_URL: http://localhost:7444
+        VITE_TITLED_ROOM_URL: http://localhost:7445
+    ports:
+      - "7445:80"
+    environment:
+      - PORT=80
+    env_file:
+      - ./services/env-vars/internal-urls.env
+      - ./services/env-vars/titled-room.env
+    networks:
+      - match-lock-network
+    depends_on:
+      relay-room:
+        condition: service_healthy
+      auth-naive:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # ========================================================================
+  # DIRECT-IP COORDINATOR - Direct-tcp rendezvous game coordinator (generic,
+  # reused here for the ikemen-go game launcher)
+  # ========================================================================
+  direct-ip-coordinator:
+    build:
+      context: ../..
+      dockerfile: examples/services/coordinators/direct-ip/Dockerfile
+    ports:
+      - "7446:80"
+      - "9010:9010"
+    environment:
+      - PORT=80
+      - COORDINATOR_TCP_PORT=9010
+    env_file:
+      - ./services/env-vars/coordinator.env
+    networks:
+      - match-lock-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
