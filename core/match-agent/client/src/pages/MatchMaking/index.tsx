@@ -187,6 +187,7 @@ export function MatchMakingPage() {
             matchAgentUrl={matchAgent.settings.url}
             matchAgentAuth={matchAgent.settings.authCode}
             onConfirm={resolveSelectionLightbox}
+            onCancel={cancelSelectionLightbox}
           />
         </Lightbox>
       )}

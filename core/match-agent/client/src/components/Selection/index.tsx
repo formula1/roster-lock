@@ -14,13 +14,14 @@ type PickablePlan = Extract<PieceTypePlan, { kind: "pickable" }>;
 // inactive, so switching tabs never loses work. Used inline by
 // pages/MatchMaking/Rooms/[roomId] once a room is ready to select in.
 export function SelectionBoard({
-  rosterConfig, playerSlots, matchAgentUrl, matchAgentAuth, onConfirm,
+  rosterConfig, playerSlots, matchAgentUrl, matchAgentAuth, onConfirm, onCancel,
 }: {
   rosterConfig: RosterLockV1Config,
   playerSlots: Array<PlayerSlot>,
   matchAgentUrl: string,
   matchAgentAuth: string,
   onConfirm: (playerSelections: Record<number, UserSelection>) => void,
+  onCancel: () => void,
 }) {
   const [picksBySlot, setPicksBySlot] = useState<Record<string, Record<string, Array<string>>>>({});
 
@@ -138,6 +139,9 @@ export function SelectionBoard({
         {!allValid && (
           <span className="selection-board-hint">Still needs: {pendingTypes.join(", ")}</span>
         )}
+        <button type="button" onClick={onCancel}>
+          Cancel
+        </button>
         <button type="button" disabled={!allValid} onClick={handleConfirm}>
           Confirm Selection
         </button>
