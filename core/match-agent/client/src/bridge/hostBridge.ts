@@ -27,7 +27,7 @@ export type PendingLightbox = (
 // sync-dl.ws.ts uses over WebSocket, just over postMessage here).
 export function useHostBridge(args: {
   iframeRef: RefObject<HTMLIFrameElement | null>,
-  iframeLoaded: boolean,
+  iframeLoaded: number,
   matchAgent: { url: string, authCode: string },
   identityKeys: UserKeyPair,
   machineId: string,
@@ -35,6 +35,8 @@ export function useHostBridge(args: {
   onInitiateRelay: (session: DownloadSession) => void,
 }) {
   const { iframeRef, iframeLoaded, matchAgent, identityKeys, machineId, playerSlots, onInitiateRelay } = args;
+
+  const activeConnection = useRef<number>(-1);
 
   const [pendingLightbox, setPendingLightbox] = useState<PendingLightbox | null>(null);
   const [connected, setConnected] = useState(false);
@@ -49,7 +51,8 @@ export function useHostBridge(args: {
   latest.current = args;
 
   useEffect(() => {
-    if (!iframeLoaded) return;
+    if (iframeLoaded === -1) return;
+    activeConnection.current = iframeLoaded
     setConnected(false);
     setConnectionError(false);
 
@@ -132,7 +135,10 @@ export function useHostBridge(args: {
 
     waitForBridgeEvent(bridge, MATCHMAKER_BRIDGE_PATHS.ready, 15_000)
       .then(() => setConnected(true))
-      .catch(() => setConnectionError(true));
+      .catch(()=>{
+        if(activeConnection.current !== iframeLoaded) return;
+        setConnectionError(true)
+      });
 
     return () => {
       window.removeEventListener("message", onMessage);

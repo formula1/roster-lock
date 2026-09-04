@@ -41,7 +41,7 @@ export function MatchMakingPage() {
   const [selectedSaved, setSelectedSaved] = useState("");
   const [connectedUrl, setConnectedUrl] = useState<string | null>(null);
   const [connecting, setConnecting] = useState(false);
-  const [iframeLoaded, setIframeLoaded] = useState(false);
+  const [iframeLoaded, setIframeLoaded] = useState(-1);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -69,7 +69,7 @@ export function MatchMakingPage() {
 
   const handleConnect = (targetUrl: string = url) => {
     localStorage.setItem(STORAGE_KEY, targetUrl);
-    setIframeLoaded(false);
+    setIframeLoaded(-1);
     setErrorMessage(null);
     setConnectedUrl(targetUrl);
     setConnecting(true);
@@ -91,6 +91,7 @@ export function MatchMakingPage() {
     // than leaving `connecting` true against a URL that's no longer shown.
     setConnecting(false);
     setErrorMessage(null);
+    setIframeLoaded(-1);
   };
 
   const handleIframeError = () => {
@@ -164,7 +165,7 @@ export function MatchMakingPage() {
             src={connectedUrl}
             className="matchmaker-frame"
             title="Matchmaker"
-            onLoad={() => setIframeLoaded(true)}
+            onLoad={() => setIframeLoaded(Date.now())}
             onError={handleIframeError}
           />
         </div>
