@@ -1,7 +1,9 @@
 import { randomUUID } from "node:crypto";
 import { ConnectionSetup, StartGameArgs, PlatformTarget } from "@roster-lock/types";
 import { GameLauncherLocalSettings } from "@roster-lock/plugin-runtime";
+import { MessageBridge } from "@roster-lock/utils";
 import { jsonBody, HTTPRequestHandler, HTTPError } from "../../utils/http-router";
+import { WebSocketHandlerCallback } from "../../utils/websocket-router";
 import { V1Env } from "./globals/types";
 import { castLockConfig } from "./piece-sort";
 import z, { ZodType } from "zod";
@@ -253,6 +255,12 @@ export const startGameLauncher: HTTPRequestHandler = async function(
 
   const handleId = randomUUID();
   this.processHandles.set(handleId, { pluginName, handle });
+  // onExit/onCrash rather than polling handle.exited - these are the only
+  // moments a process's status can actually change after this point, and
+  // gameProcessesWs's subscribers need to hear about it as it happens.
+  handle.onExit(()=>this.processEvents.emit("changed"));
+  handle.onCrash(()=>this.processEvents.emit("changed"));
+  this.processEvents.emit("changed");
 
   res.writeHead(200, { "Content-Type": "application/json" });
   res.end(JSON.stringify({ handleId }));
@@ -269,17 +277,49 @@ export const getGameProcessStatus: HTTPRequestHandler = async function(
   res.end(JSON.stringify({ exited: entry.handle.exited }));
 }
 
+// Shared by both the HTTP listing below and gameProcessesWs's push updates,
+// so the two stay in the same shape.
+function summarizeProcesses(env: V1Env){
+  return Array.from(env.processHandles.entries()).map(([handleId, entry]) => ({
+    handleId, pluginName: entry.pluginName, exited: entry.handle.exited,
+  }));
+}
+
 // Every process this match-agent has started, across every game-launcher
 // plugin - backs pages/Game in match-agent-client, which shows one row per
 // entry regardless of which plugin launched it.
 export const listGameProcesses: HTTPRequestHandler = async function(
   this: V1Env, { res }
 ){
-  const processes = Array.from(this.processHandles.entries()).map(([handleId, entry]) => ({
-    handleId, pluginName: entry.pluginName, exited: entry.handle.exited,
-  }));
   res.writeHead(200, { "Content-Type": "application/json" });
-  res.end(JSON.stringify(processes));
+  res.end(JSON.stringify(summarizeProcesses(this)));
+}
+
+// WS counterpart to listGameProcesses - pushes a "processes" snapshot as
+// soon as a client connects, then again on every processEvents "changed" (a
+// process started, exited, or crashed). No "ready" handshake like the other
+// WS routes here use: those exist so a client knows it's safe to send a
+// request (onRequest handlers registered), but this route never receives a
+// request at all - it's pure server push, so the first "processes" event
+// already doubles as that signal.
+export const gameProcessesWs: WebSocketHandlerCallback = async function(
+  this: V1Env, { ws }, params, next
+){
+  try {
+    const bridge = new MessageBridge((message)=>ws.send(JSON.stringify(message)));
+    ws.on("message", (message)=>{
+      bridge.handleMessage(JSON.parse(message.toString()));
+    });
+
+    const sendSnapshot = ()=>{ bridge.sendEvent("processes", summarizeProcesses(this)); };
+    this.processEvents.on("changed", sendSnapshot);
+    ws.on("close", ()=>{ this.processEvents.off("changed", sendSnapshot); });
+
+    sendSnapshot();
+  }catch(e){
+    ws.terminate();
+    next(e);
+  }
 }
 
 // Best-effort, same as GameProcessHandle.stop() itself - see that type's own

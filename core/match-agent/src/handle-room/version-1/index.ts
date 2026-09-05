@@ -1,3 +1,4 @@
+import { EventEmitter } from "node:events";
 import { HTTPRouter } from "../../utils/http-router";
 import { WebSocketRouter } from "../../utils/websocket-router";
 
@@ -10,7 +11,7 @@ import { listAvailableSortPlugins, sortListPlugin, gameComplete } from "./piece-
 import {
   listAvailableGameLaunchers, getGameLauncherSettings, setGameLauncherSettings, getGameLauncherVersion,
   validateGameLauncherBinaryLocation, validateGameLauncherGameConfig, updateGameLauncherBinary, startGameLauncher,
-  getGameProcessStatus, installGameLauncherPlugin, listGameProcesses, stopGameProcess,
+  getGameProcessStatus, installGameLauncherPlugin, listGameProcesses, stopGameProcess, gameProcessesWs,
 } from "./game-launcher";
 import { IFolderDB, V1Env, MatchAgentSelfInfo, ProcessHandleEntry, GameCompletionContext } from "./globals";
 import { PluginManager } from "@roster-lock/plugin-runtime";
@@ -18,7 +19,8 @@ import { PluginManager } from "@roster-lock/plugin-runtime";
 export const createV1Routers = (fileDB: IFolderDB, pluginRuntime: PluginManager, matchAgent: MatchAgentSelfInfo)=>{
   const processHandles = new Map<string, ProcessHandleEntry>();
   const gameCompletionContext = new Map<string, GameCompletionContext>();
-  const env: V1Env = { fileDB, pluginRuntime, matchAgent, processHandles, gameCompletionContext };
+  const processEvents = new EventEmitter();
+  const env: V1Env = { fileDB, pluginRuntime, matchAgent, processHandles, gameCompletionContext, processEvents };
   const httpRouter = new HTTPRouter();
   const wsRouter = new WebSocketRouter()
 
@@ -49,6 +51,11 @@ export const createV1Routers = (fileDB: IFolderDB, pluginRuntime: PluginManager,
 
   wsRouter.mount("/sync-dl", wsHandler.bind(env));
   wsRouter.mount("/piece/ensure", ensurePieceDownloadedWs.bind(env));
+  // WS counterpart to /game-launcher/processes above - pushes the same
+  // listGameProcesses snapshot on every connect and again whenever it
+  // changes, so a client (e.g. match-agent-client's Game page) doesn't have
+  // to poll the HTTP route for status.
+  wsRouter.mount("/game-launcher/processes", gameProcessesWs.bind(env));
 
   // env is returned alongside the routers (not just used to bind them) so a
   // caller - e.g. a test - can seed/inspect in-memory state like

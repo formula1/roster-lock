@@ -1,4 +1,5 @@
 
+import { EventEmitter } from "node:events";
 import { IFolderDB } from "./FolderDB";
 import { PluginManager } from "@roster-lock/plugin-runtime";
 import { GameProcessHandle, HandleFullSelectionArg } from "@roster-lock/types";
@@ -38,4 +39,10 @@ export type V1Env = {
   // itself; there's no persistent process-supervision story here).
   processHandles: Map<string, ProcessHandleEntry>,
   gameCompletionContext: Map<string, GameCompletionContext>,
+  // Fires "changed" whenever processHandles gains an entry or one of its
+  // handles reports exit/crash - what game-launcher.ts's gameProcessesWs
+  // listens on to push a fresh listGameProcesses-shaped snapshot, so a
+  // client can watch process status live instead of polling
+  // /game-launcher/processes.
+  processEvents: EventEmitter,
 }

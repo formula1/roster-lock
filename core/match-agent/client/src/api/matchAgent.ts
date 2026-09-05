@@ -6,6 +6,7 @@
 // asset-loading surface games actually consume.
 
 import { PlatformTarget } from "@roster-lock/types";
+import { MessageBridge } from "@roster-lock/utils";
 
 export type GameLauncherLocalSettings = {
   binaryLocation?: string,
@@ -161,6 +162,27 @@ export async function listGameProcesses(
 ): Promise<Array<GameProcessSummary>> {
   const res = await matchAgentFetch(matchAgentUrl, authCode, "/v1/game-launcher/processes");
   return res.json();
+}
+
+// WS counterpart to listGameProcesses (see game-launcher.ts's gameProcessesWs)
+// - pushes the current snapshot immediately and again on every later
+// start/exit, so a caller like pages/Game doesn't have to poll. Returns an
+// unsubscribe function that closes the socket.
+export function subscribeToGameProcesses(
+  matchAgentUrl: string, authCode: string,
+  onUpdate: (processes: Array<GameProcessSummary>) => void, onError: (error: Error) => void
+): () => void {
+  const wsUrl = new URL("/v1/game-launcher/processes", matchAgentUrl);
+  wsUrl.protocol = wsUrl.protocol === "https:" ? "wss:" : "ws:";
+  wsUrl.searchParams.set("authorization", authCode);
+
+  const ws = new WebSocket(wsUrl.href);
+  const bridge = new MessageBridge((message) => ws.send(JSON.stringify(message)));
+  ws.addEventListener("message", (event) => bridge.handleMessage(JSON.parse(event.data)));
+  ws.addEventListener("error", () => onError(new Error("Lost connection to match agent")));
+  bridge.onEvent("processes", (processes) => onUpdate(processes));
+
+  return () => ws.close();
 }
 
 export async function stopGameLauncher(
