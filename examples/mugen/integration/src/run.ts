@@ -44,6 +44,11 @@ export async function runIntegration(binaryLocation: string){
       // throws "No protocol to handle url" without one installed).
       "plugins/download/protocol/http", "plugins/download/archive/tar",
       "plugins/game-launcher/ikemen-go",
+      // Lets this harness's real two-machine matches exercise the
+      // gameEnded -> handleGameComplete wiring - after a match completes,
+      // data/<plugin-name>/stats.sqlite3 under pluginFolder should show
+      // updated games/wins counts for the winner.
+      "plugins/piece-selection-sort/highest-winrate-locally",
     ];
     for(const pluginPath of requiredPlugins){
       await installGameLauncherPlugin(matchAgentUrl, MATCH_AGENT_CONFIG.authCode, path.join(REPO_ROOT, pluginPath));
