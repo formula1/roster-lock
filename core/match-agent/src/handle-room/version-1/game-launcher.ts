@@ -238,6 +238,17 @@ export const startGameLauncher: HTTPRequestHandler = async function(
     gameConfig,
     relayRoomId,
     matchAgent: { port: this.matchAgent.getPort(), authCode: this.matchAgent.authCode },
+    gameEnded: (result)=>{
+      const ctx = this.gameCompletionContext.get(relayRoomId);
+      if(!ctx){
+        console.error(`No game-completion context for relayRoomId "${relayRoomId}"`);
+        return;
+      }
+      this.gameCompletionContext.delete(relayRoomId);
+      this.pluginRuntime.pieceSort.handleGameComplete({ ...ctx, winners: result.winners }).catch((e)=>{
+        console.error("piece-selection-sort handleGameComplete failed", e);
+      });
+    },
   });
 
   const handleId = randomUUID();

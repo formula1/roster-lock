@@ -413,6 +413,9 @@ importers:
       '@roster-lock/dl-protocol-http':
         specifier: workspace:*
         version: link:../../plugins/download/protocol/http
+      '@roster-lock/game-launcher-headless':
+        specifier: workspace:*
+        version: link:../../plugins/game-launcher/headless
       '@roster-lock/game-launcher-ikemen-go':
         specifier: workspace:*
         version: link:../../plugins/game-launcher/ikemen-go
@@ -1594,6 +1597,27 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+
+  plugins/game-launcher/headless:
+    devDependencies:
+      '@roster-lock/types':
+        specifier: workspace:*
+        version: link:../../../core/types
+      '@types/node':
+        specifier: ^25.9.1
+        version: 25.9.4
+      ajv:
+        specifier: ^8.20.0
+        version: 8.20.0
+      rimraf:
+        specifier: ^6.1.3
+        version: 6.1.3
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^4.1.5
+        version: 4.1.9(@types/node@25.9.4)(vite@6.4.3(@types/node@25.9.4)(terser@5.49.0)(tsx@4.22.4))
 
   plugins/game-launcher/ikemen-go:
     dependencies:

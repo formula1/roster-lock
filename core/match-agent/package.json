@@ -40,6 +40,7 @@
     "@roster-lock/piece-selection-sort-most-used-locally": "workspace:*",
     "@roster-lock/piece-selection-sort-highest-winrate-locally": "workspace:*",
     "@roster-lock/game-launcher-ikemen-go": "workspace:*",
+    "@roster-lock/game-launcher-headless": "workspace:*",
     "@roster-lock/match-agent-client": "workspace:*",
     "@roster-lock/relay-conformance": "workspace:*",
     "@roster-lock/relay-server-hosted": "workspace:*",

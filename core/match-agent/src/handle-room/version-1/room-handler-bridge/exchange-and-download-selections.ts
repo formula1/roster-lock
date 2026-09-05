@@ -6,6 +6,7 @@ import { RosterLockV1Config, RosterLockV1SyncDLRequestClientToAgent } from "@ros
 import { ROSTERLOCK_V1_CASTER_JSONSCHEMA } from "@roster-lock/shared";
 import { UserSelectionSchema } from "../schema/selected";
 import { IFolderDB } from "../globals/FolderDB";
+import { GameCompletionContext } from "../globals/types";
 import { once } from "events";
 import z, { ZodType } from "zod";
 import { PluginManager } from "@roster-lock/plugin-runtime";
@@ -52,7 +53,8 @@ export async function exchangeAndDownloadSelections(
   fileDB: IFolderDB,
   pluginRuntime: PluginManager,
   roomRequest: RosterLockV1SyncDLRequestClientToAgent,
-  progressListeners: ProgressListeners = {}
+  progressListeners: ProgressListeners = {},
+  onGameComplete?: (relayRoomId: string, ctx: GameCompletionContext) => void,
 ){
   const roomURL = prepareRelayURL(roomRequest);
 
@@ -88,6 +90,7 @@ export async function exchangeAndDownloadSelections(
     ownSelections: roomRequest.playerSelections,
     lockConfig: roomRequest.rosterConfig,
     gameControlledSelections: {},
+    onGameComplete: onGameComplete && ((ctx)=>onGameComplete(roomRequest.relay.roomId, ctx)),
   }, progressListeners);
 
   // The relay closes the room websocket with a close reason as soon as it fails

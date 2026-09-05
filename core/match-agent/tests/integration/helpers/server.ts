@@ -26,7 +26,7 @@ export async function startTestServer(folder: string, authCode: string = randomU
   // is only ever called from a request handler, by which point `port` has
   // already been assigned.
   let port = 0;
-  const { httpRouter: v1HttpRouter, wsRouter: v1WsRouter } = createV1Routers(
+  const { httpRouter: v1HttpRouter, wsRouter: v1WsRouter, env } = createV1Routers(
     fileDB, pluginRuntime, { authCode, getPort: () => port }
   );
   server.httpRouter.use("/v1", authMiddleware(authCode), v1HttpRouter);
@@ -42,6 +42,11 @@ export async function startTestServer(folder: string, authCode: string = randomU
     port,
     httpUrl: `http://localhost:${port}`,
     wsUrl: `ws://localhost:${port}`,
+    // Exposes the same in-memory state the v1 routes themselves read/write
+    // (e.g. gameCompletionContext) - lets a test seed or inspect it directly
+    // rather than having to drive a real room negotiation (which needs an
+    // actual relay server) just to set up a later request.
+    env,
     close(): Promise<void> {
       return new Promise((resolve, reject) => {
         server.close((err?: Error) => err ? reject(err) : resolve());

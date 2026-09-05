@@ -12,6 +12,7 @@ import { UserSelectionSchema } from "../schema/selected";
 import { PluginManager } from "@roster-lock/plugin-runtime";
 import { handleDownloads } from "../handleDownloads";
 import { IFolderDB } from "../globals/FolderDB";
+import { GameCompletionContext } from "../globals/types";
 import { RosterLockDownloadUpdate } from "@roster-lock/types";
 
 type MachinePublicKey = string;
@@ -39,6 +40,11 @@ type RoomArgs = {
   ownSelections: Record<number, UserSelection>,
   lockConfig: RosterLockV1Config,
   gameControlledSelections: Record<string, Array<SelectedPiece> | Record<PlayerId, Array<SelectedPiece>>>,
+  // Lets a caller stash this room's {lockConfig, localUsers, userSelections}
+  // for later reuse once a game started from this room reports a result -
+  // see game-launcher.ts's gameEnded handler, which has no other way to
+  // recover this (it's a separate request cycle from this one entirely).
+  onGameComplete?: (ctx: GameCompletionContext) => void,
 }
 
 export type ProgressListeners = Partial<{
@@ -68,6 +74,7 @@ export function bindStepsToBridge(
     ownSelections,
     lockConfig,
     gameControlledSelections,
+    onGameComplete,
   }: RoomArgs,
   progressListeners: ProgressListeners = {}
 ): Promise<RosterLockV1SyncDLResult>{
@@ -199,6 +206,7 @@ export function bindStepsToBridge(
       Object.entries(decryptedSelections).map(([playerId, input])=>[playerId, input.userSelection])
     );
     const localPlayers = Object.keys(ownSelections).map((index)=>`${ownMachinePublicKey}:${index}`);
+    onGameComplete?.({ lockConfig, localUsers: localPlayers, userSelections });
     return pluginRuntime.pieceSort.handleFullSelection({ lockConfig, localUsers: localPlayers, userSelections });
   }).catch((e)=>{
     console.error("piece-selection-sort handleFullSelection failed", e);

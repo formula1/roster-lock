@@ -12,12 +12,13 @@ import {
   validateGameLauncherBinaryLocation, validateGameLauncherGameConfig, updateGameLauncherBinary, startGameLauncher,
   getGameProcessStatus, installGameLauncherPlugin, listGameProcesses, stopGameProcess,
 } from "./game-launcher";
-import { IFolderDB, V1Env, MatchAgentSelfInfo, ProcessHandleEntry } from "./globals";
+import { IFolderDB, V1Env, MatchAgentSelfInfo, ProcessHandleEntry, GameCompletionContext } from "./globals";
 import { PluginManager } from "@roster-lock/plugin-runtime";
 
 export const createV1Routers = (fileDB: IFolderDB, pluginRuntime: PluginManager, matchAgent: MatchAgentSelfInfo)=>{
   const processHandles = new Map<string, ProcessHandleEntry>();
-  const env: V1Env = { fileDB, pluginRuntime, matchAgent, processHandles };
+  const gameCompletionContext = new Map<string, GameCompletionContext>();
+  const env: V1Env = { fileDB, pluginRuntime, matchAgent, processHandles, gameCompletionContext };
   const httpRouter = new HTTPRouter();
   const wsRouter = new WebSocketRouter()
 
@@ -49,6 +50,10 @@ export const createV1Routers = (fileDB: IFolderDB, pluginRuntime: PluginManager,
   wsRouter.mount("/sync-dl", wsHandler.bind(env));
   wsRouter.mount("/piece/ensure", ensurePieceDownloadedWs.bind(env));
 
-  return { httpRouter, wsRouter };
+  // env is returned alongside the routers (not just used to bind them) so a
+  // caller - e.g. a test - can seed/inspect in-memory state like
+  // gameCompletionContext directly, without needing a real relay server to
+  // drive the room negotiation that would otherwise populate it.
+  return { httpRouter, wsRouter, env };
 }
 
