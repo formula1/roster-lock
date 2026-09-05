@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import {
-  ConnectionConfig, StartGameArgs, PieceType, PieceId
+  ConnectionConfig, StartGameArgs, PieceType, PieceId, PlayerId, PersonalSelection
 } from "@roster-lock/types";
 import {
   CHARACTER_PIECE_TYPE, STAGE_PIECE_TYPE, DEF_NAME_VARIABLE, MAX_CHARACTERS_PER_SIDE
@@ -24,17 +24,43 @@ const TEAM_MODE_NUMBERS = {
   tag: 3,
 } as const;
 
+function getPersonalCharacterSelection(args: StartGameArgs<IkemenGameConfig>): PersonalSelection {
+  const { finalSelection } = args.selectionResult;
+  const characterSelection = finalSelection[CHARACTER_PIECE_TYPE];
+  if(!characterSelection){
+    throw new Error(`No selection for piece type "${CHARACTER_PIECE_TYPE}"`);
+  }
+  if(characterSelection.type !== "personal"){
+    throw new Error(`ikemen-go expects "${CHARACTER_PIECE_TYPE}" to be a personal (per-player) selection`);
+  }
+  return characterSelection;
+}
+
+// The sorted order determining which physical Ikemen side (P1/P2) each
+// playerId controls - identical on every machine, since each computes it from
+// the same shared, already-resolved finalSelection (confirmed by diffing
+// host-vs-client -log output for the same match - see docs/). Exported so
+// startGame/index.ts's post-match WinSide-to-PlayerId mapping uses this exact
+// same order rather than a second computation that could silently diverge.
+export function sortedPlayerIds(args: StartGameArgs<IkemenGameConfig>): Array<PlayerId> {
+  const playerIds = Object.keys(getPersonalCharacterSelection(args).value).sort();
+  if(playerIds.length !== 2){
+    throw new Error(`ikemen-go only supports 2-side matches, got ${playerIds.length} player(s)`);
+  }
+  return playerIds;
+}
+
 export function buildIkemenArgs(
   connectionConfig: ConnectionConfig,
   args: StartGameArgs<IkemenGameConfig>,
   officialTeamMode: IkemenTeamMode | undefined,
+  logPath: string,
 ): Array<string> {
   if(connectionConfig.type !== "direct-tcp"){
     throw new Error(`ikemen-go doesn't support connection type "${connectionConfig.type}" yet`);
   }
 
   const gameConfig = (args.gameConfig ?? {}) as Partial<IkemenGameConfig>;
-  const { finalSelection } = args.selectionResult;
   // gameConfig arrives as loosely-typed JSON (never schema-validated at this layer - see
   // selectionValidation.ts's validateGameConfig for the call that does), so even though
   // IkemenGameConfig["teamMode"] excludes "simul" at the type level, runtime data can still smuggle
@@ -50,20 +76,11 @@ export function buildIkemenArgs(
   // window is clearly much larger - a real GLFW/Ikemen bug in that specific code path. Sizing via
   // config.ini instead (see examples/mugen/integration/src/lib/ikemenInstall.ts's
   // setIkemenWindowSize, used for exactly this recording scenario) doesn't hit it.
-  const cliArgs: Array<string> = [];
+  const cliArgs: Array<string> = ["-log", logPath];
 
-  const characterSelection = finalSelection[CHARACTER_PIECE_TYPE];
-  if(!characterSelection){
-    throw new Error(`No selection for piece type "${CHARACTER_PIECE_TYPE}"`);
-  }
-  if(characterSelection.type !== "personal"){
-    throw new Error(`ikemen-go expects "${CHARACTER_PIECE_TYPE}" to be a personal (per-player) selection`);
-  }
-
-  const playerIds = Object.keys(characterSelection.value).sort();
-  if(playerIds.length !== 2){
-    throw new Error(`ikemen-go only supports 2-side matches, got ${playerIds.length} player(s)`);
-  }
+  const { finalSelection } = args.selectionResult;
+  const characterSelection = getPersonalCharacterSelection(args);
+  const playerIds = sortedPlayerIds(args);
 
   const picksBySide = playerIds.map((playerId) => ({
     playerId, pieces: characterSelection.value[playerId],

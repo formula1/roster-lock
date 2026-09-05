@@ -32,6 +32,7 @@ const KYO = "@elecbyte/kung-fu-man-shadow";
 const TRAINING_ROOM = "@elecbyte/training-room";
 
 const HOST: ConnectionConfig = { type: "direct-tcp", party: "host", port: 7500 };
+const LOG_PATH = "/tmp/roster-lock-ikemen-log.txt";
 
 // match-agent names piece folders with a ULID, never with the piece's own name.
 function folderFor(pieceId: string){
@@ -81,7 +82,7 @@ async function buildArgs(
     },
   } as unknown as StartGameArgs<IkemenGameConfig>;
   const officialTeamMode = await resolveOfficialTeamMode(config);
-  return buildIkemenArgs(options.connection ?? HOST, args, officialTeamMode);
+  return buildIkemenArgs(options.connection ?? HOST, args, officialTeamMode, LOG_PATH);
 }
 
 // Reads the value Ikemen would see for a flag, e.g. valueOf(args, "-p1").
@@ -209,6 +210,13 @@ describe("buildIkemenArgs - slot numbering", () => {
   it("rejects more characters than Ikemen's MaxSimul", async () => {
     const five = [KFM, BAIKEN, KYO, KFM_ZSS, "@elecbyte/kung-fu-man-720"];
     await expect(buildArgs({ alice: five, bob: [KYO] })).rejects.toThrow(/at most 4 characters per side/);
+  });
+});
+
+describe("buildIkemenArgs - result logging", () => {
+  it("passes -log so a match's result can be read back after it ends", async () => {
+    const args = await buildArgs({ alice: [KFM], bob: [KYO] });
+    expect(valueOf(args, "-log")).toBe(LOG_PATH);
   });
 });
 

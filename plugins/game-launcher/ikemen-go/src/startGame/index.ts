@@ -1,11 +1,13 @@
 import { GameLauncherPlugin } from "@roster-lock/types";
 import { spawn } from "node:child_process";
 import { dirname, join } from "node:path";
-import { openSync } from "node:fs";
+import { openSync, mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { buildIkemenArgs, IkemenGameConfig } from "./buildArgs";
 import { toProcessHandle } from "./processHandle";
 import { resolveIkemenBinary } from "../binaryLocation";
 import { resolveOfficialTeamMode } from "../selectionValidation";
+import { resolveGameEndedResult } from "./gameResult";
 
 export { IkemenGameConfig };
 
@@ -18,7 +20,6 @@ export const startGame: GameLauncherPlugin<IkemenGameConfig>["startGame"] = asyn
   // called, connectionConfig.hostIp (client) is already the address to dial,
   // and a host has nothing left to resolve at all.
   const officialTeamMode = await resolveOfficialTeamMode(args.rosterConfig);
-  const cliArgs = buildIkemenArgs(connectionConfig, args, officialTeamMode);
   const resolvedPath = resolveIkemenBinary(binaryLocation, target);
 
   // Ikemen resolves data/, external/ and save/ relative to the working
@@ -27,14 +28,24 @@ export const startGame: GameLauncherPlugin<IkemenGameConfig>["startGame"] = asyn
   // it dies on "external/script/main.lua: no such file or directory" wherever
   // match-agent happened to be started from.
   const cwd = dirname(resolvedPath);
+  // A fresh OS temp dir per spawn, not cwd - binaryLocation (and so cwd,
+  // which is just its dirname) is an ordinary match-agent-wide setting with
+  // no guarantee of being unique per process (only examples/mugen/integration's
+  // test harness happens to give each simulated player its own install copy).
+  // Two real matches sharing one install would otherwise clobber each other's
+  // files here - merely confusing for stdout/stderr, but silently wrong for
+  // the result log below (reading back the other match's WinSide).
+  const runDir = mkdtempSync(join(tmpdir(), "roster-lock-ikemen-"));
   // Captured rather than ignored - Ikemen's own stdout/stderr is the only
   // way to see *why* a netplay connection failed (timeout, version
   // mismatch, etc.) instead of just observing a black/frozen window with no
-  // diagnostic. Written into cwd, which is already unique per process (see
-  // examples/mugen/integration - each simulated player gets its own copy of
-  // the install), so two instances never share this file either.
-  const stdout = openSync(join(cwd, "roster-lock-ikemen-stdout.log"), "a");
-  const stderr = openSync(join(cwd, "roster-lock-ikemen-stderr.log"), "a");
+  // diagnostic.
+  const stdout = openSync(join(runDir, "stdout.log"), "a");
+  const stderr = openSync(join(runDir, "stderr.log"), "a");
+  // Ikemen's own -log end-of-match result dump (WinSide etc.), read back
+  // below once the process exits to report a result via args.gameEnded.
+  const logFile = join(runDir, "result-log.txt");
+  const cliArgs = buildIkemenArgs(connectionConfig, args, officialTeamMode, logFile);
   const child = spawn(resolvedPath, cliArgs, {
     cwd,
     detached: true,
@@ -44,5 +55,17 @@ export const startGame: GameLauncherPlugin<IkemenGameConfig>["startGame"] = asyn
   // called startGame) doesn't have to stay alive for Ikemen to keep running.
   child.unref();
 
-  return toProcessHandle(child);
+  const handle = toProcessHandle(child);
+  handle.onExit(async ()=>{
+    try {
+      const result = await resolveGameEndedResult(logFile, args);
+      if(result) args.gameEnded(result);
+    } catch(e){
+      // The log may not exist at all if Ikemen crashed before writing it -
+      // best-effort, same as the rest of this plugin's process lifecycle.
+      console.error(`ikemen-go: couldn't determine match result from "${logFile}"`, e);
+    }
+  });
+
+  return handle;
 }
