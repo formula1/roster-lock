@@ -2,7 +2,7 @@
 import { RosterLockV1Config } from "../../lock";
 import { RosterLockV1SyncDLResult } from "../../request";
 import { RoomMachine } from "../../relay";
-import { Sha256 } from "../../shared";
+import { PlayerId, Sha256 } from "../../shared";
 import type { AnySchema, JSONSchemaType } from "ajv";
 
 export type ConnectionMode = "direct-tcp" | "room" | "internal";
@@ -89,6 +89,14 @@ export type GameProcessHandle = {
   stop: () => Promise<void>,
 };
 
+// What a game-launcher plugin reports back once it's determined how a match
+// ended (e.g. by parsing an engine-specific end-of-match log). The framework's
+// own gameEnded implementation (see StartGameArgs.gameEnded) is what fans
+// this out to installed piece-selection-sort plugins' handleGameComplete.
+export type GameEndedResult = {
+  winners: Array<PlayerId>,
+};
+
 export type StartGameArgs<T> = {
   // Handed to the game coordinator on the relay room's success webhook -
   // lets a plugin correlate itself back to that room if it ever needs to.
@@ -123,6 +131,12 @@ export type StartGameArgs<T> = {
   // Room-shared settings every participant agreed to at room-creation time
   // (e.g. team mode, round time). Validated against gameConfigSchema.
   gameConfig: T,
+  // Called by the plugin once it knows how the match ended. Not every
+  // plugin can always determine this (a crash before any result is
+  // recorded, a game with no win/loss concept) - simply never calling it is
+  // "no result", the same conservative default every piece-selection-sort
+  // plugin already assumes for handleGameComplete.
+  gameEnded: (result: GameEndedResult) => void,
 };
 
 export type GameLauncherPlugin<T> = {
