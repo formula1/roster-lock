@@ -5,6 +5,7 @@ import { startGame, IkemenGameConfig } from "./startGame";
 import { validateBinaryLocation } from "./validateBinaryLocation";
 import { gameConfigSchema } from "./gameConfigSchema";
 import { validateGameConfig } from "./selectionValidation";
+import { getPreview, useDefaultPreview } from "./preview";
 
 const IkemenGo: GameLauncherPlugin<IkemenGameConfig> = {
   name: "ikemen-go",
@@ -43,6 +44,8 @@ const IkemenGo: GameLauncherPlugin<IkemenGameConfig> = {
 
   startGame: startGame,
   validateGameConfig,
+  getPreview,
+  useDefaultPreview,
 };
 
 export default IkemenGo;
