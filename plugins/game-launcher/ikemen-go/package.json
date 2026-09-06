@@ -1,6 +1,6 @@
 {
   "name": "@roster-lock/game-launcher-ikemen-go",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Runs Ikemen GO matches via its Quick-VS command line, driven by a roster-lock selection",
   "repository": {
     "type": "git",
@@ -13,9 +13,18 @@
   "main": "dist/index.js",
   "types": "./src/index.ts",
   "exports": {
-    ".": { "types": "./src/index.ts", "default": "./dist/index.js" },
-    "./selection-validation": { "types": "./src/selectionValidation.ts", "default": "./dist/selectionValidation.js" },
-    "./engine-config": { "types": "./src/engineConfig.ts", "default": "./dist/engineConfig.js" },
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    },
+    "./selection-validation": {
+      "types": "./src/selectionValidation.ts",
+      "default": "./dist/selectionValidation.js"
+    },
+    "./engine-config": {
+      "types": "./src/engineConfig.ts",
+      "default": "./dist/engineConfig.js"
+    },
     "./package.json": "./package.json"
   },
   "roster-lock": {
@@ -32,8 +41,8 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@roster-lock/utils": "workspace:*",
-    "@cfworker/json-schema": "^4.1.1"
+    "@cfworker/json-schema": "^4.1.1",
+    "@roster-lock/utils": "workspace:*"
   },
   "devDependencies": {
     "@roster-lock/types": "workspace:*",
