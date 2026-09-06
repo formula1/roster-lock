@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AccountProvider, useAccount } from "./context/AccountContext";
 import { AccountPage } from "./pages/Account";
-import { RoomsBrowsePage } from "./pages/Rooms";
+import { RoomsBrowsePage } from "./pages/Rooms/List";
 import { CreateRoomPage } from "./pages/Rooms/Create";
 import { RoomDetailPage } from "./pages/Rooms/RoomDetail";
 import { announceReady } from "./bridge";

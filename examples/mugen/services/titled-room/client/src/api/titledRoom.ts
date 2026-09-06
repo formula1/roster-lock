@@ -66,6 +66,13 @@ export async function joinRoom(titledRoomUrl: string, token: string, roomId: str
   return res.json();
 }
 
+export async function leaveRoom(titledRoomUrl: string, token: string, roomId: string): Promise<RoomData> {
+  const res = await roomFetch(titledRoomUrl, token, "/room/leave", {
+    method: "POST", body: JSON.stringify({ roomId }),
+  });
+  return res.json();
+}
+
 export async function startRoom(
   titledRoomUrl: string, token: string, roomId: string
 ): Promise<{ success: true, relayUrl: string, roomId: string, coordinator: { host: string, port: number } | null }> {
@@ -100,13 +107,16 @@ export async function getRoom(titledRoomUrl: string, token: string, roomId: stri
 }
 
 export type RoomEvent = (
+  | { type: "USER_JOINED", payload: { userId: string, identifier: string } }
   | { type: "USER_IS_READY", payload: { userId: string, identifier: string } }
   | { type: "USER_LEFT", payload: { userId: string, identifier: string } }
+  | { type: "GAME_IS_STARTING", payload: {} }
   | {
       type: "GAME_HAS_STARTED",
       payload: { relayUrl: string, roomId: string, coordinator: { host: string, port: number } | null },
     }
   | { type: "ROOM_DESTROYED", payload: {} }
+  | { type: "ROOM_FAILED", payload: { reason: string } }
 );
 
 export type RoomSocket = {

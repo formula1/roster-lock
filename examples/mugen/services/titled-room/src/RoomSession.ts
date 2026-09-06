@@ -6,16 +6,108 @@ import { createRelayRoom } from "./relay-client";
 import { gameCoordinatorFor, GameCoordinatorConfig } from "./game-launchers";
 
 type JoinRequest = PublicUserProfile & { machineId: string };
+type WebSocketSession = { userId: string; identifier: string };
+
+// Thrown from inside an updateRoomData()/assertCanStart() check to abort a
+// transaction without writing anything - caught at the fetch() call site and
+// turned into the equivalent error Response, instead of every check having
+// to thread its own early-return status code through the transaction.
+class RoomActionError extends Error {
+  constructor(message: string, public status: number = 400) {
+    super(message);
+  }
+}
 
 export class RoomSession implements DurableObject {
   private state: DurableObjectState;
   private env: Env;
-  private roomData?: RoomData;
-  private sessions: Map<WebSocket, { userId: string; identifier: string }> = new Map();
 
   constructor(state: DurableObjectState, env: Env) {
     this.state = state;
     this.env = env;
+  }
+
+  // this.roomData is a per-instance cache, not a source of truth - the DO
+  // hibernates and comes back as a fresh instance to run webSocketMessage/
+  // webSocketClose for an already-open socket, so every handler (not just
+  // fetch()) must be able to reload it from storage on a cold wake rather
+  // than assuming whatever ran earlier in this same instance already did.
+  private async getRoomData(): Promise<RoomData | undefined> {
+    return await this.state.storage.get<RoomData>("roomData");
+  }
+
+  // Every check-then-write against roomData goes through here so the two
+  // halves happen against the same storage transaction - reading via
+  // this.roomData (or getRoomData()) and writing separately left a window
+  // for another event on this room (a second /join, a leave, a ready signal)
+  // to land in between and get silently clobbered by the first write.
+  // `mutate` inspects/changes `room` in place; throwing a RoomActionError
+  // aborts the transaction (nothing is persisted) instead of committing.
+  private async updateRoomData<T = void>(mutate: (room: RoomData) => T): Promise<{ room: RoomData, result: T }> {
+    const result = await this.state.storage.transaction(async (txn) => {
+      const room = await txn.get<RoomData>("roomData");
+      if (!room) throw new RoomActionError("Room not initialized", 404);
+      const result = mutate(room);
+      await txn.put("roomData", room);
+      return { room, result };
+    });
+    return result;
+  }
+
+  private errorResponse(e: unknown): Response {
+    if (e instanceof RoomActionError) {
+      return new Response(JSON.stringify({ error: e.message }), {
+        status: e.status, headers: { "Content-Type": "application/json" },
+      });
+    }
+    console.error("RoomSession error:", e);
+    return new Response(JSON.stringify({ error: "Internal error" }), { status: 500 });
+  }
+
+  // Shared by /start's pre-flight check (fail fast before paying for the
+  // coordinator/relay-room calls) and its final commit (re-checked against
+  // the freshest stored state, since those calls happen outside any
+  // transaction and room membership/status could change while they're in flight).
+  private assertCanStart(room: RoomData, requestingUserId: string): number {
+    if (room.hostUserId !== requestingUserId) throw new RoomActionError("Only host can start room", 403);
+    if (room.status !== "waiting") throw new RoomActionError("Room is no longer waiting to start");
+
+    let totalPlayers = 0;
+    for (const p of Object.values(room.participants)) {
+      if (!p.ready) throw new RoomActionError("Not all players are ready");
+      if (!p.publicKey) {
+        throw new RoomActionError(`Participant ${p.identifier} has no publicKey set (see /auth/set-public-key)`);
+      }
+      totalPlayers += p.playerCount;
+    }
+
+    if (totalPlayers < room.minPlayers) {
+      throw new RoomActionError(`Minimum required players (${room.minPlayers}) not met`);
+    }
+    return totalPlayers;
+  }
+
+  // /start can fail after the room has already been transitioned to
+  // "starting" (coordinator lookup or relay-room creation failing) - rather
+  // than reverting to "waiting" for a silent retry nobody but the requester
+  // would know was ever attempted, tear the room down the same way /destroy
+  // does and tell every connected participant why. Returns whether there was
+  // a room left to delete, so the caller can tell its own HTTP client
+  // whether the room index needs cleaning up too.
+  private async failRoom(reason: string): Promise<boolean> {
+    let deleted = false;
+    try {
+      await this.state.storage.transaction(async (txn) => {
+        const room = await txn.get<RoomData>("roomData");
+        if (!room) return;
+        await txn.delete("roomData");
+        deleted = true;
+      });
+    } catch (e) {
+      console.error("RoomSession failRoom error:", e);
+    }
+    if (deleted) this.broadcast({ type: "ROOM_FAILED", payload: { reason } });
+    return deleted;
   }
 
   async fetch(request: Request): Promise<Response> {
@@ -36,7 +128,7 @@ export class RoomSession implements DurableObject {
         joinedAt: new Date().toISOString(),
       };
 
-      this.roomData = {
+      const roomData = {
         id: url.searchParams.get("roomId")!,
         title,
         hostUserId: hostUser.id,
@@ -50,104 +142,130 @@ export class RoomSession implements DurableObject {
         participants: { [hostUser.id]: hostParticipant },
       };
 
-      await this.state.storage.put("roomData", this.roomData);
-      return new Response(JSON.stringify(this.roomData), { headers: { "Content-Type": "application/json" } });
+      await this.state.storage.put("roomData", roomData);
+      return new Response(JSON.stringify(roomData), { headers: { "Content-Type": "application/json" } });
     }
 
-    if (!this.roomData) {
-      this.roomData = await this.state.storage.get<RoomData>("roomData");
-    }
+    const roomData = await this.getRoomData();
 
-    if (!this.roomData) {
+    if (!roomData) {
       return new Response("Room not initialized", { status: 404 });
     }
 
     if (url.pathname === "/state" && request.method === "GET") {
-      return new Response(JSON.stringify(this.roomData), { headers: { "Content-Type": "application/json" } });
+      return new Response(JSON.stringify(roomData), { headers: { "Content-Type": "application/json" } });
     }
 
     if (url.pathname === "/join" && request.method === "POST") {
       const user = await request.json<JoinRequest>();
-      if (this.roomData.status !== "waiting") {
-        return new Response(JSON.stringify({ error: "Room not accepting players" }), { status: 400 });
+      let room: RoomData;
+      try {
+        ({ room } = await this.updateRoomData((room) => {
+          if (room.status !== "waiting") throw new RoomActionError("Room not accepting players");
+          if (room.participants[user.id]) throw new RoomActionError("User already joined this room");
+
+          let currentTotalPlayers = 0;
+          Object.values(room.participants).forEach((p) => (currentTotalPlayers += p.playerCount));
+          if (currentTotalPlayers + user.playerCount > room.maxPlayers) {
+            throw new RoomActionError("Room maximum player capacity reached");
+          }
+
+          room.participants[user.id] = {
+            userId: user.id,
+            identifier: user.identifier,
+            machineId: user.machineId,
+            displayName: user.displayName,
+            playerCount: user.playerCount,
+            publicKey: user.publicKey,
+            ready: false,
+            joinedAt: new Date().toISOString(),
+          };
+        }));
+      } catch (e) {
+        return this.errorResponse(e);
       }
-      if (this.roomData.participants[user.id]) {
-        return new Response(JSON.stringify({ error: "User already joined this room" }), { status: 400 });
+
+      this.broadcast({ type: "USER_JOINED", payload: { userId: user.id, identifier: user.identifier } });
+      return new Response(JSON.stringify(room), { headers: { "Content-Type": "application/json" } });
+    }
+
+    if(url.pathname === "/leave" && request.method === "POST") {
+      const user = await request.json<JoinRequest>();
+      let room: RoomData;
+      try {
+        ({ room } = await this.updateRoomData((room) => {
+          if (room.status !== "waiting") throw new RoomActionError("Room not accepting players");
+          if (!room.participants[user.id]) throw new RoomActionError("User hasn't joined this room");
+          delete room.participants[user.id];
+        }));
+      } catch (e) {
+        return this.errorResponse(e);
       }
 
-      let currentTotalPlayers = 0;
-      Object.values(this.roomData.participants).forEach((p) => (currentTotalPlayers += p.playerCount));
-
-      if (currentTotalPlayers + user.playerCount > this.roomData.maxPlayers) {
-        return new Response(JSON.stringify({ error: "Room maximum player capacity reached" }), { status: 400 });
-      }
-
-      this.roomData.participants[user.id] = {
-        userId: user.id,
-        identifier: user.identifier,
-        machineId: user.machineId,
-        displayName: user.displayName,
-        playerCount: user.playerCount,
-        publicKey: user.publicKey,
-        ready: false,
-        joinedAt: new Date().toISOString(),
-      };
-
-      await this.state.storage.put("roomData", this.roomData);
-      return new Response(JSON.stringify(this.roomData), { headers: { "Content-Type": "application/json" } });
+      this.broadcast({ type: "USER_LEFT", payload: { userId: user.id, identifier: user.identifier } });
+      return new Response(JSON.stringify(room), { headers: { "Content-Type": "application/json" } });
     }
 
     if (url.pathname === "/destroy" && request.method === "POST") {
       const { requestingUserId } = await request.json<any>();
-      if (this.roomData.hostUserId !== requestingUserId) {
-        return new Response(JSON.stringify({ error: "Only room host can destroy room" }), { status: 403 });
+      try {
+        await this.state.storage.transaction(async (txn) => {
+          const room = await txn.get<RoomData>("roomData");
+          if (!room) throw new RoomActionError("Room not initialized", 404);
+          if (room.hostUserId !== requestingUserId) throw new RoomActionError("Only room host can destroy room", 403);
+          await txn.delete("roomData");
+        });
+      } catch (e) {
+        return this.errorResponse(e);
       }
-      this.roomData.status = "destroyed";
-      // Broadcast before deleting - once storage is gone, this instance has
-      // nothing left to tell reconnecting/late sessions (see /state above,
-      // which 404s once roomData is undefined). Any participant not
-      // currently connected only finds out by hitting that 404 on refresh.
+
+      // Any participant not currently connected only finds out by hitting
+      // the /state 404 above on their next refresh, now that roomData is gone.
       this.broadcast({ type: "ROOM_DESTROYED", payload: {} });
-      await this.state.storage.delete("roomData");
       return new Response(JSON.stringify({ success: true }), { headers: { "Content-Type": "application/json" } });
     }
 
     if (url.pathname === "/start" && request.method === "POST") {
       const { requestingUserId } = await request.json<any>();
-      if (this.roomData.hostUserId !== requestingUserId) {
-        return new Response(JSON.stringify({ error: "Only host can start room" }), { status: 403 });
+
+      // Check and transition waiting -> starting in the same transaction, so
+      // a second concurrent /start (or a /join/leave, which both require
+      // "waiting") can't slip in and interleave with the coordinator/
+      // relay-room calls below, which aren't themselves part of any
+      // transaction and take real wall-clock time.
+      let room: RoomData;
+      try {
+        ({ room } = await this.updateRoomData((freshRoom) => {
+          this.assertCanStart(freshRoom, requestingUserId);
+          freshRoom.status = "starting";
+        }));
+      } catch (e) {
+        return this.errorResponse(e);
       }
 
-      let totalPlayers = 0;
-      for (const p of Object.values(this.roomData.participants)) {
-        if (!p.ready) {
-          return new Response(JSON.stringify({ error: "Not all players are ready" }), { status: 400 });
-        }
-        if (!p.publicKey) {
-          return new Response(
-            JSON.stringify({ error: `Participant ${p.identifier} has no publicKey set (see /auth/set-public-key)` }),
-            { status: 400 }
-          );
-        }
-        totalPlayers += p.playerCount;
-      }
+      // Told to everyone connected, not just the requester's own HTTP
+      // response - otherwise the only participants who find out a start is
+      // underway are ones who happen to refresh for an unrelated reason
+      // (their own ready-up, someone else joining/leaving) before
+      // GAME_HAS_STARTED/ROOM_FAILED eventually arrives.
+      this.broadcast({ type: "GAME_IS_STARTING", payload: {} });
 
-      if (totalPlayers < this.roomData.minPlayers) {
-        return new Response(JSON.stringify({ error: `Minimum required players (${this.roomData.minPlayers}) not met` }), { status: 400 });
-      }
-
-      // Throws if the plugin is allowlisted but has no GAME_COORDINATORS
-      // entry at all - that's a deployment misconfiguration, not a legitimate
-      // "no coordinator" choice. `false` (a real, explicit choice) passes
-      // straight through to createRelayRoom below.
+      // gameCoordinatorFor only depends on the plugin name and this
+      // deployment's own env vars, both fixed well before /start - /room/create
+      // already runs this exact check (see index.ts), so hitting it here
+      // means the deployment's config drifted after this room was created,
+      // not something the host did. Not worth trying to preserve the room
+      // for a retry that can't succeed differently.
       let coordinator: GameCoordinatorConfig | false;
       try {
-        coordinator = await gameCoordinatorFor(this.env, this.roomData.gameLauncherPlugin);
+        coordinator = await gameCoordinatorFor(this.env, room.gameLauncherPlugin);
       } catch (e) {
-        return new Response(JSON.stringify({ error: (e as Error).message }), { status: 400 });
+        const message = (e as Error).message;
+        const roomDeleted = await this.failRoom(message);
+        return new Response(JSON.stringify({ error: message, roomDeleted }), { status: 400 });
       }
 
-      const machines: Array<RoomMachine> = Object.values(this.roomData.participants).map((p) => ({
+      const machines: Array<RoomMachine> = Object.values(room.participants).map((p) => ({
         machineId: p.machineId,
         publicKey: p.publicKey!,
         displayName: p.displayName || p.identifier,
@@ -157,17 +275,35 @@ export class RoomSession implements DurableObject {
       let relay: { roomId: string };
       try {
         relay = await createRelayRoom(this.env, {
-          rosterConfig: this.roomData.rosterConfig,
-          rosterConfigHash: await createShaFromJSON(this.roomData.rosterConfig),
+          rosterConfig: room.rosterConfig,
+          rosterConfigHash: await createShaFromJSON(room.rosterConfig),
           machines,
           coordinatorId: coordinator ? coordinator.id : false,
         });
       } catch (e) {
-        return new Response(JSON.stringify({ error: (e as Error).message }), { status: 502 });
+        const message = (e as Error).message;
+        const roomDeleted = await this.failRoom(message);
+        return new Response(JSON.stringify({ error: message, roomDeleted }), { status: 502 });
       }
 
-      this.roomData.status = "started";
-      await this.state.storage.put("roomData", this.roomData);
+      try {
+        // The room's job ends once the match it exists to set up has
+        // started - delete it outright (like /destroy) rather than leaving
+        // a "started" row around, so it can't be joined/left/re-started and
+        // drops out of the browse index without a further status update.
+        // Only commits if this is still the same "starting" room from above
+        // - guards against e.g. a concurrent /destroy while the calls above
+        // were in flight.
+        await this.state.storage.transaction(async (txn) => {
+          const freshRoom = await txn.get<RoomData>("roomData");
+          if (!freshRoom) throw new RoomActionError("Room not initialized", 404);
+          if (freshRoom.hostUserId !== requestingUserId) throw new RoomActionError("Only host can start room", 403);
+          if (freshRoom.status !== "starting") throw new RoomActionError("Room is no longer starting");
+          await txn.delete("roomData");
+        });
+      } catch (e) {
+        return this.errorResponse(e);
+      }
 
       // Clients learn the game-coordinator's address the same way they learn
       // relayUrl - here, not through a separately configured env var per
@@ -190,7 +326,11 @@ export class RoomSession implements DurableObject {
       const [client, server] = Object.values(pair);
 
       this.state.acceptWebSocket(server);
-      this.sessions.set(server, { userId, identifier });
+      // Attached to the socket itself (survives hibernation) rather than
+      // kept in an in-memory Map - this DO can be evicted and woken back up
+      // by the runtime to handle a later message/close on this same
+      // connection, in a fresh instance that never ran this fetch().
+      server.serializeAttachment({ userId, identifier } satisfies WebSocketSession);
 
       return new Response(null, { status: 101, webSocket: client });
     }
@@ -200,16 +340,19 @@ export class RoomSession implements DurableObject {
 
   async webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): Promise<void> {
     if (typeof message !== "string") return;
-    const session = this.sessions.get(ws);
-    if (!session || !this.roomData) return;
+    const session = ws.deserializeAttachment() as WebSocketSession | null;
+    if (!session) return;
 
     try {
       const data = JSON.parse(message);
       if (data.type === "I_AM_READY") {
-        if (this.roomData.participants[session.userId]) {
-          this.roomData.participants[session.userId].ready = true;
-          await this.state.storage.put("roomData", this.roomData);
+        const { result: becameReady } = await this.updateRoomData((room) => {
+          if (!room.participants[session.userId]) return false;
+          room.participants[session.userId].ready = true;
+          return true;
+        });
 
+        if (becameReady) {
           this.broadcast({
             type: "USER_IS_READY",
             payload: { userId: session.userId, identifier: session.identifier },
@@ -222,8 +365,7 @@ export class RoomSession implements DurableObject {
   }
 
   async webSocketClose(ws: WebSocket): Promise<void> {
-    const session = this.sessions.get(ws);
-    this.sessions.delete(ws);
+    const session = ws.deserializeAttachment() as WebSocketSession | null;
     if (session) {
       this.broadcast({ type: "USER_LEFT", payload: { userId: session.userId, identifier: session.identifier } });
     }
@@ -231,7 +373,7 @@ export class RoomSession implements DurableObject {
 
   private broadcast(msg: any) {
     const payload = JSON.stringify(msg);
-    this.sessions.forEach((_, ws) => {
+    this.state.getWebSockets().forEach((ws) => {
       ws.send(payload);
     });
   }

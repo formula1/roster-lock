@@ -26,6 +26,11 @@ export const startRoomBodySchema = z.object({
 }).strict();
 export type StartRoomBody = z.infer<typeof startRoomBodySchema>;
 
+export const leaveRoomBodySchema = z.object({
+  roomId: z.string().min(1),
+}).strict();
+export type LeaveRoomBody = z.infer<typeof leaveRoomBodySchema>;
+
 export const destroyRoomBodySchema = z.object({
   roomId: z.string().min(1),
 }).strict();

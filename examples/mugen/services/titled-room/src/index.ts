@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { Env, PublicUserProfile, RoomData } from "./types";
-import { createRoomBodySchema, joinRoomBodySchema, startRoomBodySchema, destroyRoomBodySchema } from "./schema";
-import { assertGameLauncherAllowed, assertGameConfigValid, listAllowedGameLaunchers } from "./game-launchers";
+import { createRoomBodySchema, joinRoomBodySchema, leaveRoomBodySchema, startRoomBodySchema, destroyRoomBodySchema } from "./schema";
+import { assertGameLauncherAllowed, assertGameConfigValid, gameCoordinatorFor, listAllowedGameLaunchers } from "./game-launchers";
 import { upsertRoomIndex, deleteRoomIndex, listOpenRooms } from "./db";
 export { RoomSession } from "./RoomSession";
 
@@ -47,6 +47,12 @@ app.post("/room/create", async (c) => {
   try {
     await assertGameLauncherAllowed(body.gameLauncherPlugin, body.rosterConfig);
     await assertGameConfigValid(body.gameLauncherPlugin, body.gameConfig, body.rosterConfig);
+    // Deployment-configured, not room-specific (see gameCoordinatorFor) - if
+    // this is going to throw for this plugin, it'll throw the same way at
+    // /start too, so catch a misconfigured deployment here instead of
+    // letting a room reach "starting" and fail only once someone tries to
+    // actually start it.
+    await gameCoordinatorFor(c.env, body.gameLauncherPlugin);
   } catch (err: any) {
     return c.json({ error: err.message }, 400);
   }
@@ -84,6 +90,31 @@ app.post("/room/join", async (c) => {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ ...user, machineId: body.machineId }),
+  }) as any);
+
+  const roomData = await res.json() as RoomData;
+  if (res.ok) await upsertRoomIndex(c.env.DB, roomData);
+  return c.json(roomData, res.status as any);
+});
+
+app.post("/room/leave", async (c) => {
+  const user = await verifyAuthToken(c);
+  if (!user) return c.json({ error: "Unauthorized" }, 401);
+
+  let body;
+  try {
+    body = leaveRoomBodySchema.parse(await c.req.json());
+  } catch (err: any) {
+    return c.json({ error: err.message }, 400);
+  }
+
+  const id = c.env.ROOM_SESSION.idFromName(body.roomId);
+  const stub = c.env.ROOM_SESSION.get(id);
+
+  const res = await stub.fetch(new Request("https://do/leave", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(user),
   }) as any);
 
   const roomData = await res.json() as RoomData;
@@ -137,13 +168,12 @@ app.post("/room/start", async (c) => {
   }) as any);
 
   const result = await res.json() as any;
-  if (res.ok) {
-    // /start doesn't return the full RoomData, just {success, relayUrl,
-    // roomId} - fetch the DO's current state so the index reflects the new
-    // "started" status (and drops out of GET /room's open-rooms listing).
-    const stateRes = await stub.fetch(new Request("https://do/state", { method: "GET" }) as any);
-    if (stateRes.ok) await upsertRoomIndex(c.env.DB, await stateRes.json() as RoomData);
-  }
+  // The DO deletes its own room once started (see RoomSession's /start), so
+  // there's no state left to re-fetch here - drop it from the browse index
+  // the same way /room/destroy does, rather than upserting a "started" row.
+  // A failed start can also have deleted the room (see failRoom) even though
+  // res.ok is false, so that's checked independently of the response status.
+  if (res.ok || result.roomDeleted) await deleteRoomIndex(c.env.DB, body.roomId);
   return c.json(result, res.status as any);
 });
 
