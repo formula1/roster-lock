@@ -1,6 +1,6 @@
 import { RosterLockPiece } from "@roster-lock/types";
 
-export function PieceCard({ piece, selected, orderNumber, downloaded, cursored, disabled, onClick }: {
+export function PieceCard({ piece, selected, orderNumber, downloaded, cursored, disabled, onClick, onHoverChange }: {
   piece: RosterLockPiece,
   selected: boolean,
   orderNumber: number | undefined,
@@ -8,12 +8,15 @@ export function PieceCard({ piece, selected, orderNumber, downloaded, cursored, 
   cursored: boolean,
   disabled: boolean,
   onClick: () => void,
+  onHoverChange?: (hovering: boolean) => void,
 }) {
   return (
     <button
       type="button"
       className="piece-card"
       onClick={onClick}
+      onMouseEnter={() => onHoverChange?.(true)}
+      onMouseLeave={() => onHoverChange?.(false)}
       disabled={disabled && !selected}
       data-selected={selected}
       data-cursored={cursored}

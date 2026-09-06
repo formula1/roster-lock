@@ -14,10 +14,11 @@ type PickablePlan = Extract<PieceTypePlan, { kind: "pickable" }>;
 // inactive, so switching tabs never loses work. Used inline by
 // pages/MatchMaking/Rooms/[roomId] once a room is ready to select in.
 export function SelectionBoard({
-  rosterConfig, playerSlots, matchAgentUrl, matchAgentAuth, onConfirm, onCancel,
+  rosterConfig, playerSlots, pluginName, matchAgentUrl, matchAgentAuth, onConfirm, onCancel,
 }: {
   rosterConfig: RosterLockV1Config,
   playerSlots: Array<PlayerSlot>,
+  pluginName: string,
   matchAgentUrl: string,
   matchAgentAuth: string,
   onConfirm: (playerSelections: Record<number, UserSelection>) => void,
@@ -128,6 +129,7 @@ export function SelectionBoard({
               picks={picksBySlot[slot.id]?.[activeType] ?? []}
               onTogglePick={(pieceId) => togglePick(slot.id, activeType, pieceId)}
               onReorderPick={(fromIndex, toIndex) => reorderPick(slot.id, activeType, fromIndex, toIndex)}
+              pluginName={pluginName}
               matchAgentUrl={matchAgentUrl}
               matchAgentAuth={matchAgentAuth}
             />

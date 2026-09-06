@@ -4,10 +4,12 @@ import { PieceTypePlan } from "./selectionPlan";
 import { PieceCard } from "./PieceCard";
 import { InputSource } from "../../context/JoinSettingsContext";
 import { useCursorInput } from "../../hooks/useCursorInput";
+import { usePiecePreview } from "../../hooks/usePiecePreview";
 import { listDownloadedPiecesFromConfig } from "@roster-lock/ts-client";
 
 export function PieceTypeSection({
-  rosterConfig, pieceType, plan, picks, onTogglePick, onReorderPick, inputSource, matchAgentUrl, matchAgentAuth,
+  rosterConfig, pieceType, plan, picks, onTogglePick, onReorderPick, inputSource, pluginName,
+  matchAgentUrl, matchAgentAuth,
 }: {
   rosterConfig: RosterLockV1Config,
   pieceType: string,
@@ -16,12 +18,14 @@ export function PieceTypeSection({
   onTogglePick: (pieceId: string) => void,
   onReorderPick: (fromIndex: number, toIndex: number) => void,
   inputSource: InputSource,
+  pluginName: string,
   matchAgentUrl: string,
   matchAgentAuth: string,
 }) {
   const pieces = (rosterConfig.rosters[pieceType] ?? []).filter((p) => !plan.banList.includes(p.id));
   const [downloaded, setDownloaded] = useState<Record<string, boolean>>({});
   const [cursorIndex, setCursorIndex] = useState(0);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -54,27 +58,52 @@ export function PieceTypeSection({
 
   const pieceById = new Map(pieces.map((piece) => [piece.id, piece]));
 
+  // Mouse hover wins over keyboard/gamepad cursor while active, but either
+  // one alone is enough to drive the preview panel below - a controller-only
+  // player never hovers anything, so falling back to cursorIndex is what
+  // gives them a live preview at all.
+  const activePiece = pieceById.get(hoveredId ?? "") ?? pieces[cursorIndex] ?? null;
+  const preview = usePiecePreview({
+    pluginName, engine: rosterConfig.engine, pieceType, piece: activePiece, matchAgentUrl, matchAgentAuth,
+  });
+
   return (
     <div className="piece-type-section">
       <div className="piece-type-header">
         <span className="piece-type-count">{countLabel} ({picks.length} picked)</span>
       </div>
-      <div className="card-grid">
-        {pieces.map((piece, index) => {
-          const orderIndex = picks.indexOf(piece.id);
-          return (
-            <PieceCard
-              key={piece.id}
-              piece={piece}
-              selected={orderIndex !== -1}
-              orderNumber={orderIndex === -1 ? undefined : orderIndex + 1}
-              downloaded={downloaded[piece.id]}
-              cursored={index === cursorIndex}
-              disabled={atMax}
-              onClick={() => onTogglePick(piece.id)}
-            />
-          );
-        })}
+      <div className="piece-type-body">
+        <div className="card-grid">
+          {pieces.map((piece, index) => {
+            const orderIndex = picks.indexOf(piece.id);
+            return (
+              <PieceCard
+                key={piece.id}
+                piece={piece}
+                selected={orderIndex !== -1}
+                orderNumber={orderIndex === -1 ? undefined : orderIndex + 1}
+                downloaded={downloaded[piece.id]}
+                cursored={index === cursorIndex}
+                disabled={atMax}
+                onClick={() => onTogglePick(piece.id)}
+                onHoverChange={(hovering) => setHoveredId(hovering ? piece.id : null)}
+              />
+            );
+          })}
+        </div>
+        {activePiece && (
+          <div className="piece-preview-panel">
+            {preview === "loading" ? (
+              <span className="piece-preview-loading">Loading preview…</span>
+            ) : preview?.kind === "image" ? (
+              <img className="piece-preview-image" src={preview.dataUri} alt={activePiece.humanInfo.name} />
+            ) : activePiece.humanInfo.image ? (
+              <img className="piece-preview-image" src={activePiece.humanInfo.image} alt={activePiece.humanInfo.name} />
+            ) : (
+              <span className="piece-preview-placeholder">No preview</span>
+            )}
+          </div>
+        )}
       </div>
       {picks.length > 0 && (
         <ol className="pick-order-list">

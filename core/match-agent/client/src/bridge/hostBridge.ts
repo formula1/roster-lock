@@ -17,7 +17,10 @@ import { DownloadSession } from "../context/DownloadSessionContext";
 
 export type PendingLightbox = (
   | { type: "install", pluginName: string, resolve: () => void, reject: (e: Error) => void }
-  | { type: "selection", rosterConfig: RequestSelectionRequest["rosterLockConfig"], numPlayers: number, resolve: (v: RequestSelectionResponse) => void, reject: (e: Error) => void }
+  | {
+      type: "selection", rosterConfig: RequestSelectionRequest["rosterLockConfig"], numPlayers: number,
+      pluginName: string, resolve: (v: RequestSelectionResponse) => void, reject: (e: Error) => void,
+    }
 );
 
 // Host-side half of the matchmaker bridge protocol (see
@@ -86,12 +89,13 @@ export function useHostBridge(args: {
 
     bridge.onRequest(
       MATCHMAKER_BRIDGE_PATHS.requestSelection,
-      ({ rosterLockConfig, numPlayers }: RequestSelectionRequest) => {
+      ({ rosterLockConfig, numPlayers, pluginName }: RequestSelectionRequest) => {
         return new Promise<RequestSelectionResponse>((resolve, reject) => {
           setPendingLightbox({
             type: "selection",
             rosterConfig: rosterLockConfig,
             numPlayers,
+            pluginName,
             resolve: (selection) => {
               pendingSelectionRef.current = selection;
               resolve(selection);

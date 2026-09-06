@@ -5,7 +5,7 @@
 // @roster-lock/ts-client - see that package's README/index.ts for the
 // asset-loading surface games actually consume.
 
-import { PlatformTarget } from "@roster-lock/types";
+import { PlatformTarget, PiecePreview, RosterLockV1Config, RosterLockPiece } from "@roster-lock/types";
 import { MessageBridge } from "@roster-lock/utils";
 
 export type GameLauncherLocalSettings = {
@@ -116,6 +116,22 @@ export async function validateGameLauncherGameConfig(
   );
   const { problems } = await res.json();
   return problems;
+}
+
+export async function getGameLauncherPreview(
+  matchAgentUrl: string, authCode: string, pluginName: string,
+  engine: RosterLockV1Config["engine"], pieceType: string, piece: Pick<RosterLockPiece, "version" | "pathVariables">
+): Promise<PiecePreview | null> {
+  const res = await matchAgentFetch(
+    matchAgentUrl, authCode, `/v1/game-launcher/${encodeURIComponent(pluginName)}/preview`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ engine, pieceType, piece }),
+    }
+  );
+  const { preview } = await res.json();
+  return preview;
 }
 
 export async function updateGameLauncherBinary(

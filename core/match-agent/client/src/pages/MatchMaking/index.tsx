@@ -184,6 +184,7 @@ export function MatchMakingPage() {
           <SelectionBoard
             rosterConfig={pendingLightbox.rosterConfig}
             playerSlots={playerSlots.slice(0, pendingLightbox.numPlayers)}
+            pluginName={pendingLightbox.pluginName}
             matchAgentUrl={matchAgent.settings.url}
             matchAgentAuth={matchAgent.settings.authCode}
             onConfirm={resolveSelectionLightbox}

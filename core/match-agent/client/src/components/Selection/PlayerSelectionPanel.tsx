@@ -4,7 +4,7 @@ import { PieceTypePlan } from "./selectionPlan";
 import { PieceTypeSection } from "./PieceTypeSection";
 
 export function PlayerSelectionPanel({
-  rosterConfig, slot, pieceType, plan, picks, onTogglePick, onReorderPick, matchAgentUrl, matchAgentAuth,
+  rosterConfig, slot, pieceType, plan, picks, onTogglePick, onReorderPick, pluginName, matchAgentUrl, matchAgentAuth,
 }: {
   rosterConfig: RosterLockV1Config,
   slot: PlayerSlot,
@@ -13,6 +13,7 @@ export function PlayerSelectionPanel({
   picks: Array<string>,
   onTogglePick: (pieceId: string) => void,
   onReorderPick: (fromIndex: number, toIndex: number) => void,
+  pluginName: string,
   matchAgentUrl: string,
   matchAgentAuth: string,
 }) {
@@ -32,6 +33,7 @@ export function PlayerSelectionPanel({
         onTogglePick={onTogglePick}
         onReorderPick={onReorderPick}
         inputSource={slot.input}
+        pluginName={pluginName}
         matchAgentUrl={matchAgentUrl}
         matchAgentAuth={matchAgentAuth}
       />
