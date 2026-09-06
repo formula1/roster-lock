@@ -1,12 +1,17 @@
+import { existsSync } from "node:fs";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { JSONSchemaType } from "ajv";
-import { GameLauncherPlugin, GameProcessHandle, PlayerId } from "@roster-lock/types";
+import { GameLauncherPlugin, GameProcessHandle, PiecePreview, PlayerId } from "@roster-lock/types";
 
 // Test-only: lets an automated test (or a human, via match-agent-client)
 // simulate a match ending without a real engine binary, real process, or
 // real network connection - the whole point is to exercise the framework's
 // own startGame -> GameProcessHandle -> gameEnded -> handleGameComplete
-// pipeline in isolation from any one engine's real launch/detection logic.
-// See plugins/game-launcher/ikemen-go for what a real plugin looks like.
+// pipeline (and, via getPreview/useDefaultPreview below, the preview
+// pipeline) in isolation from any one engine's real launch/detection or
+// image-decoding logic. See plugins/game-launcher/ikemen-go for what a real
+// plugin looks like.
 export type HeadlessGameConfig = {
   // PlayerIds to report as winners once the "match" ends. Empty means no
   // result - gameEnded is never called, mirroring a real engine that
@@ -33,6 +38,31 @@ const gameConfigSchema: JSONSchemaType<HeadlessGameConfig> = {
   },
   required: ["winners", "resultDelayMs"],
 };
+
+// getPreview/useDefaultPreview fixtures - deliberately don't decode any real
+// image format (that's ikemen-go's own preview.ts's job, covered by its own
+// tests). A real plugin's getPreview reads whatever asset format it owns off
+// disk; this one reads back exactly the PiecePreview a test wrote into the
+// piece folder, so match-agent tests can assert on an exact, test-chosen
+// PiecePreview value instead of asserting on a hardcoded image mime type.
+export const PREVIEW_FILE_NAME = "preview.json";
+
+// Test helper: pairs with seedCompletePiece's `files` map (see
+// tests/integration/helpers/piece.ts) to plant a preview getPreview will read.
+export function previewFile(preview: PiecePreview): Record<string, string> {
+  return { [PREVIEW_FILE_NAME]: JSON.stringify(preview) };
+}
+
+// No folder to read from (see GameLauncherPlugin["useDefaultPreview"]'s
+// docs), so this is a fixed, deterministic placeholder derived from
+// pieceType alone - lets a test assert on the exact value without needing to
+// import a shared constant.
+export function defaultPreviewFor(pieceType: string): PiecePreview {
+  return {
+    kind: "image",
+    dataUri: `data:application/x-headless-fixture;base64,${Buffer.from(`default:${pieceType}`).toString("base64")}`,
+  };
+}
 
 const Headless: GameLauncherPlugin<HeadlessGameConfig> = {
   name: "headless",
@@ -63,6 +93,15 @@ const Headless: GameLauncherPlugin<HeadlessGameConfig> = {
   },
   async validateBinaryLocation(){
     return { valid: true };
+  },
+
+  async getPreview(_pieceType, _pathVariables, pieceFolder){
+    const previewPath = join(pieceFolder, PREVIEW_FILE_NAME);
+    if(!existsSync(previewPath)) return undefined;
+    return JSON.parse(await readFile(previewPath, "utf-8")) as PiecePreview;
+  },
+  async useDefaultPreview(pieceType){
+    return defaultPreviewFor(pieceType);
   },
 
   async startGame(_binaryLocation, _target, _connectionConfig, args){
