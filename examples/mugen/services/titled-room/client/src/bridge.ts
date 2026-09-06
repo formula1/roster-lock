@@ -45,11 +45,11 @@ export async function getIdentity(): Promise<GetIdentityResponse> {
 }
 
 export async function requestSelection(
-  rosterLockConfig: RequestSelectionRequest["rosterLockConfig"], numPlayers: number
+  rosterLockConfig: RequestSelectionRequest["rosterLockConfig"], numPlayers: number, pluginName: string
 ): Promise<RequestSelectionResponse> {
   return await bridge.sendRequest(
     MATCHMAKER_BRIDGE_PATHS.requestSelection,
-    { rosterLockConfig, numPlayers } satisfies RequestSelectionRequest
+    { rosterLockConfig, numPlayers, pluginName } satisfies RequestSelectionRequest
   );
 }
 
