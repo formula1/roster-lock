@@ -53,6 +53,14 @@ export async function startPlayerMatchAgent(
   const pluginFolder = processes.mkTempDir(path.join(os.tmpdir(), `roster-lock-mugen-pw-${label}-plugins-`));
   const url = `http://localhost:${port}`;
 
+  // Explicit --config-file, not just --piece-folder/--plugin-folder: without it, `listen` falls
+  // back to the shared ~/roster-lock/match-agent.json and unconditionally (non-atomically)
+  // rewrites it on every startup - two players' processes launching close together race that
+  // read/write against each other and one can come back truncated ("Unexpected end of JSON
+  // input"), confirmed by hand. A config file scoped per player removes the shared state, not
+  // just the timing window.
+  const configFile = path.join(processes.mkTempDir(path.join(os.tmpdir(), `roster-lock-mugen-pw-${label}-config-`)), "match-agent.json");
+
   processes.spawnBackground(
     `match-agent-${label}`, process.execPath,
     [
@@ -62,6 +70,7 @@ export async function startPlayerMatchAgent(
       "--auth-code", authCode,
       "--piece-folder", piecesFolder,
       "--plugin-folder", pluginFolder,
+      "--config-file", configFile,
     ],
     { env: cleanSpawnEnv() }
   );

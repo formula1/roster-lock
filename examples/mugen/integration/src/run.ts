@@ -97,6 +97,11 @@ async function startMatchAgent(processes: ProcessGroup, piecesFolder: string, pl
 
   const matchAgentUrl = `http://localhost:${MATCH_AGENT_CONFIG.port}`;
   console.log(`Starting match-agent on ${matchAgentUrl}...`);
+  // Explicit --config-file rather than the default ~/roster-lock/match-agent.json - `listen`
+  // unconditionally rewrites whatever config file it resolves to on every startup, so leaving
+  // this on the shared default risks colliding with any other match-agent instance running on
+  // this machine (a second script, a real deployment) rather than staying scoped to this run.
+  const configFile = path.join(processes.mkTempDir(path.join(os.tmpdir(), "roster-lock-mugen-config-")), "match-agent.json");
   processes.spawnBackground(
     "match-agent", process.execPath,
     [
@@ -106,6 +111,7 @@ async function startMatchAgent(processes: ProcessGroup, piecesFolder: string, pl
       "--auth-code", MATCH_AGENT_CONFIG.authCode,
       "--piece-folder", piecesFolder,
       "--plugin-folder", pluginFolder,
+      "--config-file", configFile,
     ],
     { env: cleanSpawnEnv() }
   );

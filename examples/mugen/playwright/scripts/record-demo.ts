@@ -88,6 +88,22 @@ function runInXterm(title: string, geometry: string, command: string): void {
   child.unref();
 }
 
+// xterm's own -geometry flag is only a hint the window manager is free to ignore or adjust (seen
+// firsthand: xterms have landed overlapping despite distinct -geometry values) - an explicit
+// xdotool windowmove afterward, the same mechanism positionIkemenWindow below already relies on,
+// is what's actually reliable. Retries since the window may not exist yet right after spawn.
+async function positionXtermWindow(title: string, x: number, y: number, attempts = 20, delayMs = 300): Promise<void> {
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    const ids = (await xdotool("search", "--name", title).catch(() => "")).split("\n").filter(Boolean);
+    if (ids[0]) {
+      await xdotool("windowmove", ids[0], String(x), String(y));
+      return;
+    }
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
+  }
+  throw new Error(`No window titled "${title}" found after ${attempts} attempts`);
+}
+
 async function waitForSentinelFile(filePath: string, timeoutMs: number): Promise<void> {
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
@@ -127,10 +143,34 @@ async function findIkemenPid(installDir: string, attempts = 20, delayMs = 500): 
   throw new Error(`No Ikemen GO process found under ${installDir} after ${attempts} attempts`);
 }
 
-async function positionIkemenWindow(installDir: string, x: number, y: number): Promise<void> {
+async function positionIkemenWindow(installDir: string, x: number, y: number): Promise<string> {
   const pid = await findIkemenPid(installDir);
   const windowId = await findRealIkemenWindow(pid);
   await xdotool("windowmove", windowId, String(x), String(y));
+  return windowId;
+}
+
+// Ikemen's VS screen doesn't advance on its own no matter how long you wait - confirmed by hand
+// earlier in this project: it sits frozen until a real button press skips it into "Round 1"
+// (Return/z both work as a stand-in for a real controller's start button). Without this, holding
+// an arrow key afterward moves nothing - the match simply isn't live yet.
+async function skipVersusScreen(windowId: string): Promise<void> {
+  await xdotool("windowactivate", windowId);
+  await new Promise((resolve) => setTimeout(resolve, 150));
+  await xdotool("key", "Return");
+  await xdotool("key", "z");
+}
+
+// Briefly focuses `windowId` and holds `key` down for `holdMs` - visible proof (for a recording)
+// that each side's window is live and independently taking real input, not a static image. Tight
+// timings on purpose: long enough to read as a deliberate hold on camera, short enough that
+// switching between both windows doesn't drag.
+async function demoArrowKeyHold(windowId: string, key: string, holdMs: number): Promise<void> {
+  await xdotool("windowactivate", windowId);
+  await new Promise((resolve) => setTimeout(resolve, 150));
+  await xdotool("keydown", key);
+  await new Promise((resolve) => setTimeout(resolve, holdMs));
+  await xdotool("keyup", key);
 }
 
 async function waitForText(locator: Locator, text: string, timeoutMs: number): Promise<void> {
@@ -248,7 +288,14 @@ function pickRandomIndices(total: number, count: number): Array<number> {
   return indices.slice(0, count);
 }
 
-async function makeSelection(page: Page, frame: FrameLocator, pickCounts: Record<string, number>): Promise<void> {
+// Matches plugins/game-launcher/ikemen-go/src/pieceTypes.ts's own STAGE_PIECE_TYPE - not
+// imported from there since record-demo.ts otherwise has no dependency on that plugin's package,
+// just the roster config's own piece-type key.
+const STAGE_PIECE_TYPE = "stage";
+
+async function makeSelection(
+  page: Page, frame: FrameLocator, pickCounts: Record<string, number>, stagePieceName: string
+): Promise<void> {
   await frame.getByRole("button", { name: "Make Selection" }).click();
 
   const board = page.locator(".selection-board");
@@ -266,6 +313,15 @@ async function makeSelection(page: Page, frame: FrameLocator, pickCounts: Record
     await board.getByRole("button", { name: pieceType, exact: true }).click();
     const cards = board.locator(".piece-type-section .piece-card");
     await cards.first().waitFor({ timeout: 15_000 });
+
+    if (pieceType === STAGE_PIECE_TYPE) {
+      // Stage picks a specific named variant instead of a random index - see main() for why
+      // (host and client are always assigned the two non-default variants, never the same one,
+      // so the room's democracy-random tie-break always has to pick between exactly those two).
+      await cards.filter({ hasText: stagePieceName }).click();
+      continue;
+    }
+
     // Clicking a card just toggles its own data-selected attribute in place (see
     // core/match-agent/client/src/components/Selection/PieceCard.tsx) - the list never reorders
     // or removes entries, so indices picked up front against the initial count stay valid
@@ -299,8 +355,14 @@ async function main(): Promise<void> {
 
   console.log("[demo] preparing fresh per-player temp folders");
   fs.rmSync(DEMO_TMP_ROOT, { recursive: true, force: true });
-  const hostFolders = { pieces: path.join(DEMO_TMP_ROOT, "host-pieces"), plugins: path.join(DEMO_TMP_ROOT, "host-plugins") };
-  const clientFolders = { pieces: path.join(DEMO_TMP_ROOT, "client-pieces"), plugins: path.join(DEMO_TMP_ROOT, "client-plugins") };
+  const hostFolders = {
+    pieces: path.join(DEMO_TMP_ROOT, "host-pieces"), plugins: path.join(DEMO_TMP_ROOT, "host-plugins"),
+    config: path.join(DEMO_TMP_ROOT, "host-config.json"),
+  };
+  const clientFolders = {
+    pieces: path.join(DEMO_TMP_ROOT, "client-pieces"), plugins: path.join(DEMO_TMP_ROOT, "client-plugins"),
+    config: path.join(DEMO_TMP_ROOT, "client-config.json"),
+  };
   for (const folders of [hostFolders, clientFolders]) {
     fs.mkdirSync(folders.pieces, { recursive: true });
     fs.mkdirSync(folders.plugins, { recursive: true });
@@ -311,6 +373,7 @@ async function main(): Promise<void> {
     "docker-compose", "100x18+0+0",
     `cd ${shellQuote(MUGEN_DIR)} && docker compose up -d --wait && touch ${shellQuote(DOCKER_READY_SENTINEL)}`
   );
+  await positionXtermWindow("docker-compose", 0, 0);
 
   console.log("[demo] building match-agent");
   await buildMatchAgent();
@@ -318,15 +381,25 @@ async function main(): Promise<void> {
   const hostUrl = `http://localhost:${HOST_MATCH_AGENT_PORT}`;
   const clientUrl = `http://localhost:${CLIENT_MATCH_AGENT_PORT}`;
   const matchAgentEntry = path.join(REPO_ROOT, "core/match-agent/dist/index.js");
-  const matchAgentCommand = (port: number, folders: { pieces: string, plugins: string }) => [
+  // --config-file matters even though every other setting is already passed explicitly below:
+  // without it, both instances fall back to the same shared ~/roster-lock/match-agent.json, and
+  // `listen` unconditionally (non-atomically) writes to it on every startup - launching host and
+  // client's terminals close together races those two writes/reads against each other and can
+  // hand one of them back truncated JSON ("Unexpected end of JSON input"), confirmed by hand.
+  // Giving each its own file removes the shared state entirely, not just the race.
+  const matchAgentCommand = (port: number, folders: { pieces: string, plugins: string, config: string }) => [
     process.execPath, matchAgentEntry, "listen",
     "--port", String(port), "--auth-code", MATCH_AGENT_AUTH_CODE,
-    "--piece-folder", folders.pieces, "--plugin-folder", folders.plugins,
+    "--piece-folder", folders.pieces, "--plugin-folder", folders.plugins, "--config-file", folders.config,
   ].map(shellQuote).join(" ");
 
   console.log("[demo] opening both players' match agents in their own terminals");
   runInXterm("match-agent-host", "100x18+0+420", matchAgentCommand(HOST_MATCH_AGENT_PORT, hostFolders));
   runInXterm("match-agent-client", "100x18+0+840", matchAgentCommand(CLIENT_MATCH_AGENT_PORT, clientFolders));
+  await Promise.all([
+    positionXtermWindow("match-agent-host", 0, 420),
+    positionXtermWindow("match-agent-client", 0, 840),
+  ]);
 
   console.log("[demo] waiting for docker compose to report healthy...");
   await waitForSentinelFile(DOCKER_READY_SENTINEL, 5 * 60 * 1000);
@@ -384,9 +457,13 @@ async function main(): Promise<void> {
   await clientJoinRoom(clientFrame);
 
   console.log("[demo] both: make selection");
+  // Stage always picks one of the two non-default variants, and host/client always get different
+  // ones - "Training Room" (the bare default) never gets voted for at all, so the room's
+  // democracy-random tie-break always has exactly Storm vs. Rainbow to pick between.
+  const [hostStage, clientStage] = Math.random() < 0.5 ? ["Storm", "Rainbow"] : ["Rainbow", "Storm"];
   await Promise.all([
-    makeSelection(hostPage, hostFrame, pickCounts),
-    makeSelection(clientPage, clientFrame, pickCounts),
+    makeSelection(hostPage, hostFrame, pickCounts, hostStage),
+    makeSelection(clientPage, clientFrame, pickCounts, clientStage),
   ]);
 
   console.log("[demo] host: start match");
@@ -399,10 +476,24 @@ async function main(): Promise<void> {
   ]);
 
   console.log("[demo] positioning both real Ikemen GO windows side by side");
-  await Promise.all([
+  const [hostWindowId, clientWindowId] = await Promise.all([
     positionIkemenWindow(hostAgent.binaryLocation, 0, 0),
     positionIkemenWindow(clientAgent.binaryLocation, 960, 0),
   ]);
+
+  // Give the VS screen itself a moment to actually render before trying to skip it (the window
+  // exists slightly before its content is ready for input).
+  await new Promise((resolve) => setTimeout(resolve, 2_000));
+
+  console.log("[demo] skipping Ikemen's VS-screen intro on each window so the round actually starts");
+  await skipVersusScreen(hostWindowId);
+  await skipVersusScreen(clientWindowId);
+  // Let the round-start transition actually finish rendering before testing movement.
+  await new Promise((resolve) => setTimeout(resolve, 1_500));
+
+  console.log("[demo] holding an arrow key on each window to show both are live and connected");
+  await demoArrowKeyHold(hostWindowId, "Right", 500);
+  await demoArrowKeyHold(clientWindowId, "Left", 500);
 
   console.log("[demo] READY - both Ikemen GO windows should be running now.");
   console.log("[demo] Everything is left running on purpose. Ctrl+C this process to tear down docker compose;");
