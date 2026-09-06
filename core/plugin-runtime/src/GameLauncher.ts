@@ -3,7 +3,7 @@ import { join as pathJoin, dirname as pathDirname, isAbsolute as pathIsAbsolute 
 import { randomUUID } from "node:crypto";
 import {
   AnyGameLauncherPlugin, ConnectionConfig, ConnectionSetup, StartGameArgs, GameProcessHandle, PlatformTarget,
-  RosterLockV1Config,
+  RosterLockV1Config, PiecePreview,
 } from "@roster-lock/types";
 import { registerAsHost, awaitHostAddress, getLocalNetworkAddresses } from "@roster-lock/direct-ip-coordinator";
 import { getPluginModuleByName, getPluginFullOfType } from "./plugin-management";
@@ -76,6 +76,13 @@ export interface IGameLauncher {
   // result as a plugin that implements the hook and finds no problems, so a caller doesn't need to
   // special-case "unsupported" vs "valid".
   validateGameConfig(pluginName: string, gameConfig: unknown, rosterConfig: RosterLockV1Config): Promise<Array<string>>,
+  // undefined either way means "no preview available" - a plugin without the
+  // relevant hook at all, or one that has it but couldn't produce anything
+  // for this particular piece/pieceType.
+  getPreview(
+    pluginName: string, pieceType: string, pathVariables: Record<string, string>, pieceFolder: string
+  ): Promise<PiecePreview | undefined>,
+  useDefaultPreview(pluginName: string, pieceType: string): Promise<PiecePreview | undefined>,
   startGame(
     pluginName: string, binaryLocation: string, target: PlatformTarget,
     connectionSetup: ConnectionSetup, request: StartGameRequest
@@ -143,6 +150,20 @@ export class GameLauncher implements IGameLauncher {
     const plugin = await this.moduleFor(pluginName);
     if(!plugin.validateGameConfig) return [];
     return plugin.validateGameConfig(gameConfig, rosterConfig);
+  }
+
+  async getPreview(
+    pluginName: string, pieceType: string, pathVariables: Record<string, string>, pieceFolder: string
+  ): Promise<PiecePreview | undefined> {
+    const plugin = await this.moduleFor(pluginName);
+    if(!plugin.getPreview) return undefined;
+    return plugin.getPreview(pieceType, pathVariables, pieceFolder);
+  }
+
+  async useDefaultPreview(pluginName: string, pieceType: string): Promise<PiecePreview | undefined> {
+    const plugin = await this.moduleFor(pluginName);
+    if(!plugin.useDefaultPreview) return undefined;
+    return plugin.useDefaultPreview(pieceType);
   }
 
   async startGame(

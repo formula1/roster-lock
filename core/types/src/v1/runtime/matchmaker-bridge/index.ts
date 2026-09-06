@@ -39,12 +39,16 @@ export type GetInstalledGameLauncherPluginsResponse = Array<{ id: string, versio
 // count (Join Settings), not anything the guest can set.
 export type GetIdentityResponse = { publicKey: string, machineId: string, playerCount: number };
 
-// requestSelection(rosterLockConfig, numPlayers) - host opens the Selection
-// lightbox for exactly `numPlayers` local player slots and resolves with the
-// built selection once confirmed. Unlike the other calls, the selection
-// *content* does cross back to the guest here - it isn't secret, only the
-// private key is.
-export type RequestSelectionRequest = { rosterLockConfig: RosterLockV1Config, numPlayers: number };
+// requestSelection(rosterLockConfig, numPlayers, pluginName) - host opens the
+// Selection lightbox for exactly `numPlayers` local player slots and resolves
+// with the built selection once confirmed. Unlike the other calls, the
+// selection *content* does cross back to the guest here - it isn't secret,
+// only the private key is. pluginName is which installed game-launcher
+// plugin the room is using - the guest already knows this (it's the same
+// value passed to updateGameLauncherSettings/validateGameConfig), and the
+// Selection lightbox needs it to ask that specific plugin for live piece
+// previews (see GameLauncherPlugin["getPreview"]).
+export type RequestSelectionRequest = { rosterLockConfig: RosterLockV1Config, numPlayers: number, pluginName: string };
 export type RequestSelectionResponse = Record<number, UserSelection>;
 
 // updateGameLauncherSettings(pluginName, gameConfig) - room-shared settings a

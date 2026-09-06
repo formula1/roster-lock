@@ -97,6 +97,14 @@ export type GameEndedResult = {
   winners: Array<PlayerId>,
 };
 
+// What a game-launcher plugin's getPreview/useDefaultPreview resolve to -
+// "image" covers every sprite-based engine (Ikemen included); "model" is
+// here for a future 3D/voxel-based engine plugin to use without another
+// type-level change, even though nothing implements it yet.
+export type PiecePreview =
+  | { kind: "image", dataUri: string }
+  | { kind: "model", modelUri: string, textureUri: string };
+
 export type StartGameArgs<T> = {
   // Handed to the game coordinator on the relay room's success webhook -
   // lets a plugin correlate itself back to that room if it ever needs to.
@@ -224,6 +232,30 @@ export type GameLauncherPlugin<T> = {
   // server itself may call it directly, so a plugin implementing this must keep its own module
   // free of Node-only (or otherwise non-portable) imports.
   validateGameConfig?: (gameConfig: T, rosterConfig: RosterLockV1Config) => Promise<Array<string>>,
+
+  // Best-effort live preview of a piece pulled from its actual downloaded
+  // assets (e.g. Ikemen's own select-screen portrait sprite), for the
+  // selection screen's hover/focus preview - distinct from RosterLockPiece
+  // .humanInfo.image, which is a roster-author-supplied thumbnail available
+  // before anything is downloaded. undefined means "no preview available for
+  // this piece" (unsupported sprite format, no convention for this pieceType,
+  // etc.) - callers fall back to humanInfo.image. pieceFolder is always a
+  // completed download's real on-disk folder, resolved by match-agent the same
+  // way DownloadResult["folder"] is - never a piece that's still downloading.
+  getPreview?: (
+    pieceType: string, pathVariables: Record<string, string>, pieceFolder: string
+  ) => Promise<PiecePreview | undefined>,
+
+  // Generic, piece-independent placeholder shown while a piece hasn't been
+  // downloaded yet at all (so getPreview has no folder, and no piece-specific
+  // pathVariables value like defName means anything, to read from) - e.g. an
+  // engine-branded silhouette. Optional; a plugin without one just means
+  // match-agent reports no preview for an undownloaded piece, and the
+  // selection screen falls back to the roster piece's own humanInfo.image
+  // instead (the same fallback used when a *downloaded* piece's getPreview
+  // comes back empty). Takes pieceType alone, in case a plugin wants a
+  // different placeholder per piece type (e.g. character vs. stage).
+  useDefaultPreview?: (pieceType: string) => Promise<PiecePreview | undefined>,
 
   startGame: (
     binaryLocation: string, target: PlatformTarget, connectionConfig: ConnectionConfig, args: StartGameArgs<T>
