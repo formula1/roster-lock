@@ -12,6 +12,7 @@ import {
   listAvailableGameLaunchers, getGameLauncherSettings, setGameLauncherSettings, getGameLauncherVersion,
   validateGameLauncherBinaryLocation, validateGameLauncherGameConfig, updateGameLauncherBinary, startGameLauncher,
   getGameProcessStatus, installGameLauncherPlugin, listGameProcesses, stopGameProcess, gameProcessesWs,
+  getGameLauncherPreview,
 } from "./game-launcher";
 import { IFolderDB, V1Env, MatchAgentSelfInfo, ProcessHandleEntry, GameCompletionContext } from "./globals";
 import { PluginManager } from "@roster-lock/plugin-runtime";
@@ -41,6 +42,7 @@ export const createV1Routers = (fileDB: IFolderDB, pluginRuntime: PluginManager,
   httpRouter.post("/game-launcher/:pluginName/validate-game-config", validateGameLauncherGameConfig.bind(env));
   httpRouter.post("/game-launcher/:pluginName/update", updateGameLauncherBinary.bind(env));
   httpRouter.post("/game-launcher/:pluginName/start", startGameLauncher.bind(env));
+  httpRouter.post("/game-launcher/:pluginName/preview", getGameLauncherPreview.bind(env));
   httpRouter.get("/game-launcher/:pluginName/process/:handleId", getGameProcessStatus.bind(env));
   httpRouter.post("/game-launcher/:pluginName/process/:handleId/stop", stopGameProcess.bind(env));
   // Plugin-agnostic, unlike the routes above - lists every process this

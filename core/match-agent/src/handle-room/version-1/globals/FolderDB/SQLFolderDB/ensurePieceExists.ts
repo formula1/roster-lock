@@ -118,19 +118,32 @@ export class SQLite3FolderDB implements IFolderDB {
     };
   }
 
+  private resolveCompleteFolder(
+    engineConfig: RosterLockV1Config["engine"],
+    pieceType: string,
+    piece: Pick<RosterLockPiece, "version" | "pathVariables">,
+  ): string {
+    const state = this.db.getPieceState(pieceIndexOf(engineConfig, pieceType, piece));
+    if(!state) throw new HTTPError(404, "Piece doesn't exist");
+    if(state.status !== "complete") throw new HTTPError(409, "Piece not finished");
+    return this.pieceFolder(engineConfig, pieceType, state.folderName);
+  }
+
+  async getPieceFolder(
+    engineConfig: RosterLockV1Config["engine"],
+    pieceType: string,
+    piece: Pick<RosterLockPiece, "version" | "pathVariables">,
+  ): Promise<string> {
+    return this.resolveCompleteFolder(engineConfig, pieceType, piece);
+  }
+
   async* getFilesofAsset(
     engineConfig: RosterLockV1Config["engine"],
     pieceType: string,
     piece: Pick<RosterLockPiece, "version" | "pathVariables">,
     assetName: string
   ): AsyncIterable<string>{
-    const state = this.db.getPieceState(pieceIndexOf(engineConfig, pieceType, piece));
-    if(!state) throw new HTTPError(404, "Piece Doesn't exist");
-    if(state.status !== "complete")
-       throw new HTTPError(409, "Piece not finished");
-    const folder = this.pieceFolder(
-      engineConfig, pieceType, state.folderName
-    );
+    const folder = this.resolveCompleteFolder(engineConfig, pieceType, piece);
     for await (const path of getFilesFromFolder(folder)){
       const assets = getMatchingAssetsForFile(
         engineConfig.pieceDefinitions[pieceType],
@@ -148,13 +161,7 @@ export class SQLite3FolderDB implements IFolderDB {
     piece: Pick<RosterLockPiece, "version" | "pathVariables">,
     filePath: string
   ): Promise<Readable> {
-    const state = this.db.getPieceState(pieceIndexOf(engineConfig, pieceType, piece));
-    if(!state) throw new HTTPError(404, "Piece doesn't exist");
-    if(state.status !== "complete")
-       throw new HTTPError(409, "Piece not finished");
-    const folder = this.pieceFolder(
-      engineConfig, pieceType, state.folderName
-    );
+    const folder = this.resolveCompleteFolder(engineConfig, pieceType, piece);
     const fullPath = pathJoin(folder, filePath);
     const rel = pathRelative(folder, fullPath)
     if(rel.startsWith("..") || isAbsolutePath(rel))
