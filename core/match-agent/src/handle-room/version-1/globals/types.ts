@@ -15,7 +15,7 @@ export type MatchAgentSelfInfo = {
 
 // pluginName is kept alongside the handle (not just the handleId key) so a
 // process can be listed/identified without a caller having to already know
-// which plugin started it - see game-launcher.ts's listGameProcesses.
+// which plugin started it - see game-launcher/process.ts's listGameProcesses.
 export type ProcessHandleEntry = {
   pluginName: string,
   handle: GameProcessHandle,
@@ -23,7 +23,7 @@ export type ProcessHandleEntry = {
 
 // What bindStepsToBridge already computes once a room's selection protocol
 // finishes (steps.ts) - saved here, keyed by relayRoomId, so the later,
-// separate game-launch request (game-launcher.ts's startGameLauncher, which
+// separate game-launch request (game-launcher/start.ts's startGameLauncher, which
 // has no other way to recover this) can hand it to piece-selection-sort's
 // handleGameComplete once a plugin reports a winner. In-memory only, same
 // best-effort tradeoff as processHandles - an entry for a room whose game
@@ -40,7 +40,7 @@ export type V1Env = {
   processHandles: Map<string, ProcessHandleEntry>,
   gameCompletionContext: Map<string, GameCompletionContext>,
   // Fires "changed" whenever processHandles gains an entry or one of its
-  // handles reports exit/crash - what game-launcher.ts's gameProcessesWs
+  // handles reports exit/crash - what game-launcher/process.ts's gameProcessesWs
   // listens on to push a fresh listGameProcesses-shaped snapshot, so a
   // client can watch process status live instead of polling
   // /game-launcher/processes.

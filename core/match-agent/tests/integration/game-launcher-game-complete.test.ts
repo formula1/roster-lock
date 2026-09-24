@@ -10,7 +10,7 @@ const HIGHEST_WINRATE_LOCALLY = "@roster-lock/piece-selection-sort-highest-winra
 
 // Exercises the one thing no other test does end-to-end: a real
 // GameLauncherPlugin calling the gameEnded() callback match-agent hands it
-// (see game-launcher.ts's startGameLauncher), and match-agent turning that
+// (see game-launcher/start.ts's startGameLauncher), and match-agent turning that
 // into a real pieceSort.handleGameComplete call using the
 // {lockConfig, localUsers, userSelections} a room's selection flow would
 // have stashed in env.gameCompletionContext (see steps.ts's onGameComplete).

@@ -9,7 +9,7 @@ import { makeValidLockConfig } from "./helpers/validLockConfig";
 
 const HEADLESS = "@roster-lock/game-launcher-headless";
 
-// Covers gameProcessesWs (game-launcher.ts) - the WS counterpart to
+// Covers gameProcessesWs (game-launcher/process.ts) - the WS counterpart to
 // listGameProcesses that pushes a fresh snapshot on connect and again on
 // every process start/exit, so match-agent-client's Game page doesn't have
 // to poll /game-launcher/processes.

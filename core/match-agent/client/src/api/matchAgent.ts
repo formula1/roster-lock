@@ -1,5 +1,5 @@
 // Thin wrappers around match-agent's own /v1/game-launcher/* control routes
-// (see core/match-agent/src/handle-room/version-1/game-launcher.ts). These are
+// (see core/match-agent/src/handle-room/version-1/game-launcher/). These are
 // specific to this app (configuring/launching a local game launcher) rather
 // than something a game itself needs, so they live here instead of
 // @roster-lock/ts-client - see that package's README/index.ts for the
@@ -41,7 +41,7 @@ async function matchAgentFetch(
 }
 
 // Appended as query params on any game-launcher route that resolves a
-// concrete binary - see resolveTarget in game-launcher.ts. Omitting `target`
+// concrete binary - see resolveTarget in game-launcher/shared.ts. Omitting `target`
 // entirely (the ordinary case) leaves match-agent to default to its own
 // current host; passing one is only for the deliberate exception (see
 // docs/v2/binary-location.md).
@@ -83,6 +83,22 @@ export async function setGameLauncherSettings(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(settings),
   });
+}
+
+// Opens a native OS folder-picker on match-agent's own host (see
+// core/match-agent/src/utils/pick-folder.ts for why a browser <input> can't
+// do this itself) and returns the chosen absolute path. `cancelled: true`
+// means the user closed the dialog without picking anything; the picker
+// itself may not exist on a headless/remote match-agent, in which case this
+// throws and the caller should fall back to manual text entry.
+export async function pickGameLauncherBinaryLocation(
+  matchAgentUrl: string, authCode: string, pluginName: string
+): Promise<{ path: string } | { cancelled: true }> {
+  const res = await matchAgentFetch(
+    matchAgentUrl, authCode, `/v1/game-launcher/${encodeURIComponent(pluginName)}/pick-binary-location`,
+    { method: "POST" }
+  );
+  return res.json();
 }
 
 export async function getGameLauncherVersion(
@@ -180,7 +196,7 @@ export async function listGameProcesses(
   return res.json();
 }
 
-// WS counterpart to listGameProcesses (see game-launcher.ts's gameProcessesWs)
+// WS counterpart to listGameProcesses (see game-launcher/process.ts's gameProcessesWs)
 // - pushes the current snapshot immediately and again on every later
 // start/exit, so a caller like pages/Game doesn't have to poll. Returns an
 // unsubscribe function that closes the socket.

@@ -42,7 +42,7 @@ type RoomArgs = {
   gameControlledSelections: Record<string, Array<SelectedPiece> | Record<PlayerId, Array<SelectedPiece>>>,
   // Lets a caller stash this room's {lockConfig, localUsers, userSelections}
   // for later reuse once a game started from this room reports a result -
-  // see game-launcher.ts's gameEnded handler, which has no other way to
+  // see game-launcher/start.ts's gameEnded handler, which has no other way to
   // recover this (it's a separate request cycle from this one entirely).
   onGameComplete?: (ctx: GameCompletionContext) => void,
 }

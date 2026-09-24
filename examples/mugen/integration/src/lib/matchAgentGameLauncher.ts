@@ -1,5 +1,5 @@
 // Thin wrappers around match-agent's own /v1/game-launcher/* control routes
-// (see core/match-agent/src/handle-room/version-1/game-launcher.ts). Kept
+// (see core/match-agent/src/handle-room/version-1/game-launcher/). Kept
 // local rather than added to @roster-lock/ts-client - per plan, ordinary
 // games are expected to do their own matchmaking/game-running internally
 // and never see these routes; this integration script is itself acting as

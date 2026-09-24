@@ -5,7 +5,7 @@ import type { RJSFSchema } from "@rjsf/utils";
 import { useMatchAgent } from "../context/MatchAgentContext";
 import {
   getGameLauncherSettings, setGameLauncherSettings, getGameLauncherVersion, updateGameLauncherBinary,
-  validateGameLauncherBinaryLocation, listAvailableGameLaunchers,
+  validateGameLauncherBinaryLocation, listAvailableGameLaunchers, pickGameLauncherBinaryLocation,
 } from "../api/matchAgent";
 
 // A schema with no declared properties renders nothing useful in rjsf - most
@@ -71,12 +71,20 @@ export function GameLauncherSettingsForm({ pluginName }: { pluginName: string })
 
   useEffect(load, [pluginName, settings]);
 
+  // validateGameLauncherBinaryLocation checks whatever is currently *saved*
+  // on the match-agent side, not a value the client merely holds in state -
+  // so any caller that wants a freshly-picked/edited location validated has
+  // to persist it first, otherwise it'd just re-validate the old one.
+  const persistAndValidate = async (location: string) => {
+    await setGameLauncherSettings(settings.url, settings.authCode, pluginName, { binaryLocation: location, localConfig });
+    await validate(location);
+  };
+
   const save = async () => {
     setBusy(true);
     setError(null);
     try {
-      await setGameLauncherSettings(settings.url, settings.authCode, pluginName, { binaryLocation, localConfig });
-      await validate(binaryLocation);
+      await persistAndValidate(binaryLocation);
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -89,6 +97,22 @@ export function GameLauncherSettingsForm({ pluginName }: { pluginName: string })
     setError(null);
     try {
       setVersion(await getGameLauncherVersion(settings.url, settings.authCode, pluginName));
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const browse = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      const result = await pickGameLauncherBinaryLocation(settings.url, settings.authCode, pluginName);
+      if ("path" in result) {
+        setBinaryLocation(result.path);
+        await persistAndValidate(result.path);
+      }
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -115,6 +139,7 @@ export function GameLauncherSettingsForm({ pluginName }: { pluginName: string })
         Binary location
         <input value={binaryLocation} onChange={(e) => setBinaryLocation(e.target.value)} />
       </label>
+      <button type="button" disabled={busy} onClick={browse}>Browse...</button>
       {hasProperties(localConfigSchema) && (
         // Own submit button suppressed - localConfig just feeds into this
         // component's own state via onChange, and goes out through the
