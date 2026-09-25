@@ -21,7 +21,7 @@ export const editPieceCommand = withDraftOption(new Command("edit-piece"))
   .option("--name <name>", "human-readable name")
   .option("--author <author>", "author name")
   .option("--url <url>", "info url")
-  .option("--image <path>", "path to a local image file (png/jpg/gif/webp/svg) to embed, or \"-\" to remove it")
+  .option("--image <pathOrUrl>", "path to a local image file, or an http(s) URL to download one from (png/jpg/gif/webp/svg), to embed, or \"-\" to remove it")
   .option("--add-download-source <url>", "download source url to add (repeatable)", collect, [] as Array<string>)
   .option("--remove-download-source <url>", "download source url to remove (repeatable)", collect, [] as Array<string>)
   .option("--path-variables <k=v,...>", "path variable values to set (existing keys not mentioned are left alone)")
@@ -75,7 +75,7 @@ export const editPieceCommand = withDraftOption(new Command("edit-piece"))
     if(opts.url !== undefined) piece.humanInfo.url = opts.url;
     if(opts.image !== undefined){
       if(opts.image === "-") delete piece.humanInfo.image;
-      else piece.humanInfo.image = encodeImageFile(opts.image);
+      else piece.humanInfo.image = await encodeImageFile(opts.image);
     }
 
     for(const source of opts.addDownloadSource){
