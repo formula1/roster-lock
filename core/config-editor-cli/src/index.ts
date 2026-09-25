@@ -9,6 +9,7 @@ import {
   addAssetCommand,
   removePieceTypeCommand,
   removeAssetCommand,
+  addOfficialSelectionCommand,
   engineShowCommand,
 } from "./commands/engine";
 import {
@@ -24,6 +25,7 @@ import {
   addScriptCommand,
   selectionSetCommand,
   runScriptCommand,
+  selectionHashCommand,
   selectionShowCommand,
 } from "./commands/selection";
 import {
@@ -57,6 +59,7 @@ engineCommand.addCommand(editDefinitionCommand);
 engineCommand.addCommand(addAssetCommand);
 engineCommand.addCommand(removePieceTypeCommand);
 engineCommand.addCommand(removeAssetCommand);
+engineCommand.addCommand(addOfficialSelectionCommand);
 engineCommand.addCommand(engineShowCommand);
 program.addCommand(engineCommand);
 
@@ -74,6 +77,7 @@ const selectionCommand = new Command("selection").description("Edit the staged l
 selectionCommand.addCommand(addScriptCommand);
 selectionCommand.addCommand(selectionSetCommand);
 selectionCommand.addCommand(runScriptCommand);
+selectionCommand.addCommand(selectionHashCommand);
 selectionCommand.addCommand(selectionShowCommand);
 program.addCommand(selectionCommand);
 

@@ -53,7 +53,13 @@ export class RequestHandler {
           if(!pending) throw new Error(`no pending request for ${message.id}`);
           delete this.pending[message.id];
           if(message.valueType === "error"){
-            pending.reject(message.value);
+            // The sending side always serializes an error down to a plain string (see the
+            // "request" case below) - a raw string can't cross this bridge as an Error instance
+            // either way (postMessage/WebSocket JSON round-trips lose the prototype), so rebuild
+            // one here instead of rejecting with the bare string. Consumers throughout this
+            // codebase assume `(e as Error).message` works on a sendRequest() rejection - without
+            // this, that reads `undefined` instead of the real failure reason.
+            pending.reject(new Error(typeof message.value === "string" ? message.value : String(message.value)));
           } else {
             pending.resolve(message.value);
           }

@@ -32,11 +32,15 @@ describe('MessageBridge requests', () => {
     await expect(a.sendRequest('add', { x: 2, y: 3 })).resolves.toBe(5);
   });
 
-  it('rejects sendRequest when the handler throws', async () => {
+  it('rejects sendRequest with a real Error carrying the handler\'s message', async () => {
     const [a, b] = wireBridges();
     b.onRequest('boom', () => { throw new Error('nope'); });
 
-    await expect(a.sendRequest('boom', {})).rejects.toBe('nope');
+    // The error crosses the bridge as a plain string (postMessage/WebSocket JSON can't carry a
+    // real Error's prototype) - this asserts the receiving side rebuilds an Error from it rather
+    // than rejecting with the bare string, since callers throughout the codebase read `.message`
+    // off a sendRequest() rejection.
+    await expect(a.sendRequest('boom', {})).rejects.toThrow('nope');
   });
 
   it('rejects sendRequest when there is no listener at the path', async () => {

@@ -1,6 +1,6 @@
 {
   "name": "@roster-lock/plugin-runtime",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "Uses external plugins to run untrusted script lanuages and download protocols",
   "repository": {
     "type": "git",
@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@npmcli/arborist": "^10.0.1",
+    "@roster-lock/direct-ip-coordinator": "workspace:*",
     "@roster-lock/shared": "workspace:*",
     "@roster-lock/types": "workspace:*",
     "@roster-lock/utils": "workspace:*",

@@ -1,6 +1,6 @@
 {
   "name": "@roster-lock/types",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Types for roster lock",
   "repository": {
     "type": "git",
@@ -22,5 +22,8 @@
   "devDependencies": {
     "rimraf": "^6.1.3",
     "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "ajv": "^8.20.0"
   }
 }

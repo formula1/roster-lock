@@ -1,0 +1,21 @@
+table: 0xc000371260 {
+  ["MatchTime"] => 0
+  ["RoundTime"] => 5940
+  ["WinSide"] => -1
+  ["LastRound"] => 0
+  ["Draws"] => 0
+  ["Wins"] => table: 0xc0003712c0 {
+                [1] => 0
+                [2] => 0
+              }
+  ["TeamModes"] => table: 0xc000371320 {
+                     [1] => 0
+                     [2] => 0
+                   }
+  ["TotalScore"] => table: 0xc000371380 {
+                      [1] => 0
+                      [2] => 0
+                    }
+  ["Rounds"] => table: 0xc0003713e0 {
+                }
+}

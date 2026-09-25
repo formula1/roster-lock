@@ -6,7 +6,7 @@ import { UserSelectionSchema } from "./schema/selected";
 import { V1Env } from "./globals/types";
 import z, { ZodType } from "zod";
 
-function castLockConfig(uncasted: unknown): RosterLockV1Config {
+export function castLockConfig(uncasted: unknown): RosterLockV1Config {
   const casted = ROSTERLOCK_V1_CASTER_JSONSCHEMA.safeCast(uncasted, true);
   if(!casted.valid) throw new HTTPError(400, "Invalid lockConfig", casted.error);
   return casted.value;

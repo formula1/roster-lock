@@ -1,0 +1,27 @@
+{
+  "name": "@roster-lock/mugen-integration",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Orchestrates the mugen example end-to-end: docker services, titled-room/relay/coordinator admin setup, match-agent, and two simulated players launching real Ikemen GO processes",
+  "license": "JSON",
+  "author": "",
+  "type": "commonjs",
+  "scripts": {
+    "cli": "tsx src/index.ts",
+    "start": "tsx src/index.ts run",
+    "run-game": "tsx src/index.ts run-game",
+    "server-setup": "tsx src/index.ts server-setup",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@roster-lock/ts-client": "workspace:*",
+    "@roster-lock/types": "workspace:*",
+    "@roster-lock/utils": "workspace:*",
+    "commander": "^14.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.1",
+    "tsx": "^4.19.2",
+    "typescript": "^7.0.2"
+  }
+}

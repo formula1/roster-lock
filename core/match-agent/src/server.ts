@@ -33,7 +33,7 @@ export class MatchAgentServer {
     });
     this.httpServer.on('request', (req, res)=>{
       this.httpRouter.handleRequest({ req, res }, (err: unknown)=>{
-        debug && console.log("HTTP Error:", err);
+        debug && console.log("HTTP Error:", req.method, req.url, err);
         if(res.writableEnded){
           debug && console.warn("Router threw error and response ended")
           return;

@@ -1,0 +1,23 @@
+{
+  "name": "@roster-lock/direct-ip-coordinator",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Rendezvous protocol + TCP coordinator for game-launcher plugins using roster-lock's direct-tcp connection mode - shared between any such plugin and a standalone coordinator service",
+  "license": "JSON",
+  "author": "Sam Tobia",
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "types": "./src/index.ts",
+  "scripts": {
+    "build": "rimraf ./dist && tsc",
+    "prepare": "pnpm run build",
+    "test": "vitest run"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "rimraf": "^6.1.3",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.5"
+  }
+}

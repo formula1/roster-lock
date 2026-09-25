@@ -53,6 +53,15 @@ export interface IFolderDB {
     selectedPiece: Pick<RosterLockPiece, "version" | "pathVariables">,
     filePath: string
   ): Promise<Readable>
+  // Resolves a completed download's real on-disk folder - throws the same
+  // 404 ("doesn't exist")/409 ("not finished") HTTPErrors as getFilesofAsset/
+  // getPieceFileContents rather than returning undefined, so callers use the
+  // same try/catch shape for all three.
+  getPieceFolder(
+    engineConfig: RosterLockV1Config["engine"],
+    pieceType: string,
+    selectedPiece: Pick<RosterLockPiece, "version" | "pathVariables">,
+  ): Promise<string>
   listPieces(
     engineName: string,
     pieceType: string,

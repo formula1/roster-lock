@@ -8,7 +8,7 @@ import { SelectionUnselectableConfig } from "./selection-types/unselectable";
 
 export * from "./meta";
 
-export {
+export type {
   SelectionPreselectedConfig,
   SelectionGameControlledConfig,
   SelectionNormalConfig,
@@ -16,7 +16,7 @@ export {
   UserSelectionValidation,
 };
 
-export { UntrustedScriptRef };
+export type { UntrustedScriptRef };
 
 export type RosterLockSelectionConfig = {
   piece: Record<PieceType, (

@@ -8,7 +8,7 @@ import { V1Env } from "../globals/types";
 export const wsHandler: WebSocketHandlerCallback = async function(
   this: V1Env, { ws: gameWebSocket }, params, next
 ){
-  const { fileDB, pluginRuntime } = this;
+  const { fileDB, pluginRuntime, gameCompletionContext } = this;
   try {
     const gameBridge = new MessageBridge((message)=>gameWebSocket.send(JSON.stringify(message)));
     gameWebSocket.on("message", (message)=>{
@@ -19,7 +19,7 @@ export const wsHandler: WebSocketHandlerCallback = async function(
       return await exchangeAndDownloadSelections(fileDB, pluginRuntime, roomRequest, {
         onState: (state)=>{gameBridge.sendEvent("room-state", state)},
         onDownloadProgress: (event)=>{gameBridge.sendEvent("download-progress", event)},
-      });
+      }, (relayRoomId, ctx)=>{ gameCompletionContext.set(relayRoomId, ctx); });
     });
     gameBridge.sendEvent("ready", {});
   }catch(e){
