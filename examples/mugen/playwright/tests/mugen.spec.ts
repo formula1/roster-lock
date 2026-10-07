@@ -211,9 +211,12 @@ async function hostCreateRoom(frame: FrameLocator): Promise<void> {
 }
 
 async function clientJoinRoom(frame: FrameLocator): Promise<void> {
-  await frame.getByRole("link", { name: ROOM_TITLE, exact: true }).click();
-  // RoomDetailPage auto-joins on mount if not already a participant - no
-  // separate "join" button exists.
+  // The room list's title is a <button>, not a <Link> - see
+  // titled-room/client's Rooms/List.tsx (attemptToJoinRoom): joining now
+  // happens eagerly in that click handler itself (checking already-joined/
+  // at-max-players first), not via RoomDetailPage's mount effect, so this
+  // click is what actually joins the room before navigating to its detail page.
+  await frame.getByRole("button", { name: ROOM_TITLE, exact: true }).click();
   await expect(frame.getByRole("heading", { name: ROOM_TITLE })).toBeVisible({ timeout: 15_000 });
 }
 
