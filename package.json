@@ -7,15 +7,19 @@
     "test:example:full-local": "pnpm --filter \"./examples/full-local/integration\" run start",
     "test:plugin:integration": "pnpm --filter \"./plugins/download/protocol/*\" run test:integration",
     "generate-plugin-manifest": "tsx scripts/plugin-manifest.ts",
-    "publish": "pnpm publish --no-git-checks --access public --recursive"
+    "publish": "pnpm publish --no-git-checks --access public --recursive",
+    "lint": "eslint ."
   },
   "devDependencies": {
     "@roster-lock/plugin-runtime": "workspace:*",
     "@stylistic/eslint-plugin": "^4.4.1",
     "@typescript-eslint/eslint-plugin": "^8.59.1",
     "@typescript-eslint/parser": "^8.59.1",
+    "eslint": "^10.2.1",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^16.0.0",
-    "tsx": "^4.19.2"
+    "tsx": "^4.19.2",
+    "typescript": "^6.0.3"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
