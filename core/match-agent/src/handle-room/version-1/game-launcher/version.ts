@@ -58,22 +58,28 @@ export const validateGameLauncherGameConfig: HTTPRequestHandler = async function
   res.end(JSON.stringify({ problems }));
 }
 
+// Deliberately doesn't call requireBinaryLocation like every other route in
+// this file - getBinary *acquires* a binaryLocation rather than operating
+// on an already-configured one (see GameLauncherPlugin.getBinary), so a
+// plugin that supports it can be downloaded before any binaryLocation has
+// ever been set, not just updated once one already is.
 export const updateGameLauncherBinary: HTTPRequestHandler = async function(
   this: V1Env, { res }, routeInfo
 ){
   const pluginName = requirePluginName(routeInfo);
-  const binaryLocation = await requireBinaryLocation(this, pluginName);
   const target = resolveTarget(routeInfo);
 
+  let binaryLocation: string;
   try {
-    await this.pluginRuntime.gameLauncher.updateBinary(pluginName, binaryLocation, target);
+    ({ binaryLocation } = await this.pluginRuntime.gameLauncher.getBinary(pluginName, target));
   } catch(e){
-    // updateBinary throws a plain Error when a plugin doesn't declare one at
-    // all (see GameLauncher.updateBinary) - that's a client-facing 400 ("this
-    // runner can't be updated in-app"), not a server fault.
+    // getBinary throws a plain Error when a plugin doesn't declare one at
+    // all (see GameLauncher.getBinary) - that's a client-facing 400 ("this
+    // runner can't be downloaded in-app"), not a server fault.
     throw new HTTPError(400, (e as Error).message);
   }
+  await this.fileDB.recordBinaryDownloaded(pluginName, binaryLocation);
 
   res.writeHead(200, { "Content-Type": "application/json" });
-  res.end(JSON.stringify({ ok: true }));
+  res.end(JSON.stringify({ ok: true, binaryLocation }));
 }

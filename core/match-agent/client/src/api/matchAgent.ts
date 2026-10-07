@@ -150,12 +150,49 @@ export async function getGameLauncherPreview(
   return preview;
 }
 
+// No binaryLocation needs to already be configured to call this - getBinary
+// (see GameLauncherPlugin.getBinary) acquires one from scratch, rather than
+// updating an already-set path, so this returns the one it just persisted.
 export async function updateGameLauncherBinary(
   matchAgentUrl: string, authCode: string, pluginName: string, target?: PlatformTarget
-): Promise<void> {
-  await matchAgentFetch(
+): Promise<{ binaryLocation: string }> {
+  const res = await matchAgentFetch(
     matchAgentUrl, authCode, withTarget(`/v1/game-launcher/${encodeURIComponent(pluginName)}/update`, target),
     { method: "POST" }
+  );
+  return res.json();
+}
+
+export type DownloadedGameLauncherBinary = {
+  binaryLocation: string,
+  version: { title: string, id: string } | null,
+  active: boolean,
+  downloadedAt: number | null,
+  lastUsedAt: number | null,
+};
+
+// Everything getBinary has ever put under this plugin's own dataDir (see
+// GameLauncher.listBinaries), so a settings UI can show what's accumulating
+// on disk and offer removeGameLauncherBinary below instead of letting old
+// engine versions pile up unnoticed. `version: null` means the folder is
+// there but doesn't look like a real install any more (e.g. partially
+// deleted by hand) - still listed, just not a candidate anyone would pick.
+export async function listGameLauncherBinaries(
+  matchAgentUrl: string, authCode: string, pluginName: string, target?: PlatformTarget
+): Promise<Array<DownloadedGameLauncherBinary>> {
+  const res = await matchAgentFetch(
+    matchAgentUrl, authCode, withTarget(`/v1/game-launcher/${encodeURIComponent(pluginName)}/binaries`, target)
+  );
+  return res.json();
+}
+
+export async function removeGameLauncherBinary(
+  matchAgentUrl: string, authCode: string, pluginName: string, binaryLocation: string
+): Promise<void> {
+  const params = new URLSearchParams({ binaryLocation });
+  await matchAgentFetch(
+    matchAgentUrl, authCode, `/v1/game-launcher/${encodeURIComponent(pluginName)}/binaries?${params.toString()}`,
+    { method: "DELETE" }
   );
 }
 

@@ -8,6 +8,7 @@ import {
 import { getGameLauncherPreview } from "./preview";
 import { startGameLauncher } from "./start";
 import { getGameProcessStatus, listGameProcesses, stopGameProcess } from "./process";
+import { listGameLauncherBinaries, removeGameLauncherBinary } from "./binaries";
 
 // Mounted at /game-launcher (see index.ts's httpRouter.use) - every path
 // below is relative to that prefix. gameProcessesWs, the one WS route in
@@ -30,6 +31,8 @@ export function createGameLauncherRouter(env: V1Env): HTTPRouter {
   router.get("/:pluginName/validate", validateGameLauncherBinaryLocation.bind(env));
   router.post("/:pluginName/validate-game-config", validateGameLauncherGameConfig.bind(env));
   router.post("/:pluginName/update", updateGameLauncherBinary.bind(env));
+  router.get("/:pluginName/binaries", listGameLauncherBinaries.bind(env));
+  router.delete("/:pluginName/binaries", removeGameLauncherBinary.bind(env));
   router.post("/:pluginName/start", startGameLauncher.bind(env));
   router.post("/:pluginName/preview", getGameLauncherPreview.bind(env));
   router.get("/:pluginName/process/:handleId", getGameProcessStatus.bind(env));

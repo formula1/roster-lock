@@ -18,8 +18,8 @@ export const listAvailableGameLaunchers: HTTPRequestHandler = async function(
 }
 
 // Installs the plugin *package* itself (registry/manifest-based, via
-// PluginManager - distinct from updateBinary in version.ts, which fetches a
-// newer engine binary for a plugin that's already installed).
+// PluginManager - distinct from getBinary in version.ts, which fetches the
+// engine binary that installed plugin actually runs).
 export const installGameLauncherPlugin: HTTPRequestHandler = async function(
   this: V1Env, { res }, routeInfo
 ){

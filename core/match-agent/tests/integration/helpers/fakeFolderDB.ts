@@ -34,4 +34,20 @@ export class FakeFolderDB implements IFolderDB {
   async searchPieces(): ReturnType<IFolderDB["searchPieces"]>{
     throw new Error("not implemented in FakeFolderDB");
   }
+
+  async recordBinaryDownloaded(): ReturnType<IFolderDB["recordBinaryDownloaded"]>{
+    throw new Error("not implemented in FakeFolderDB");
+  }
+
+  async recordBinaryUsed(): ReturnType<IFolderDB["recordBinaryUsed"]>{
+    throw new Error("not implemented in FakeFolderDB");
+  }
+
+  async getBinaryUsageFor(): ReturnType<IFolderDB["getBinaryUsageFor"]>{
+    throw new Error("not implemented in FakeFolderDB");
+  }
+
+  async removeBinaryUsage(): ReturnType<IFolderDB["removeBinaryUsage"]>{
+    throw new Error("not implemented in FakeFolderDB");
+  }
 }

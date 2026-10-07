@@ -118,6 +118,24 @@ export class SQLite3FolderDB implements IFolderDB {
     };
   }
 
+  async recordBinaryDownloaded(pluginName: string, binaryLocation: string): Promise<void> {
+    this.db.recordBinaryDownloaded(pluginName, binaryLocation);
+  }
+
+  async recordBinaryUsed(pluginName: string, binaryLocation: string): Promise<void> {
+    this.db.recordBinaryUsed(pluginName, binaryLocation);
+  }
+
+  async getBinaryUsageFor(
+    pluginName: string, binaryLocations: Array<string>
+  ): Promise<Map<string, { downloadedAt: number, lastUsedAt: number | null }>> {
+    return this.db.getBinaryUsageFor(pluginName, binaryLocations);
+  }
+
+  async removeBinaryUsage(pluginName: string, binaryLocation: string): Promise<void> {
+    this.db.removeBinaryUsage(pluginName, binaryLocation);
+  }
+
   private resolveCompleteFolder(
     engineConfig: RosterLockV1Config["engine"],
     pieceType: string,

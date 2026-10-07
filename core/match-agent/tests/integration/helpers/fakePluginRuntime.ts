@@ -62,7 +62,16 @@ class FakeGameLauncher implements IGameLauncher {
   getSupportedVersion(): ReturnType<IGameLauncher["getSupportedVersion"]>{
     throw new Error("Not Implemented");
   }
-  updateBinary(): ReturnType<IGameLauncher["updateBinary"]>{
+  getBinary(): ReturnType<IGameLauncher["getBinary"]>{
+    throw new Error("Not Implemented");
+  }
+  listBinaries(): ReturnType<IGameLauncher["listBinaries"]>{
+    throw new Error("Not Implemented");
+  }
+  removeBinary(): ReturnType<IGameLauncher["removeBinary"]>{
+    throw new Error("Not Implemented");
+  }
+  resolveBinaryLocation(): ReturnType<IGameLauncher["resolveBinaryLocation"]>{
     throw new Error("Not Implemented");
   }
   startGame(): ReturnType<IGameLauncher["startGame"]>{

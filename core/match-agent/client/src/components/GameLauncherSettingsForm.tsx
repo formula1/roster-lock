@@ -6,6 +6,7 @@ import { useMatchAgent } from "../context/MatchAgentContext";
 import {
   getGameLauncherSettings, setGameLauncherSettings, getGameLauncherVersion, updateGameLauncherBinary,
   validateGameLauncherBinaryLocation, listAvailableGameLaunchers, pickGameLauncherBinaryLocation,
+  listGameLauncherBinaries, removeGameLauncherBinary, DownloadedGameLauncherBinary,
 } from "../api/matchAgent";
 
 // A schema with no declared properties renders nothing useful in rjsf - most
@@ -41,6 +42,16 @@ export function GameLauncherSettingsForm({ pluginName }: { pluginName: string })
   const [localConfig, setLocalConfig] = useState<unknown>(undefined);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Everything getBinary has put under this plugin's own dataDir so far -
+  // reloaded after every download/remove so the "hoarding old versions"
+  // list a player sees always matches what's actually on disk.
+  const [binaries, setBinaries] = useState<Array<DownloadedGameLauncherBinary>>([]);
+
+  const loadBinaries = () => {
+    listGameLauncherBinaries(settings.url, settings.authCode, pluginName)
+      .then(setBinaries)
+      .catch((e) => setError(e.message));
+  };
 
   const validate = async (location: string) => {
     if(!location){
@@ -70,6 +81,7 @@ export function GameLauncherSettingsForm({ pluginName }: { pluginName: string })
   };
 
   useEffect(load, [pluginName, settings]);
+  useEffect(loadBinaries, [pluginName, settings]);
 
   // validateGameLauncherBinaryLocation checks whatever is currently *saved*
   // on the match-agent side, not a value the client merely holds in state -
@@ -120,12 +132,33 @@ export function GameLauncherSettingsForm({ pluginName }: { pluginName: string })
     }
   };
 
+  // Deliberately doesn't require binaryLocation to already be set (unlike
+  // checkVersion) - getBinary acquires one from scratch, so this is also
+  // how a plugin that supports it gets its *first* binaryLocation, not
+  // just later updates. The returned path is both displayed and validated
+  // immediately, same as a freshly Browse'd/typed one would be.
   const download = async () => {
     setBusy(true);
     setError(null);
     try {
-      await updateGameLauncherBinary(settings.url, settings.authCode, pluginName);
+      const { binaryLocation: newLocation } = await updateGameLauncherBinary(settings.url, settings.authCode, pluginName);
+      setBinaryLocation(newLocation);
+      await validate(newLocation);
       await checkVersion();
+      loadBinaries();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const removeBinary = async (location: string) => {
+    setBusy(true);
+    setError(null);
+    try {
+      await removeGameLauncherBinary(settings.url, settings.authCode, pluginName, location);
+      loadBinaries();
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -154,10 +187,27 @@ export function GameLauncherSettingsForm({ pluginName }: { pluginName: string })
       )}
       <button type="button" disabled={busy} onClick={save}>Save</button>
       <button type="button" disabled={busy || !binaryLocation} onClick={checkVersion}>Check version</button>
-      <button type="button" disabled={busy || !binaryLocation} onClick={download}>Download / update</button>
+      <button type="button" disabled={busy} onClick={download}>Download / update</button>
       {validation && !validation.valid && <p className="error">{validation.message}</p>}
       {version && (
         <p>Local: {version.local.title} - Supported: {version.supported.title}</p>
+      )}
+      {binaries.length > 0 && (
+        <ul className="game-launcher-binaries-list">
+          {binaries.map((binary) => (
+            <li key={binary.binaryLocation}>
+              <span>
+                {binary.version?.title ?? "(unrecognized install)"}
+                {binary.active && " - active"}
+                {binary.downloadedAt && ` - downloaded ${new Date(binary.downloadedAt).toLocaleString()}`}
+                {binary.lastUsedAt && ` - last used ${new Date(binary.lastUsedAt).toLocaleString()}`}
+              </span>
+              <button type="button" disabled={busy} onClick={() => removeBinary(binary.binaryLocation)}>
+                Remove
+              </button>
+            </li>
+          ))}
+        </ul>
       )}
       {error && <p className="error">{error}</p>}
     </div>

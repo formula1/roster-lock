@@ -77,5 +77,20 @@ export interface IFolderDB {
     page: number,
     limit: number,
   }): Promise<StoredPieceListing>
+
+  // "Downloaded at"/"last used at" for a game-launcher binary (see
+  // SQLFolderDB/schema.ts's game_launcher_binaries table) - sharing this
+  // same database rather than a second one just for game-launcher
+  // bookkeeping, even though it isn't piece-shaped. Neither timestamp is
+  // something a plugin could ever report itself (GameLauncher.listBinaries
+  // reads what's actually installed via getLocalVersion, not when/whether
+  // match-agent fetched or ran it), so this is match-agent's own
+  // responsibility to track and merge in.
+  recordBinaryDownloaded(pluginName: string, binaryLocation: string): Promise<void>,
+  recordBinaryUsed(pluginName: string, binaryLocation: string): Promise<void>,
+  getBinaryUsageFor(
+    pluginName: string, binaryLocations: Array<string>
+  ): Promise<Map<string, { downloadedAt: number, lastUsedAt: number | null }>>,
+  removeBinaryUsage(pluginName: string, binaryLocation: string): Promise<void>,
 }
 

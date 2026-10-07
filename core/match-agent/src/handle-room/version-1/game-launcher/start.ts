@@ -86,6 +86,18 @@ export const startGameLauncher: HTTPRequestHandler = async function(
       });
     },
   });
+  // Resolved to the same absolute path listBinaries reports (binaryLocation
+  // above is whatever raw form is stored - see resolveBinaryLocation's own
+  // docs) - otherwise a downloaded-and-used binary's usage row would never
+  // match what GET /binaries looks up, and lastUsedAt would never populate
+  // for the one case this bookkeeping actually exists for. Best-effort - a
+  // bookkeeping failure here shouldn't take down a game that already
+  // started successfully.
+  this.fileDB.recordBinaryUsed(
+    pluginName, this.pluginRuntime.gameLauncher.resolveBinaryLocation(binaryLocation)
+  ).catch((e)=>{
+    console.error("Failed to record binary usage", e);
+  });
 
   const handleId = randomUUID();
   this.processHandles.set(handleId, { pluginName, handle });
