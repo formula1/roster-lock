@@ -10,14 +10,19 @@ import { ensurePieceDownloaded, ensurePieceDownloadedWs, listDownloadedPiecesDir
 import { listAvailableSortPlugins, sortListPlugin, gameComplete } from "./piece-sort";
 import { createGameLauncherRouter } from "./game-launcher/router";
 import { gameProcessesWs } from "./game-launcher/process";
+import { getInputBindingsRoute, setInputBindingsRoute } from "./input-bindings";
 import { IFolderDB, V1Env, MatchAgentSelfInfo, ProcessHandleEntry, GameCompletionContext } from "./globals";
 import { PluginManager } from "@roster-lock/plugin-runtime";
 
-export const createV1Routers = (fileDB: IFolderDB, pluginRuntime: PluginManager, matchAgent: MatchAgentSelfInfo)=>{
+export const createV1Routers = (
+  fileDB: IFolderDB, pluginRuntime: PluginManager, matchAgent: MatchAgentSelfInfo, configFilePath: string
+)=>{
   const processHandles = new Map<string, ProcessHandleEntry>();
   const gameCompletionContext = new Map<string, GameCompletionContext>();
   const processEvents = new EventEmitter();
-  const env: V1Env = { fileDB, pluginRuntime, matchAgent, processHandles, gameCompletionContext, processEvents };
+  const env: V1Env = {
+    fileDB, pluginRuntime, matchAgent, configFilePath, processHandles, gameCompletionContext, processEvents,
+  };
   const httpRouter = new HTTPRouter();
   const wsRouter = new WebSocketRouter()
 
@@ -29,6 +34,8 @@ export const createV1Routers = (fileDB: IFolderDB, pluginRuntime: PluginManager,
   httpRouter.get("/piece/sort-list/available", listAvailableSortPlugins.bind(env));
   httpRouter.post("/piece/sort-list/plugin/:pluginName", sortListPlugin.bind(env));
   httpRouter.post("/game-complete", gameComplete.bind(env));
+  httpRouter.get("/input-bindings", getInputBindingsRoute.bind(env));
+  httpRouter.put("/input-bindings", setInputBindingsRoute.bind(env));
   httpRouter.use("/game-launcher", createGameLauncherRouter(env));
 
   wsRouter.mount("/sync-dl", wsHandler.bind(env));

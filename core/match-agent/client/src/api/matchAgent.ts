@@ -226,3 +226,89 @@ export async function stopGameLauncher(
     { method: "POST" }
   );
 }
+
+export type NavAction = "select" | "back" | "menu";
+export type KeyboardBindings = Record<NavAction, string>;
+export type GamepadBindings = Record<NavAction, number>;
+export type InputBindings = { keyboard: KeyboardBindings, gamepad: GamepadBindings };
+
+// Stored by match-agent next to its own portable config file (see
+// core/match-agent/src/config/inputBindings.ts), not in this browser's
+// localStorage - an arcade/internet-cafe host's browser profile doesn't
+// travel with the player, but match-agent run off their own USB does (see
+// docs/economics/machine-environments/pieces-usb.md/cafe.md).
+export async function getInputBindings(matchAgentUrl: string, authCode: string): Promise<InputBindings> {
+  const res = await matchAgentFetch(matchAgentUrl, authCode, "/v1/input-bindings");
+  return res.json();
+}
+
+export async function setInputBindings(
+  matchAgentUrl: string, authCode: string, bindings: InputBindings
+): Promise<void> {
+  await matchAgentFetch(matchAgentUrl, authCode, "/v1/input-bindings", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(bindings),
+  });
+}
+
+// Opens a native OS file-picker on match-agent's own host (see
+// core/match-agent/src/utils/pick-file.ts for why a browser <input> can't
+// hand back an absolute path) pre-seeded with whatever path is already
+// typed, if any. `cancelled: true` means the user closed the dialog
+// without picking anything; the picker itself may not exist on a
+// headless/remote match-agent, in which case this throws and the caller
+// should fall back to typing the path manually (which, via the on-screen
+// keyboard, is also the only option a gamepad-only player has anyway).
+// Mounted outside /v1 (see src/index.ts's startServer) - these don't touch
+// the room protocol, and are bounded to match-agent's configured
+// rosterLockFolder (core/match-agent/src/util-routers/file-system/
+// resolve-within-root.ts), not anywhere else its host filesystem happens
+// to reach: a plain "list any path, read any file" HTTP API would hand
+// anyone holding the auth code a way to enumerate/read the whole machine
+// programmatically, which the native OS dialog this feature replaces
+// never could (it only ever returns one path, chosen through a trusted
+// OS UI - never a general filesystem-browsing capability).
+export async function pickRosterLockFile(
+  matchAgentUrl: string, authCode: string, startPath?: string
+): Promise<{ path: string } | { cancelled: true }> {
+  const res = await matchAgentFetch(matchAgentUrl, authCode, "/util/file-system/roster-lock/pick", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ startPath }),
+  });
+  return res.json();
+}
+
+// Reads+parses a roster-lock config straight off match-agent's own host
+// disk - lets pages/PreviewRoster open a SelectionBoard against a roster
+// lock directly, with no matchmaker/room (and so none of the Docker
+// services/real login flow those need) involved at all.
+export async function readRosterLock(
+  matchAgentUrl: string, authCode: string, path: string
+): Promise<RosterLockV1Config> {
+  const res = await matchAgentFetch(
+    matchAgentUrl, authCode, `/util/file-system/roster-lock?path=${encodeURIComponent(path)}`
+  );
+  return res.json();
+}
+
+export type DirectoryEntry = { name: string, path: string, isDirectory: boolean };
+export type DirectoryListing = { path: string, parent: string | null, entries: Array<DirectoryEntry> };
+
+// Backs OnScreenFileDialog - a file picker rendered in the page itself
+// rather than a native OS dialog, so it's reachable through the same
+// Move/Select/Back scheme (GlobalNavContext) a gamepad already uses
+// everywhere else. `path` omitted defaults to match-agent's configured
+// rosterLockFolder; `extension` (e.g. ".roster-lock.json") filters which
+// files show up without hiding any folders, so navigation is never blocked.
+export async function listDirectory(
+  matchAgentUrl: string, authCode: string, path?: string, extension?: string
+): Promise<DirectoryListing> {
+  const params = new URLSearchParams();
+  if (path) params.set("path", path);
+  if (extension) params.set("extension", extension);
+  const query = params.toString();
+  const res = await matchAgentFetch(matchAgentUrl, authCode, `/util/file-system/list${query ? `?${query}` : ""}`);
+  return res.json();
+}

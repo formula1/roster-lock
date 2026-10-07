@@ -34,6 +34,11 @@ export type V1Env = {
   fileDB: IFolderDB,
   pluginRuntime: PluginManager,
   matchAgent: MatchAgentSelfInfo,
+  // The same config file findConfigFile() resolved at startup (see
+  // ../../../config/findFile.ts) - carried here so routes can read/write
+  // sibling files that should travel with it (e.g. input-bindings.ts),
+  // without each one re-deriving where match-agent's portable root is.
+  configFilePath: string,
   // In-memory only - a match-agent restart loses track of processes it
   // started before the restart (same best-effort tradeoff as GameProcessHandle
   // itself; there's no persistent process-supervision story here).

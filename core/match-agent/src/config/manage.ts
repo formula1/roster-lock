@@ -17,6 +17,12 @@ export type MatchAgentConfig = {
   authCode: string,
   pieceFolder?: string,
   pluginFolder?: string,
+  // Machine-scoped, like pieceFolder/pluginFolder - the arcade/host decides
+  // what's in here (same as it decides which plugins/binaries are
+  // installed), unlike a player's own saved selections, which need to
+  // follow the player across devices and so can't live in a folder scoped
+  // to one match-agent install - see util-routers/file-system.
+  rosterLockFolder?: string,
 };
 
 import { z, ZodType } from "zod";
@@ -25,6 +31,7 @@ const matchAgentConfig: ZodType<MatchAgentConfig> = z.object({
   authCode: z.string(),
   pieceFolder: z.string().optional(),
   pluginFolder: z.string().optional(),
+  rosterLockFolder: z.string().optional(),
 });
 
 export async function getConfig(filePath: string){

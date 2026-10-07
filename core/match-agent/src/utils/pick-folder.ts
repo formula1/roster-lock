@@ -11,7 +11,7 @@ import { spawn } from "node:child_process";
 // than hanging on a dialog nobody can see.
 export class NoFolderPickerAvailable extends Error {}
 
-function runCommand(command: string, args: Array<string>): Promise<{ code: number | null, stdout: string }> {
+export function runCommand(command: string, args: Array<string>): Promise<{ code: number | null, stdout: string }> {
   return new Promise((resolve, reject) => {
     const child = spawn(command, args);
     let stdout = "";

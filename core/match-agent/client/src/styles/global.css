@@ -14,6 +14,8 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
+  /* Room for the fixed .input-hints bar so it never covers page content. */
+  padding-bottom: 2.25rem;
 }
 
 .nav-bar {
@@ -72,13 +74,32 @@ button:disabled {
 .error { color: var(--error); }
 .success { color: var(--success); }
 
+/* Card size is driven by the variables the density tiers below set on
+   .piece-type-section - see PieceTypeSection's densityFor(). Tracks stretch
+   (--card-max: 1fr) once there are enough pieces to fill a row; the cozy tier
+   pins a pixel max instead, so a three-piece roster doesn't stretch three
+   cards across the whole panel. */
 .card-grid {
+  --card-min: 84px;
+  --card-max: 1fr;
+  --card-image: 40px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(var(--card-min), var(--card-max)));
+  justify-content: start;
   gap: 0.35rem;
 }
 
+.card-grid-empty {
+  grid-column: 1 / -1;
+  font-size: 0.8rem;
+  opacity: 0.7;
+  padding: 0.5rem 0;
+}
+
+/* Overrides the global `button { width: fit-content }` - a card that shrinks
+   to its own label leaves every row of the grid raggedly uneven. */
 .piece-card {
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -96,8 +117,8 @@ button:disabled {
 }
 
 .piece-card-image {
-  width: 40px;
-  height: 40px;
+  width: var(--card-image);
+  height: var(--card-image);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -109,18 +130,52 @@ button:disabled {
 .piece-card-image img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  /* contain, not cover: a preview's aspect ratio is whatever the game
+     launcher hands back, and it is not always portrait-shaped - Ikemen's
+     select portrait is 120x140, but an idle-stance sprite is more like
+     51x106, which cover crops the head clean off in a square thumbnail. */
+  object-fit: contain;
 }
 
 .piece-card-name {
   font-size: 0.75rem;
   text-align: center;
   line-height: 1.1;
+  /* Two lines' worth, always: a grid row is as tall as its tallest card, so
+     letting one wrapped name grow a card makes whole rows jump in height. */
+  min-height: 2.2em;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 .piece-card-status {
   font-size: 0.65rem;
   opacity: 0.7;
+}
+
+/* Dense grids shrink the per-card download label to a dot: at that card size
+   "Not downloaded" is the widest thing on the card and the least useful. The
+   text stays in the DOM (font-size: 0) so it is still the accessible name for
+   the status, rather than colour being the only carrier. */
+.piece-type-section[data-density="dense"] .piece-card-status {
+  font-size: 0;
+  overflow: hidden;
+  height: 4px;
+  width: 4px;
+  border-radius: 999px;
+  background: var(--success);
+}
+
+.piece-type-section[data-density="dense"] .piece-card-status[data-downloaded="false"] {
+  background: var(--border);
+}
+
+/* Still waiting on match-agent's downloaded list - say nothing rather than
+   claim "not downloaded". */
+.piece-card-status[data-downloaded="unknown"] {
+  background: transparent;
 }
 
 .piece-card-image {
@@ -197,7 +252,7 @@ button:disabled {
 
 .selection-board-panels {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
   gap: 0.75rem;
   align-items: start;
 }
@@ -228,10 +283,25 @@ button:disabled {
 
 .piece-type-header {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
   font-size: 0.85rem;
   opacity: 0.8;
   margin-bottom: 0.25rem;
+}
+
+.piece-type-filter {
+  flex: 1;
+  min-width: 0;
+  max-width: 16rem;
+  font-size: 0.8rem;
+  padding: 0.2rem 0.45rem;
+}
+
+.piece-type-count {
+  margin-left: auto;
+  white-space: nowrap;
 }
 
 .piece-type-body {
@@ -242,12 +312,45 @@ button:disabled {
 
 .piece-type-body .card-grid {
   flex: 1;
+  min-width: 0;
+}
+
+/* Density tiers (PieceTypeSection sets data-density off the roster size).
+   Only the dense tier caps the grid's height: a small or medium roster fits
+   on screen as-is, and giving it an inner scrollbar it never needs just adds
+   a second thing to scroll. */
+.piece-type-section[data-density="cozy"] .card-grid {
+  --card-min: 116px;
+  --card-max: 148px;
+  --card-image: 84px;
+  gap: 0.5rem;
+}
+
+.piece-type-section[data-density="comfy"] .card-grid {
+  --card-min: 92px;
+  --card-image: 60px;
+}
+
+.piece-type-section[data-density="dense"] .card-grid {
+  --card-min: 68px;
+  --card-image: 40px;
+  max-height: min(24rem, 50vh);
+  overflow-y: auto;
+  padding-right: 0.25rem;
 }
 
 .piece-preview-panel {
   flex-shrink: 0;
-  width: 120px;
-  height: 140px;
+  position: sticky;
+  top: 0;
+  width: clamp(110px, 22%, 200px);
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.piece-preview-frame {
+  height: 150px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -261,6 +364,17 @@ button:disabled {
   width: 100%;
   height: 100%;
   object-fit: contain;
+}
+
+.piece-preview-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.piece-preview-author {
+  font-size: 0.7rem;
+  opacity: 0.7;
 }
 
 .piece-preview-loading,
@@ -389,4 +503,202 @@ button:disabled {
   overflow: auto;
   padding: 1rem;
   box-sizing: border-box;
+}
+
+/* Roving focus (gamepad d-pad/stick, see GlobalNavContext) has no mouse
+   hover to lean on, so the focus ring needs to read clearly on every
+   control it lands on. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.fullscreen-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+.fullscreen-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 2rem 3rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  min-width: 260px;
+}
+
+.fullscreen-menu-link {
+  font-size: 1.3rem;
+  color: var(--text);
+  text-decoration: none;
+  padding: 0.5rem;
+  border-radius: 6px;
+}
+
+.fullscreen-menu-link:hover,
+.fullscreen-menu-link:focus-visible {
+  background: var(--bg);
+  color: var(--accent);
+}
+
+.fullscreen-menu-close {
+  margin-top: 1rem;
+  align-self: flex-end;
+}
+
+.onscreen-keyboard-backdrop {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  justify-content: center;
+  padding: 1rem;
+  box-sizing: border-box;
+  z-index: 200;
+}
+
+.onscreen-keyboard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.75rem;
+  width: 100%;
+  max-width: 640px;
+}
+
+.onscreen-keyboard-row {
+  display: flex;
+  gap: 0.3rem;
+  justify-content: center;
+}
+
+.onscreen-keyboard-row button {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.onscreen-keyboard-space {
+  flex: 4;
+}
+
+.onscreen-keyboard-done {
+  flex: 2;
+}
+
+.onscreen-file-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.75rem;
+  width: 100%;
+  max-width: 640px;
+  max-height: 80vh;
+}
+
+.onscreen-file-dialog-path {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  word-break: break-all;
+}
+
+.onscreen-file-dialog-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.onscreen-file-dialog-list button {
+  width: 100%;
+  text-align: left;
+}
+
+.onscreen-file-dialog-list button[data-directory="true"] {
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.onscreen-file-dialog-empty {
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+.onscreen-file-dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.input-hints {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  gap: 1.25rem;
+  padding: 0.4rem 1rem;
+  background: rgba(15, 23, 42, 0.9);
+  border-top: 1px solid var(--border);
+  font-size: 0.75rem;
+  opacity: 0.85;
+  z-index: 150;
+  pointer-events: none;
+}
+
+.input-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.input-hint-key {
+  padding: 0.1rem 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--panel);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.controls-table {
+  border-collapse: collapse;
+}
+
+.controls-table th,
+.controls-table td {
+  text-align: left;
+  padding: 0.4rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.controls-table button {
+  min-width: 9rem;
+}
+
+.preview-roster-result {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.75rem;
+  max-height: 24rem;
+  overflow: auto;
+  font-size: 0.8rem;
 }
