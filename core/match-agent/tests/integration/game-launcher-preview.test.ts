@@ -58,8 +58,9 @@ describe("POST /v1/game-launcher/:pluginName/preview", () => {
 
     const res = await post(server, { engine, pieceType: TEST_PIECE_TYPE, piece });
     expect(res.status).toBe(200);
-    const { preview } = await res.json();
+    const { preview, source } = await res.json();
     expect(preview).toEqual(LIVE_PREVIEW);
+    expect(source).toBe("piece");
   });
 
   it("returns null when a completed piece has no preview to give", async () => {
@@ -70,16 +71,20 @@ describe("POST /v1/game-launcher/:pluginName/preview", () => {
 
     const res = await post(server, { engine, pieceType: TEST_PIECE_TYPE, piece });
     expect(res.status).toBe(200);
-    const { preview } = await res.json();
+    const { preview, source } = await res.json();
     expect(preview).toBeNull();
+    // No preview at all - "piece" would tell the selection screen it got a
+    // real portrait back and stop it falling through to humanInfo.image.
+    expect(source).toBeNull();
   });
 
   it("falls back to the plugin's default preview when the piece has never been seen", async () => {
     const { server } = await setup();
     const res = await post(server, { engine, pieceType: TEST_PIECE_TYPE, piece });
     expect(res.status).toBe(200);
-    const { preview } = await res.json();
+    const { preview, source } = await res.json();
     expect(preview).toEqual(defaultPreviewFor(TEST_PIECE_TYPE));
+    expect(source).toBe("default");
   });
 
   it("also falls back to the default preview when the piece exists but hasn't finished downloading", async () => {
@@ -91,11 +96,12 @@ describe("POST /v1/game-launcher/:pluginName/preview", () => {
 
     const res = await post(server, { engine, pieceType: TEST_PIECE_TYPE, piece });
     expect(res.status).toBe(200);
-    const { preview } = await res.json();
+    const { preview, source } = await res.json();
     // Not yet downloaded means match-agent never even resolves the on-disk
     // folder getPreview would read from - the seeded preview.json above
     // (which getPreview would happily return if this ever regressed to
     // reading it) must be ignored in favor of useDefaultPreview.
     expect(preview).toEqual(defaultPreviewFor(TEST_PIECE_TYPE));
+    expect(source).toBe("default");
   });
 });

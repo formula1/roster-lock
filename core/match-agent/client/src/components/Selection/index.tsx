@@ -1,7 +1,9 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { RosterLockV1Config, UserSelection } from "@roster-lock/types";
 import { PlayerSlot } from "../../context/JoinSettingsContext";
 import { PlayerSelectionPanel } from "./PlayerSelectionPanel";
+import { SelectionSourceProvider } from "../../context/SelectionSourceContext";
+import { useGlobalNav } from "../../context/GlobalNavContext";
 import { PieceTypeTabs } from "./PieceTypeTabs";
 import { planForPieceType, buildUserSelection, PieceTypePlan } from "./selectionPlan";
 
@@ -25,6 +27,24 @@ export function SelectionBoard({
   onCancel: () => void,
 }) {
   const [picksBySlot, setPicksBySlot] = useState<Record<string, Record<string, Array<string>>>>({});
+
+  // Each player slot's own useCursorInput already polls its assigned
+  // gamepad (and, for whichever slot is on the keyboard, its arrow keys)
+  // for d-pad/arrows + confirm - the global menu/roving-focus nav
+  // (GlobalNavContext) would otherwise read the same presses a second time.
+  const { setNavSuspended } = useGlobalNav();
+  useEffect(() => {
+    setNavSuspended(true);
+    return () => setNavSuspended(false);
+  }, [setNavSuspended]);
+
+  // Handed down by context rather than by prop: the deepest consumers are the
+  // per-piece download lookup and PieceCard's own preview, several layers and
+  // one card-per-roster-entry below here.
+  const selectionSource = useMemo(
+    () => ({ pluginName, engine: rosterConfig.engine, matchAgentUrl, matchAgentAuth }),
+    [pluginName, rosterConfig, matchAgentUrl, matchAgentAuth]
+  );
 
   const pieceTypePlans = useMemo(
     () => Object.keys(rosterConfig.engine.pieceDefinitions).map((t) => [t, planForPieceType(rosterConfig, t)] as const),
@@ -97,57 +117,56 @@ export function SelectionBoard({
   };
 
   return (
-    <div className="selection-board">
-      {infoTypes.length > 0 && (
-        <div className="selection-board-info">
-          {infoTypes.map(([pieceType, plan]) => (
-            <span key={pieceType} className="piece-type-info-chip">
-              {pieceType}: {plan.kind === "auto"
-                ? (plan.reason === "mandatory" ? "included automatically" : plan.reason)
-                : `${plan.configType} (not user-selectable)`}
-            </span>
-          ))}
-        </div>
-      )}
-
-      <PieceTypeTabs
-        types={pickableTypes.map(([pieceType]) => pieceType)}
-        activeType={activeType}
-        readyByType={readyByType}
-        onSelect={setActiveType}
-      />
-
-      {activePlan && (
-        <div className="selection-board-panels">
-          {playerSlots.map((slot) => (
-            <PlayerSelectionPanel
-              key={slot.id}
-              rosterConfig={rosterConfig}
-              slot={slot}
-              pieceType={activeType}
-              plan={activePlan}
-              picks={picksBySlot[slot.id]?.[activeType] ?? []}
-              onTogglePick={(pieceId) => togglePick(slot.id, activeType, pieceId)}
-              onReorderPick={(fromIndex, toIndex) => reorderPick(slot.id, activeType, fromIndex, toIndex)}
-              pluginName={pluginName}
-              matchAgentUrl={matchAgentUrl}
-              matchAgentAuth={matchAgentAuth}
-            />
-          ))}
-        </div>
-      )}
-
-      <div className="selection-board-footer">
-        {!allValid && (
-          <span className="selection-board-hint">Still needs: {pendingTypes.join(", ")}</span>
+    <SelectionSourceProvider value={selectionSource}>
+      <div className="selection-board">
+        {infoTypes.length > 0 && (
+          <div className="selection-board-info">
+            {infoTypes.map(([pieceType, plan]) => (
+              <span key={pieceType} className="piece-type-info-chip">
+                {pieceType}: {plan.kind === "auto"
+                  ? (plan.reason === "mandatory" ? "included automatically" : plan.reason)
+                  : `${plan.configType} (not user-selectable)`}
+              </span>
+            ))}
+          </div>
         )}
-        <button type="button" onClick={onCancel}>
-          Cancel
-        </button>
-        <button type="button" disabled={!allValid} onClick={handleConfirm}>
-          Confirm Selection
-        </button>
+
+        <PieceTypeTabs
+          types={pickableTypes.map(([pieceType]) => pieceType)}
+          activeType={activeType}
+          readyByType={readyByType}
+          onSelect={setActiveType}
+        />
+
+        {activePlan && (
+          <div className="selection-board-panels">
+            {playerSlots.map((slot) => (
+              <PlayerSelectionPanel
+                key={slot.id}
+                rosterConfig={rosterConfig}
+                slot={slot}
+                pieceType={activeType}
+                plan={activePlan}
+                picks={picksBySlot[slot.id]?.[activeType] ?? []}
+                onTogglePick={(pieceId) => togglePick(slot.id, activeType, pieceId)}
+                onReorderPick={(fromIndex, toIndex) => reorderPick(slot.id, activeType, fromIndex, toIndex)}
+              />
+            ))}
+          </div>
+        )}
+
+        <div className="selection-board-footer">
+          {!allValid && (
+            <span className="selection-board-hint">Still needs: {pendingTypes.join(", ")}</span>
+          )}
+          <button type="button" onClick={onCancel}>
+            Cancel
+          </button>
+          <button type="button" disabled={!allValid} onClick={handleConfirm}>
+            Confirm Selection
+          </button>
+        </div>
       </div>
-    </div>
+    </SelectionSourceProvider>
   );
 }

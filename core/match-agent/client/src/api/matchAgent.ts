@@ -134,10 +134,21 @@ export async function validateGameLauncherGameConfig(
   return problems;
 }
 
+// `source` says which of the plugin's two preview functions answered:
+// "piece" is a real preview read out of that piece's downloaded assets,
+// "default" the plugin's generic engine placeholder for a piece that isn't
+// downloaded yet, null when neither produced anything. A selection UI ranks
+// those differently against the roster author's own humanInfo.image - see
+// match-agent's game-launcher/preview.ts.
+export type PiecePreviewResult = {
+  preview: PiecePreview | null,
+  source: "piece" | "default" | null,
+};
+
 export async function getGameLauncherPreview(
   matchAgentUrl: string, authCode: string, pluginName: string,
   engine: RosterLockV1Config["engine"], pieceType: string, piece: Pick<RosterLockPiece, "version" | "pathVariables">
-): Promise<PiecePreview | null> {
+): Promise<PiecePreviewResult> {
   const res = await matchAgentFetch(
     matchAgentUrl, authCode, `/v1/game-launcher/${encodeURIComponent(pluginName)}/preview`,
     {
@@ -146,8 +157,8 @@ export async function getGameLauncherPreview(
       body: JSON.stringify({ engine, pieceType, piece }),
     }
   );
-  const { preview } = await res.json();
-  return preview;
+  const { preview, source } = await res.json();
+  return { preview: preview ?? null, source: source ?? null };
 }
 
 // No binaryLocation needs to already be configured to call this - getBinary
