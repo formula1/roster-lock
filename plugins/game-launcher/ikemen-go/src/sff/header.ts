@@ -13,6 +13,13 @@ export type SffHeader = {
 export type SffSprite = {
   w: number,
   h: number,
+  // The sprite's own origin, in its own pixel space - what every frame of an
+  // animation is aligned on. Signed: a character sprite's axis sits at its
+  // feet, so axisY is typically near the bottom edge and offsets can go
+  // negative. Without these, frames of differing width (kfm's stance runs
+  // 47px to 51px) jitter when played back.
+  axisX: number,
+  axisY: number,
   format: number,
   dataOfs: number,
   dataSize: number,
@@ -42,6 +49,8 @@ export function findSprite(buf: Buffer, header: SffHeader, group: number, number
       return {
         w: buf.readUInt16LE(ofs + 4),
         h: buf.readUInt16LE(ofs + 6),
+        axisX: buf.readInt16LE(ofs + 8),
+        axisY: buf.readInt16LE(ofs + 10),
         format: buf.readUInt8(ofs + 14),
         dataOfs: buf.readUInt32LE(ofs + 16),
         dataSize: buf.readUInt32LE(ofs + 20),
