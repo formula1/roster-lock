@@ -93,8 +93,8 @@ export const PLUGIN_TYPE_VALIDATORS: Record<PluginType, (p: Record<string, unkno
     if(typeof p.localConfigSchema === "undefined") throw new Error("\"localConfigSchema\" should be set (use {} if the game takes no per-machine config)");
     if(typeof p.getLocalVersion !== "function") throw new Error("\"getLocalVersion\" should be a function");
     if(typeof p.getSupportedVersion !== "function") throw new Error("\"getSupportedVersion\" should be a function");
-    if(typeof p.updateBinary !== "undefined" && typeof p.updateBinary !== "function"){
-      throw new Error("\"updateBinary\" should be a function when set");
+    if(typeof p.getBinary !== "undefined" && typeof p.getBinary !== "function"){
+      throw new Error("\"getBinary\" should be a function when set");
     }
     if(typeof p.startGame !== "function") throw new Error("\"startGame\" should be a function");
     return true;

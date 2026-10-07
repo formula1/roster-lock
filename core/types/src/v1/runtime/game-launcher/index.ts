@@ -203,15 +203,32 @@ export type GameLauncherPlugin<T> = {
   // target - the answer ("what's the latest upstream version") doesn't vary
   // by platform.
   getSupportedVersion: (binaryLocation: string) => Promise<{ title: string, id: string }>,
-  // Optional - a plugin without one just means no in-app update; the user
-  // downloads a new version and re-points binaryLocation at it themselves.
+  // Optional - a plugin without one just means no in-app download; the user
+  // finds a build themselves and points binaryLocation at it by hand.
+  //
+  // Deliberately doesn't take a binaryLocation - unlike every other
+  // function here, this one *acquires* a binary rather than operating on
+  // an already-configured one, so there's nothing yet to resolve when it's
+  // called. `dataDir` is a folder this plugin alone owns (not something a
+  // user sees or configures - see docs/v2/binary-location.md), under which
+  // the plugin lays out its own versioned subfolders however it likes;
+  // getBinary's caller (match-agent) persists whatever path comes back as
+  // the new active binaryLocation. Because every call gets to choose its
+  // own subfolder, nothing stops a plugin from downloading more than one
+  // version into `dataDir` over time and leaving them sitting side by
+  // side - a later call never has to overwrite an earlier one just because
+  // they share a root.
+  //
   // `target` is a floor, not a ceiling: the call guarantees at least that
-  // platform/arch gets updated, but a plugin may update other slots too as
-  // a side effect (e.g. one upstream artifact that already bundles every
-  // platform). Callers never loop over supportedPlatforms to force full
-  // coverage themselves - whether the bundle ends up complete for every
-  // platform after one call is entirely the plugin's own choice.
-  updateBinary?: (binaryLocation: string, target: PlatformTarget) => Promise<void>,
+  // platform/arch is covered by whatever it returns, but a plugin may
+  // include other platforms' binaries in the same returned folder too as a
+  // side effect (e.g. one upstream artifact that already bundles every
+  // platform) - callers never loop over supportedPlatforms to force full
+  // coverage themselves. Likewise a plugin whose engine needs more than
+  // just the one executable (e.g. a sibling asset pack) fetches/extracts
+  // everything it needs into that same returned folder in one call,
+  // rather than this interface growing a separate hook per asset kind.
+  getBinary?: (dataDir: string, target: PlatformTarget) => Promise<{ binaryLocation: string }>,
   // Checks whether binaryLocation actually has a usable binary for `target`
   // - "does the binary this host would run actually exist at the resolved
   // path" (and on POSIX, is it executable) - so a caller can surface a

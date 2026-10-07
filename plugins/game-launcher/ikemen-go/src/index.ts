@@ -1,5 +1,6 @@
 import { GameLauncherPlugin } from "@roster-lock/types";
 import { readLocalVersion, fetchSupportedVersion } from "./version";
+import { getBinary } from "./getBinary";
 import { IKEMEN_ENGINE_SHA } from "./engineConfig";
 import { startGame, IkemenGameConfig } from "./startGame";
 import { validateBinaryLocation } from "./validateBinaryLocation";
@@ -37,9 +38,11 @@ const IkemenGo: GameLauncherPlugin<IkemenGameConfig> = {
   // the current release is. See this package's readme.
   getLocalVersion: readLocalVersion,
   getSupportedVersion: fetchSupportedVersion,
-  // No updateBinary - left undefined deliberately (optional per GameLauncherPlugin).
-  // A user updates by downloading a new Ikemen release and re-pointing
-  // binaryLocation at it themselves.
+  // Downloads+extracts the official release zip for `target` into its own
+  // folder under match-agent's own data dir - a player never points this
+  // at an external install themselves (no file dialog needed at all,
+  // native or on-screen).
+  getBinary,
   validateBinaryLocation: validateBinaryLocation,
 
   startGame: startGame,

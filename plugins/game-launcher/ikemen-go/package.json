@@ -42,6 +42,7 @@
   },
   "dependencies": {
     "@cfworker/json-schema": "^4.1.1",
+    "@roster-lock/dl-archive-zip": "workspace:*",
     "@roster-lock/utils": "workspace:*"
   },
   "devDependencies": {

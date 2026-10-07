@@ -95,20 +95,41 @@ function localVersionTitle(binaryText: string, buildInfo: GoBuildInfo): string |
 // below is swallowed and the stable channel is assumed - same fallback as
 // "no binary configured at all".
 export async function fetchSupportedVersion(binaryLocation: string): Promise<IkemenVersion> {
-  const currentHost: PlatformTarget = { platform: process.platform, arch: process.arch };
-  const local = await readLocalVersion(binaryLocation, currentHost).catch(() => undefined);
-  const release = local?.title === NIGHTLY
-    ? await getJSON(`${REPO_API}/releases/tags/${NIGHTLY}`)
-    // Ikemen marks its release candidates prerelease:false, so /latest resolves
-    // to v1.0.0-rc.2 rather than skipping back to v0.99.0.
-    : await getJSON(`${REPO_API}/releases/latest`);
-
+  const release = await fetchIkemenRelease(binaryLocation);
   const tag = release["tag_name"];
   if(typeof tag !== "string"){
     throw new Error("ikemen-go: GitHub's latest-release response had no tag_name - the API shape has changed.");
   }
 
   return { title: tag, id: await releaseCommit(release, tag) };
+}
+
+// Split out of fetchSupportedVersion for its own sake: picking a channel to
+// compare *against* only makes sense when there's an existing local build
+// whose channel to stay on - exactly the question fetchSupportedVersion
+// itself is answering ("am I behind"). getBinary.ts (acquiring a fresh
+// binary, possibly into a brand new folder) uses fetchLatestStableRelease
+// below instead, not this.
+export async function fetchIkemenRelease(binaryLocation: string): Promise<JSON_Object> {
+  const currentHost: PlatformTarget = { platform: process.platform, arch: process.arch };
+  const local = await readLocalVersion(binaryLocation, currentHost).catch(() => undefined);
+  return local?.title === NIGHTLY
+    ? await getJSON(`${REPO_API}/releases/tags/${NIGHTLY}`)
+    // Ikemen marks its release candidates prerelease:false, so /latest resolves
+    // to v1.0.0-rc.2 rather than skipping back to v0.99.0.
+    : await getJSON(`${REPO_API}/releases/latest`);
+}
+
+// For getBinary.ts, acquiring a *new* install rather than checking an
+// existing one - there's no single local binary to sniff a channel from
+// once more than one version can live side by side (see
+// docs/v2/binary-location.md's side-by-side note), so this always targets
+// the stable channel. Nightly opt-in, if that's ever wanted for a fresh
+// download, would need to be an explicit choice, not something inferred
+// from "whatever's currently installed" - a question that stops being
+// well-defined the moment more than one copy can exist at once.
+export async function fetchLatestStableRelease(): Promise<JSON_Object> {
+  return getJSON(`${REPO_API}/releases/latest`);
 }
 
 // target_commitish is a commit for current releases but a branch name on older

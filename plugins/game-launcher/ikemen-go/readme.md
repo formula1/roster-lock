@@ -278,10 +278,90 @@ quietly drops the side to single before failing later in `setTeamMode`. Keep the
 in `buildArgs.ts` in sync with `TM_*` in Ikemen's `src/system.go` if that enum ever gains
 a mode.
 
-## No update support
+## Self-downloading via `getBinary`
 
-No `updateBinary` - it's optional on `GameLauncherPlugin`, and there's no confirmed way to
-resolve "latest Ikemen release" to a downloadable artifact URL here yet. A user updates
-by downloading a new release themselves and extracting it into their `binaryLocation`
-folder, replacing the executable named for their platform (see "`binaryLocation` is a
-folder, not a binary" above).
+`getBinary` (`src/getBinary.ts`) downloads+extracts the official release zip for whatever
+`target` it's called with, so a player never has to find/download/extract an Ikemen
+install themselves. It doesn't take a `binaryLocation` - unlike every other function here,
+it *acquires* one rather than operating on an already-configured one: match-agent hands it
+a `dataDir` it alone owns (`<pluginDir>/data/<this package>/binaries`, not something a user
+sees or configures) and persists whatever path comes back as the new active
+`binaryLocation`. Each call lands in its own subfolder named for the release tag
+(`<dataDir>/<tag>/`), so a later call for a different release never overwrites an earlier
+one - multiple versions can sit side by side.
+
+The release lookup always targets the stable channel (`version.ts`'s
+`fetchLatestStableRelease`), not whichever channel a previous `binaryLocation` happened to
+be on - once more than one version can coexist, "the channel I'm currently on" stops being
+well-defined. `findReleaseAsset` matches `assets[]` by filename suffix
+(`Ikemen_GO-<tag>-<linux|windows|macos>.zip` - no per-arch assets, same reasoning as
+`EXECUTABLE_NAMES` in `binaryLocation.ts`). Extraction goes through
+`@roster-lock/dl-archive-zip`'s `extractFiles` as a plain dependency, not match-agent's
+dynamic plugin-discovery (`getBinary`'s signature never receives a `PluginManager`) - which
+also means a future sibling asset (a specific motif bundle, say) is just another archive
+fetched into the same returned folder, not a reason to add a second hook.
+
+## Piece previews
+
+`getPreview` reads a real sprite out of a downloaded piece's own `.sff` and hands it back
+as a PNG data URI - `src/preview.ts`, with the SFF v2 reader under `src/sff/`. The `.def`
+is the source of truth for which `.sff` to open (a character's `[Files]`/`sprite`, a
+stage's `[BGdef]`/`spr`) - the file isn't reliably named after the piece.
+
+Characters are tried at `9000,1` (the large select-screen portrait), then `9000,0` (the
+small one some characters use instead), then `0,0` - the idle stance, which every
+character has, so a character shipping no 9000 portrait still gets a real preview rather
+than none. Stages have no preview convention at all; `0,0` there is a best-effort guess at
+the background layer.
+
+Unsupported sprite formats, missing sprites and missing files all resolve to "no preview"
+rather than an error - match-agent then falls back to the roster author's own
+`humanInfo.image`, and to `useDefaultPreview`'s bundled placeholder for a piece that isn't
+downloaded yet.
+
+### Checking previews really are per-piece
+
+Set `ROSTERLOCK_IKEMEN_CHARACTER_PREVIEW` on the match-agent process to change what a
+character preview is made of:
+
+| value | preview |
+| --- | --- |
+| unset / `portrait` | the candidates above (the default) |
+| `stance` | the `.air` standing animation (action 0), as a looping GIF |
+| `action:<n>` | that `.air` action, as a looping GIF |
+| `<group>,<number> …` | those sprites, still, in order (space/semicolon separated) |
+
+```sh
+ROSTERLOCK_IKEMEN_CHARACTER_PREVIEW="stance" pnpm --filter @roster-lock/match-agent dev
+```
+
+Characters in one roster usually share a near-identical head-and-shoulders portrait (the
+six kfm variants in `examples/mugen/pieces` are indistinguishable at `9000,1`), so a
+selection screen full of working previews looks much like one full of a placeholder. A
+moving stance is unmistakably alive, unmistakably per-piece, and unmistakably read out of
+that piece's own files.
+
+The override deliberately does *not* fall back to the portrait when what it names is
+missing - a silent fall-through would defeat the check. Stages are unaffected. Leave it
+unset for normal use: the portrait is what belongs on a select screen.
+
+#### How the animation is built
+
+`.air` is the source of truth for frame order and timing (`src/sff/air.ts`); MUGEN's
+action 0 is the standing animation by convention. Each frame's sprite is decoded out of
+the `.sff` and composited onto one canvas sized to the union of every frame, aligned on
+each sprite's own axis - kfm's stance frames run 47px to 51px wide, so laying them out on
+anything but the axis makes the character jitter. Ticks are 1/60s and GIF delays 1/100s,
+hence the 100/60 conversion in `src/sff/animation.ts`.
+
+GIF rather than APNG or a list of frames in `PiecePreview`, because it costs nothing
+anywhere else: `PiecePreview` stays `{ kind: "image", dataUri }` and browsers animate a
+GIF inside a plain `<img>`, so the selection screen plays one with no change at all. It
+also suits the input - MUGEN sprites are already palette-indexed, so quantizing back down
+to a GIF color table is usually lossless (`src/sff/gif.ts`).
+
+A frame whose sprite is missing or uses an unsupported format is dropped rather than
+failing the animation; only an action where *nothing* decodes gives no preview. Frame
+count is capped (`MAX_ANIMATION_FRAMES`) to bound the data URI, which the selection screen
+holds once per card - kfm's stance is ~15KB, but a high-resolution character like kfm720
+reaches ~97KB.
