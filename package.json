@@ -7,7 +7,7 @@
     "test:example:full-local": "pnpm --filter \"./examples/full-local/integration\" run start",
     "test:plugin:integration": "pnpm --filter \"./plugins/download/protocol/*\" run test:integration",
     "generate-plugin-manifest": "tsx scripts/plugin-manifest.ts",
-    "publish": "pnpm publish --no-git-checks --access public --recursive",
+    "publish": "(npm whoami || npm login) && pnpm publish --no-git-checks --access public --recursive",
     "lint": "eslint ."
   },
   "devDependencies": {
