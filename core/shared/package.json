@@ -1,6 +1,6 @@
 {
   "name": "@roster-lock/shared",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Shared utilities, variables, etc between client and server",
   "keywords": [
     "roster-lock",
@@ -29,6 +29,7 @@
   },
   "devDependencies": {
     "@types/is-glob": "^4.0.4",
+    "@types/jsonschema": "^1.1.1",
     "@types/magnet-uri": "^5.1.5",
     "@types/micromatch": "^4.0.9",
     "@types/node": "^22.14.1",
@@ -43,6 +44,7 @@
     "cids": "^1.1.9",
     "is-glob": "^4.0.3",
     "json-diff-ts": "^4.8.2",
+    "jsonschema": "^1.5.0",
     "magnet-uri": "^7.0.7",
     "micromatch": "^4.0.8",
     "runtypes": "^7.0.4"
