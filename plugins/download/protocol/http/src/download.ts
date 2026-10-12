@@ -77,7 +77,11 @@ export class HTTPError extends Error {
     public response: IncomingMessage,
     reason: string = "Failed To Fetch"
   ) {
-    super(reason);
+    // url/method/statusCode are also exposed as their own properties below, but this error
+    // crosses process/bridge boundaries a lot in practice (match-agent -> browser over
+    // MessageBridge, etc.) where only .message survives - putting the specifics directly in the
+    // message means whoever ends up displaying "download failed" actually has something to act on.
+    super(`${reason}: ${req.method} ${req.path} -> ${response.statusCode ?? "no response"}`);
     this.url = req.path;
     this.method = req.method;
     this.statusCode = response.statusCode;

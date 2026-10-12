@@ -43,7 +43,7 @@ describe("/v1/piece/asset-files and /v1/piece/file-contents", () => {
         engine, pieceType: TEST_PIECE_TYPE, piece, assetName: "sprite",
       });
       expect(res.status).toBe(404);
-      expect((await errorBody(res)).error).toBe("Piece Doesn't exist");
+      expect((await errorBody(res)).error).toBe("Piece doesn't exist");
     });
 
     it("409s when the piece exists but hasn't finished downloading", async () => {

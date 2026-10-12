@@ -53,7 +53,7 @@ describe("WS /v1/piece/ensure", () => {
     const { ws, bridge } = await connectReady();
     try {
       await expect(bridge.sendRequest("ensure-piece", { not: "a valid ensure-piece request" }))
-        .rejects.toMatch(/^Bad Form/);
+        .rejects.toThrow(/^Bad Form/);
     } finally {
       ws.close();
     }

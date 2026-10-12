@@ -1,0 +1,45 @@
+; Definition file for Kung Fu Man (Shadow)
+; Kung Fu Man's logic/sprites/sounds are 100% vanilla and untouched. What's
+; added is a JoJo's Bizarre Adventure-style "Stand"-style spirit called the
+; Shadow: a permanent translucent spirit (its own custom sprite - torso/arms
+; tapering into a genie tail, not a copy of KFM's own sprites) hovering
+; behind him, plus a new Summon Shadow special move that has it lunge in
+; and strike. See readme.txt.
+
+; Player information
+[Info]
+name = "Kung Fu Man (Shadow)"        ;Name of character
+displayname = "Kung Fu Man (Shadow)" ;Name of character to display
+versiondate = 09,30,2009    ;Version date of character (MM-DD-YYYY or X.XX)
+mugenversion = 1.0          ;Version of M.U.G.E.N character works on (X.XX)
+author = "Elecbyte"         ;Character author name (base character; see readme.txt)
+pal.defaults = 1,2,3,4      ;Default palettes in order of preference (up to 4)
+                            ;Numbering starts from 1
+localcoord = 320,240        ;Local coordinate space width and height
+
+; Files for the player
+[Files]
+cmd     = kfm.cmd           ;Command set
+cns     = kfm.cns           ;Constants
+st      = kfm.cns           ;States
+stcommon = common1.cns      ;Common states (from data/ or motif)
+sprite  = kfm_shadow.sff     ;Sprite (kfm.sff plus the Shadow's own custom
+                            ;sprite group 9902 - KFM's own sprites unchanged)
+anim    = kfm.air           ;Animation (kfm.air plus the Shadow's action)
+sound   = kfm.snd           ;Sound
+ai      = kfm.ai            ;AI hints data (not used)
+movelist = movelist.dat     ;Ikemen feature: Movelist
+
+; Maps character selection buttons to palette numbers.
+[Palette Keymap]
+x = 1 ;Press button X to select palette 1, etc.
+y = 2
+z = 3
+a = 4
+b = 5
+c = 6
+
+; Arcade mode
+[Arcade]
+intro.storyboard = intro.def
+ending.storyboard = ending.def

@@ -57,6 +57,17 @@ describe("engine officialSelections validation", () => {
     expect(() => ROSTERLOCK_V1_CASTER_JSONSCHEMA.cast(lock)).not.toThrow();
   });
 
+  it("accepts officialSelections explicitly set to null", () => {
+    // ajv's `nullable: true` accepted this; jsonschema has no concept of
+    // it, so officialSelections is wrapped with the nullable() helper
+    // instead (anyOf: [schema, {type: "null"}]) - this is the regression
+    // check for that: the TS type is only `| undefined`, not `| null`,
+    // but the schema still needs to accept a literal null at runtime.
+    const lock = buildLock();
+    lock.engine.officialSelections = null as unknown as undefined;
+    expect(() => ROSTERLOCK_V1_CASTER_JSONSCHEMA.cast(lock)).not.toThrow();
+  });
+
   it("rejects an entry missing a tag", () => {
     const lock = buildLock();
     lock.engine.officialSelections = [{ hash: "a".repeat(64) } as any];

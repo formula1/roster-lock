@@ -107,3 +107,11 @@ watch/target
 **/dev-dist
 
 .early.coverage
+
+# Local runtime save-data from running the game engine (not source)
+/save/
+
+# Playwright's own generated run output (traces, screenshots, HTML reports)
+test-results/
+playwright-report/
+blob-report/

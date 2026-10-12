@@ -1,6 +1,7 @@
 
 import {
   urlSchemaValidator,
+  imageDataURISchemaValidator,
   friendlyStringSchemaValidator,
 } from "../lock/rosters/caster-json-schema/human";
 import {
@@ -18,6 +19,7 @@ function ignore(){ return true; }
 
 export const rosterLockPieceInfoKeywords = [
   urlSchemaValidator,
+  imageDataURISchemaValidator,
   friendlyStringSchemaValidator,
 
   downloadableSourceListSchemaValidator,

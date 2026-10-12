@@ -99,6 +99,23 @@ CREATE TABLE IF NOT EXISTS download_sources (
   FOREIGN KEY (engine_name, piece_type, logic_hash, media_hash)
     REFERENCES pieces(engine_name, piece_type, logic_hash, media_hash)
 );
+
+-- "downloaded at"/"last used at" for a game-launcher binary
+-- (plugin-runtime's GameLauncher.getBinary/listBinaries - see
+-- docs/v2/binary-location.md) - neither is something a plugin itself could
+-- report (getLocalVersion reads what's actually installed, not when
+-- match-agent fetched or last ran it), so this is match-agent's own
+-- bookkeeping, sharing this same database file rather than a second one
+-- just for this. One row per binaryLocation GameLauncher.getBinary has
+-- ever produced; removeGameLauncherBinary deletes the row along with the
+-- folder it describes.
+CREATE TABLE IF NOT EXISTS game_launcher_binaries (
+  plugin_name TEXT NOT NULL,
+  binary_location TEXT NOT NULL,
+  downloaded_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  last_used_at INTEGER,
+  PRIMARY KEY (plugin_name, binary_location)
+);
 `;
 
 const PIECE_WHERE = `
@@ -442,7 +459,72 @@ export function prepareDatabase(dbLocation: string){
           return parsePieceRow(piece, sourcesByPiece.get(key) ?? []);
         }),
       };
-    }
+    },
+
+    // Called right after a successful GameLauncher.getBinary - "downloaded
+    // at" always wins on conflict (re-downloading the same binaryLocation,
+    // which getBinary's own tag-named subfolders make unlikely but not
+    // impossible, is still a fresh download).
+    recordBinaryDownloaded(pluginName: string, binaryLocation: string){
+      db.prepare(
+        `INSERT INTO game_launcher_binaries (plugin_name, binary_location, downloaded_at)
+         VALUES (@pluginName, @binaryLocation, unixepoch())
+         ON CONFLICT (plugin_name, binary_location) DO UPDATE SET downloaded_at = excluded.downloaded_at`
+      ).run({ pluginName, binaryLocation });
+    },
+
+    // Called right after a successful GameLauncher.startGame. Inserts a row
+    // even for a binaryLocation getBinary never produced (a manually
+    // configured one) - harmless (listGameLauncherBinaries only ever joins
+    // this against GameLauncher.listBinaries' own dataDir enumeration, so a
+    // stray row for an external path is just never surfaced), and simpler
+    // than having this route ask plugin-runtime "is this one of yours"
+    // first.
+    recordBinaryUsed(pluginName: string, binaryLocation: string){
+      db.prepare(
+        `INSERT INTO game_launcher_binaries (plugin_name, binary_location, downloaded_at, last_used_at)
+         VALUES (@pluginName, @binaryLocation, unixepoch(), unixepoch())
+         ON CONFLICT (plugin_name, binary_location) DO UPDATE SET last_used_at = excluded.last_used_at`
+      ).run({ pluginName, binaryLocation });
+    },
+
+    // Batched (one query, not one per listed binary) - keyed by
+    // binaryLocation so listGameLauncherBinaries can merge this onto
+    // GameLauncher.listBinaries' own result by matching path.
+    getBinaryUsageFor(
+      pluginName: string, binaryLocations: Array<string>
+    ): Map<string, { downloadedAt: number, lastUsedAt: number | null }> {
+      const result = new Map<string, { downloadedAt: number, lastUsedAt: number | null }>();
+      if(binaryLocations.length === 0) return result;
+      const params: Record<string, string> = { pluginName };
+      const placeholders = binaryLocations.map((location, i) => {
+        params[`loc${i}`] = location;
+        return `@loc${i}`;
+      }).join(", ");
+      const rows = db.prepare(
+        `SELECT binary_location, downloaded_at, last_used_at FROM game_launcher_binaries
+         WHERE plugin_name = @pluginName AND binary_location IN (${placeholders})`
+      ).all(params) as Array<{ binary_location: string, downloaded_at: number, last_used_at: number | null }>;
+      for(const row of rows){
+        // unixepoch() stores seconds - converted to ms here, same
+        // convention StoredPieceListing's completedAt already uses, so
+        // nothing downstream has to know this table's own on-disk units.
+        result.set(row.binary_location, {
+          downloadedAt: row.downloaded_at * 1000,
+          lastUsedAt: row.last_used_at === null ? null : row.last_used_at * 1000,
+        });
+      }
+      return result;
+    },
+
+    // Called alongside GameLauncher.removeBinary, which deletes the folder
+    // itself - this just drops the bookkeeping row so it doesn't outlive
+    // what it describes.
+    removeBinaryUsage(pluginName: string, binaryLocation: string){
+      db.prepare(
+        `DELETE FROM game_launcher_binaries WHERE plugin_name = @pluginName AND binary_location = @binaryLocation`
+      ).run({ pluginName, binaryLocation });
+    },
   }
 }
 

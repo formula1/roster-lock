@@ -1,4 +1,5 @@
-import Ajv, { JSONSchemaType } from "ajv";
+import { JSONSchemaType } from "ajv";
+import { Validator } from "jsonschema";
 import {
   RosterLockV1Config, PieceType, JSONShallowObject, SelectionPieceMeta
 } from "@roster-lock/types";
@@ -87,8 +88,8 @@ export function validateMetaDefaultValue(
       throw new Error(`Piece meta default meta must have all required keys`);
     }
   }
-  const ajv = new Ajv();
-  if(!ajv.validate(metaSchema, meta)){
+  const validator = new Validator();
+  if(!validator.validate(meta, metaSchema as object).valid){
     throw new Error(`Piece meta default meta does not match schema`);
   }
 }
@@ -107,8 +108,8 @@ export function validateMetaForPiece(
 
   const cloned = cloneJSON(metaSchema);
   cloned.required = [];
-  const ajv = new Ajv();
-  if(!ajv.validate(cloned, meta)){
+  const validator = new Validator();
+  if(!validator.validate(meta, cloned as object).valid){
     throw new Error(`Piece meta does not match schema`);
   }
 }

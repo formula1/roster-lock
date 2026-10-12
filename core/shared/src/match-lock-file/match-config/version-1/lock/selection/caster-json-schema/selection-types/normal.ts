@@ -8,7 +8,7 @@ import {
 
 import { untrustedScriptRefSchema } from "../script";
 import { validateSelectionBanList } from "../../validate/selections/normal";
-import { defineKeyword } from "../../../../../../util-types/json-schema";
+import { defineKeyword, nullable } from "../../../../../../util-types/json-schema";
 import { countSchema } from "../../../../shared/count";
 
 export const banListSchemaValidator = defineKeyword({
@@ -51,7 +51,7 @@ export const normalSelectionSchema: JSONSchemaType<SelectionNormalConfig> = {
   properties: {
     type: { type: "string", const: "normal" },
     validation: userSelectionValidationSchema,
-    mergeAlgorithm: { ...untrustedScriptRefSchema, nullable: true },
+    mergeAlgorithm: nullable(untrustedScriptRefSchema),
   },
 };
 

@@ -53,6 +53,15 @@ export interface IFolderDB {
     selectedPiece: Pick<RosterLockPiece, "version" | "pathVariables">,
     filePath: string
   ): Promise<Readable>
+  // Resolves a completed download's real on-disk folder - throws the same
+  // 404 ("doesn't exist")/409 ("not finished") HTTPErrors as getFilesofAsset/
+  // getPieceFileContents rather than returning undefined, so callers use the
+  // same try/catch shape for all three.
+  getPieceFolder(
+    engineConfig: RosterLockV1Config["engine"],
+    pieceType: string,
+    selectedPiece: Pick<RosterLockPiece, "version" | "pathVariables">,
+  ): Promise<string>
   listPieces(
     engineName: string,
     pieceType: string,
@@ -68,5 +77,20 @@ export interface IFolderDB {
     page: number,
     limit: number,
   }): Promise<StoredPieceListing>
+
+  // "Downloaded at"/"last used at" for a game-launcher binary (see
+  // SQLFolderDB/schema.ts's game_launcher_binaries table) - sharing this
+  // same database rather than a second one just for game-launcher
+  // bookkeeping, even though it isn't piece-shaped. Neither timestamp is
+  // something a plugin could ever report itself (GameLauncher.listBinaries
+  // reads what's actually installed via getLocalVersion, not when/whether
+  // match-agent fetched or ran it), so this is match-agent's own
+  // responsibility to track and merge in.
+  recordBinaryDownloaded(pluginName: string, binaryLocation: string): Promise<void>,
+  recordBinaryUsed(pluginName: string, binaryLocation: string): Promise<void>,
+  getBinaryUsageFor(
+    pluginName: string, binaryLocations: Array<string>
+  ): Promise<Map<string, { downloadedAt: number, lastUsedAt: number | null }>>,
+  removeBinaryUsage(pluginName: string, binaryLocation: string): Promise<void>,
 }
 
