@@ -215,9 +215,9 @@
         {
           "id": "@elecbyte/kung-fu-man",
           "version": {
-            "logic": "087c834b190aceef39b71e9bbd5c08febd4abd72f5e788605cd341eff04a2add",
-            "media": "bdb7c9ee32f2655d3dc4d18667b2825a77fe8d266cec4b8f448258614ebe596a",
-            "docs": "c032b31a722da06ce90e7b591fbd26e512c5f519a357e35177cf9949adbfb83e"
+            "logic": "ad6efc1cae2148810128fba411ab07615c42ff30a7d73944d653245a154bd88b",
+            "media": "1248e4c13955b3c8e39dd1034d0ee886d87b7e5987d158a92771fa78d3e92296",
+            "docs": "f94b0ef5cddd647cc20e145a547eb7bd1b50289cabb2e849c4d7b774fc983ca1"
           },
           "humanInfo": {
             "name": "Kung Fu Man",
@@ -236,9 +236,9 @@
         {
           "id": "@elecbyte/kung-fu-man-720",
           "version": {
-            "logic": "ed92b968f4fa4a15ba90a8d8841db8ab9a04d6d1aa03d4062b1facd09a27e114",
-            "media": "a68f61aa29fa9bb43cbecc39eccd08e12eb744e004dce6108493fb3dd534d50d",
-            "docs": "53c9ea41ceccfb405c83d6e09e352180f9e59f4b0d4317ffee824c86667ebcf5"
+            "logic": "f64280f9138c246d7a2bac7dea4cc98cc3468a83042afa3eba4d9d9811d5dec8",
+            "media": "e50b049891b9bce34b860ff84d9c3cfb607e7fc050ec58727f5bf5d1e355118e",
+            "docs": "226541d8caa0de3b6132f7cf52c7f39afb5676fd3a805644d2af1a2fab11e134"
           },
           "humanInfo": {
             "name": "Kung Fu Man 720",
@@ -257,9 +257,9 @@
         {
           "id": "@elecbyte/kung-fu-man-z-axis",
           "version": {
-            "logic": "b2c52bc7199fc889bccaeecc90e71b62c065e146f7aa335b3cc493308451883b",
-            "media": "5f46b6b6e939d3fac57036541e020f06fb43b2fa0b0f2cdf397e0310044e7e77",
-            "docs": "c032b31a722da06ce90e7b591fbd26e512c5f519a357e35177cf9949adbfb83e"
+            "logic": "2b7138df52bd2164d8cdb98ecc51118de9d81ccd9c0d435c4fcc2d4f0e3dc894",
+            "media": "d098a6677a983b4d3460b86c9fcab2f50b43206f7f8c9aaa2a8b29654f0ee6a0",
+            "docs": "f94b0ef5cddd647cc20e145a547eb7bd1b50289cabb2e849c4d7b774fc983ca1"
           },
           "humanInfo": {
             "name": "Kung Fu Man Z Axis",
@@ -278,9 +278,9 @@
         {
           "id": "@elecbyte/kung-fu-man-zss",
           "version": {
-            "logic": "ee1fb3fb378f902a6d738f614c14b497e8ec2c374a517b7567bc504cf5691fd0",
-            "media": "2ed3fd3f1403fe3e9d61a46bba433369e2b615e1e9006541f0fda3c0b166b265",
-            "docs": "c032b31a722da06ce90e7b591fbd26e512c5f519a357e35177cf9949adbfb83e"
+            "logic": "150182a742341cf96a536a01f042db6e8430ab2f9d3d51f6656025ed30c9bb7f",
+            "media": "a54d6f6bcc2c60ef506e0b7867d651198574563a44246ab35de5ca92d872abe2",
+            "docs": "f94b0ef5cddd647cc20e145a547eb7bd1b50289cabb2e849c4d7b774fc983ca1"
           },
           "humanInfo": {
             "name": "Kung Fu Man ZSS",
@@ -299,9 +299,9 @@
         {
           "id": "@elecbyte/kung-fu-man-thunder",
           "version": {
-            "logic": "ff742b83d988018eac0e67fd658128d777836432b04d497f20f5e2124d5bb8d8",
-            "media": "e138f7c02847735ea861bb478de7f50c0c44004669a0a6641fdc2b44fbac0270",
-            "docs": "00a8c9da1eeb821d5f9c7eca2126d1abb38d4680346effd55f376a9adebc738e"
+            "logic": "11c48c3a903ab9a6a7a45d0eabf3c547ac2c8f8505f179da3e39c8e443d7c3d8",
+            "media": "d14737c3b3c412e2abfa10f01fafc25a8a10a97522761666ec016343256c0cf0",
+            "docs": "d50c7e9521464a021f107ea4e4f2adbdd322eb146ce19803e2f95fafec8490a2"
           },
           "humanInfo": {
             "name": "Kung Fu Man (Thunder)",
@@ -320,9 +320,9 @@
         {
           "id": "@elecbyte/kung-fu-man-shadow",
           "version": {
-            "logic": "d2cfb129a013cb6cef8d7d5da482055582511392d5e338728a5027f1e833366e",
-            "media": "6acc6a95640ad27ccd53ffa150cd783b212ae7d53355fa174c48b3291f6aa107",
-            "docs": "c5489b1c817ff1dc18d250e0f870138200fd37af79206aca6a8441d9cf536e66"
+            "logic": "c65741ba737625010f0234d0113325bb76fbb2200b2257c5657c182f6e911a65",
+            "media": "ac724880c57f9ce992d1a47e8d0cfc24fe2089b220bec7909378534ff0fd0c84",
+            "docs": "4b2ea91ddee6b4fc9b977d927f184446ff570bf392941d32b76645ad04700157"
           },
           "humanInfo": {
             "name": "Kung Fu Man (Shadow)",
@@ -343,8 +343,8 @@
         {
           "id": "@elecbyte/training-room",
           "version": {
-            "logic": "d3cf12411759cb06a439f5a8c677f0ebafeee6346af328eab24b6ad993098dbc",
-            "media": "20f9f84ad03c3ee6905b551bd7c8f54a8b8cc3aa66626700a58d420816ef4453",
+            "logic": "b488c36ef5600ce7625232da76dffaba30c0420da3ce0dd9a6e52ef4137e1db9",
+            "media": "fee90c42ab07287d5a5cd70209c5f5f6d1fee75e5660be15138a605812fbb0c8",
             "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "humanInfo": {
@@ -364,9 +364,9 @@
         {
           "id": "@elecbyte/training-room-storm",
           "version": {
-            "logic": "474bc91c47aff201a5c182b65c6654d28f9f0baf009397c04864db2f291cb9bc",
-            "media": "9bbf48f1cd970478a78ede746142cb4f4cf1d52f9a19606fc50194120ed33c70",
-            "docs": "6768d6098843b2f5aad33a3de933bcd168565126122b649aec56a56c5ddbc5b6"
+            "logic": "7e4cfc2e69660e93a354fc89aa24cbc77e902afc1b1d63248b7f9508e5c649fb",
+            "media": "184345160a36766bcffa9723ca8d65f9ee6c09763f1040a94cc6d47b048511bb",
+            "docs": "462afdb446c594bf2acf2557f696864d122fede20d8213ac11bcef4362e5a330"
           },
           "humanInfo": {
             "name": "Training Room (Storm)",
@@ -385,9 +385,9 @@
         {
           "id": "@elecbyte/training-room-rainbow",
           "version": {
-            "logic": "47f4ba86d14a5bc36268f71426428f505a662e202fb47e4b28fc50b926b66966",
-            "media": "e14ced86db72bb3a4dc90a0f5dc618cd6e91f7fdc20b4679f9da3cefacaa53a5",
-            "docs": "4bc6edcefe3ba389253e3fd76b8cad570a203373b0c568033957329d274e13b1"
+            "logic": "5b8b517afde4e6bdc1b3c8078f599dd3953084e2b008fa02a7fedab933686e5d",
+            "media": "32d305677b99bec5dd7448224cb924e4ee38f8e8c3532df927fb0e58a8e52057",
+            "docs": "c7acc630e878c8a1c5867e5cb7ffe68ec14b1196df05f32f5a759cb4a602f6bb"
           },
           "humanInfo": {
             "name": "Training Room (Rainbow)",
