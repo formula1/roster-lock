@@ -1,0 +1,29 @@
+{
+  "name": "@roster-lock/game-launcher-headless",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Test-only game-launcher: reports a configured result immediately, with no real process - for automated testing of the game-launcher/gameEnded pipeline without a real engine binary.",
+  "license": "JSON",
+  "author": "Sam Tobia",
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "types": "./src/index.ts",
+  "roster-lock": {
+    "pluginType": "game-launcher",
+    "priority": 0,
+    "engineSha": "headless-no-piece-definitions"
+  },
+  "scripts": {
+    "build": "rimraf ./dist && tsc",
+    "prepare": "pnpm run build",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@roster-lock/types": "workspace:*",
+    "@types/node": "^25.9.1",
+    "ajv": "^8.20.0",
+    "rimraf": "^6.1.3",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.5"
+  }
+}

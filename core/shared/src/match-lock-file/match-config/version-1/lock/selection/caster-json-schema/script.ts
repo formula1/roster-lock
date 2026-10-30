@@ -1,7 +1,7 @@
 
 import { JSONSchemaType } from "ajv";
 import { RosterLockV1Config, UntrustedScriptRef } from "@roster-lock/types";
-import { defineKeyword } from "../../../../../util-types/json-schema";
+import { defineKeyword, nullable } from "../../../../../util-types/json-schema";
 
 import {
   validateUntrustedScriptSrc,
@@ -33,10 +33,10 @@ export const untrustedScriptRefSchema: JSONSchemaType<UntrustedScriptRef> = {
       type: "string",
       [scriptRefSrcSchemaValidator.keyword]: true
     },
-    method: {
-      type: "string", nullable: true,
+    method: nullable({
+      type: "string",
       [scriptRefMethodSchemaValidator.keyword]: true
-    }
+    })
   },
 };
 

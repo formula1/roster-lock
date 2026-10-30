@@ -151,7 +151,7 @@
           "id": "hud-default",
           "version": {
             "logic": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-            "media": "fbe302bf812544e4aa6e952885351842e971b6be31e8fa4c844f6bd2a086c7e3",
+            "media": "04c8c77ee1f1ae9c08c9ddeb30eeff3c233c136e77bbb7a21f9af0c9b5c6dfdc",
             "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "humanInfo": {
@@ -170,8 +170,8 @@
         {
           "id": "stage-beach",
           "version": {
-            "logic": "ddea3db1b5b2b42264d01aa7ca0d17fb9d8799ccf255da27786c532bb5b10970",
-            "media": "494606987229a7514acfe432d57e4c0ee8aac8f04a11b5729e44ea65732873ec",
+            "logic": "d931664ecf82c3a2442fb1ff132a49fabc2c5916c6f6785182a7478b35256c89",
+            "media": "15af72e87e9f63e28951ab211bc069184c73fdd79bd40ac3d4443110305100ee",
             "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "humanInfo": {
@@ -195,8 +195,8 @@
         {
           "id": "stage-mountain",
           "version": {
-            "logic": "dc7ead3ba69d574ca1b7b329f8bc96e32fec1a41daf1ce034bf22d15325fc4ac",
-            "media": "6644cdb04bc4697be20e4cf483013cff78dc5efd8f666878cffa15eb0ca861ab",
+            "logic": "0643306cd64550555ff2b8b346b795974743f79c1cae8c5ffa3abce239b7f00b",
+            "media": "cc6759c15254a869e1ff1086d94cc1e2398fa1ceb6d5d84a19e8bb4e8c03ccaf",
             "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "humanInfo": {
@@ -220,8 +220,8 @@
         {
           "id": "stage-rain-forest",
           "version": {
-            "logic": "13d3a74484e891f5898cff1686bcf4f064ff26d3157e412af71475af42697585",
-            "media": "3b0a468517884f2234fc631a236ab3af25194aa5e22e0e553c08342375c58adb",
+            "logic": "e56cf64b6c19cf33bd46035c59b9ab247874927f6bf357e193bd32f643f522cc",
+            "media": "2482608363560746ae5ad5144777dfa16db021809b623fa157edae20b3d7e452",
             "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "humanInfo": {
@@ -247,8 +247,8 @@
         {
           "id": "character-yellow",
           "version": {
-            "logic": "e2573d3d0af0316f03d47ab0bd19a498349db1bbd01047607a05ac0a572a7980",
-            "media": "fb311462544b23aeff182f3de7a94d3e9b13873bd673f381062b47dd1a14934e",
+            "logic": "e07a7d8d472548144b70b0f04f1778a872314cffab469fcc63d9c062b0bee4f0",
+            "media": "1dcee89d387db7bcd945fc4460828d5328b10d89128638db7ca204f01967c975",
             "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "humanInfo": {
@@ -276,8 +276,8 @@
         {
           "id": "character-red",
           "version": {
-            "logic": "a22cc54921bf0e3f688fd1e84658883fe5d1029408a85158c8392cbf876c3f40",
-            "media": "9c23bb9abf4acb8db64ef87871487e17911e08b1f3ab422f58830b7eb2001de7",
+            "logic": "c00b0f4a8f340ad4f41fbf008a20cb599d58f1014b62dfc748d338aecff5b827",
+            "media": "f33873af027a9821ad8822307434f05485606a92e437b44c320056e9a9625552",
             "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "humanInfo": {
@@ -305,8 +305,8 @@
         {
           "id": "character-blue",
           "version": {
-            "logic": "376f976aadffcde7ef89596b9a6db5f5bf184b35d870604924f708a6daf9080c",
-            "media": "eb6ece83d2e2fa297360ff9ffc82587c6b6981afab07a7e7d70ffbf4c38c2398",
+            "logic": "5db069dba2b069aae2940917dd29968e14851c7ff927153a5bc3ef9e7cf10adc",
+            "media": "5f74bfd432a677fef3c331cd1fbc51a30a6186e92710dc7215cd82a7be52cbf2",
             "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "humanInfo": {
@@ -336,8 +336,8 @@
         {
           "id": "move-weak",
           "version": {
-            "logic": "49b6221a42af006c5f8375de9c160d55b4ead46b206da0592b8485277f1fa7f6",
-            "media": "b3884f361fc702d0559a3bf51c4c7b21a2fc89b9e6f5396584da140812019275",
+            "logic": "93d347942210584624662a932f0da70a819f891d7cc2c2af536b9e495d4e64fb",
+            "media": "c296fd62f87f23992ecd0de0f9a02c86485f033f8f839ce60592436d20680a81",
             "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "humanInfo": {
@@ -359,8 +359,8 @@
         {
           "id": "move-basic",
           "version": {
-            "logic": "17f68cfbefbd644bf5a55bf0be1f3ed58c544c0f32677c63575030999abfdb09",
-            "media": "b778725bbb8440bfae91acb9f2c7976d11b8636b595c32b09a0c69c6c44bfd72",
+            "logic": "ae2bc195a9432dbe6518d7816090ad21231afc912e20e7771963e2c9848795aa",
+            "media": "5489aef0ac77410971c7848a3eac87ef62f0fdecc964697aa22fa82e4927cd04",
             "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "humanInfo": {
@@ -382,8 +382,8 @@
         {
           "id": "move-strong",
           "version": {
-            "logic": "9f873287c7541b49c200aef2edd2160145ff8da7c660498c062484f87536eef0",
-            "media": "020403f20324e3759c7e8cb9007e15a6d2b16bc1b9dc916b1f1c9decf789610c",
+            "logic": "35dfa37c55af1dd50b018fe527c5233f197d3e5533d3a193eb7999eb3ee80103",
+            "media": "b23ee73c7db04fdcb56fb2e5a29949838b4a0fc8f707697a6bacfb5ceead12f9",
             "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "humanInfo": {
@@ -405,8 +405,8 @@
         {
           "id": "move-sun",
           "version": {
-            "logic": "48821fcfb27a6154fbaf89e30a27f84e359df97166752811e28a699a0af4de8d",
-            "media": "b000fa533be573e7f18cac143de70c37bac9e65b13e723e08b699269872b6b97",
+            "logic": "9ed50131b5c67ed3ff6d344e6604838837c67227c18c31aa318d7c362a34d512",
+            "media": "1ad62565ac0f2a65046027cfe5f57db3d0c40ee7058af44424dfdae29ef5e03a",
             "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "humanInfo": {
@@ -430,8 +430,8 @@
         {
           "id": "move-rain",
           "version": {
-            "logic": "67e83454bff2793ecebbb5e45c8704dc733a45d78228e20b131627873037bfab",
-            "media": "75e76817f731ac5f1017c03a79cb64378533d2f7d9ce5ca3f318427e6c1af1e7",
+            "logic": "8a701898a5a71316b68d45936b8e81fb3fcc693700a7e0499bce5a8704096317",
+            "media": "8670472a5010c15d75c3e50926ea71b44ca7342095a4ec7e1652d57752639a51",
             "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "humanInfo": {
@@ -455,8 +455,8 @@
         {
           "id": "move-snow",
           "version": {
-            "logic": "b6940b39274d0bc250238c631b8d54ee8fe134276f8ffeabf0f4578f73632819",
-            "media": "7ef4a3ba79b580e5324a97ab5bb6b5ad0ae706fc4cbef034e57b2be63ee88f03",
+            "logic": "d505547c39e9a20061bbe772a9a23390e5b8163051fcd22690cc810b2ef57a9f",
+            "media": "39be3e830d3e90b6fab6d419ec0cc83c453f93318096fe00fecd152254b7c3e7",
             "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "humanInfo": {
@@ -480,8 +480,8 @@
         {
           "id": "move-random-weather",
           "version": {
-            "logic": "fe2dc29a9e6c6127aa220d55dc198a6776c31b59e47bd37b9d12b71434cf0272",
-            "media": "b0edd8e897469a6f4d674d55ef70096a496c13ca9c125e895db09a75e0003426",
+            "logic": "bec87945884fcfc958a3beefb29ca11381cb86b4b6fc88613a0938f58323859a",
+            "media": "d2f86e7a41fceea82fcb0a0839854ba365e29cd89213fb0ca3b5956ae6afe1b7",
             "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "humanInfo": {
@@ -507,8 +507,8 @@
         {
           "id": "move-remove-weather",
           "version": {
-            "logic": "82f2e2b6d407675c2d276b555df9cfc6943befdcb4390246fa01d44cfffea640",
-            "media": "bbdc77ed802a8a4ec93573860e76886cd7333f577d4e831fb1a25eadf49c8a26",
+            "logic": "e0d46a7b4830eecae4c9276f2311f4fee1375da6cff2596f90560af0fe8c54f6",
+            "media": "2b03ada78726730001668998dc2f296080ac642ea4c4114235b1d2c5300f29fe",
             "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "humanInfo": {
@@ -535,7 +535,7 @@
           "id": "weather-none",
           "version": {
             "logic": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-            "media": "9b676f0ff5b36efe39e9f630080712009be0e235abcab12ede09c64b4707a91c",
+            "media": "e086285408c249b4881f8f9f7c02be71126b232c8b31b5948db6010c691c0257",
             "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "humanInfo": {
@@ -553,7 +553,7 @@
           "id": "weather-sun",
           "version": {
             "logic": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-            "media": "cea221a697ccbf9820399ebeecb654c6c5f0031aac96c27395176fcd248c5114",
+            "media": "de9217b6424a1931e8f339ce8b566bffa77d09aedb58d9faefc671d3f82834ee",
             "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "humanInfo": {
@@ -571,7 +571,7 @@
           "id": "weather-rain",
           "version": {
             "logic": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-            "media": "6c63de049fcea17089903c98ff68eb9382179ea0e5a9f5df1fc9772595f8e9f8",
+            "media": "4c47bf662f414edd8182ab98b8667fa5ca2f1998ec52132fe04219a593e30a3d",
             "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "humanInfo": {
@@ -589,7 +589,7 @@
           "id": "weather-snow",
           "version": {
             "logic": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-            "media": "93cd2c2811ca1508f7822235c8493d50c158e95892ad286513e2e7a5bffcdc7f",
+            "media": "870baae74e782754bcc282dd7257b4dd6be4f2a7eb16e46e7b83df19a34c0f68",
             "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "humanInfo": {
@@ -792,7 +792,7 @@
           "id": "hud-default",
           "version": {
             "logic": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-            "media": "fbe302bf812544e4aa6e952885351842e971b6be31e8fa4c844f6bd2a086c7e3",
+            "media": "04c8c77ee1f1ae9c08c9ddeb30eeff3c233c136e77bbb7a21f9af0c9b5c6dfdc",
             "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "humanInfo": {
@@ -811,8 +811,8 @@
         {
           "id": "stage-beach",
           "version": {
-            "logic": "ddea3db1b5b2b42264d01aa7ca0d17fb9d8799ccf255da27786c532bb5b10970",
-            "media": "494606987229a7514acfe432d57e4c0ee8aac8f04a11b5729e44ea65732873ec",
+            "logic": "d931664ecf82c3a2442fb1ff132a49fabc2c5916c6f6785182a7478b35256c89",
+            "media": "15af72e87e9f63e28951ab211bc069184c73fdd79bd40ac3d4443110305100ee",
             "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "humanInfo": {
@@ -836,8 +836,8 @@
         {
           "id": "stage-mountain",
           "version": {
-            "logic": "dc7ead3ba69d574ca1b7b329f8bc96e32fec1a41daf1ce034bf22d15325fc4ac",
-            "media": "6644cdb04bc4697be20e4cf483013cff78dc5efd8f666878cffa15eb0ca861ab",
+            "logic": "0643306cd64550555ff2b8b346b795974743f79c1cae8c5ffa3abce239b7f00b",
+            "media": "cc6759c15254a869e1ff1086d94cc1e2398fa1ceb6d5d84a19e8bb4e8c03ccaf",
             "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "humanInfo": {
@@ -861,8 +861,8 @@
         {
           "id": "stage-rain-forest",
           "version": {
-            "logic": "13d3a74484e891f5898cff1686bcf4f064ff26d3157e412af71475af42697585",
-            "media": "3b0a468517884f2234fc631a236ab3af25194aa5e22e0e553c08342375c58adb",
+            "logic": "e56cf64b6c19cf33bd46035c59b9ab247874927f6bf357e193bd32f643f522cc",
+            "media": "2482608363560746ae5ad5144777dfa16db021809b623fa157edae20b3d7e452",
             "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "humanInfo": {
@@ -888,8 +888,8 @@
         {
           "id": "character-yellow",
           "version": {
-            "logic": "e2573d3d0af0316f03d47ab0bd19a498349db1bbd01047607a05ac0a572a7980",
-            "media": "fb311462544b23aeff182f3de7a94d3e9b13873bd673f381062b47dd1a14934e",
+            "logic": "e07a7d8d472548144b70b0f04f1778a872314cffab469fcc63d9c062b0bee4f0",
+            "media": "1dcee89d387db7bcd945fc4460828d5328b10d89128638db7ca204f01967c975",
             "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "humanInfo": {
@@ -917,8 +917,8 @@
         {
           "id": "character-red",
           "version": {
-            "logic": "a22cc54921bf0e3f688fd1e84658883fe5d1029408a85158c8392cbf876c3f40",
-            "media": "9c23bb9abf4acb8db64ef87871487e17911e08b1f3ab422f58830b7eb2001de7",
+            "logic": "c00b0f4a8f340ad4f41fbf008a20cb599d58f1014b62dfc748d338aecff5b827",
+            "media": "f33873af027a9821ad8822307434f05485606a92e437b44c320056e9a9625552",
             "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "humanInfo": {
@@ -946,8 +946,8 @@
         {
           "id": "character-blue",
           "version": {
-            "logic": "376f976aadffcde7ef89596b9a6db5f5bf184b35d870604924f708a6daf9080c",
-            "media": "eb6ece83d2e2fa297360ff9ffc82587c6b6981afab07a7e7d70ffbf4c38c2398",
+            "logic": "5db069dba2b069aae2940917dd29968e14851c7ff927153a5bc3ef9e7cf10adc",
+            "media": "5f74bfd432a677fef3c331cd1fbc51a30a6186e92710dc7215cd82a7be52cbf2",
             "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "humanInfo": {
@@ -977,8 +977,8 @@
         {
           "id": "move-weak",
           "version": {
-            "logic": "49b6221a42af006c5f8375de9c160d55b4ead46b206da0592b8485277f1fa7f6",
-            "media": "b3884f361fc702d0559a3bf51c4c7b21a2fc89b9e6f5396584da140812019275",
+            "logic": "93d347942210584624662a932f0da70a819f891d7cc2c2af536b9e495d4e64fb",
+            "media": "c296fd62f87f23992ecd0de0f9a02c86485f033f8f839ce60592436d20680a81",
             "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "humanInfo": {
@@ -1000,8 +1000,8 @@
         {
           "id": "move-basic",
           "version": {
-            "logic": "17f68cfbefbd644bf5a55bf0be1f3ed58c544c0f32677c63575030999abfdb09",
-            "media": "b778725bbb8440bfae91acb9f2c7976d11b8636b595c32b09a0c69c6c44bfd72",
+            "logic": "ae2bc195a9432dbe6518d7816090ad21231afc912e20e7771963e2c9848795aa",
+            "media": "5489aef0ac77410971c7848a3eac87ef62f0fdecc964697aa22fa82e4927cd04",
             "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "humanInfo": {
@@ -1023,8 +1023,8 @@
         {
           "id": "move-strong",
           "version": {
-            "logic": "9f873287c7541b49c200aef2edd2160145ff8da7c660498c062484f87536eef0",
-            "media": "020403f20324e3759c7e8cb9007e15a6d2b16bc1b9dc916b1f1c9decf789610c",
+            "logic": "35dfa37c55af1dd50b018fe527c5233f197d3e5533d3a193eb7999eb3ee80103",
+            "media": "b23ee73c7db04fdcb56fb2e5a29949838b4a0fc8f707697a6bacfb5ceead12f9",
             "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "humanInfo": {
@@ -1046,8 +1046,8 @@
         {
           "id": "move-sun",
           "version": {
-            "logic": "48821fcfb27a6154fbaf89e30a27f84e359df97166752811e28a699a0af4de8d",
-            "media": "b000fa533be573e7f18cac143de70c37bac9e65b13e723e08b699269872b6b97",
+            "logic": "9ed50131b5c67ed3ff6d344e6604838837c67227c18c31aa318d7c362a34d512",
+            "media": "1ad62565ac0f2a65046027cfe5f57db3d0c40ee7058af44424dfdae29ef5e03a",
             "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "humanInfo": {
@@ -1071,8 +1071,8 @@
         {
           "id": "move-rain",
           "version": {
-            "logic": "67e83454bff2793ecebbb5e45c8704dc733a45d78228e20b131627873037bfab",
-            "media": "75e76817f731ac5f1017c03a79cb64378533d2f7d9ce5ca3f318427e6c1af1e7",
+            "logic": "8a701898a5a71316b68d45936b8e81fb3fcc693700a7e0499bce5a8704096317",
+            "media": "8670472a5010c15d75c3e50926ea71b44ca7342095a4ec7e1652d57752639a51",
             "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "humanInfo": {
@@ -1096,8 +1096,8 @@
         {
           "id": "move-snow",
           "version": {
-            "logic": "b6940b39274d0bc250238c631b8d54ee8fe134276f8ffeabf0f4578f73632819",
-            "media": "7ef4a3ba79b580e5324a97ab5bb6b5ad0ae706fc4cbef034e57b2be63ee88f03",
+            "logic": "d505547c39e9a20061bbe772a9a23390e5b8163051fcd22690cc810b2ef57a9f",
+            "media": "39be3e830d3e90b6fab6d419ec0cc83c453f93318096fe00fecd152254b7c3e7",
             "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "humanInfo": {
@@ -1121,8 +1121,8 @@
         {
           "id": "move-random-weather",
           "version": {
-            "logic": "fe2dc29a9e6c6127aa220d55dc198a6776c31b59e47bd37b9d12b71434cf0272",
-            "media": "b0edd8e897469a6f4d674d55ef70096a496c13ca9c125e895db09a75e0003426",
+            "logic": "bec87945884fcfc958a3beefb29ca11381cb86b4b6fc88613a0938f58323859a",
+            "media": "d2f86e7a41fceea82fcb0a0839854ba365e29cd89213fb0ca3b5956ae6afe1b7",
             "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "humanInfo": {
@@ -1148,8 +1148,8 @@
         {
           "id": "move-remove-weather",
           "version": {
-            "logic": "82f2e2b6d407675c2d276b555df9cfc6943befdcb4390246fa01d44cfffea640",
-            "media": "bbdc77ed802a8a4ec93573860e76886cd7333f577d4e831fb1a25eadf49c8a26",
+            "logic": "e0d46a7b4830eecae4c9276f2311f4fee1375da6cff2596f90560af0fe8c54f6",
+            "media": "2b03ada78726730001668998dc2f296080ac642ea4c4114235b1d2c5300f29fe",
             "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "humanInfo": {
@@ -1176,7 +1176,7 @@
           "id": "weather-none",
           "version": {
             "logic": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-            "media": "9b676f0ff5b36efe39e9f630080712009be0e235abcab12ede09c64b4707a91c",
+            "media": "e086285408c249b4881f8f9f7c02be71126b232c8b31b5948db6010c691c0257",
             "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "humanInfo": {
@@ -1194,7 +1194,7 @@
           "id": "weather-sun",
           "version": {
             "logic": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-            "media": "cea221a697ccbf9820399ebeecb654c6c5f0031aac96c27395176fcd248c5114",
+            "media": "de9217b6424a1931e8f339ce8b566bffa77d09aedb58d9faefc671d3f82834ee",
             "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "humanInfo": {
@@ -1212,7 +1212,7 @@
           "id": "weather-rain",
           "version": {
             "logic": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-            "media": "6c63de049fcea17089903c98ff68eb9382179ea0e5a9f5df1fc9772595f8e9f8",
+            "media": "4c47bf662f414edd8182ab98b8667fa5ca2f1998ec52132fe04219a593e30a3d",
             "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "humanInfo": {
@@ -1230,7 +1230,7 @@
           "id": "weather-snow",
           "version": {
             "logic": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-            "media": "93cd2c2811ca1508f7822235c8493d50c158e95892ad286513e2e7a5bffcdc7f",
+            "media": "870baae74e782754bcc282dd7257b4dd6be4f2a7eb16e46e7b83df19a34c0f68",
             "docs": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "humanInfo": {

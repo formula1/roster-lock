@@ -1,5 +1,5 @@
 import { RosterLockV1Config } from "@roster-lock/types";
-import { validateURL } from "./utils";
+import { validateURL, validateImageDataURI } from "./utils";
 
 
 export function validateHumanInfo(
@@ -8,7 +8,7 @@ export function validateHumanInfo(
   validateFriendlyString(humanInfo.name);
   validateFriendlyString(humanInfo.author);
   validateURL(humanInfo.url);
-  if(humanInfo.image) validateURL(humanInfo.image);
+  if(humanInfo.image) validateImageDataURI(humanInfo.image);
 }
 
 export function validateFriendlyString(value: string){

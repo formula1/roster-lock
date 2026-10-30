@@ -36,7 +36,7 @@ export async function runFetch(
   )
 
   const response = await fetch(url, {
-    method: "POST",
+    method: reqInit?.method || "GET",
     headers: {
       ...(!isJSONBody ? {} : { "Content-Type" : "application/json" }),
       ...(typeof auth === "undefined" ? {} : { "Authorization": "Bearer " + auth }),

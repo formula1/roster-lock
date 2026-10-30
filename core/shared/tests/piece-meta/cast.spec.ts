@@ -57,4 +57,24 @@ describe("piece meta validation", () => {
     if(result.valid) return;
     expect(result.error.some((e) => /not in the roster/i.test(e.message ?? ""))).toBe(true);
   });
+
+  it("rejects default meta whose value doesn't match the declared type", () => {
+    const lock = buildLockWithPieceMeta();
+    lock.pieceMeta["character"].defaultMeta = { power: "five" as unknown as number };
+
+    const result = ROSTERLOCK_V1_CASTER_JSONSCHEMA.safeCast(lock);
+    expect(result.valid).toBe(false);
+    if(result.valid) return;
+    expect(result.error.some((e) => /does not match schema/i.test(e.message ?? ""))).toBe(true);
+  });
+
+  it("rejects a per-piece meta value that doesn't match the declared type", () => {
+    const lock = buildLockWithPieceMeta();
+    lock.pieceMeta["character"].values = { "@author/blue": { power: "five" as unknown as number } };
+
+    const result = ROSTERLOCK_V1_CASTER_JSONSCHEMA.safeCast(lock);
+    expect(result.valid).toBe(false);
+    if(result.valid) return;
+    expect(result.error.some((e) => /does not match schema/i.test(e.message ?? ""))).toBe(true);
+  });
 });

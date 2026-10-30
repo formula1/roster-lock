@@ -1,0 +1,22 @@
+{
+  "name": "@roster-lock/download-provider",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Serves piece tarballs and file listings from a local folder - a download-provider strategy shared by roster-lock's docker-compose examples (full-local, mugen)",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "tar": "^6.2.1"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.11.0",
+    "@types/tar": "^6.1.13",
+    "typescript": "^7.0.2"
+  }
+}
+

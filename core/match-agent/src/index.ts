@@ -11,9 +11,11 @@ import { generateAuthCode, authMiddleware, validateAuthCode } from "./authentica
 import { corsMiddleware } from "./cors";
 import { createEditorV1Router } from "./editor-support";
 import { MatchAgentServer } from "./server";
+import { createDevClientHandler, createStaticClientHandler } from "./serve-client";
 import { program } from "commander";
 import { createV1Routers } from "./handle-room/version-1";
 import { getSQLite3FolderDB } from "./handle-room/version-1/globals/FolderDB";
+import { createFileSystemRouter } from "./util-routers/file-system";
 import {
   PluginManager, createPluginCommands, syncPluginsToOfficialManifest, DEFAULT_REPO_URL, manifestUrlFromRepo,
 } from "@roster-lock/plugin-runtime";
@@ -51,12 +53,22 @@ program
   .option("--piece-folder <path>", "folder to store downloaded pieces in (overrides the config file)")
   .option("--plugin-folder <path>", "folder to load plugins from (overrides the config file)")
   .option(
+    "--roster-lock-folder <path>",
+    "folder match-agent-client's roster-lock preview page may browse/read from (overrides the config file)"
+  )
+  .option(
     "--config-file <path>",
     "config file to read/persist the auth code and folders from " +
     "(defaults to a config next to this executable, falling back to the home directory)"
   )
+  .option(
+    "--dev",
+    "serve the match-agent-client from its Vite dev server (live source, HMR) instead of the prebuilt client/dist",
+    false
+  )
   .action(async (options: {
-    port: string, authCode?: string, pieceFolder?: string, pluginFolder?: string, configFile?: string,
+    port: string, authCode?: string, pieceFolder?: string, pluginFolder?: string, rosterLockFolder?: string,
+    configFile?: string, dev: boolean,
   }) => {
     const port = Number(options.port);
     if (!Number.isInteger(port) || port < 0 || port > 65535) {
@@ -70,21 +82,26 @@ program
     const resolvedFolders = resolveConfigFolders(configFilePath, existingConfig ?? {});
     const pieceFolder = options.pieceFolder ? pathResolve(options.pieceFolder) : resolvedFolders.pieceFolder;
     const pluginFolder = options.pluginFolder ? pathResolve(options.pluginFolder) : resolvedFolders.pluginFolder;
+    const rosterLockFolder = options.rosterLockFolder
+      ? pathResolve(options.rosterLockFolder) : resolvedFolders.rosterLockFolder;
 
     // Persist so the auth code stays stable across runs (and a first run
     // against a fresh config writes one out) - keep the config's own
-    // relative pieceFolder/pluginFolder untouched so a CLI override on this
-    // run doesn't get baked in as this config's permanent setting.
+    // relative pieceFolder/pluginFolder/rosterLockFolder untouched so a CLI
+    // override on this run doesn't get baked in as this config's permanent
+    // setting.
     await setConfig(configFilePath, {
       authCode,
       pieceFolder: existingConfig?.pieceFolder,
       pluginFolder: existingConfig?.pluginFolder,
+      rosterLockFolder: existingConfig?.rosterLockFolder,
     });
 
     await mkdir(pieceFolder, { recursive: true });
     await mkdir(pluginFolder, { recursive: true });
+    await mkdir(rosterLockFolder, { recursive: true });
 
-    startServer(port, authCode, pluginFolder, pieceFolder);
+    startServer(port, authCode, pluginFolder, pieceFolder, rosterLockFolder, configFilePath, { dev: options.dev });
   });
 
 program
@@ -96,6 +113,10 @@ program
   )
   .option("--piece-folder <name>", "name of the pieces folder to create, relative to <path>", "pieces")
   .option("--plugin-folder <name>", "name of the plugins folder to create, relative to <path>", "plugins")
+  .option(
+    "--roster-lock-folder <name>",
+    "name of the roster-lock preview folder to create, relative to <path>", "roster-locks"
+  )
   .option("--auth-code <string>", "auth code to store in the config (a random one is generated if omitted)")
   .option("--force", "overwrite an existing config at <path>, generating a new auth code unless --auth-code is given", false)
   .option(
@@ -103,7 +124,8 @@ program
     "if given, sync plugins to match the official manifest at this URL right after mounting"
   )
   .action(async (targetPath: string, options: {
-    pieceFolder: string, pluginFolder: string, authCode?: string, force: boolean, manifestUrl?: string,
+    pieceFolder: string, pluginFolder: string, rosterLockFolder: string, authCode?: string, force: boolean,
+    manifestUrl?: string,
   }) => {
     const mountFolder = pathResolve(targetPath);
     await mkdir(mountFolder, { recursive: true });
@@ -117,12 +139,14 @@ program
     const pluginFolder = pathJoin(mountFolder, options.pluginFolder);
     await mkdir(pathJoin(mountFolder, options.pieceFolder), { recursive: true });
     await mkdir(pluginFolder, { recursive: true });
+    await mkdir(pathJoin(mountFolder, options.rosterLockFolder), { recursive: true });
 
     const authCode = options.authCode || existingConfig?.authCode || generateAuthCode();
     await setConfig(configFilePath, {
       authCode,
       pieceFolder: options.pieceFolder,
       pluginFolder: options.pluginFolder,
+      rosterLockFolder: options.rosterLockFolder,
     });
 
     console.log(`Wrote ${configFilePath}`);
@@ -148,10 +172,15 @@ program
   )
   .option("--piece-folder <name>", "name of the pieces folder to create, relative to the config file", "pieces")
   .option("--plugin-folder <name>", "name of the plugins folder to create, relative to the config file", "plugins")
+  .option(
+    "--roster-lock-folder <name>",
+    "name of the roster-lock preview folder to create, relative to the config file", "roster-locks"
+  )
   .option("--force", "overwrite an existing config at the target location", false)
   .option("--manifest-url <url>", "URL of the official plugin manifest to sync plugins against", manifestUrlFromRepo(DEFAULT_REPO_URL))
   .action(async (authCode: string, options: {
-    configFile?: string, pieceFolder: string, pluginFolder: string, force: boolean, manifestUrl: string,
+    configFile?: string, pieceFolder: string, pluginFolder: string, rosterLockFolder: string, force: boolean,
+    manifestUrl: string,
   }) => {
     const configFilePath = options.configFile ? pathResolve(options.configFile) : DEFAULT_MATCH_CONIFG;
     const existingConfig = (await configExists(configFilePath)) ? await getConfig(configFilePath) : null;
@@ -160,15 +189,17 @@ program
     }
 
     const resolvedFolders = resolveConfigFolders(configFilePath, {
-      pieceFolder: options.pieceFolder, pluginFolder: options.pluginFolder,
+      pieceFolder: options.pieceFolder, pluginFolder: options.pluginFolder, rosterLockFolder: options.rosterLockFolder,
     });
     await mkdir(resolvedFolders.pieceFolder, { recursive: true });
     await mkdir(resolvedFolders.pluginFolder, { recursive: true });
+    await mkdir(resolvedFolders.rosterLockFolder, { recursive: true });
 
     await setConfig(configFilePath, {
       authCode,
       pieceFolder: options.pieceFolder,
       pluginFolder: options.pluginFolder,
+      rosterLockFolder: options.rosterLockFolder,
     });
 
     console.log(`Wrote ${configFilePath}`);
@@ -195,6 +226,7 @@ program
       authCode,
       pieceFolder: existingConfig?.pieceFolder,
       pluginFolder: existingConfig?.pluginFolder,
+      rosterLockFolder: existingConfig?.rosterLockFolder,
     });
     console.log(`Updated auth code in ${configFilePath}`);
   });
@@ -203,7 +235,10 @@ if (require.main === module) {
   program.parse();
 }
 
-export async function startServer(port: number, authCode: string, pluginFolder: string, piecesFolder: string){
+export async function startServer(
+  port: number, authCode: string, pluginFolder: string, piecesFolder: string, rosterLockFolder: string,
+  configFilePath: string, options: { dev?: boolean } = {}
+){
   const pluginRuntime = await PluginManager.create(pluginFolder);
   const fileDB = getSQLite3FolderDB(piecesFolder, pluginRuntime);
 
@@ -211,19 +246,36 @@ export async function startServer(port: number, authCode: string, pluginFolder: 
   // "{/*path}" = path-to-regexp v8 catch-all; a bare "/" only matches the
   // root exactly, which would skip CORS on every real route.
   server.httpRouter.use("{/*path}", corsMiddleware);
-  server.httpRouter.get("/", ({ res })=>{
+  server.httpRouter.get("/health", ({ res })=>{
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ "hello": "world" }));
   });
   server.httpRouter.post("/validate-authcode", validateAuthCode(authCode))
 
-  const { httpRouter: v1HttpRouter, wsRouter: v1WsRouter } = createV1Routers(fileDB, pluginRuntime);
+  const { httpRouter: v1HttpRouter, wsRouter: v1WsRouter } = createV1Routers(
+    fileDB, pluginRuntime, { authCode, getPort: () => port }, configFilePath
+  );
   server.httpRouter.use("/v1", authMiddleware(authCode), v1HttpRouter);
   server.wsRouter.use("/v1", authMiddleware(authCode), v1WsRouter);
 
   // Config-editor support lives on its own version axis (/editor/v1) so the
   // room protocol (/v1) can move to /v2 without dragging the editor API along.
   server.httpRouter.use("/editor/v1", authMiddleware(authCode), createEditorV1Router(pluginRuntime, fileDB));
+
+  // Outside /v1 entirely, same reasoning as /editor/v1 - this doesn't
+  // touch the room protocol at all, and is bounded to rosterLockFolder
+  // (see util-routers/file-system/resolve-within-root.ts), not anything
+  // else match-agent's host filesystem happens to have.
+  server.httpRouter.use("/util/file-system", authMiddleware(authCode), createFileSystemRouter(rosterLockFolder));
+
+  // Mounted last so it only ever sees requests the routes above didn't
+  // claim - match-agent-client stays Vite's, this just puts it behind the
+  // same origin/port as the API instead of a separately-run `vite dev`.
+  // .all (not .use) - .use's prefix-mount semantics strip the matched
+  // portion off the pathname for nested routing, which for a "{/*path}"
+  // catch-all is the entire path, leaving the client handler unable to
+  // tell one route from another.
+  server.httpRouter.all("{/*path}", options.dev ? createDevClientHandler() : createStaticClientHandler());
 
   server.listen(port, () => {
     console.log(`match-agent listening on port ${port}`);

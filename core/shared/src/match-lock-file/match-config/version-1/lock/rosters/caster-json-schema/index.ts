@@ -5,7 +5,7 @@ type RosterLockPiece = RosterLockV1Config["rosters"][string][number];
 
 import { idSchema, idUniquenessSchemaValidator, idSchemaValidator } from "./id";
 import { versionSchema, sha256SchemaValidator } from "./version";
-import { humanInfoSchema, urlSchemaValidator, friendlyStringSchemaValidator } from "./human";
+import { humanInfoSchema, urlSchemaValidator, imageDataURISchemaValidator, friendlyStringSchemaValidator } from "./human";
 import {
   downloadableSourcesSchema,
   downloadableSourceListSchemaValidator,
@@ -77,6 +77,7 @@ export const rosterKeywords = [
 
   // Human Related
   urlSchemaValidator,
+  imageDataURISchemaValidator,
   friendlyStringSchemaValidator,
 
   // Id Related

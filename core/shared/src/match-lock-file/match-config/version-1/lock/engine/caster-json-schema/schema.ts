@@ -7,6 +7,7 @@ import { assetsSchema, assetKeywords } from "./asset";
 import { requirementsSchema, requirementKeywords } from "./requirements";
 import { pathVariablesSchema, pathVariableKeywords } from "./variables";
 import { officialSelectionsSchema, officialSelectionsKeywords } from "./officialSelections";
+import { nullable } from "../../../../../util-types/json-schema";
 
 const pieceDefinitionSchema: JSONSchemaType<
   RosterLockEngineConfig["pieceDefinitions"][string]
@@ -34,7 +35,7 @@ export const engineSchema: JSONSchemaType<RosterLockEngineConfig> = {
       required: [],
       additionalProperties: pieceDefinitionSchema
     },
-    officialSelections: { ...officialSelectionsSchema, nullable: true },
+    officialSelections: nullable(officialSelectionsSchema),
   }
 }
 

@@ -35,7 +35,9 @@ export async function saveStreamToFilesystem(
 
   const filePromises: Promise<void>[] = [];
   for await (const file of processors.archiveHandler.extractFiles(stream)) {
-    filePromises.push(storeFile(destinationFolder, file.path, file.contents, { abortSignal }));
+    const normalizedPath = normalizeArchivePath(file.path);
+    if (!normalizedPath) continue;
+    filePromises.push(storeFile(destinationFolder, normalizedPath, file.contents, { abortSignal }));
   }
   await Promise.all(filePromises);
 }
@@ -46,11 +48,20 @@ export async function storeFile(
   contents: Readable | AsyncIterable<Uint8Array>,
   { abortSignal }: Pick<SaveOptions, 'abortSignal'> = {}
 ): Promise<void> {
-  const fullPath = join(destinationFolder, filePath);
+  const normalizedFilePath = normalizeArchivePath(filePath);
+  if (!normalizedFilePath) return;
+
+  const fullPath = join(destinationFolder, normalizedFilePath);
   await mkdir(dirname(fullPath), { recursive: true });
   await pipeline(
     Readable.from(contents as AsyncIterable<Uint8Array>),
     createWriteStream(fullPath),
     { signal: abortSignal }
   );
+}
+
+function normalizeArchivePath(filePath: string): string {
+  const normalized = filePath.replace(/\\/g, '/').replace(/^\.?\//, '').replace(/^\./, '');
+  if (normalized === '' || normalized === '.') return '';
+  return normalized;
 }
